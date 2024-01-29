@@ -11,3 +11,6 @@ target_sources(glad PRIVATE ${GLAD_SOURCE_DIRECTORY}/glad.c)
 target_sources(glad PUBLIC ${GLAD_INCLUDE_DIRECTORY}/glad/glad.h ${GLAD_INCLUDE_DIRECTORY}/KHR/khrplatform.h)
 
 target_include_directories(glad PRIVATE ${GLAD_INCLUDE_DIRECTORY})
+
+set_target_properties(glad PROPERTIES
+                      FOLDER "third-party/GLAD")

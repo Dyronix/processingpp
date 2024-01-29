@@ -67,3 +67,6 @@ else()
 	add_library(glm::glm ALIAS glm)
 	target_link_libraries(glm INTERFACE glm-header-only)
 endif()
+
+set_target_properties(glm PROPERTIES
+                      FOLDER "third-party/GLM")
