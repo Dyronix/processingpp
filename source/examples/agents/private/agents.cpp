@@ -1,5 +1,6 @@
 #include "entrypoint.h"
 #include "agents.h"
+#include "shapes.h"
 
 namespace agents
 {
@@ -10,7 +11,7 @@ namespace agents
 
     void draw()
     {
-        // Nothing to implement
+        ppp::shapes::rect(100.0f, 100.0f, 100.0f, 100.0f);
     }
 }
 
@@ -21,7 +22,7 @@ namespace ppp
         AppParams app_params;
 
         app_params.app_setup_func = [](){ agents::setup(); };
-        app_params.app_setup_func = [](){ agents::draw(); };
+        app_params.app_draw_func = [](){ agents::draw(); };
 
         app_params.window_width = 1280;
         app_params.window_height = 720;
