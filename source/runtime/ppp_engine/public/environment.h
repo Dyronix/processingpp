@@ -1,12 +1,14 @@
 #pragma once
 
-#include "types.h"
+#include <string>
 
 namespace ppp
 {
     namespace environment
     {
-        f32 window_width();
-        f32 window_height();
+        void print(const std::string& message);
+
+        float window_width();
+        float window_height();
     }
 }

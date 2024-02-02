@@ -1,18 +1,25 @@
 #include "environment.h"
-#include "device.h"
+#include "device/device.h"
+#include "util/log.h"
+#include "util/types.h"
 
 namespace ppp
 {
     namespace environment
     {
-        f32 window_width()
+        void print(const std::string& message)
+        {
+            log::info(message);
+        }
+
+        float window_width()
         {
             s32 width = 0;
             device::window_width(&width);
             return static_cast<f32>(width);
         }
 
-        f32 window_height()
+        float window_height()
         {
             s32 height = 0;
             device::window_height(&height);
