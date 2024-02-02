@@ -4,6 +4,9 @@ namespace ppp
 {
     namespace structure
     {
+        void push();
+        void pop();
+
         void redraw();
 
         void loop();

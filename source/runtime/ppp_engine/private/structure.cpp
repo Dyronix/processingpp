@@ -5,6 +5,16 @@ namespace ppp
 {
     namespace structure
     {
+        void push()
+        {
+            // To be implemented
+        }
+
+        void pop()
+        {
+            // To be implemented
+        }
+
         void redraw()
         {
             device::redraw();
