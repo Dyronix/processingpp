@@ -43,12 +43,6 @@ namespace ppp
                     ((color >> 0) & 0xFF) * scale);
             }
 
-            constexpr s32 _min_frame_buffer_width = 32;
-            constexpr s32 _min_frame_buffer_height = 32;
-
-            s32 _frame_buffer_width = -1;
-            s32 _frame_buffer_height = -1;
-
             s32 _scissor_x = -1;
             s32 _scissor_y = -1;
             s32 _scissor_width = -1;
@@ -147,10 +141,16 @@ namespace ppp
                 return status != 0;
             }
 
-            constexpr s32 _max_points = 10'000;
-            constexpr s32 _max_lines = 10'000;
-            constexpr s32 _max_triangles = 10'000;
-            constexpr s32 _max_images = 8;
+            constexpr s32 _max_points = 9'000;
+            constexpr s32 _max_lines = 9'000;
+            constexpr s32 _max_triangles = 9'000;
+            constexpr s32 _max_texture_units = 8;
+
+            constexpr s32 _min_frame_buffer_width = 32;
+            constexpr s32 _min_frame_buffer_height = 32;
+
+            s32 _frame_buffer_width = -1;
+            s32 _frame_buffer_height = -1;
 
             u32 _render_fbo;
             u32 _render_texture;
@@ -242,7 +242,6 @@ namespace ppp
                 glDeleteShader(vert_shader);
                 glDeleteShader(frag_shader);
             }
-
             void compile_image_shader_program()
             {
                 const auto* const vs_source =
@@ -319,298 +318,343 @@ namespace ppp
                 glDeleteShader(frag_shader);
             }
 
-            u32	_points_vao = 0;
-            u32	_points_vbo = 0;
-            u32 _points_ebo = 0;
-            point_vertex_format _point_vertices[_max_points];
-            Index _point_indices[_max_points];
-            u32 _nr_points = 0;
-            u32 _nr_points_vertices = 0;
-            u32 _nr_points_indices = 0;
-
-            void setup_points(const RenderItem& item, const glm::vec4& fill_color)
+            template<typename T>
+            class PrimitiveBatch
             {
-                memcpy(&internal::_point_indices[internal::_nr_points_indices], item.indices.data(), sizeof(Index) * item.indices.size());
-                // For each index that was added we need to offset it with the amount of indices that are already within the array.
-                for (s32 i = 0; i < item.indices.size(); ++i)
+            public:
+                PrimitiveBatch(s32 size_vertex_buffer, s32 size_index_buffer)
+                    :m_max_vertex_count(size_vertex_buffer)
+                    ,m_max_index_count(size_index_buffer)
                 {
-                    internal::_point_indices[internal::_nr_points_indices + i] += internal::_nr_points_vertices;
-                }
-                internal::_nr_points_indices += item.indices.size();
+                    assert(size_vertex_buffer > 0);
+                    assert(size_index_buffer > 0);
 
-                internal::point_vertex_format fmt;
-                for (const auto& v : item.vertices)
-                {
-                    fmt.position = v.position;
-                    fmt.color = fill_color;
-                    internal::_point_vertices[internal::_nr_points_vertices] = fmt;
-                    ++internal::_nr_points_vertices;
-                }
-                internal::_nr_points += item.indices.size();
-            }
-
-            u32	_lines_vao = 0;
-            u32	_lines_vbo = 0;
-            u32 _lines_ebo = 0;
-            line_vertex_format _line_vertices[_max_lines];
-            Index _line_indices[_max_lines * 2];
-            u32 _nr_lines = 0;
-            u32 _nr_lines_vertices = 0;
-            u32 _nr_lines_indices = 0;
-
-            void setup_lines(const RenderItem& item, const glm::vec4& fill_color)
-            {
-                memcpy(&internal::_line_indices[internal::_nr_lines_indices], item.indices.data(), sizeof(Index) * item.indices.size());
-                // For each index that was added we need to offset it with the amount of indices that are already within the array.
-                for (s32 i = 0; i < item.indices.size(); ++i)
-                {
-                    internal::_line_indices[internal::_nr_lines_indices + i] += internal::_nr_lines_vertices;
-                }
-                internal::_nr_lines_indices += item.indices.size();
-
-                internal::line_vertex_format fmt;
-                for (const auto& v : item.vertices)
-                {
-                    fmt.position = v.position;
-                    fmt.color = fill_color;
-                    internal::_line_vertices[internal::_nr_lines_vertices] = fmt;
-                    ++internal::_nr_lines_vertices;
+                    m_vertices = std::make_unique<T[]>(size_vertex_buffer);
+                    m_indices = std::make_unique<Index[]>(size_index_buffer);
                 }
 
-                internal::_nr_lines += item.indices.size() / 2;
-            }
-
-            u32	_triangles_vao = 0;
-            u32	_triangles_vbo = 0;
-            u32 _triangles_ebo = 0;
-            triangle_vertex_format _triangle_vertices[_max_triangles];
-            Index _triangle_indices[_max_triangles * 3];
-            u32 _nr_triangles = 0;
-            u32 _nr_triangles_vertices = 0;
-            u32 _nr_triangles_indices = 0;
-
-            void setup_triangles(const RenderItem& item, const glm::vec4& fill_color)
-            {
-                memcpy(&internal::_triangle_indices[internal::_nr_triangles_indices], item.indices.data(), sizeof(Index) * item.indices.size());
-                // For each index that was added we need to offset it with the amount of indices that are already within the array.
-                for (s32 i = 0; i < item.indices.size(); ++i)
+                void append(const RenderItem& item, const glm::vec4& fill_color)
                 {
-                    internal::_triangle_indices[internal::_nr_triangles_indices + i] += internal::_nr_triangles_vertices;
-                }
-                internal::_nr_triangles_indices += item.indices.size();
+                    memcpy(&m_indices[m_nr_active_indices], item.indices.data(), sizeof(Index) * item.indices.size());
 
-                internal::triangle_vertex_format fmt;
-                for (const auto& v : item.vertices)
-                {
-                    fmt.position = v.position;
-                    fmt.color = fill_color;
-                    internal::_triangle_vertices[internal::_nr_triangles_vertices] = fmt;
-                    ++internal::_nr_triangles_vertices;
+                    // For each index that was added we need to offset it with the amount of indices that are already within the array.
+                    for (s32 i = 0; i < item.indices.size(); ++i)
+                    {
+                        m_indices[m_nr_active_indices + i] += m_nr_active_vertices;
+                    }
+
+                    m_nr_active_indices += item.indices.size();
+
+                    T fmt;
+
+                    for (const auto& v : item.vertices)
+                    {
+                        fmt.position = v.position;
+                        fmt.color = _fill_enable ? fill_color : internal::convert_color(_bg_color);
+                        m_vertices[m_nr_active_vertices] = fmt;
+                        ++m_nr_active_vertices;
+                    }
+
+                    ++m_nr_primitives;
                 }
 
-                internal::_nr_triangles += item.indices.size() / 3;
-            }
+                const T* vertices() const { return m_vertices.get(); }
+                const Index* indices() const { return m_indices.get(); }
 
-            u32	_images_vao = 0;
-            u32	_images_vbo = 0;
-            u32 _images_ebo = 0;
-            image_vertex_format _image_vertices[_max_images * 4];
-            Index _image_indices[_max_images * 3 * 4];
-            s32 _image_sampler_ids[_max_images];
-            std::unordered_map<u32, s32> _image_ids;
-            u32 _nr_images = 0;
-            u32 _nr_images_vertices = 0;
-            u32 _nr_images_indices = 0;
+                u32 active_vertex_count() const { return m_nr_active_vertices; }
+                u32 active_index_count() const { return m_nr_active_indices; }
+                u32 active_primitive_count() const { return m_nr_primitives; }
 
-            void setup_image(const ImageItem& item, const glm::vec4& tint_color)
+                u64 vertex_buffer_byte_size() const { return sizeof(T) * m_nr_active_vertices; }
+                u64 index_buffer_byte_size() const { return sizeof(Index) * m_nr_active_indices; }
+
+            private:
+                using VertexBuffer = std::unique_ptr<T[]>;
+                using IndexBuffer = std::unique_ptr<Index[]>;
+
+                VertexBuffer    m_vertices = nullptr;
+                IndexBuffer     m_indices = nullptr;
+
+                u32             m_nr_active_vertices = 0;
+                u32             m_nr_active_indices = 0;
+                u32             m_nr_primitives = 0;
+
+                const u32       m_max_vertex_count = 0;
+                const u32       m_max_index_count = 0;
+            };
+
+            template<typename T>
+            class PrimitiveDrawingData
             {
-                bool existing_image = internal::_image_ids.find(item.image_id) != std::cend(internal::_image_ids);
-
-                memcpy(&internal::_image_indices[internal::_nr_images_indices], item.indices.data(), sizeof(Index) * item.indices.size());
-                // For each index that was added we need to offset it with the amount of indices that are already within the array.
-                for (s32 i = 0; i < item.indices.size(); ++i)
+            public:
+                PrimitiveDrawingData(s32 size_vertex_buffer, s32 size_index_buffer)
+                    :m_max_vertex_count(size_vertex_buffer)
+                    ,m_max_index_count(size_index_buffer)
                 {
-                    internal::_image_indices[internal::_nr_images_indices + i] += internal::_nr_images_vertices;
-                }
-                internal::_nr_images_indices += item.indices.size();
+                    assert(size_vertex_buffer > 0);
+                    assert(size_index_buffer > 0);
 
-                internal::image_vertex_format fmt;
-                for (const auto& v : item.vertices)
+                    m_vertices = std::make_unique<T[]>(size_vertex_buffer);
+                    m_indices = std::make_unique<Index[]>(size_index_buffer);
+
+                    // Allocate VAO
+                    glGenVertexArrays(1, &m_vao);
+                    glBindVertexArray(m_vao);
+
+                    // Allocate VBO
+                    glGenBuffers(1, &m_vbo);
+                    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+                    const size_t size_vbo = sizeof(T) * size_vertex_buffer;
+                    glBufferData(GL_ARRAY_BUFFER, size_vbo, nullptr, GL_DYNAMIC_DRAW);
+
+                    glEnableVertexAttribArray(0);
+                    auto pos_offset = offsetof(T, position);
+                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(pos_offset));
+
+                    glEnableVertexAttribArray(1);
+                    auto col_offset = offsetof(T, color);
+                    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(col_offset));
+
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+                    // Allocate EBO
+                    glGenBuffers(1, &m_ebo);
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+                    const size_t size_ebo = sizeof(Index) * size_index_buffer;
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW);
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+                    glBindVertexArray(0);
+                }
+
+                void append(const RenderItem& item, const glm::vec4& fill_color)
                 {
-                    fmt.position = v.position;
-                    fmt.texcoord = v.texcoord;
-                    fmt.color = internal::_tint_enable ? tint_color : glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-                    fmt.texture_idx = existing_image ? (f32)internal::_image_ids.at(item.image_id) : (f32)internal::_nr_images;
-                    internal::_image_vertices[internal::_nr_images_vertices] = fmt;
-                    ++internal::_nr_images_vertices;
-                }
+                    memcpy(&m_indices[m_nr_active_indices], item.indices.data(), sizeof(Index) * item.indices.size());
 
-                if(!existing_image)
+                    // For each index that was added we need to offset it with the amount of indices that are already within the array.
+                    for (s32 i = 0; i < item.indices.size(); ++i)
+                    {
+                        m_indices[m_nr_active_indices + i] += m_nr_active_vertices;
+                    }
+
+                    m_nr_active_indices += item.indices.size();
+
+                    T fmt;
+
+                    for (const auto& v : item.vertices)
+                    {
+                        fmt.position = v.position;
+                        fmt.color = _fill_enable ? fill_color : internal::convert_color(_bg_color);
+                        m_vertices[m_nr_active_vertices] = fmt;
+                        ++m_nr_active_vertices;
+                    }
+
+                    ++m_nr_primitives;
+                }
+                void reset()
                 {
-                    internal::_image_sampler_ids[internal::_nr_images] = internal::_nr_images;
-                    internal::_image_ids.insert(std::make_pair(item.image_id, internal::_nr_images));
-
-                    ++internal::_nr_images;
+                    m_nr_active_vertices = 0;
+                    m_nr_active_indices = 0;
+                    m_nr_primitives = 0;
                 }
-            }
+                void release()
+                {
+                    reset();
 
-            void initialize_points_buffer()
+                    glDeleteBuffers(1, &m_vbo);
+                    glDeleteBuffers(1, &m_ebo);
+                    glDeleteVertexArrays(1, &m_vao);
+                }
+
+                bool has_drawing_data() const
+                {
+                    return m_nr_primitives > 0;
+                }
+
+                u32 vao() const { return m_vao; }
+                u32 vbo() const { return m_vbo; }
+                u32 ebo() const { return m_ebo; }
+
+                const T* vertices() const { return m_vertices.get(); }
+                const Index* indices() const { return m_indices.get(); }
+
+                u32 active_vertex_count() const { return m_nr_active_vertices; }
+                u32 active_index_count() const { return m_nr_active_indices; }
+                u32 active_primitive_count() const { return m_nr_primitives; }
+
+                u64 vertex_buffer_byte_size() const { return sizeof(T) * m_nr_active_vertices; }
+                u64 index_buffer_byte_size() const { return sizeof(Index) * m_nr_active_indices; }
+
+            private:
+                using VertexBuffer = std::unique_ptr<T[]>;
+                using IndexBuffer = std::unique_ptr<Index[]>;
+
+                u32	            m_vao = 0;
+                u32	            m_vbo = 0;
+                u32             m_ebo = 0;
+
+                VertexBuffer    m_vertices = nullptr;
+                IndexBuffer     m_indices = nullptr;
+
+                u32             m_nr_active_vertices = 0;
+                u32             m_nr_active_indices = 0;
+                u32             m_nr_primitives = 0;
+
+                const u32       m_max_vertex_count = 0;
+                const u32       m_max_index_count = 0;
+            };
+
+            std::unique_ptr<PrimitiveDrawingData<point_vertex_format>> _points_drawing_data;
+            std::unique_ptr<PrimitiveDrawingData<line_vertex_format>> _lines_drawing_data;
+            std::unique_ptr<PrimitiveDrawingData<triangle_vertex_format>> _triangle_drawing_data;
+
+            template<typename T>
+            class TextureDrawingData
             {
-                // Allocate VAO
-                glGenVertexArrays(1, &_points_vao);
-                glBindVertexArray(_points_vao);
+            public:
+                using ImageMap = std::unordered_map<u32, s32>;
 
-                // Allocate VBO
-                glGenBuffers(1, &_points_vbo);
-                glBindBuffer(GL_ARRAY_BUFFER, _points_vbo);
-                const size_t size_vbo = sizeof(_point_vertices);
-                glBufferData(GL_ARRAY_BUFFER, size_vbo, nullptr, GL_DYNAMIC_DRAW);
+                TextureDrawingData(s32 size_textures)
+                {
+                    assert(size_textures > 0);
 
-                glEnableVertexAttribArray(0);
-                auto pos_offset = offsetof(point_vertex_format, position);
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(point_vertex_format), reinterpret_cast<void*>(pos_offset));
+                    s32 size_vertex_buffer = size_textures * 4;
+                    s32 size_index_buffer = size_textures * 4 * 3;
 
-                glEnableVertexAttribArray(1);
-                auto col_offset = offsetof(point_vertex_format, color);
-                glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(point_vertex_format), reinterpret_cast<void*>(col_offset));                
+                    m_vertices = std::make_unique<T[]>(size_vertex_buffer);
+                    m_indices = std::make_unique<Index[]>(size_index_buffer);
 
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                    m_image_sampler_ids = std::make_unique<s32[]>(size_textures);
+                    m_image_ids.reserve(size_textures);
 
-                // Allocate EBO
-                glGenBuffers(1, &_points_ebo);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _points_ebo);
-                const size_t size_ebo = sizeof(Index) * _max_points;
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                    // Allocate VAO
+                    glGenVertexArrays(1, &m_vao);
+                    glBindVertexArray(m_vao);
 
-                glBindVertexArray(0);
-            }
-            void initialize_lines_buffer()
-            {
-                // Allocate VAO
-                glGenVertexArrays(1, &_lines_vao);
-                glBindVertexArray(_lines_vao);
+                    // Allocate VBO
+                    glGenBuffers(1, &m_vbo);
+                    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+                    const size_t size_vbo = sizeof(T) * size_vertex_buffer;
+                    glBufferData(GL_ARRAY_BUFFER, size_vbo, nullptr, GL_DYNAMIC_DRAW);
 
-                // Allocate VBO
-                glGenBuffers(1, &_lines_vbo);
-                glBindBuffer(GL_ARRAY_BUFFER, _lines_vbo);
-                const size_t size_vbo = sizeof(_line_vertices);
-                glBufferData(GL_ARRAY_BUFFER, size_vbo, nullptr, GL_DYNAMIC_DRAW);
+                    glEnableVertexAttribArray(0);
+                    auto pos_offset = offsetof(T, position);
+                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(pos_offset));
 
-                glEnableVertexAttribArray(0);
-                auto pos_offset = offsetof(line_vertex_format, position);
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(line_vertex_format), reinterpret_cast<void*>(pos_offset));
+                    glEnableVertexAttribArray(1);
+                    auto tc_offset = offsetof(T, texcoord);
+                    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(tc_offset));
 
-                glEnableVertexAttribArray(1);
-                auto col_offset = offsetof(line_vertex_format, color);
-                glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(line_vertex_format), reinterpret_cast<void*>(col_offset));
+                    glEnableVertexAttribArray(2);
+                    auto col_offset = offsetof(T, color);
+                    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(col_offset));
 
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                    glEnableVertexAttribArray(3);
+                    auto ti_offset = offsetof(T, texture_idx);
+                    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(ti_offset));
 
-                // Allocate EBO
-                glGenBuffers(1, &_lines_ebo);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _lines_ebo);
-                const size_t size_ebo = sizeof(Index) * (_max_lines * 2);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-                glBindVertexArray(0);
-            }
-            void initialize_triangles_buffer()
-            {
-                // Allocate VAO
-                glGenVertexArrays(1, &_triangles_vao);
-                glBindVertexArray(_triangles_vao);
+                    // Allocate EBO
+                    glGenBuffers(1, &m_ebo);
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+                    const size_t size_ebo = sizeof(Index) * size_index_buffer;
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW);
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-                // Allocate VBO
-                glGenBuffers(1, &_triangles_vbo);
-                glBindBuffer(GL_ARRAY_BUFFER, _triangles_vbo);
-                const size_t size_vbo = sizeof(_triangle_vertices);
-                glBufferData(GL_ARRAY_BUFFER, size_vbo, nullptr, GL_DYNAMIC_DRAW);
+                    glBindVertexArray(0);
+                }
 
-                glEnableVertexAttribArray(0);
-                auto pos_offset = offsetof(triangle_vertex_format, position);
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(triangle_vertex_format), reinterpret_cast<void*>(pos_offset));
+                void append(const ImageItem& item, const glm::vec4& tint_color)
+                {
+                    bool existing_image = m_image_ids.find(item.image_id) != std::cend(m_image_ids);
 
-                glEnableVertexAttribArray(1);
-                auto col_offset = offsetof(triangle_vertex_format, color);
-                glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(triangle_vertex_format), reinterpret_cast<void*>(col_offset));
+                    memcpy(&m_indices[m_nr_active_indices], item.indices.data(), sizeof(Index) * item.indices.size());
+                    // For each index that was added we need to offset it with the amount of indices that are already within the array.
+                    for (s32 i = 0; i < item.indices.size(); ++i)
+                    {
+                        m_indices[m_nr_active_indices + i] += m_nr_active_vertices;
+                    }
+                    m_nr_active_indices += item.indices.size();
 
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                    image_vertex_format fmt;
+                    for (const auto& v : item.vertices)
+                    {
+                        fmt.position = v.position;
+                        fmt.texcoord = v.texcoord;
+                        fmt.color = _tint_enable ? tint_color : internal::convert_color(0xFFFFFFFF);
+                        fmt.texture_idx = existing_image ? (f32)m_image_ids.at(item.image_id) : (f32)m_nr_primitives;
+                        m_vertices[m_nr_active_vertices] = fmt;
+                        ++m_nr_active_vertices;
+                    }
 
-                // Allocate EBO
-                glGenBuffers(1, &_triangles_ebo);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _triangles_ebo);
-                const size_t size_ebo = sizeof(Index) * (_max_triangles * 3);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                    if (!existing_image)
+                    {
+                        m_image_sampler_ids[m_nr_primitives] = m_nr_primitives;
+                        m_image_ids.insert(std::make_pair(item.image_id, m_nr_primitives));
 
-                glBindVertexArray(0);
-            }
-            void initialize_images_buffer()
-            {
-                // Allocate VAO
-                glGenVertexArrays(1, &_images_vao);
-                glBindVertexArray(_images_vao);
+                        ++m_nr_primitives;
+                    }
+                }
+                void reset()
+                {
+                    m_nr_active_vertices = 0;
+                    m_nr_active_indices = 0;
+                    m_nr_primitives = 0;
 
-                // Allocate VBO
-                glGenBuffers(1, &_images_vbo);
-                glBindBuffer(GL_ARRAY_BUFFER, _images_vbo);
-                const size_t size_vbo = sizeof(_image_vertices);
-                glBufferData(GL_ARRAY_BUFFER, size_vbo, nullptr, GL_DYNAMIC_DRAW);
+                    m_image_ids.clear();
+                }
+                void release()
+                {
+                    reset();
 
-                glEnableVertexAttribArray(0);
-                auto pos_offset = offsetof(image_vertex_format, position);
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(image_vertex_format), reinterpret_cast<void*>(pos_offset));
+                    glDeleteBuffers(1, &m_vbo);
+                    glDeleteBuffers(1, &m_ebo);
+                    glDeleteVertexArrays(1, &m_vao);
+                }
 
-                glEnableVertexAttribArray(1);
-                auto tc_offset = offsetof(image_vertex_format, texcoord);
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(image_vertex_format), reinterpret_cast<void*>(tc_offset));
+                bool has_drawing_data() const
+                {
+                    return m_nr_primitives > 0;
+                }
 
-                glEnableVertexAttribArray(2);
-                auto col_offset = offsetof(image_vertex_format, color);
-                glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(image_vertex_format), reinterpret_cast<void*>(col_offset));
+                u32 vao() const { return m_vao; }
+                u32 vbo() const { return m_vbo; }
+                u32 ebo() const { return m_ebo; }
 
-                glEnableVertexAttribArray(3);
-                auto ti_offset = offsetof(image_vertex_format, texture_idx);
-                glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(image_vertex_format), reinterpret_cast<void*>(ti_offset));
+                const T* vertices() const { return m_vertices.get(); }
+                const Index* indices() const { return m_indices.get(); }
+                const s32* samplers() const { return m_image_sampler_ids.get(); }
+                const ImageMap& image_ids() const { return m_image_ids; }
 
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                u32 active_vertex_count() const { return m_nr_active_vertices; }
+                u32 active_index_count() const { return m_nr_active_indices; }
+                u32 active_texture_count() const { return m_nr_primitives; }
 
-                // Allocate EBO
-                glGenBuffers(1, &_images_ebo);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _images_ebo);
-                const size_t size_ebo = sizeof(Index) * (_max_images * 3 * 4);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                u64 vertex_buffer_byte_size() const { return sizeof(T) * m_nr_active_vertices; }
+                u64 index_buffer_byte_size() const { return sizeof(Index) * m_nr_active_indices; }
 
-                glBindVertexArray(0);
-            }
+            private:
+                using VertexBuffer = std::unique_ptr<T[]>;
+                using IndexBuffer = std::unique_ptr<Index[]>;
+                using SamplerBuffer = std::unique_ptr<s32[]>;
 
-            void terminate_points_buffer()
-            {
-                glDeleteBuffers(1, &_points_vbo);
-                glDeleteBuffers(1, &_points_ebo);
-                glDeleteVertexArrays(1, &_points_vao);
-            }
-            void terminate_lines_buffer()
-            {
-                glDeleteBuffers(1, &_lines_vbo);
-                glDeleteBuffers(1, &_lines_ebo);
-                glDeleteVertexArrays(1, &_lines_vao);
-            }
-            void terminate_triangles_buffer()
-            {
-                glDeleteBuffers(1, &_triangles_vbo);
-                glDeleteBuffers(1, &_triangles_ebo);
-                glDeleteVertexArrays(1, &_triangles_vao);
-            }
-            void terminate_images_buffer()
-            {
-                glDeleteBuffers(1, &_images_vbo);
-                glDeleteBuffers(1, &_images_ebo);
-                glDeleteVertexArrays(1, &_images_vao);
-            }
+                u32	            m_vao = 0;
+                u32	            m_vbo = 0;
+                u32             m_ebo = 0;
+
+                VertexBuffer    m_vertices = nullptr;
+                IndexBuffer     m_indices = nullptr;
+
+                u32             m_nr_active_vertices = 0;
+                u32             m_nr_active_indices = 0;
+                u32             m_nr_primitives = 0;
+
+                SamplerBuffer   m_image_sampler_ids;
+                ImageMap        m_image_ids;
+            };
+
+            std::unique_ptr<TextureDrawingData<image_vertex_format>> _image_drawing_data;
         }
 
         bool initialize(s32 w, s32 h, void* user_data)
@@ -636,41 +680,48 @@ namespace ppp
             internal::compile_image_shader_program();
             internal::create_frame_buffer();
 
-            internal::initialize_points_buffer();
-            internal::initialize_lines_buffer();
-            internal::initialize_triangles_buffer();
-            internal::initialize_images_buffer();
+            // Primitive Drawing Data
+            s32 max_vertex_elements = 0;
+            s32 max_index_elements = 0;
+            glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_vertex_elements);
+            glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_index_elements);
+
+            s32 max_point_vertices = std::min(max_vertex_elements, internal::_max_points);
+            s32 max_point_indices = std::min(max_index_elements, internal::_max_points * 1);
+            s32 max_line_vertices = std::min(max_vertex_elements, internal::_max_lines);
+            s32 max_line_indices = std::min(max_index_elements, internal::_max_lines * 2);
+            s32 max_triangle_vertices = std::min(max_vertex_elements, internal::_max_triangles);
+            s32 max_triangle_indices = std::min(max_index_elements, internal::_max_triangles * 3);
+
+            internal::_points_drawing_data = std::make_unique<internal::PrimitiveDrawingData<internal::point_vertex_format>>(max_point_vertices, max_point_indices);
+            internal::_lines_drawing_data = std::make_unique<internal::PrimitiveDrawingData<internal::line_vertex_format>>(max_line_vertices, max_line_indices);
+            internal::_triangle_drawing_data = std::make_unique<internal::PrimitiveDrawingData<internal::triangle_vertex_format>>(max_triangle_vertices, max_triangle_indices);
+
+            // Image Drawing Data
+            s32 max_texture_units = 0;
+            glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
+
+            s32 max_images = std::min(max_texture_units, internal::_max_texture_units);
+
+            internal::_image_drawing_data = std::make_unique<internal::TextureDrawingData<internal::image_vertex_format>>(max_images);
 
             return true;
         }
 
         void terminate()
         {
-            internal::terminate_images_buffer();
-            internal::terminate_triangles_buffer();
-            internal::terminate_lines_buffer();
-            internal::terminate_points_buffer();
+            internal::_triangle_drawing_data->release();
+            internal::_triangle_drawing_data->release();
+            internal::_lines_drawing_data->release();
+            internal::_points_drawing_data->release();
         }
 
         void begin()
         {
-            internal::_nr_points = 0;
-            internal::_nr_points_vertices = 0;
-            internal::_nr_points_indices = 0;
-
-            internal::_nr_lines = 0;
-            internal::_nr_lines_vertices = 0;
-            internal::_nr_lines_indices = 0;
-
-            internal::_nr_triangles = 0;
-            internal::_nr_triangles_vertices = 0;
-            internal::_nr_triangles_indices = 0;
-
-            internal::_nr_images = 0;
-            internal::_nr_images_vertices = 0;
-            internal::_nr_images_indices = 0;
-
-            internal::_image_ids.clear();
+            internal::_points_drawing_data->reset();
+            internal::_lines_drawing_data->reset();
+            internal::_triangle_drawing_data->reset();
+            internal::_image_drawing_data->reset();
 
             glBindFramebuffer(GL_FRAMEBUFFER, internal::_render_fbo);
 
@@ -713,63 +764,63 @@ namespace ppp
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            if (internal::_nr_points > 0 || internal::_nr_lines > 0 || internal::_nr_triangles > 0)
+            if (internal::_points_drawing_data->has_drawing_data() || internal::_lines_drawing_data->has_drawing_data() || internal::_triangle_drawing_data->has_drawing_data())
             {
                 glUseProgram(internal::_color_shader_program);
                 u32 u_mpv_loc = glGetUniformLocation(internal::_color_shader_program, "u_worldviewproj");
                 glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
 
-                if (internal::_nr_points > 0)
+                if (internal::_points_drawing_data->has_drawing_data())
                 {
-                    glBindVertexArray(internal::_points_vao);
-                    glBindBuffer(GL_ARRAY_BUFFER, internal::_points_vbo);
+                    glBindVertexArray(internal::_points_drawing_data->vao());
+                    glBindBuffer(GL_ARRAY_BUFFER, internal::_points_drawing_data->vbo());
 
-                    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(internal::point_vertex_format) * internal::_nr_points_vertices, &internal::_point_vertices[0]);
-                    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(Index) * internal::_nr_points_indices, &internal::_point_indices[0]);
+                    glBufferSubData(GL_ARRAY_BUFFER, 0, internal::_points_drawing_data->vertex_buffer_byte_size(), internal::_points_drawing_data->vertices());
+                    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, internal::_points_drawing_data->index_buffer_byte_size(), internal::_points_drawing_data->indices());
 
-                    glDrawElements(GL_POINTS, internal::_nr_points_indices, internal::index_type(), nullptr);
+                    glDrawElements(GL_POINTS, internal::_points_drawing_data->active_index_count(), internal::index_type(), nullptr);
 
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
                 }
 
-                if (internal::_nr_lines > 0)
+                if (internal::_lines_drawing_data->has_drawing_data())
                 {
                     #ifndef NDEBUG
-                    if (internal::_nr_lines_indices % 2 != 0)
+                    if (internal::_lines_drawing_data->active_index_count() % 2 != 0)
                     {
-                        log::error("Trying to render invalid number of lines: {}", internal::_nr_lines_indices);
+                        log::error("Trying to render invalid number of lines: {}", internal::_lines_drawing_data->active_index_count());
                         return;
                     }
                     #endif
-                    glBindVertexArray(internal::_lines_vao);
-                    glBindBuffer(GL_ARRAY_BUFFER, internal::_lines_vbo);
+                    glBindVertexArray(internal::_lines_drawing_data->vao());
+                    glBindBuffer(GL_ARRAY_BUFFER, internal::_lines_drawing_data->vbo());
 
-                    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(internal::line_vertex_format) * internal::_nr_lines_vertices, &internal::_line_vertices[0]);
-                    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(Index) * internal::_nr_lines_indices, &internal::_line_indices[0]);
+                    glBufferSubData(GL_ARRAY_BUFFER, 0, internal::_lines_drawing_data->vertex_buffer_byte_size(), internal::_lines_drawing_data->vertices());
+                    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, internal::_lines_drawing_data->index_buffer_byte_size(), internal::_lines_drawing_data->indices());
 
-                    glDrawElements(GL_LINES, internal::_nr_lines_indices, internal::index_type(), nullptr);
+                    glDrawElements(GL_LINES, internal::_lines_drawing_data->active_index_count(), internal::index_type(), nullptr);
 
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
                 }
 
-                if (internal::_nr_triangles > 0)
+                if (internal::_triangle_drawing_data->has_drawing_data())
                 {
                     #ifndef NDEBUG
-                    if (internal::_nr_triangles_indices % 3 != 0)
+                    if (internal::_triangle_drawing_data->active_index_count() % 3 != 0)
                     {
-                        log::error("Trying to render invalid number of triangles: {}", internal::_nr_triangles_indices);
+                        log::error("Trying to render invalid number of triangles: {}", internal::_triangle_drawing_data->active_index_count());
                         return;
                     }
                     #endif
-                    glBindVertexArray(internal::_triangles_vao);
-                    glBindBuffer(GL_ARRAY_BUFFER, internal::_triangles_vbo);
+                    glBindVertexArray(internal::_triangle_drawing_data->vao());
+                    glBindBuffer(GL_ARRAY_BUFFER, internal::_triangle_drawing_data->vbo());
 
-                    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(internal::triangle_vertex_format) * internal::_nr_triangles_vertices, &internal::_triangle_vertices[0]);
-                    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(Index) * internal::_nr_triangles_indices, &internal::_triangle_indices[0]);
+                    glBufferSubData(GL_ARRAY_BUFFER, 0, internal::_triangle_drawing_data->vertex_buffer_byte_size(), internal::_triangle_drawing_data->vertices());
+                    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, internal::_triangle_drawing_data->index_buffer_byte_size(), internal::_triangle_drawing_data->indices());
 
-                    glDrawElements(GL_TRIANGLES, internal::_nr_triangles_indices, internal::index_type(), nullptr);
+                    glDrawElements(GL_TRIANGLES, internal::_triangle_drawing_data->active_index_count(), internal::index_type(), nullptr);
 
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
@@ -778,27 +829,27 @@ namespace ppp
                 glUseProgram(0);
             }
 
-            if (internal::_nr_images > 0)
+            if (internal::_image_drawing_data->has_drawing_data())
             {
                 glUseProgram(internal::_image_shader_program);
                 u32 u_mpv_loc = glGetUniformLocation(internal::_image_shader_program, "u_worldviewproj");
                 glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
                 u32 u_tex_samplers_loc = glGetUniformLocation(internal::_image_shader_program, "s_image");
-                glUniform1iv(u_tex_samplers_loc, internal::_nr_images, &internal::_image_sampler_ids[0]);
+                glUniform1iv(u_tex_samplers_loc, internal::_image_drawing_data->active_texture_count(), internal::_image_drawing_data->samplers());
 
                 #ifndef NDEBUG
-                if (internal::_nr_images_indices % 3 != 0)
+                if (internal::_image_drawing_data->active_index_count() % 3 != 0)
                 {
-                    log::error("Trying to render invalid number of triangles: {}", internal::_nr_images_indices);
+                    log::error("Trying to render invalid number of triangles: {}", internal::_image_drawing_data->active_index_count());
                     return;
                 }
                 #endif
-                glBindVertexArray(internal::_images_vao);
-                glBindBuffer(GL_ARRAY_BUFFER, internal::_images_vbo);
+                glBindVertexArray(internal::_image_drawing_data->vao());
+                glBindBuffer(GL_ARRAY_BUFFER, internal::_image_drawing_data->vbo());
 
                 s32 i = 0;
                 s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                for (const auto& pair : internal::_image_ids)
+                for (const auto& pair : internal::_image_drawing_data->image_ids())
                 {
                     u32 id = pair.first;
                     s32 idx = pair.second;
@@ -809,10 +860,10 @@ namespace ppp
                     ++i;
                 }
 
-                glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(internal::image_vertex_format) * internal::_nr_images_vertices, &internal::_image_vertices[0]);
-                glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(Index) * internal::_nr_images_indices, &internal::_image_indices[0]);
+                glBufferSubData(GL_ARRAY_BUFFER, 0, internal::_image_drawing_data->vertex_buffer_byte_size(), internal::_image_drawing_data->vertices());
+                glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, internal::_image_drawing_data->index_buffer_byte_size(), internal::_image_drawing_data->indices());
 
-                glDrawElements(GL_TRIANGLES, internal::_nr_images_indices, internal::index_type(), nullptr);
+                glDrawElements(GL_TRIANGLES, internal::_image_drawing_data->active_index_count(), internal::index_type(), nullptr);
 
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glBindVertexArray(0);
@@ -937,9 +988,9 @@ namespace ppp
 
             switch (topology)
             {
-            case TopologyType::POINTS: internal::setup_points(item, fill_color); break;
-            case TopologyType::LINES: internal::setup_lines(item, fill_color); break;
-            case TopologyType::TRIANGLES: internal::setup_triangles(item, fill_color); break;
+            case TopologyType::POINTS: internal::_points_drawing_data->append(item, fill_color); break;
+            case TopologyType::LINES: internal::_lines_drawing_data->append(item, fill_color); break;
+            case TopologyType::TRIANGLES: internal::_triangle_drawing_data->append(item, fill_color); break;
 
             default:
                 log::critical("Invalid topology type!");
@@ -951,7 +1002,7 @@ namespace ppp
         {
             glm::vec4 tint_color = internal::convert_color(internal::_fill_color);
 
-            internal::setup_image(item, tint_color);
+            internal::_image_drawing_data->append(item, tint_color);
         }
 
         void clear_color(f32 r, f32 g, f32 b, f32 a)
