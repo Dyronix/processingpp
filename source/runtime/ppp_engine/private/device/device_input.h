@@ -12,6 +12,9 @@ namespace ppp
     {
         namespace input
         {
+            void push_canvas_dimensions(s32 x, s32 y, s32 width, s32 height);
+            void push_canvas_enable(bool enable);
+
             namespace keyboard
             {
                 using key_pressed_callback = std::function<void(s32, s32, s32)>;

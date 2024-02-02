@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <unordered_map>
+#include <vector>
 
 namespace ppp
 {
@@ -32,7 +33,6 @@ namespace ppp
                 out |= (conversions::f32_to_uint8(color.w)) << 0;
                 return out;
             }
-
             glm::vec4 convert_color(u32 color)
             {
                 f32 scale = 1.0f / 255.0f;
@@ -347,9 +347,12 @@ namespace ppp
 
                     T fmt;
 
+                    glm::vec3 canvas_offset = _scissor_enable 
+                        ? glm::vec3(_scissor_x, _scissor_y, 0.0f) 
+                        : glm::vec3(0.0f, 0.0f, 0.0f);
                     for (const auto& v : item.vertices)
                     {
-                        fmt.position = v.position;
+                        fmt.position = v.position + canvas_offset;
                         fmt.color = _fill_enable ? fill_color : internal::convert_color(_bg_color);
                         m_vertices[m_nr_active_vertices] = fmt;
                         ++m_nr_active_vertices;
@@ -555,9 +558,13 @@ namespace ppp
                     m_nr_active_indices += item.indices.size();
 
                     image_vertex_format fmt;
+
+                    glm::vec3 canvas_offset = _scissor_enable
+                        ? glm::vec3(_scissor_x, _scissor_y, 0.0f)
+                        : glm::vec3(0.0f, 0.0f, 0.0f);
                     for (const auto& v : item.vertices)
                     {
-                        fmt.position = v.position;
+                        fmt.position = v.position + canvas_offset;
                         fmt.texcoord = v.texcoord;
                         fmt.color = _tint_enable ? tint_color : internal::convert_color(0xFFFFFFFF);
                         fmt.texture_idx = existing_image ? (f32)m_image_ids.at(item.image_id) : (f32)m_nr_primitives;
@@ -851,10 +858,10 @@ namespace ppp
 
         void render()
         {
-            f32 w = static_cast<f32>(internal::_frame_buffer_width * 0.5f);
-            f32 h = static_cast<f32>(internal::_frame_buffer_height * 0.5f);
+            f32 w = static_cast<f32>(internal::_frame_buffer_width);
+            f32 h = static_cast<f32>(internal::_frame_buffer_height);
 
-            glm::mat4 p = glm::ortho(-w, w, -h, h, -100.0f, 100.0f);
+            glm::mat4 p = glm::ortho(0.0f, w, 0.0f, h, -100.0f, 100.0f);
             glm::mat4 v = glm::lookAt(glm::vec3(0.0f, 0.0f, 100.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             glm::mat4 vp = p * v;
 

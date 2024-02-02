@@ -55,6 +55,25 @@ namespace ppp
                         c((f32)xoffset, (f32)yoffset);
                     }
                 }
+
+                s32 _scissor_x = -1;
+                s32 _scissor_y = -1;
+                s32 _scissor_width = -1;
+                s32 _scissor_height = -1;
+                bool _scissor_enable = false;
+            }
+
+            void push_canvas_dimensions(s32 x, s32 y, s32 width, s32 height)
+            {
+                internal::_scissor_x = x;
+                internal::_scissor_y = y;
+                internal::_scissor_width = width;
+                internal::_scissor_height = height;
+            }
+
+            void push_canvas_enable(bool enable)
+            {
+                internal::_scissor_enable = enable;
             }
 
             namespace keyboard
@@ -106,15 +125,39 @@ namespace ppp
             {
                 s32 mouse_x(GLFWwindow* window)
                 {
-                    double xpos, ypos;
+                    f64 xpos, ypos;
                     glfwGetCursorPos(window, &xpos, &ypos);
+
+                    if (internal::_scissor_enable)
+                    {
+                        s32 canvas_x = internal::_scissor_x;
+                        s32 width = internal::_scissor_width;
+
+                        xpos = xpos - canvas_x;
+                    }
+
                     return (s32)xpos;
                 }
 
                 s32 mouse_y(GLFWwindow* window)
                 {
-                    double xpos, ypos;
+                    f64 xpos, ypos;
                     glfwGetCursorPos(window, &xpos, &ypos);
+
+                    if (internal::_scissor_enable)
+                    {
+                        s32 canvas_y = internal::_scissor_y;
+                        s32 height = internal::_scissor_height;
+
+                        ypos = ((ypos - canvas_y) - height) * -1;
+                    }
+                    else
+                    {
+                        s32 width, height;
+                        glfwGetWindowSize(window, &width, &height);
+                        ypos = ypos - height;
+                    }
+
                     return (s32)ypos;
                 }
 
