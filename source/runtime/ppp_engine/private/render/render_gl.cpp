@@ -403,11 +403,11 @@ namespace ppp
             public:
                 PrimitiveDrawingData(s32 size_vertex_buffer, s32 size_index_buffer)
                 {
-                    // Already start with one batch
-                    m_batches.push_back(PrimitiveBatch<T>(size_vertex_buffer, size_index_buffer));
-
                     assert(size_vertex_buffer > 0);
                     assert(size_index_buffer > 0);
+
+                    // Already start with one batch
+                    m_batches.push_back(PrimitiveBatch<T>(size_vertex_buffer, size_index_buffer));
 
                     // Allocate VAO
                     glGenVertexArrays(1, &m_vao);
@@ -447,7 +447,7 @@ namespace ppp
                     }
                     else
                     {
-                        if (m_batches.size() < m_push_batch + 1)
+                        if (m_batches.size() <= m_push_batch + 1)
                         {
                             u32 max_vertex_count = m_batches[m_push_batch].max_vertex_count();
                             u32 max_index_count = m_batches[m_push_batch].max_index_count();
@@ -460,6 +460,7 @@ namespace ppp
                         append(item, fill_color);
                     }
                 }
+                
                 void reset()
                 {
                     for (PrimitiveBatch<T>& b : m_batches)
@@ -470,6 +471,7 @@ namespace ppp
                     m_push_batch = 0;
                     m_draw_batch = 0;
                 }
+
                 void release()
                 {
                     reset();
@@ -493,13 +495,17 @@ namespace ppp
                     return nullptr;
                 }
 
+                s32 batch_count() const
+                {
+                    return static_cast<s32>(m_batches.size());
+                }
+
                 u32 vao() const { return m_vao; }
                 u32 vbo() const { return m_vbo; }
                 u32 ebo() const { return m_ebo; }
 
             private:
                 using BatchArr = std::vector<PrimitiveBatch<T>>;
-                using IndexBuffer = std::unique_ptr<Index[]>;
 
                 u32	m_vao = 0;
                 u32	m_vbo = 0;
@@ -518,26 +524,117 @@ namespace ppp
             template<typename T>
             class TextureBatch
             {
+            public:
+                using ImageMap = std::unordered_map<u32, s32>;
 
+                TextureBatch(s32 size_textures)
+                    :m_max_texture_count(size_textures)
+                {
+                    assert(size_textures > 0);
+
+                    m_size_vertex_buffer = size_textures * 4;
+                    m_size_index_buffer = size_textures * 4 * 3;
+
+                    m_vertices = std::make_unique<T[]>(m_size_vertex_buffer);
+                    m_indices = std::make_unique<Index[]>(m_size_index_buffer);
+
+                    m_image_sampler_ids = std::make_unique<s32[]>(size_textures);
+                    m_image_ids.reserve(size_textures);
+                }
+
+                void append(const ImageItem& item, const glm::vec4& tint_color)
+                {
+                    bool existing_image = m_image_ids.find(item.image_id) != std::cend(m_image_ids);
+
+                    memcpy(&m_indices[m_nr_active_indices], item.indices.data(), sizeof(Index) * item.indices.size());
+                    // For each index that was added we need to offset it with the amount of indices that are already within the array.
+                    for (s32 i = 0; i < item.indices.size(); ++i)
+                    {
+                        m_indices[m_nr_active_indices + i] += m_nr_active_vertices;
+                    }
+                    m_nr_active_indices += item.indices.size();
+
+                    image_vertex_format fmt;
+                    for (const auto& v : item.vertices)
+                    {
+                        fmt.position = v.position;
+                        fmt.texcoord = v.texcoord;
+                        fmt.color = _tint_enable ? tint_color : internal::convert_color(0xFFFFFFFF);
+                        fmt.texture_idx = existing_image ? (f32)m_image_ids.at(item.image_id) : (f32)m_nr_primitives;
+                        m_vertices[m_nr_active_vertices] = fmt;
+                        ++m_nr_active_vertices;
+                    }
+
+                    if (!existing_image)
+                    {
+                        m_image_sampler_ids[m_nr_primitives] = m_nr_primitives;
+                        m_image_ids.insert(std::make_pair(item.image_id, m_nr_primitives));
+
+                        ++m_nr_primitives;
+                    }
+                }
+
+                void reset()
+                {
+                    m_nr_active_vertices = 0;
+                    m_nr_active_indices = 0;
+                    m_nr_primitives = 0;
+
+                    m_image_ids.clear();
+                }
+
+                bool can_add(s32 nr_vertices, s32 nr_indices) const
+                {
+                    return m_nr_active_vertices + nr_vertices < m_size_vertex_buffer && m_nr_active_indices + nr_indices < m_size_index_buffer;
+                }
+
+                const T* vertices() const { return m_vertices.get(); }
+                const Index* indices() const { return m_indices.get(); }
+                const s32* samplers() const { return m_image_sampler_ids.get(); }
+                const ImageMap& image_ids() const { return m_image_ids; }
+
+                u32 active_vertex_count() const { return m_nr_active_vertices; }
+                u32 active_index_count() const { return m_nr_active_indices; }
+                u32 active_texture_count() const { return m_nr_primitives; }
+
+                u64 vertex_buffer_byte_size() const { return sizeof(T) * m_nr_active_vertices; }
+                u64 index_buffer_byte_size() const { return sizeof(Index) * m_nr_active_indices; }
+
+                u32 max_texture_count() const { return m_max_texture_count; }
+
+            private:
+                using VertexBuffer = std::unique_ptr<T[]>;
+                using IndexBuffer = std::unique_ptr<Index[]>;
+                using SamplerBuffer = std::unique_ptr<s32[]>;
+
+                VertexBuffer    m_vertices = nullptr;
+                IndexBuffer     m_indices = nullptr;
+
+                u32             m_nr_active_vertices = 0;
+                u32             m_nr_active_indices = 0;
+                u32             m_nr_primitives = 0;
+
+                SamplerBuffer   m_image_sampler_ids = {};
+                ImageMap        m_image_ids = {};
+
+                const u32       m_max_texture_count = 0;
+
+                s32             m_size_vertex_buffer = 0;
+                s32             m_size_index_buffer = 0;
             };
             template<typename T>
             class TextureDrawingData
             {
             public:
-                using ImageMap = std::unordered_map<u32, s32>;
-
                 TextureDrawingData(s32 size_textures)
                 {
                     assert(size_textures > 0);
 
+                    // Already start with one batch
+                    m_batches.push_back(TextureBatch<T>(size_textures));
+
                     s32 size_vertex_buffer = size_textures * 4;
                     s32 size_index_buffer = size_textures * 4 * 3;
-
-                    m_vertices = std::make_unique<T[]>(size_vertex_buffer);
-                    m_indices = std::make_unique<Index[]>(size_index_buffer);
-
-                    m_image_sampler_ids = std::make_unique<s32[]>(size_textures);
-                    m_image_ids.reserve(size_textures);
 
                     // Allocate VAO
                     glGenVertexArrays(1, &m_vao);
@@ -579,43 +676,36 @@ namespace ppp
 
                 void append(const ImageItem& item, const glm::vec4& tint_color)
                 {
-                    bool existing_image = m_image_ids.find(item.image_id) != std::cend(m_image_ids);
-
-                    memcpy(&m_indices[m_nr_active_indices], item.indices.data(), sizeof(Index) * item.indices.size());
-                    // For each index that was added we need to offset it with the amount of indices that are already within the array.
-                    for (s32 i = 0; i < item.indices.size(); ++i)
+                    if (m_batches[m_push_batch].can_add(item.vertices.size(), item.indices.size()))
                     {
-                        m_indices[m_nr_active_indices + i] += m_nr_active_vertices;
+                        m_batches[m_push_batch].append(item, tint_color);
                     }
-                    m_nr_active_indices += item.indices.size();
-
-                    image_vertex_format fmt;
-                    for (const auto& v : item.vertices)
+                    else
                     {
-                        fmt.position = v.position;
-                        fmt.texcoord = v.texcoord;
-                        fmt.color = _tint_enable ? tint_color : internal::convert_color(0xFFFFFFFF);
-                        fmt.texture_idx = existing_image ? (f32)m_image_ids.at(item.image_id) : (f32)m_nr_primitives;
-                        m_vertices[m_nr_active_vertices] = fmt;
-                        ++m_nr_active_vertices;
-                    }
+                        if (m_batches.size() <= m_push_batch + 1)
+                        {
+                            u32 max_texture_count = m_batches[m_push_batch].max_texture_count();
 
-                    if (!existing_image)
-                    {
-                        m_image_sampler_ids[m_nr_primitives] = m_nr_primitives;
-                        m_image_ids.insert(std::make_pair(item.image_id, m_nr_primitives));
+                            m_batches.push_back(TextureBatch<T>(max_texture_count));
+                        }
 
-                        ++m_nr_primitives;
+                        ++m_push_batch;
+
+                        append(item, tint_color);
                     }
                 }
+                
                 void reset()
                 {
-                    m_nr_active_vertices = 0;
-                    m_nr_active_indices = 0;
-                    m_nr_primitives = 0;
+                    for (TextureBatch<T>& b : m_batches)
+                    {
+                        b.reset();
+                    }
 
-                    m_image_ids.clear();
+                    m_push_batch = 0;
+                    m_draw_batch = 0;
                 }
+
                 void release()
                 {
                     reset();
@@ -625,45 +715,40 @@ namespace ppp
                     glDeleteVertexArrays(1, &m_vao);
                 }
 
-                bool has_drawing_data() const
+                const TextureBatch<T>* next_batch()
                 {
-                    return m_nr_primitives > 0;
+                    if (m_draw_batch < m_batches.size())
+                    {
+                        auto b = &m_batches[m_draw_batch];
+
+                        ++m_draw_batch;
+
+                        return b;
+                    }
+
+                    return nullptr;
+                }
+
+                s32 batch_count() const
+                {
+                    return static_cast<s32>(m_batches.size());
                 }
 
                 u32 vao() const { return m_vao; }
                 u32 vbo() const { return m_vbo; }
                 u32 ebo() const { return m_ebo; }
 
-                const T* vertices() const { return m_vertices.get(); }
-                const Index* indices() const { return m_indices.get(); }
-                const s32* samplers() const { return m_image_sampler_ids.get(); }
-                const ImageMap& image_ids() const { return m_image_ids; }
-
-                u32 active_vertex_count() const { return m_nr_active_vertices; }
-                u32 active_index_count() const { return m_nr_active_indices; }
-                u32 active_texture_count() const { return m_nr_primitives; }
-
-                u64 vertex_buffer_byte_size() const { return sizeof(T) * m_nr_active_vertices; }
-                u64 index_buffer_byte_size() const { return sizeof(Index) * m_nr_active_indices; }
-
             private:
-                using VertexBuffer = std::unique_ptr<T[]>;
-                using IndexBuffer = std::unique_ptr<Index[]>;
-                using SamplerBuffer = std::unique_ptr<s32[]>;
+                using BatchArr = std::vector<TextureBatch<T>>;
 
-                u32	            m_vao = 0;
-                u32	            m_vbo = 0;
-                u32             m_ebo = 0;
+                u32	m_vao = 0;
+                u32	m_vbo = 0;
+                u32 m_ebo = 0;
 
-                VertexBuffer    m_vertices = nullptr;
-                IndexBuffer     m_indices = nullptr;
+                s32 m_draw_batch = 0;
+                s32 m_push_batch = 0;
 
-                u32             m_nr_active_vertices = 0;
-                u32             m_nr_active_indices = 0;
-                u32             m_nr_primitives = 0;
-
-                SamplerBuffer   m_image_sampler_ids;
-                ImageMap        m_image_ids;
+                BatchArr m_batches;
             };
 
             std::unique_ptr<TextureDrawingData<image_vertex_format>> _image_drawing_data;
@@ -776,11 +861,14 @@ namespace ppp
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            glUseProgram(internal::_color_shader_program);
-            u32 u_mpv_loc = glGetUniformLocation(internal::_color_shader_program, "u_worldviewproj");
-            glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
-
+            if(internal::_points_drawing_data->batch_count() > 0
+                || internal::_lines_drawing_data->batch_count() > 0
+                || internal::_triangle_drawing_data->batch_count() > 0)
             {
+                glUseProgram(internal::_color_shader_program);
+                u32 u_mpv_loc = glGetUniformLocation(internal::_color_shader_program, "u_worldviewproj");
+                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
+                            
                 // Points
                 auto points_batch = internal::_points_drawing_data->next_batch();
                 if (points_batch != nullptr)
@@ -859,50 +947,62 @@ namespace ppp
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
                 }
-            }
-
-            glUseProgram(0);
-
-            if (internal::_image_drawing_data->has_drawing_data())
-            {
-                glUseProgram(internal::_image_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(internal::_image_shader_program, "u_worldviewproj");
-                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
-                u32 u_tex_samplers_loc = glGetUniformLocation(internal::_image_shader_program, "s_image");
-                glUniform1iv(u_tex_samplers_loc, internal::_image_drawing_data->active_texture_count(), internal::_image_drawing_data->samplers());
-
-                #ifndef NDEBUG
-                if (internal::_image_drawing_data->active_index_count() % 3 != 0)
-                {
-                    log::error("Trying to render invalid number of triangles: {}", internal::_image_drawing_data->active_index_count());
-                    return;
-                }
-                #endif
-                glBindVertexArray(internal::_image_drawing_data->vao());
-                glBindBuffer(GL_ARRAY_BUFFER, internal::_image_drawing_data->vbo());
-
-                s32 i = 0;
-                s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                for (const auto& pair : internal::_image_drawing_data->image_ids())
-                {
-                    u32 id = pair.first;
-                    s32 idx = pair.second;
-
-                    glActiveTexture(GL_TEXTURE0 + (offset * i));
-                    glBindTexture(GL_TEXTURE_2D, id);
-
-                    ++i;
-                }
-
-                glBufferSubData(GL_ARRAY_BUFFER, 0, internal::_image_drawing_data->vertex_buffer_byte_size(), internal::_image_drawing_data->vertices());
-                glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, internal::_image_drawing_data->index_buffer_byte_size(), internal::_image_drawing_data->indices());
-
-                glDrawElements(GL_TRIANGLES, internal::_image_drawing_data->active_index_count(), internal::index_type(), nullptr);
-
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-                glBindVertexArray(0);
 
                 glUseProgram(0);
+            }
+
+            if (internal::_image_drawing_data->batch_count() > 0)
+            {
+                auto image_batch = internal::_image_drawing_data->next_batch();
+                if (image_batch != nullptr)
+                {
+                    glUseProgram(internal::_image_shader_program);
+                    u32 u_mpv_loc = glGetUniformLocation(internal::_image_shader_program, "u_worldviewproj");
+                    glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
+
+                    glBindVertexArray(internal::_image_drawing_data->vao());
+                    glBindBuffer(GL_ARRAY_BUFFER, internal::_image_drawing_data->vbo());
+
+                    while (image_batch != nullptr)
+                    {
+                        u32 u_tex_samplers_loc = glGetUniformLocation(internal::_image_shader_program, "s_image");
+                        glUniform1iv(u_tex_samplers_loc, image_batch->active_texture_count(), image_batch->samplers());
+
+                        #ifndef NDEBUG
+                        if (image_batch->active_index_count() % 3 != 0)
+                        {
+                            log::error("Trying to render invalid number of triangles: {}", image_batch->active_index_count());
+                            return;
+                        }
+                        #endif
+
+
+                        s32 i = 0;
+                        s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
+                        for (const auto& pair : image_batch->image_ids())
+                        {
+                            u32 id = pair.first;
+                            s32 idx = pair.second;
+
+                            glActiveTexture(GL_TEXTURE0 + (offset * i));
+                            glBindTexture(GL_TEXTURE_2D, id);
+
+                            ++i;
+                        }
+
+                        glBufferSubData(GL_ARRAY_BUFFER, 0, image_batch->vertex_buffer_byte_size(), image_batch->vertices());
+                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, image_batch->index_buffer_byte_size(), image_batch->indices());
+
+                        glDrawElements(GL_TRIANGLES, image_batch->active_index_count(), internal::index_type(), nullptr);
+
+                        image_batch = internal::_image_drawing_data->next_batch();
+                    }
+
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
+                    glBindVertexArray(0);
+
+                    glUseProgram(0);
+                }
             }
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, internal::_render_fbo);
