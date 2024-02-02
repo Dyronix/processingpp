@@ -1,8 +1,13 @@
 #include "entrypoint.h"
-#include "device.h"
-#include "render.h"
 #include "environment.h"
-#include "log.h"
+#include "color.h"
+
+#include "device/device.h"
+
+#include "render/render.h"
+
+#include "util/log.h"
+#include "util/types.h"
 
 #include <iostream>
 
@@ -11,59 +16,57 @@
 namespace ppp
 {
     //-------------------------------------------------------------------------
-    int rex_entry()
+    s32 init(const AppParams& app_params)
     {
-        AppParams app_params = ppp::app_entry();
-
-        if(!device::initialize(app_params.window_width, app_params.window_height))
+        if (!device::initialize(app_params.window_width, app_params.window_height))
         {
             return -1;
         }
 
-    #if PPP_OPENGL
-        device::set_framebuffer_resize_callback(render::viewport);
-
+        #if PPP_OPENGL
         if (!render::initialize(app_params.window_width, app_params.window_height, glfwGetProcAddress))
         {
             return -1;
         }
-    #endif
+        #endif
 
-        render::clear_color(0.2f, 0.3f, 0.3f, 1.0f);
+        color::background(1.0f, 1.0f, 1.0f, 1.0f);
 
-        if (app_params.app_setup_func != nullptr)
-        {
-            app_params.app_setup_func();
-        }
+        setup();
 
-        // render loop
-        // -----------
+        return 0;
+    }
+    //-------------------------------------------------------------------------
+    s32 run(const AppParams& app_params)
+    {
         while (!device::should_close())
         {
-            // input
-            // -----
-            device::process_input();
- 
-            // render
-            // ------
-            render::begin();
-            render::viewport(0, 0, environment::window_width(), environment::window_height());
-            render::clear(render::COLOR_BUFFER_BIT);
-
-            if (app_params.app_draw_func != nullptr)
+            if (device::can_draw())
             {
-                app_params.app_draw_func();
+                // render
+                // ------
+                render::begin();
+
+                draw();
+
+                render::render();
+                render::end();
+
+                // swap front/back buffers
+                // -----
+                device::present();
             }
 
-            render::render();
-            render::end();
-
-            // swap front/back buffers & poll new window events
-            // -----
-            device::present();
+            // poll new window events
+            // ----
             device::poll_events();
         }
 
+        return 0;
+    }
+    //-------------------------------------------------------------------------
+    s32 quit(const AppParams& app_params)
+    {
         render::terminate();
         device::terminate();
 
@@ -73,5 +76,28 @@ namespace ppp
 
 int main()
 {
-    return ppp::rex_entry();
+    ppp::AppParams app_params = ppp::entry();
+
+    s32 result = 0;
+
+    result = init(app_params);
+    if (result != 0)
+    {
+        ppp::log::error("Failed to initialize app");
+        return result;
+    }
+    result = run(app_params);
+    if (result != 0)
+    {
+        ppp::log::error("Encountered runtime error in app");
+        return result;
+    }
+    result = quit(app_params);
+    if (result != 0)
+    {
+        ppp::log::error("Failed to quit app");
+        return result;
+    }
+
+    return result;
 }
