@@ -21,6 +21,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/types.h
     # engine
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/shapes.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/transform.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/color.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/environment.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/structure.cpp
@@ -35,6 +36,7 @@ target_sources(processing_engine PRIVATE
 
 target_sources(processing_engine PUBLIC 
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/shapes.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/transform.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/color.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/environment.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/structure.h
@@ -74,3 +76,7 @@ target_compile_definitions(processing_engine PUBLIC -DPPP_OPENGL)
 if(${CMAKE_HOST_WIN32})
     target_compile_definitions(processing_engine PUBLIC -DPPP_WINDOWS)
 endif()
+
+# Target properties
+set_target_properties(processing_engine PROPERTIES
+                      FOLDER "engine")
