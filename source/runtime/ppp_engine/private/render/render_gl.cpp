@@ -358,6 +358,18 @@ namespace ppp
                     ++m_nr_primitives;
                 }
 
+                void reset()
+                {
+                    m_nr_active_vertices = 0;
+                    m_nr_active_indices = 0;
+                    m_nr_primitives = 0;
+                }
+
+                bool can_add(s32 nr_vertices, s32 nr_indices) const
+                {
+                    return m_nr_active_vertices + nr_vertices < m_max_vertex_count && m_nr_active_indices + nr_indices < m_max_index_count;
+                }
+
                 const T* vertices() const { return m_vertices.get(); }
                 const Index* indices() const { return m_indices.get(); }
 
@@ -367,6 +379,9 @@ namespace ppp
 
                 u64 vertex_buffer_byte_size() const { return sizeof(T) * m_nr_active_vertices; }
                 u64 index_buffer_byte_size() const { return sizeof(Index) * m_nr_active_indices; }
+
+                u32 max_vertex_count() const { return m_max_vertex_count; }
+                u32 max_index_count() const { return m_max_index_count; }
 
             private:
                 using VertexBuffer = std::unique_ptr<T[]>;
@@ -382,20 +397,17 @@ namespace ppp
                 const u32       m_max_vertex_count = 0;
                 const u32       m_max_index_count = 0;
             };
-
             template<typename T>
             class PrimitiveDrawingData
             {
             public:
                 PrimitiveDrawingData(s32 size_vertex_buffer, s32 size_index_buffer)
-                    :m_max_vertex_count(size_vertex_buffer)
-                    ,m_max_index_count(size_index_buffer)
                 {
+                    // Already start with one batch
+                    m_batches.push_back(PrimitiveBatch<T>(size_vertex_buffer, size_index_buffer));
+
                     assert(size_vertex_buffer > 0);
                     assert(size_index_buffer > 0);
-
-                    m_vertices = std::make_unique<T[]>(size_vertex_buffer);
-                    m_indices = std::make_unique<Index[]>(size_index_buffer);
 
                     // Allocate VAO
                     glGenVertexArrays(1, &m_vao);
@@ -429,33 +441,34 @@ namespace ppp
 
                 void append(const RenderItem& item, const glm::vec4& fill_color)
                 {
-                    memcpy(&m_indices[m_nr_active_indices], item.indices.data(), sizeof(Index) * item.indices.size());
-
-                    // For each index that was added we need to offset it with the amount of indices that are already within the array.
-                    for (s32 i = 0; i < item.indices.size(); ++i)
+                    if (m_batches[m_push_batch].can_add(item.vertices.size(), item.indices.size()))
                     {
-                        m_indices[m_nr_active_indices + i] += m_nr_active_vertices;
+                        m_batches[m_push_batch].append(item, fill_color);
                     }
-
-                    m_nr_active_indices += item.indices.size();
-
-                    T fmt;
-
-                    for (const auto& v : item.vertices)
+                    else
                     {
-                        fmt.position = v.position;
-                        fmt.color = _fill_enable ? fill_color : internal::convert_color(_bg_color);
-                        m_vertices[m_nr_active_vertices] = fmt;
-                        ++m_nr_active_vertices;
-                    }
+                        if (m_batches.size() < m_push_batch + 1)
+                        {
+                            u32 max_vertex_count = m_batches[m_push_batch].max_vertex_count();
+                            u32 max_index_count = m_batches[m_push_batch].max_index_count();
 
-                    ++m_nr_primitives;
+                            m_batches.push_back(PrimitiveBatch<T>(max_vertex_count, max_index_count));
+                        }
+
+                        ++m_push_batch;
+
+                        append(item, fill_color);
+                    }
                 }
                 void reset()
                 {
-                    m_nr_active_vertices = 0;
-                    m_nr_active_indices = 0;
-                    m_nr_primitives = 0;
+                    for (PrimitiveBatch<T>& b : m_batches)
+                    {
+                        b.reset();
+                    }
+                    
+                    m_push_batch = 0;
+                    m_draw_batch = 0;
                 }
                 void release()
                 {
@@ -466,48 +479,47 @@ namespace ppp
                     glDeleteVertexArrays(1, &m_vao);
                 }
 
-                bool has_drawing_data() const
+                const PrimitiveBatch<T>* next_batch()
                 {
-                    return m_nr_primitives > 0;
+                    if (m_draw_batch < m_batches.size())
+                    {
+                        auto b = &m_batches[m_draw_batch];
+
+                        ++m_draw_batch;
+
+                        return b;
+                    }
+
+                    return nullptr;
                 }
 
                 u32 vao() const { return m_vao; }
                 u32 vbo() const { return m_vbo; }
                 u32 ebo() const { return m_ebo; }
 
-                const T* vertices() const { return m_vertices.get(); }
-                const Index* indices() const { return m_indices.get(); }
-
-                u32 active_vertex_count() const { return m_nr_active_vertices; }
-                u32 active_index_count() const { return m_nr_active_indices; }
-                u32 active_primitive_count() const { return m_nr_primitives; }
-
-                u64 vertex_buffer_byte_size() const { return sizeof(T) * m_nr_active_vertices; }
-                u64 index_buffer_byte_size() const { return sizeof(Index) * m_nr_active_indices; }
-
             private:
-                using VertexBuffer = std::unique_ptr<T[]>;
+                using BatchArr = std::vector<PrimitiveBatch<T>>;
                 using IndexBuffer = std::unique_ptr<Index[]>;
 
-                u32	            m_vao = 0;
-                u32	            m_vbo = 0;
-                u32             m_ebo = 0;
+                u32	m_vao = 0;
+                u32	m_vbo = 0;
+                u32 m_ebo = 0;
 
-                VertexBuffer    m_vertices = nullptr;
-                IndexBuffer     m_indices = nullptr;
+                s32 m_draw_batch = 0;
+                s32 m_push_batch = 0;
 
-                u32             m_nr_active_vertices = 0;
-                u32             m_nr_active_indices = 0;
-                u32             m_nr_primitives = 0;
-
-                const u32       m_max_vertex_count = 0;
-                const u32       m_max_index_count = 0;
+                BatchArr m_batches;
             };
 
             std::unique_ptr<PrimitiveDrawingData<point_vertex_format>> _points_drawing_data;
             std::unique_ptr<PrimitiveDrawingData<line_vertex_format>> _lines_drawing_data;
             std::unique_ptr<PrimitiveDrawingData<triangle_vertex_format>> _triangle_drawing_data;
 
+            template<typename T>
+            class TextureBatch
+            {
+
+            };
             template<typename T>
             class TextureDrawingData
             {
@@ -764,70 +776,92 @@ namespace ppp
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            if (internal::_points_drawing_data->has_drawing_data() || internal::_lines_drawing_data->has_drawing_data() || internal::_triangle_drawing_data->has_drawing_data())
-            {
-                glUseProgram(internal::_color_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(internal::_color_shader_program, "u_worldviewproj");
-                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
+            glUseProgram(internal::_color_shader_program);
+            u32 u_mpv_loc = glGetUniformLocation(internal::_color_shader_program, "u_worldviewproj");
+            glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
 
-                if (internal::_points_drawing_data->has_drawing_data())
+            {
+                // Points
+                auto points_batch = internal::_points_drawing_data->next_batch();
+                if (points_batch != nullptr)
                 {
                     glBindVertexArray(internal::_points_drawing_data->vao());
                     glBindBuffer(GL_ARRAY_BUFFER, internal::_points_drawing_data->vbo());
 
-                    glBufferSubData(GL_ARRAY_BUFFER, 0, internal::_points_drawing_data->vertex_buffer_byte_size(), internal::_points_drawing_data->vertices());
-                    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, internal::_points_drawing_data->index_buffer_byte_size(), internal::_points_drawing_data->indices());
+                    while (points_batch != nullptr)
+                    {
+                        glBufferSubData(GL_ARRAY_BUFFER, 0, points_batch->vertex_buffer_byte_size(), points_batch->vertices());
+                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, points_batch->index_buffer_byte_size(), points_batch->indices());
 
-                    glDrawElements(GL_POINTS, internal::_points_drawing_data->active_index_count(), internal::index_type(), nullptr);
+                        glDrawElements(GL_POINTS, points_batch->active_index_count(), internal::index_type(), nullptr);
+
+                        points_batch = internal::_points_drawing_data->next_batch();
+                    }
 
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
                 }
 
-                if (internal::_lines_drawing_data->has_drawing_data())
+                // Lines
+                auto lines_batch = internal::_lines_drawing_data->next_batch();
+                if (lines_batch != nullptr)
                 {
-                    #ifndef NDEBUG
-                    if (internal::_lines_drawing_data->active_index_count() % 2 != 0)
-                    {
-                        log::error("Trying to render invalid number of lines: {}", internal::_lines_drawing_data->active_index_count());
-                        return;
-                    }
-                    #endif
                     glBindVertexArray(internal::_lines_drawing_data->vao());
                     glBindBuffer(GL_ARRAY_BUFFER, internal::_lines_drawing_data->vbo());
 
-                    glBufferSubData(GL_ARRAY_BUFFER, 0, internal::_lines_drawing_data->vertex_buffer_byte_size(), internal::_lines_drawing_data->vertices());
-                    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, internal::_lines_drawing_data->index_buffer_byte_size(), internal::_lines_drawing_data->indices());
+                    while (lines_batch != nullptr)
+                    {
+                        #ifndef NDEBUG
+                        if (lines_batch->active_index_count() % 2 != 0)
+                        {
+                            log::error("Trying to render invalid number of lines: {}", lines_batch->active_index_count());
+                            return;
+                        }
+                        #endif
 
-                    glDrawElements(GL_LINES, internal::_lines_drawing_data->active_index_count(), internal::index_type(), nullptr);
+                        glBufferSubData(GL_ARRAY_BUFFER, 0, lines_batch->vertex_buffer_byte_size(), lines_batch->vertices());
+                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, lines_batch->index_buffer_byte_size(), lines_batch->indices());
+
+                        glDrawElements(GL_LINES, lines_batch->active_index_count(), internal::index_type(), nullptr);
+
+                        lines_batch = internal::_lines_drawing_data->next_batch();
+                    }
 
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
                 }
 
-                if (internal::_triangle_drawing_data->has_drawing_data())
+                // Triangles
+                auto triangle_batch = internal::_triangle_drawing_data->next_batch();
+                if (triangle_batch != nullptr)
                 {
-                    #ifndef NDEBUG
-                    if (internal::_triangle_drawing_data->active_index_count() % 3 != 0)
-                    {
-                        log::error("Trying to render invalid number of triangles: {}", internal::_triangle_drawing_data->active_index_count());
-                        return;
-                    }
-                    #endif
                     glBindVertexArray(internal::_triangle_drawing_data->vao());
                     glBindBuffer(GL_ARRAY_BUFFER, internal::_triangle_drawing_data->vbo());
 
-                    glBufferSubData(GL_ARRAY_BUFFER, 0, internal::_triangle_drawing_data->vertex_buffer_byte_size(), internal::_triangle_drawing_data->vertices());
-                    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, internal::_triangle_drawing_data->index_buffer_byte_size(), internal::_triangle_drawing_data->indices());
+                    while (triangle_batch != nullptr)
+                    {
+                        #ifndef NDEBUG
+                        if (triangle_batch->active_index_count() % 3 != 0)
+                        {
+                            log::error("Trying to render invalid number of triangles: {}", triangle_batch->active_index_count());
+                            return;
+                        }
+                        #endif
 
-                    glDrawElements(GL_TRIANGLES, internal::_triangle_drawing_data->active_index_count(), internal::index_type(), nullptr);
+                        glBufferSubData(GL_ARRAY_BUFFER, 0, triangle_batch->vertex_buffer_byte_size(), triangle_batch->vertices());
+                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, triangle_batch->index_buffer_byte_size(), triangle_batch->indices());
+
+                        glDrawElements(GL_TRIANGLES, triangle_batch->active_index_count(), internal::index_type(), nullptr);
+
+                        triangle_batch = internal::_triangle_drawing_data->next_batch();
+                    }
 
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glBindVertexArray(0);
                 }
-
-                glUseProgram(0);
             }
+
+            glUseProgram(0);
 
             if (internal::_image_drawing_data->has_drawing_data())
             {
