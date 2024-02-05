@@ -1,1 +1,2 @@
 add_subdirectory(raycasting)
+add_subdirectory(demo)
