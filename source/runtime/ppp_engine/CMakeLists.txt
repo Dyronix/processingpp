@@ -5,6 +5,9 @@ target_sources(processing_engine PRIVATE
     # fileio
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.cpp
+    # resources
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.cpp
     # device
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_gl.cpp
