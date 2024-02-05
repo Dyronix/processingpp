@@ -21,6 +21,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/string_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/string_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/types.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/perlin_noise.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/perlin_noise.cpp
     # engine
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/shapes.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/transform.cpp
@@ -58,6 +60,7 @@ GROUPSOURCES(${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public public)
 # Private includes
 target_include_directories(processing_engine PUBLIC ${SOURCE_THIRDPARTY_DIRECTORY}/glm)
 
+target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/noise/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/stb/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/fmt/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/stb/include)

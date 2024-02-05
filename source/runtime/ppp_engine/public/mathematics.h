@@ -81,5 +81,12 @@ namespace ppp
         {
             return std::fract(v);
         }
+
+        double noise(double x);
+        double noise(double x, double y);
+        double noise(double x, double y, double z);
+
+        void noise_detail(double frequency, int octaves);
+        void noise_seed(int seed);
     }
 }
