@@ -13,9 +13,13 @@ namespace ppp
 {
     namespace internal
     {
+        constexpr int image_width = 600;
+        constexpr int image_height = 600;
+        constexpr int image_channels = 4;
+
         image::image_id _flow_field;
         
-        std::array<unsigned char, 600 * 600 * 4> _flow_field_pixels;
+        std::array<unsigned int, image_width * image_height> _flow_field_pixels;
     }
 
     AppParams entry()
@@ -43,13 +47,29 @@ namespace ppp
 
         color::background(15);
 
-        internal::_flow_field = image::create(600, 600, 4, nullptr);
-        std::fill(internal::_flow_field_pixels.begin(), internal::_flow_field_pixels.end(), 0xFF);
+        for (int y = 0; y < internal::image_height; ++y)
+        {
+            for (int x = 0; x < internal::image_width; ++x)
+            {
+                int r = rand() % 256;
+
+                int index = y * internal::image_width + x;
+
+                int color = 0;
+                color  = 255 << 24;
+                color |= r << 16;
+                color |= r << 8;
+                color |= r << 0;
+
+                internal::_flow_field_pixels[index] = color;
+            }
+        }
+
+        internal::_flow_field = image::create(internal::image_width, internal::image_height, internal::image_channels, nullptr);
     }
 
     void draw()
     {
-        image::update(internal::_flow_field, 0, 0, 600, 600, 4, internal::_flow_field_pixels.data());
-        image::draw(internal::_flow_field, 100, 0, 600, 600);
+        image::draw(internal::_flow_field, 0, 0, internal::image_width, internal::image_height);
     }
 }
