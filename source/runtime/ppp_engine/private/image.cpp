@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 #include <algorithm>
+#include <assert.h>
 
 namespace ppp
 {
@@ -110,6 +111,22 @@ namespace ppp
             stbi_image_free(data);
 
             internal::_images.insert(std::make_pair(file_path, img));
+
+            return img.image_id;
+        }
+
+        image_id create(float width, float height, int channels, unsigned char* data)
+        {
+            internal::Image img;
+            img.width = width;
+            img.height = height;
+            img.channels = channels;
+
+            assert(width * height == std::strlen((const char*)data));
+
+            img.image_id = render::create_image_item(img.width, img.height, img.channels, data);
+
+            internal::_images.insert(std::make_pair(std::to_string(img.image_id), img));
 
             return img.image_id;
         }

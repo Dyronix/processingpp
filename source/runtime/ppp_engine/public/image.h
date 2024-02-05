@@ -11,6 +11,7 @@ namespace ppp
         using image_id = unsigned int;
 
         image_id load(const std::string& image);
+        image_id create(float width, float height, int channels, unsigned char* data);
 
         void draw(image_id image_id, float x, float y, float width, float height);
 
