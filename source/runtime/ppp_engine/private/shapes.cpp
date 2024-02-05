@@ -8,6 +8,24 @@ namespace ppp
 {
     namespace shapes
     {
+        namespace internal
+        {
+            ShapeMode _rect_mode = ShapeMode::CENTER;
+            ShapeMode _ellipse_mode = ShapeMode::CENTER;
+        }
+
+        //-------------------------------------------------------------------------
+        void rect_mode(ShapeMode mode)
+        {
+            internal::_rect_mode = mode;
+        }
+
+        //-------------------------------------------------------------------------
+        void ellipse_mode(ShapeMode mode)
+        {
+            internal::_ellipse_mode = mode;
+        }
+
         //-------------------------------------------------------------------------
         void ellipse(float x, float y, float w, float h, int detail)
         {
@@ -30,6 +48,14 @@ namespace ppp
                 float v_y = cos(angle) * h;
 
                 vertices[t].position = glm::vec3(x + v_x, y + v_y, 0.0f);
+            }
+
+            if (internal::_ellipse_mode == ShapeMode::CORNER)
+            {
+                for (int t = 0; t < total_nr_vertices; ++t)
+                {
+                    vertices[t].position += glm::vec3(w, h, 0.0f);
+                }
             }
 
             int i = 0;
@@ -80,18 +106,21 @@ namespace ppp
             vertices[2].position = glm::vec3(x3, y3, 0);
             vertices[3].position = glm::vec3(x4, y4, 0);
 
-            // Find the minimum and maximum coordinates
-            glm::vec3 min_coord = glm::vec3(std::min({ x1, x2, x3, x4 }), std::min({ y1, y2, y3, y4 }), 0.0f);
-            glm::vec3 max_coord = glm::vec3(std::max({ x1, x2, x3, x4 }), std::max({ y1, y2, y3, y4 }), 0.0f);
-
-            float width = max_coord.x - min_coord.x;
-            float height = max_coord.y - min_coord.y;
-
-            // Center the shape
-            for (render::VertexPos& vertex : vertices)
+            if (internal::_rect_mode == ShapeMode::CENTER)
             {
-                vertex.position.x = vertex.position.x - (width / 2.0f);
-                vertex.position.y = vertex.position.y - (height / 2.0f);
+                // Find the minimum and maximum coordinates
+                glm::vec3 min_coord = glm::vec3(std::min({ x1, x2, x3, x4 }), std::min({ y1, y2, y3, y4 }), 0.0f);
+                glm::vec3 max_coord = glm::vec3(std::max({ x1, x2, x3, x4 }), std::max({ y1, y2, y3, y4 }), 0.0f);
+
+                float width = max_coord.x - min_coord.x;
+                float height = max_coord.y - min_coord.y;
+
+                // Center the shape
+                for (render::VertexPos& vertex : vertices)
+                {
+                    vertex.position.x = vertex.position.x - (width / 2.0f);
+                    vertex.position.y = vertex.position.y - (height / 2.0f);
+                }
             }
 
             // Set triangles
