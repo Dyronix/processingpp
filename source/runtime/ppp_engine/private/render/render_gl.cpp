@@ -1103,14 +1103,53 @@ namespace ppp
                 GL_TEXTURE_2D,						// What (target)
                 0,									// Mip-map level
                 format,								// Internal format
-                width,							    // Width
-                height,							    // Height
+                static_cast<GLsizei>(width),		// Width
+                static_cast<GLsizei>(height),		// Height
                 0,									// Border
                 usage,								// Format (how to use)
                 GL_UNSIGNED_BYTE,					// Type   (how to interpret)
                 data);								// Data
 
+            glBindTexture(GL_TEXTURE_2D, 0);
+
             return texture_id;
+        }
+
+        void update_image_item(u32 id, f32 x, f32 y, f32 width, f32 height, s32 channels, u8* data)
+        {
+            GLint format = GL_INVALID_VALUE;
+
+            switch (channels)
+            {
+            case 1:
+                format = GL_R8;
+                break;
+            case 2:
+                format = GL_RG8;
+                break;
+            case 3:
+                format = GL_RGB;
+                break;
+            case 4:
+                format = GL_RGBA;
+                break;
+            default:
+                assert(false);
+            }
+
+            glBindTexture(GL_TEXTURE_2D, id);
+            glTexSubImage2D(
+                GL_TEXTURE_2D,
+                0,
+                static_cast<GLint>(x),
+                static_cast<GLint>(y),
+                static_cast<GLsizei>(width),
+                static_cast<GLsizei>(height),
+                format,
+                GL_UNSIGNED_BYTE,
+                data);
+
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
 
         void submit_render_item(TopologyType topology, const RenderItem& item)

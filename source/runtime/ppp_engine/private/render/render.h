@@ -80,6 +80,8 @@ namespace ppp
 
         u32 create_image_item(f32 width, f32 height, s32 channels, u8* data);
 
+        void update_image_item(u32 id, f32 x, f32 y, f32 width, f32 height, s32 channels, u8* data);
+
         void submit_render_item(TopologyType topology, const RenderItem& item);
         void submit_image_item(const ImageItem& item);
 

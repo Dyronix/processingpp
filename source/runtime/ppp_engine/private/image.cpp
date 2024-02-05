@@ -122,13 +122,18 @@ namespace ppp
             img.height = height;
             img.channels = channels;
 
-            assert(width * height == std::strlen((const char*)data));
+            assert(data == nullptr || width * height == std::strlen((const char*)data));
 
             img.image_id = render::create_image_item(img.width, img.height, img.channels, data);
 
             internal::_images.insert(std::make_pair(std::to_string(img.image_id), img));
 
             return img.image_id;
+        }
+
+        void update(image_id image_id, float x, float y, float width, float height, int channels, unsigned char* data)
+        {
+            render::update_image_item(image_id, x, y, width, height, channels, data);
         }
 
         void draw(image_id image_id, float x, float y, float width, float height)

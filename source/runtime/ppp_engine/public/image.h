@@ -13,6 +13,7 @@ namespace ppp
         image_id load(const std::string& image);
         image_id create(float width, float height, int channels, unsigned char* data);
 
+        void update(image_id image_id, float x, float y, float width, float height, int channels, unsigned char* data);
         void draw(image_id image_id, float x, float y, float width, float height);
 
         void no_tint();
