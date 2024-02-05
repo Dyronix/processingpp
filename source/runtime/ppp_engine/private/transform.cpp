@@ -1,23 +1,34 @@
 #include "transform.h"
 #include "render/render.h"
+#include "render/render_transform.h"
 
 namespace ppp
 {
     namespace transform
     {
+        void push()
+        {
+            render::transform::push();
+        }
+
+        void pop()
+        {
+            render::transform::pop();
+        }
+
         void rotate(float angle)
         {
-            // To be implemented
+            render::transform::rotate(angle);
         }
         
         void scale(float x, float y)
         {
-            // To be implemented
+            render::transform::scale(glm::vec2(x, y));
         }
 
         void translate(float x, float y)
         {
-            // To be implemented
+            render::transform::translate(glm::vec2(x, y));
         }
     }
 }

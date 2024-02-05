@@ -1,4 +1,5 @@
 #include "render/render.h"
+#include "render_transform.h"
 #include "util/log.h"
 
 #include <glad/glad.h>
@@ -333,7 +334,7 @@ namespace ppp
                     m_indices = std::make_unique<Index[]>(size_index_buffer);
                 }
 
-                void append(const RenderItem& item, const glm::vec4& fill_color)
+                void append(const RenderItem& item, const glm::vec4& fill_color, const glm::mat4& world)
                 {
                     memcpy(&m_indices[m_nr_active_indices], item.indices.data(), sizeof(Index) * item.indices.size());
 
@@ -345,14 +346,12 @@ namespace ppp
 
                     m_nr_active_indices += item.indices.size();
 
-                    T fmt;
+                    T fmt = {};
 
-                    glm::vec3 canvas_offset = _scissor_enable 
-                        ? glm::vec3(_scissor_x, _scissor_y, 0.0f) 
-                        : glm::vec3(0.0f, 0.0f, 0.0f);
                     for (const auto& v : item.vertices)
                     {
-                        fmt.position = v.position + canvas_offset;
+                        glm::vec4 transformsed_position = world * glm::vec4(v.position, 1.0f);
+                        fmt.position = glm::vec3(transformsed_position);
                         fmt.color = _fill_enable ? fill_color : internal::convert_color(_bg_color);
                         m_vertices[m_nr_active_vertices] = fmt;
                         ++m_nr_active_vertices;
@@ -442,11 +441,11 @@ namespace ppp
                     glBindVertexArray(0);
                 }
 
-                void append(const RenderItem& item, const glm::vec4& fill_color)
+                void append(const RenderItem& item, const glm::vec4& fill_color, const glm::mat4& world)
                 {
                     if (m_batches[m_push_batch].can_add(item.vertices.size(), item.indices.size()))
                     {
-                        m_batches[m_push_batch].append(item, fill_color);
+                        m_batches[m_push_batch].append(item, fill_color, world);
                     }
                     else
                     {
@@ -460,7 +459,7 @@ namespace ppp
 
                         ++m_push_batch;
 
-                        append(item, fill_color);
+                        append(item, fill_color, world);
                     }
                 }
                 
@@ -545,7 +544,7 @@ namespace ppp
                     m_image_ids.reserve(size_textures);
                 }
 
-                void append(const ImageItem& item, const glm::vec4& tint_color)
+                void append(const ImageItem& item, const glm::vec4& tint_color, const glm::mat4& world)
                 {
                     bool existing_image = m_image_ids.find(item.image_id) != std::cend(m_image_ids);
 
@@ -557,14 +556,12 @@ namespace ppp
                     }
                     m_nr_active_indices += item.indices.size();
 
-                    image_vertex_format fmt;
+                    image_vertex_format fmt = {};
 
-                    glm::vec3 canvas_offset = _scissor_enable
-                        ? glm::vec3(_scissor_x, _scissor_y, 0.0f)
-                        : glm::vec3(0.0f, 0.0f, 0.0f);
                     for (const auto& v : item.vertices)
                     {
-                        fmt.position = v.position + canvas_offset;
+                        glm::vec4 transformed_position = world * glm::vec4(v.position, 1.0f);
+                        fmt.position = glm::vec3(transformed_position);
                         fmt.texcoord = v.texcoord;
                         fmt.color = _tint_enable ? tint_color : internal::convert_color(0xFFFFFFFF);
                         fmt.texture_idx = existing_image ? (f32)m_image_ids.at(item.image_id) : (f32)m_nr_primitives;
@@ -681,11 +678,11 @@ namespace ppp
                     glBindVertexArray(0);
                 }
 
-                void append(const ImageItem& item, const glm::vec4& tint_color)
+                void append(const ImageItem& item, const glm::vec4& tint_color, const glm::mat4& world)
                 {
                     if (m_batches[m_push_batch].can_add(item.vertices.size(), item.indices.size()))
                     {
-                        m_batches[m_push_batch].append(item, tint_color);
+                        m_batches[m_push_batch].append(item, tint_color, world);
                     }
                     else
                     {
@@ -698,7 +695,7 @@ namespace ppp
 
                         ++m_push_batch;
 
-                        append(item, tint_color);
+                        append(item, tint_color, world);
                     }
                 }
                 
@@ -1129,9 +1126,9 @@ namespace ppp
 
             switch (topology)
             {
-            case TopologyType::POINTS: internal::_points_drawing_data->append(item, fill_color); break;
-            case TopologyType::LINES: internal::_lines_drawing_data->append(item, fill_color); break;
-            case TopologyType::TRIANGLES: internal::_triangle_drawing_data->append(item, fill_color); break;
+            case TopologyType::POINTS: internal::_points_drawing_data->append(item, fill_color, transform::active_world()); break;
+            case TopologyType::LINES: internal::_lines_drawing_data->append(item, fill_color, transform::active_world()); break;
+            case TopologyType::TRIANGLES: internal::_triangle_drawing_data->append(item, fill_color, transform::active_world()); break;
 
             default:
                 log::critical("Invalid topology type!");
@@ -1143,7 +1140,7 @@ namespace ppp
         {
             glm::vec4 tint_color = internal::convert_color(internal::_fill_color);
 
-            internal::_image_drawing_data->append(item, tint_color);
+            internal::_image_drawing_data->append(item, tint_color, transform::active_world());
         }
 
         void clear_color(f32 r, f32 g, f32 b, f32 a)
