@@ -1,4 +1,5 @@
 #include "device/device_input.h"
+#include "render/render.h"
 
 #include <unordered_set>
 
@@ -55,25 +56,6 @@ namespace ppp
                         c((f32)xoffset, (f32)yoffset);
                     }
                 }
-
-                s32 _scissor_x = -1;
-                s32 _scissor_y = -1;
-                s32 _scissor_width = -1;
-                s32 _scissor_height = -1;
-                bool _scissor_enable = false;
-            }
-
-            void push_canvas_dimensions(s32 x, s32 y, s32 width, s32 height)
-            {
-                internal::_scissor_x = x;
-                internal::_scissor_y = y;
-                internal::_scissor_width = width;
-                internal::_scissor_height = height;
-            }
-
-            void push_canvas_enable(bool enable)
-            {
-                internal::_scissor_enable = enable;
             }
 
             namespace keyboard
@@ -128,10 +110,10 @@ namespace ppp
                     f64 xpos, ypos;
                     glfwGetCursorPos(window, &xpos, &ypos);
 
-                    if (internal::_scissor_enable)
+                    if (render::scissor_enabled())
                     {
-                        s32 canvas_x = internal::_scissor_x;
-                        s32 width = internal::_scissor_width;
+                        s32 canvas_x = render::scissor().x;
+                        s32 width = render::scissor().w;
 
                         xpos = xpos - canvas_x;
                     }
@@ -144,10 +126,10 @@ namespace ppp
                     f64 xpos, ypos;
                     glfwGetCursorPos(window, &xpos, &ypos);
 
-                    if (internal::_scissor_enable)
+                    if (render::scissor_enabled())
                     {
-                        s32 canvas_y = internal::_scissor_y;
-                        s32 height = internal::_scissor_height;
+                        s32 canvas_y = render::scissor().y;
+                        s32 height = render::scissor().h;
 
                         ypos = ((ypos - canvas_y) - height) * -1;
                     }

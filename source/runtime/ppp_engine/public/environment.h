@@ -10,5 +10,8 @@ namespace ppp
 
         float window_width();
         float window_height();
+
+        float canvas_width();
+        float canvas_height();
     }
 }

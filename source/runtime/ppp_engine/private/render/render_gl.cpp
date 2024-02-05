@@ -1153,5 +1153,45 @@ namespace ppp
         {           
             glClear(flags);
         }
+
+        bool fill_enabled()
+        {
+            return internal::_fill_enable;
+        }
+        
+        bool stroke_enabled()
+        {
+            return internal::_stroke_enable;
+        }
+        
+        bool tint_enabled()
+        {
+            return internal::_tint_enable;
+        }
+
+        bool scissor_enabled()
+        {
+            return internal::_scissor_enable;
+        }
+
+        glm::vec4 fill()
+        {
+            return internal::convert_color(internal::_fill_color);
+        }
+        
+        glm::vec4 stroke()
+        {
+            return internal::convert_color(internal::_stroke_color);
+        }
+        
+        glm::vec4 tint()
+        {
+            return internal::convert_color(internal::_tint_color);
+        }
+        
+        ScissorRect scissor()
+        {
+            return { internal::_scissor_x, internal::_scissor_y, internal::_scissor_width, internal::_scissor_height };
+        }
     }
 }

@@ -53,6 +53,14 @@ namespace ppp
             u32 image_id;
         };
 
+        struct ScissorRect
+        {
+            s32 x;
+            s32 y;
+            s32 w;
+            s32 h;
+        };
+
         bool initialize(s32 w, s32 h, void* user_data);
         void terminate();
 
@@ -64,10 +72,11 @@ namespace ppp
         void push_fill_enable(bool enable);
         void push_stroke_color(const glm::vec4& color);
         void push_stroke_enable(bool enable);
-        void push_scissor(s32 x, s32 y, s32 width, s32 height);
-        void push_scissor_enable(bool enable);
         void push_tint_color(const glm::vec4& color);
         void push_tint_enable(bool enable);
+
+        void push_scissor(s32 x, s32 y, s32 width, s32 height);
+        void push_scissor_enable(bool enable);
 
         u32 create_image_item(f32 width, f32 height, s32 channels, u8* data);
 
@@ -76,5 +85,17 @@ namespace ppp
 
         void clear_color(f32 r, f32 g, f32 b, f32 a);
         void clear(u32 flags);
+
+        bool fill_enabled();
+        bool stroke_enabled();
+        bool tint_enabled();
+        
+        bool scissor_enabled();
+
+        glm::vec4 fill();
+        glm::vec4 stroke();
+        glm::vec4 tint();
+
+        ScissorRect scissor();
     }
 }
