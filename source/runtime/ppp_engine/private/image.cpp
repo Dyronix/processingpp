@@ -1,6 +1,7 @@
 #include "image.h"
 #include "render/render.h"
 #include "fileio/fileio.h"
+#include "resources/texture_pool.h"
 #include "util/log.h"
 
 #include <stb/stb_image.h>
@@ -15,18 +16,9 @@ namespace ppp
     {
         namespace internal
         {
-            struct Image
-            {
-                std::string     file_path = {};
+            ImageMode _image_mode = ImageMode::CORNER;
 
-                int             image_id = -1;
-
-                int			    width = -1;
-                int			    height = -1;
-                int			    channels = -1;
-            };
-
-            std::unordered_map<std::string, Image> _images;
+            unsigned char* _active_pixels = nullptr;
 
             render::VertexPosTexArr make_quad_vertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
             {
@@ -44,18 +36,21 @@ namespace ppp
                 vertices[2].texcoord = glm::vec2(0.0f, 1.0f);
                 vertices[3].texcoord = glm::vec2(1.0f, 1.0f);
 
-                // Find the minimum and maximum coordinates
-                glm::vec3 min_coord = glm::vec3(std::min({ x1, x2, x3, x4 }), std::min({ y1, y2, y3, y4 }), 0.0f);
-                glm::vec3 max_coord = glm::vec3(std::max({ x1, x2, x3, x4 }), std::max({ y1, y2, y3, y4 }), 0.0f);
-
-                float width = max_coord.x - min_coord.x;
-                float height = max_coord.y - min_coord.y;
-
-                // Center the shape
-                for (render::VertexPosTex& vertex : vertices)
+                if (_image_mode == ImageMode::CENTER)
                 {
-                    vertex.position.x = vertex.position.x - (width / 2.0f);
-                    vertex.position.y = vertex.position.y - (height / 2.0f);
+                    // Find the minimum and maximum coordinates
+                    glm::vec3 min_coord = glm::vec3(std::min({ x1, x2, x3, x4 }), std::min({ y1, y2, y3, y4 }), 0.0f);
+                    glm::vec3 max_coord = glm::vec3(std::max({ x1, x2, x3, x4 }), std::max({ y1, y2, y3, y4 }), 0.0f);
+
+                    float width = max_coord.x - min_coord.x;
+                    float height = max_coord.y - min_coord.y;
+
+                    // Center the shape
+                    for (render::VertexPosTex& vertex : vertices)
+                    {
+                        vertex.position.x = vertex.position.x - (width / 2.0f);
+                        vertex.position.y = vertex.position.y - (height / 2.0f);
+                    }
                 }
 
                 return vertices;
@@ -79,20 +74,49 @@ namespace ppp
             }
         }
 
+        void image_mode(ImageMode mode)
+        {
+            internal::_image_mode = mode;
+        }
+
+        void load_pixels(image_id id)
+        {
+            const texture_pool::Image* img = texture_pool::image_at_id(id);
+            if (img != nullptr)
+            {
+                memcpy(internal::_active_pixels, img->data, img->width * img->height * img->channels);
+            }
+        }
+
+        void update_pixels(image_id id)
+        {
+            const texture_pool::Image* img = texture_pool::image_at_id(id);
+            if (img != nullptr)
+            {
+                memcpy(img->data, internal::_active_pixels, img->width * img->height * img->channels);
+
+                render::update_image_item(id, 0, 0, img->width, img->height, img->channels, img->data);
+            }
+        }
+
+        unsigned char* pixels()
+        {
+            return internal::_active_pixels;
+        }
+
         image_id load(const std::string& file_path)
         {
             // Find image first
-            auto it = internal::_images.find(file_path);
-            if (it != std::cend(internal::_images))
+            if (texture_pool::has_image(file_path))
             {
-                return it->second.image_id;
+                return texture_pool::image_at_path(file_path)->image_id;
             }
 
             auto buffer = fileio::read_binary_file(file_path);
             
-            internal::Image img;
+            texture_pool::Image img;
             img.file_path = file_path;
-            unsigned char* data = stbi_load_from_memory(
+            img.data = stbi_load_from_memory(
                 reinterpret_cast<unsigned char*>(buffer.data()),
                 static_cast<int>(buffer.size()),
                 &img.width,
@@ -100,40 +124,35 @@ namespace ppp
                 &img.channels,
                 4);
 
-            if (data == nullptr)
+            if (img.data == nullptr)
             {
                 log::error("Image {} could not be loaded!", file_path);
                 return -1;
             }
 
-            img.image_id = render::create_image_item(img.width, img.height, img.channels, data);
+            img.image_id = render::create_image_item(img.width, img.height, img.channels, img.data);
 
-            stbi_image_free(data);
-
-            internal::_images.insert(std::make_pair(file_path, img));
+            texture_pool::add_new_image(img);
 
             return img.image_id;
         }
 
         image_id create(float width, float height, int channels, unsigned char* data)
         {
-            internal::Image img;
+            texture_pool::Image img;
+
             img.width = width;
             img.height = height;
             img.channels = channels;
+            memcpy(img.data, data, width * height * channels);
 
             assert(data == nullptr || width * height == std::strlen((const char*)data));
 
             img.image_id = render::create_image_item(img.width, img.height, img.channels, data);
 
-            internal::_images.insert(std::make_pair(std::to_string(img.image_id), img));
+            texture_pool::add_new_image(img);
 
             return img.image_id;
-        }
-
-        void update(image_id image_id, float x, float y, float width, float height, int channels, unsigned char* data)
-        {
-            render::update_image_item(image_id, x, y, width, height, channels, data);
         }
 
         void draw(image_id image_id, float x, float y, float width, float height)
