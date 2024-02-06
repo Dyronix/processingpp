@@ -2,7 +2,6 @@
 
 #include "color.h"
 #include "shapes.h"
-#include "trigonometry.h"
 
 namespace ppp
 {
@@ -16,8 +15,8 @@ namespace ppp
         Ray::Ray(float posx, float posy, float angle)
         {
             m_position = glm::vec2(posx, posy);
-            m_direction.x = trigonometry::cos(angle);
-            m_direction.y = trigonometry::sin(angle);
+            m_direction.x = std::cos(angle);
+            m_direction.y = std::sin(angle);
 
             m_length = internal::_display_length;
         }
