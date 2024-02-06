@@ -34,7 +34,7 @@ namespace ppp
         template<typename T>
         T lerp(T from, T to, T t)
         {
-            return a + t * (b - a);
+            return from + t * (to - from);
         }
         template<typename T>
         T log(T v)
