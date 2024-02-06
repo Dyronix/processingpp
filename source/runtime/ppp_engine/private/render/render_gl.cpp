@@ -52,6 +52,7 @@ namespace ppp
 
             s32 _fill_color = 0xFFFFFFFF;
             bool _fill_enable = true;
+            f32 _stroke_width = 1.0f;
             s32 _stroke_color = 0xFF000000;
             bool _stroke_enable = false;
             s32 _tint_color = 0xFFFFFFFF;
@@ -336,23 +337,27 @@ namespace ppp
 
                 void append(const RenderItem& item, const glm::vec4& fill_color, const glm::mat4& world)
                 {
-                    memcpy(&m_indices[m_nr_active_indices], item.indices.data(), sizeof(Index) * item.indices.size());
+                    memcpy(&m_indices[m_nr_active_indices], item.indices, sizeof(Index) * item.index_count);
 
                     // For each index that was added we need to offset it with the amount of indices that are already within the array.
-                    for (s32 i = 0; i < item.indices.size(); ++i)
+                    for (s32 i = 0; i < item.index_count; ++i)
                     {
                         m_indices[m_nr_active_indices + i] += m_nr_active_vertices;
                     }
 
-                    m_nr_active_indices += item.indices.size();
+                    m_nr_active_indices += item.index_count;
 
                     T fmt = {};
 
-                    for (const auto& v : item.vertices)
+                    for(s32 i = 0; i < item.vertex_count; ++i)
                     {
-                        glm::vec4 transformsed_position = world * glm::vec4(v.position, 1.0f);
-                        fmt.position = glm::vec3(transformsed_position);
+                        glm::vec4 transformed_position = world * glm::vec4(item.vertices[i].position, 1.0f);
+
+                        fmt.position.x = transformed_position.x;
+                        fmt.position.y = transformed_position.y;
+                        fmt.position.z = transformed_position.z;
                         fmt.color = _fill_enable ? fill_color : internal::convert_color(_bg_color);
+
                         m_vertices[m_nr_active_vertices] = fmt;
                         ++m_nr_active_vertices;
                     }
@@ -443,7 +448,7 @@ namespace ppp
 
                 void append(const RenderItem& item, const glm::vec4& fill_color, const glm::mat4& world)
                 {
-                    if (m_batches[m_push_batch].can_add(item.vertices.size(), item.indices.size()))
+                    if (m_batches[m_push_batch].can_add(item.vertex_count, item.index_count))
                     {
                         m_batches[m_push_batch].append(item, fill_color, world);
                     }
@@ -548,21 +553,23 @@ namespace ppp
                 {
                     bool existing_image = m_image_ids.find(item.image_id) != std::cend(m_image_ids);
 
-                    memcpy(&m_indices[m_nr_active_indices], item.indices.data(), sizeof(Index) * item.indices.size());
+                    memcpy(&m_indices[m_nr_active_indices], item.indices, sizeof(Index) * item.index_count);
                     // For each index that was added we need to offset it with the amount of indices that are already within the array.
-                    for (s32 i = 0; i < item.indices.size(); ++i)
+                    for (s32 i = 0; i < item.index_count; ++i)
                     {
                         m_indices[m_nr_active_indices + i] += m_nr_active_vertices;
                     }
-                    m_nr_active_indices += item.indices.size();
+                    m_nr_active_indices += item.index_count;
 
                     image_vertex_format fmt = {};
 
-                    for (const auto& v : item.vertices)
+                    for(s32 i = 0; i < item.vertex_count; ++i)
                     {
-                        glm::vec4 transformed_position = world * glm::vec4(v.position, 1.0f);
-                        fmt.position = glm::vec3(transformed_position);
-                        fmt.texcoord = v.texcoord;
+                        glm::vec4 transformed_position = world * glm::vec4(item.vertices[i].position, 1.0f);
+                        fmt.position.x = transformed_position.x;
+                        fmt.position.y = transformed_position.y;
+                        fmt.position.z = transformed_position.z;
+                        fmt.texcoord = item.vertices[i].texcoord;
                         fmt.color = _tint_enable ? tint_color : internal::convert_color(0xFFFFFFFF);
                         fmt.texture_idx = existing_image ? (f32)m_image_ids.at(item.image_id) : (f32)m_nr_primitives;
                         m_vertices[m_nr_active_vertices] = fmt;
@@ -680,7 +687,7 @@ namespace ppp
 
                 void append(const ImageItem& item, const glm::vec4& tint_color, const glm::mat4& world)
                 {
-                    if (m_batches[m_push_batch].can_add(item.vertices.size(), item.indices.size()))
+                    if (m_batches[m_push_batch].can_add(item.vertex_count, item.index_count))
                     {
                         m_batches[m_push_batch].append(item, tint_color, world);
                     }
@@ -1028,6 +1035,11 @@ namespace ppp
         void push_fill_enable(bool enable)
         {
             internal::_fill_enable = enable;
+        }
+
+        void push_stroke_width(float w)
+        {
+            internal::_stroke_width = w;
         }
 
         void push_stroke_color(const glm::vec4& color)

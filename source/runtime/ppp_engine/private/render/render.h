@@ -41,14 +41,18 @@ namespace ppp
 
         struct RenderItem
         {
-            VertexPosArr vertices;
-            Indices indices;
+            VertexPos* vertices;
+            size_t vertex_count;
+            Index* indices;
+            size_t index_count;
         };
 
         struct ImageItem
         {
-            VertexPosTexArr vertices;
-            Indices indices;
+            VertexPosTex* vertices;
+            size_t vertex_count;
+            Index* indices;
+            size_t index_count;
 
             u32 image_id;
         };
@@ -70,6 +74,7 @@ namespace ppp
 
         void push_fill_color(const glm::vec4& color);
         void push_fill_enable(bool enable);
+        void push_stroke_width(float w);
         void push_stroke_color(const glm::vec4& color);
         void push_stroke_enable(bool enable);
         void push_tint_color(const glm::vec4& color);
