@@ -13,6 +13,9 @@ namespace ppp
         void rect_mode(ShapeMode mode);
         void ellipse_mode(ShapeMode mode);
 
+        void point_width(float pw);
+        void line_width(float lw);
+
         void ellipse(float x, float y, float w, float h, int detail = 25);
         void circle(float x, float y, float r, int detail = 25);
         void line(float x1, float y1, float x2, float y2);
