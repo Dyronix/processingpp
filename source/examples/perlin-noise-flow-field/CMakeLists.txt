@@ -1,6 +1,8 @@
 add_executable(perlin-noise-flow-field)
 
 target_sources(perlin-noise-flow-field PRIVATE 
+    ${SOURCE_EXAMPLES_DIRECTORY}/perlin-noise-flow-field/private/particle.h
+    ${SOURCE_EXAMPLES_DIRECTORY}/perlin-noise-flow-field/private/particle.cpp
     ${SOURCE_EXAMPLES_DIRECTORY}/perlin-noise-flow-field/private/perlin-noise-flow-field.cpp)
 
 # Create the project filters
