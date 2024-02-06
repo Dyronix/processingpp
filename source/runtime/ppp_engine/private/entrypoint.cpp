@@ -3,8 +3,8 @@
 #include "color.h"
 
 #include "device/device.h"
-
 #include "render/render.h"
+#include "resources/texture_pool.h"
 
 #include "util/log.h"
 #include "util/types.h"
@@ -29,6 +29,11 @@ namespace ppp
             return -1;
         }
         #endif
+
+        if (!texture_pool::initialize())
+        {
+            return -1;
+        }
 
         color::background(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -67,6 +72,7 @@ namespace ppp
     //-------------------------------------------------------------------------
     s32 quit(const AppParams& app_params)
     {
+        texture_pool::terminate();
         render::terminate();
         device::terminate();
 
