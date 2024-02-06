@@ -21,7 +21,8 @@ namespace ppp
         void load_pixels(image_id id);
         void update_pixels(image_id id);
 
-        unsigned char* pixels();
+        unsigned char* pixels_as_u8();
+        unsigned int* pixels_as_u32();
 
         image_id load(const std::string& image);
         image_id create(float width, float height, int channels, unsigned char* data);

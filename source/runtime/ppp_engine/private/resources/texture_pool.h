@@ -21,7 +21,7 @@ namespace ppp
             u8*             data;
         };
 
-        void initialize();
+        bool initialize();
         void terminate();
 
         bool has_image(const std::string& file_path);
@@ -31,5 +31,10 @@ namespace ppp
         const Image* image_at_id(s32 id);
 
         void add_new_image(const Image& image);
+
+        void load_active_pixels(s32 id);
+        void update_active_pixels(s32 id);
+
+        unsigned char* active_pixels();
     }
 }

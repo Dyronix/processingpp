@@ -18,23 +18,23 @@ namespace ppp
         {
             ImageMode _image_mode = ImageMode::CORNER;
 
-            unsigned char* _active_pixels = nullptr;
+            render::VertexPosTexArr _polygon_vertices;
+            std::array<render::Index, 6> _polygon_indices = { 0, 1 ,2, 1, 2, 3 };
 
-            render::VertexPosTexArr make_quad_vertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+            render::VertexPosTexArr& make_quad_vertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
             {
-                render::VertexPosTexArr vertices;
+                internal::_polygon_vertices.clear();
+                internal::_polygon_vertices.resize(4);
 
-                vertices.resize(4);
+                internal::_polygon_vertices[0].position = glm::vec3(x1, y1, 0);
+                internal::_polygon_vertices[1].position = glm::vec3(x2, y2, 0);
+                internal::_polygon_vertices[2].position = glm::vec3(x3, y3, 0);
+                internal::_polygon_vertices[3].position = glm::vec3(x4, y4, 0);
 
-                vertices[0].position = glm::vec3(x1, y1, 0);
-                vertices[1].position = glm::vec3(x2, y2, 0);
-                vertices[2].position = glm::vec3(x3, y3, 0);
-                vertices[3].position = glm::vec3(x4, y4, 0);
-
-                vertices[0].texcoord = glm::vec2(0.0f, 0.0f);
-                vertices[1].texcoord = glm::vec2(1.0f, 0.0f);
-                vertices[2].texcoord = glm::vec2(0.0f, 1.0f);
-                vertices[3].texcoord = glm::vec2(1.0f, 1.0f);
+                internal::_polygon_vertices[0].texcoord = glm::vec2(0.0f, 0.0f);
+                internal::_polygon_vertices[1].texcoord = glm::vec2(1.0f, 0.0f);
+                internal::_polygon_vertices[2].texcoord = glm::vec2(0.0f, 1.0f);
+                internal::_polygon_vertices[3].texcoord = glm::vec2(1.0f, 1.0f);
 
                 if (_image_mode == ImageMode::CENTER)
                 {
@@ -46,31 +46,14 @@ namespace ppp
                     float height = max_coord.y - min_coord.y;
 
                     // Center the shape
-                    for (render::VertexPosTex& vertex : vertices)
+                    for (render::VertexPosTex& vertex : _polygon_vertices)
                     {
                         vertex.position.x = vertex.position.x - (width / 2.0f);
                         vertex.position.y = vertex.position.y - (height / 2.0f);
                     }
                 }
 
-                return vertices;
-            }
-
-            render::Indices make_quad_indices()
-            {
-                render::Indices indices;
-
-                indices.resize(6);
-
-                // Set triangles
-                indices[0] = 0;
-                indices[1] = 1;
-                indices[2] = 2;
-                indices[3] = 1;
-                indices[4] = 2;
-                indices[5] = 3;
-
-                return indices;
+                return internal::_polygon_vertices;
             }
         }
 
@@ -81,27 +64,22 @@ namespace ppp
 
         void load_pixels(image_id id)
         {
-            const texture_pool::Image* img = texture_pool::image_at_id(id);
-            if (img != nullptr)
-            {
-                memcpy(internal::_active_pixels, img->data, img->width * img->height * img->channels);
-            }
+            texture_pool::load_active_pixels(id);
         }
 
         void update_pixels(image_id id)
         {
-            const texture_pool::Image* img = texture_pool::image_at_id(id);
-            if (img != nullptr)
-            {
-                memcpy(img->data, internal::_active_pixels, img->width * img->height * img->channels);
-
-                render::update_image_item(id, 0, 0, img->width, img->height, img->channels, img->data);
-            }
+            texture_pool::update_active_pixels(id);
         }
 
-        unsigned char* pixels()
+        unsigned char* pixels_as_u8()
         {
-            return internal::_active_pixels;
+            return texture_pool::active_pixels();
+        }
+
+        unsigned int* pixels_as_u32()
+        {
+            return (unsigned int*)texture_pool::active_pixels();
         }
 
         image_id load(const std::string& file_path)
@@ -144,9 +122,16 @@ namespace ppp
             img.width = width;
             img.height = height;
             img.channels = channels;
-            memcpy(img.data, data, width * height * channels);
 
-            assert(data == nullptr || width * height == std::strlen((const char*)data));
+            img.data = (u8*)malloc(width * height * channels);
+            memset(img.data, 0, width * height * channels);
+
+            if (data != nullptr)
+            {
+                assert(width * height * channels == std::strlen((const char*)data));
+
+                memcpy(img.data, data, width * height * channels);
+            }
 
             img.image_id = render::create_image_item(img.width, img.height, img.channels, data);
 
@@ -157,10 +142,14 @@ namespace ppp
 
         void draw(image_id image_id, float x, float y, float width, float height)
         {
+            auto& vertices = internal::make_quad_vertices(x, y, x + width, y, x, y + height, x + width, y + height);
+
             render::ImageItem item;
 
-            item.vertices = internal::make_quad_vertices(x, y, x + width, y, x, y + height, x + width, y + height);
-            item.indices = internal::make_quad_indices();
+            item.vertices = vertices.data();
+            item.vertex_count = vertices.size();
+            item.indices = internal::_polygon_indices.data();
+            item.index_count = internal::_polygon_indices.size();
             item.image_id = image_id;
 
             render::submit_image_item(item);
