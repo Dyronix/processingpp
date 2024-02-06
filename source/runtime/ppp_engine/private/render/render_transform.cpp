@@ -25,7 +25,7 @@ namespace ppp
 
             void rotate(f32 angle)
             {
-                internal::_model_matrices.back() = glm::rotate(internal::_model_matrices.back(), glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+                internal::_model_matrices.back() = glm::rotate(internal::_model_matrices.back(), angle, glm::vec3(0.0f, 0.0f, 1.0f));
             }
 
             void scale(const glm::vec2& scale)
