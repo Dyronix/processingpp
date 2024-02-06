@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include <array>
 
 namespace ppp
@@ -55,5 +57,8 @@ namespace ppp
         void stroke(int grayscale, int alpha);
         void stroke(int r, int g, int b, int a);
         void stroke(const Color& c);
+
+        unsigned int convert_color(const glm::u8vec4& color);
+        unsigned int convert_color(const glm::vec4& color);
     }
 }

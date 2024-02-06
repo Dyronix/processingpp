@@ -1,5 +1,6 @@
 #include "color.h"
 #include "render/render.h"
+#include "util/types.h"
 
 #include <glm/glm.hpp>
 
@@ -132,6 +133,26 @@ namespace ppp
         {
             render::push_stroke_enable(true);
             render::push_stroke_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
+        }
+
+        unsigned int convert_color(const glm::u8vec4& color)
+        {
+            unsigned int out;
+            out = color.w << 24;
+            out |= color.z << 16;
+            out |= color.y << 8;
+            out |= color.x << 0;
+            return out;
+        }
+
+        unsigned int convert_color(const glm::vec4& color)
+        {
+            unsigned int out;
+            out = (conversions::f32_to_uint8(color.x)) << 24;
+            out |= (conversions::f32_to_uint8(color.y)) << 16;
+            out |= (conversions::f32_to_uint8(color.z)) << 8;
+            out |= (conversions::f32_to_uint8(color.w)) << 0;
+            return out;
         }
     }
 }
