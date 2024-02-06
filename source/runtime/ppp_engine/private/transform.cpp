@@ -1,4 +1,5 @@
 #include "transform.h"
+#include "trigonometry.h"
 #include "render/render.h"
 #include "render/render_transform.h"
 
@@ -18,7 +19,11 @@ namespace ppp
 
         void rotate(float angle)
         {
-            render::transform::rotate(angle);
+            switch (trigonometry::angle_mode())
+            {
+            case trigonometry::AngleMode::DEGREES: render::transform::rotate(trigonometry::radians(angle));
+            case trigonometry::AngleMode::RADIANS: render::transform::rotate(angle);
+            }
         }
         
         void scale(float x, float y)
