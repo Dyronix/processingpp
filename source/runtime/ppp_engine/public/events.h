@@ -144,6 +144,8 @@ namespace ppp
         void add_key_pressed_callback(const std::function<void(KeyCode)>& callback);
         void add_key_released_callback(const std::function<void(KeyCode)>& callback);
         void add_key_down_callback(const std::function<void(KeyCode)>& callback);
+
+        void set_quit_application_keycode(KeyCode code);
     }
 
     namespace mouse

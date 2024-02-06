@@ -1,4 +1,5 @@
 #include "events.h"
+#include "structure.h"
 #include "device/device.h"
 #include "util/log.h"
 
@@ -330,6 +331,18 @@ namespace ppp
                 [callback](int key, int scancode, int mods)
             {
                 callback(internal::convert_key_to_ppp(key));
+            });
+        }
+
+        void set_quit_application_keycode(KeyCode code)
+        {
+            keyboard::add_key_pressed_callback(
+                [code](keyboard::KeyCode key)
+            {
+                if (key == code)
+                {
+                    structure::quit();
+                }
             });
         }
     }
