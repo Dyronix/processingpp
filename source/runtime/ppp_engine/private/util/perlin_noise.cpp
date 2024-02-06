@@ -12,8 +12,8 @@ namespace ppp
         {
             siv::PerlinNoise _perlin;
 
-            double _frequency;
-            int _octaves;
+            double _frequency = 0.1f;
+            int _octaves = 1;
         }
 
         double perlin_noise(double x)
