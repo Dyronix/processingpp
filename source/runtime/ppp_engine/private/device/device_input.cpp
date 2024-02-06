@@ -17,12 +17,9 @@ namespace ppp
 
                 void key_callback(GLFWwindow* window, s32 key, s32 scancode, s32 action, s32 mods)
                 {
-                    for (const auto& pair : _key_callbacks)
+                    for (const auto& c : _key_callbacks[action])
                     {
-                        for (const auto& c : pair.second)
-                        {
-                            c(key, scancode, mods);
-                        }
+                        c(key, scancode, mods);
                     }
                 }
 
@@ -40,12 +37,9 @@ namespace ppp
 
                 void mouse_button_callback(GLFWwindow* window, s32 button, s32 action, s32 mods)
                 {
-                    for (const auto& pair : _mouse_button_callbacks)
+                    for (const auto& c : _mouse_button_callbacks[action])
                     {
-                        for (const auto& c : pair.second)
-                        {
-                            c(button, mods);
-                        }
+                        c(button, mods);
                     }
                 }
 
