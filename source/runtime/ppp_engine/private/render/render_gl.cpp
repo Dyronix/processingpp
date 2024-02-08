@@ -55,7 +55,6 @@ namespace ppp
             s32 _fill_color = 0xFFFFFFFF;
             bool _fill_enable = true;
             f32 _stroke_width = 1.0f;
-            f32 _stroke_scale = 10.0f;
             s32 _stroke_color = 0xFF000000;
             bool _stroke_enable = false;
             s32 _tint_color = 0xFFFFFFFF;
@@ -657,11 +656,6 @@ namespace ppp
             internal::_stroke_width = w;
         }
 
-        void push_stroke_scale(f32 s)
-        {
-            internal::_stroke_scale = s;
-        }
-
         void push_stroke_color(const glm::vec4& color)
         {
             internal::_stroke_color = internal::convert_color(color);
@@ -881,11 +875,6 @@ namespace ppp
         f32 stroke_width()
         {
             return internal::_stroke_width;
-        }
-
-        f32 stroke_scale()
-        {
-            return internal::_stroke_scale;
         }
         
         bool tint_enabled()

@@ -81,13 +81,11 @@ namespace ppp
 
         // Stroke
         void push_stroke_width(f32 w);
-        void push_stroke_scale(f32 s);
         void push_stroke_color(const glm::vec4& color);
         void push_stroke_enable(bool enable);
 
         bool stroke_enabled();
         f32 stroke_width();
-        f32 stroke_scale();
         glm::vec4 stroke();
 
         // Tint
