@@ -14,12 +14,15 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.cpp
     # render
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_gl.cpp
     # util
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/hash.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/log.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/string_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/string_ops.cpp

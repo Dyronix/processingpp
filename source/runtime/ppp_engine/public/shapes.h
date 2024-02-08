@@ -10,11 +10,9 @@ namespace ppp
             CORNER
         };
 
-        void rect_mode(ShapeMode mode);
         void ellipse_mode(ShapeMode mode);
-
-        void point_width(float pw);
-        void line_width(float lw);
+        void rect_mode(ShapeMode mode);
+        void triangle_mode(ShapeMode mode);
 
         void ellipse(float x, float y, float w, float h, int detail = 25);
         void circle(float x, float y, float r, int detail = 25);

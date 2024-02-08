@@ -57,6 +57,8 @@ namespace ppp
         void stroke(int grayscale, int alpha);
         void stroke(int r, int g, int b, int a);
         void stroke(const Color& c);
+        void stroke_weight(float w);
+        void stroke_scale(float s);
 
         unsigned int convert_color(const glm::u8vec4& color);
         unsigned int convert_color(const glm::vec4& color);

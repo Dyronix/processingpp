@@ -72,37 +72,52 @@ namespace ppp
         void render();
         void end();
 
+        // Fill
         void push_fill_color(const glm::vec4& color);
         void push_fill_enable(bool enable);
-        void push_stroke_width(float w);
+
+        bool fill_enabled();
+        glm::vec4 fill();
+
+        // Stroke
+        void push_stroke_width(f32 w);
+        void push_stroke_scale(f32 s);
         void push_stroke_color(const glm::vec4& color);
         void push_stroke_enable(bool enable);
+
+        bool stroke_enabled();
+        f32 stroke_width();
+        f32 stroke_scale();
+        glm::vec4 stroke();
+
+        // Tint
         void push_tint_color(const glm::vec4& color);
         void push_tint_enable(bool enable);
 
+        bool tint_enabled();
+        glm::vec4 tint();
+
+        // Scissor
         void push_scissor(s32 x, s32 y, s32 width, s32 height);
         void push_scissor_enable(bool enable);
 
+        bool scissor_enabled();
+        ScissorRect scissor();
+
+        // Image Item
         u32 create_image_item(f32 width, f32 height, s32 channels, u8* data);
 
         void update_image_item(u32 id, f32 x, f32 y, f32 width, f32 height, s32 channels, u8* data);
 
-        void submit_render_item(TopologyType topology, const RenderItem& item);
         void submit_image_item(const ImageItem& item);
+        void submit_stroke_image_item(const RenderItem& item);
 
+        // Render Item
+        void submit_render_item(TopologyType topology, const RenderItem& item);
+        void submit_stroke_render_item(TopologyType topology, const RenderItem& item);
+
+        // Clear 
         void clear_color(f32 r, f32 g, f32 b, f32 a);
         void clear(u32 flags);
-
-        bool fill_enabled();
-        bool stroke_enabled();
-        bool tint_enabled();
-        
-        bool scissor_enabled();
-
-        glm::vec4 fill();
-        glm::vec4 stroke();
-        glm::vec4 tint();
-
-        ScissorRect scissor();
     }
 }

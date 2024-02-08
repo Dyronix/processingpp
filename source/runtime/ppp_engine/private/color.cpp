@@ -8,6 +8,11 @@ namespace ppp
 {
     namespace color
     {
+        namespace internal
+        {
+            float _stroke_scale = 10.0f;
+        }
+
         int red(const Color& c)
         {
             return c.red;
@@ -133,6 +138,17 @@ namespace ppp
         {
             render::push_stroke_enable(true);
             render::push_stroke_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
+        }
+
+        void stroke_weight(float w)
+        {
+            render::push_stroke_enable(true);
+            render::push_stroke_width(w);
+        }
+
+        void stroke_scale(float s)
+        {
+            render::push_stroke_scale(s);
         }
 
         unsigned int convert_color(const glm::u8vec4& color)
