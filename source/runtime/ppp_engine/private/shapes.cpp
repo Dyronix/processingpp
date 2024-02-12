@@ -44,9 +44,20 @@ namespace ppp
 
             if (render::stroke_enabled())
             {
+                constexpr bool outer_stroke = true;
+
                 auto stroke_item = geometry::extrude_ellipse(item.vertices, item.vertex_count, render::stroke_width());
 
-                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item);
+                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
+            }
+
+            if (render::inner_stroke_enabled())
+            {
+                constexpr bool outer_stroke = false;
+
+                auto stroke_item = geometry::extrude_ellipse(item.vertices, item.vertex_count, -render::inner_stroke_width());
+
+                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
         }
         
@@ -65,9 +76,11 @@ namespace ppp
 
             if (render::stroke_enabled())
             {
+                constexpr bool outer_stroke = true;
+
                 render::RenderItem stroke_item = geometry::extrude_line(item.vertices, item.vertex_count, render::stroke_width());
 
-                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item);
+                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
         }
         
@@ -80,9 +93,11 @@ namespace ppp
 
             if (render::stroke_enabled())
             {
+                constexpr bool outer_stroke = true;
+
                 render::RenderItem stroke_item = geometry::extrude_point(item.vertices, item.vertex_count, render::stroke_width());
 
-                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item);
+                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
         }
         
@@ -95,9 +110,20 @@ namespace ppp
 
             if (render::stroke_enabled())
             {
-                auto stroke_item = geometry::extrude_polygon(item.vertices, item.vertex_count, render::stroke_width());
+                constexpr bool outer_stroke = true;
 
-                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item);
+                auto stroke_item = geometry::extrude_polygon(item.vertices, item.vertex_count, render::stroke_width());
+                
+                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
+            }
+
+            if (render::inner_stroke_enabled())
+            {
+                constexpr bool outer_stroke = false;
+
+                render::RenderItem stroke_item = geometry::extrude_polygon(item.vertices, item.vertex_count, -render::inner_stroke_width());
+
+                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
         }
         
@@ -122,9 +148,20 @@ namespace ppp
 
             if (render::stroke_enabled())
             {
+                constexpr bool outer_stroke = true;
+
                 auto stroke_item = geometry::extrude_triangle(item.vertices, item.vertex_count, render::stroke_width());
 
-                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item);
+                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
+            }
+
+            if (render::inner_stroke_enabled())
+            {
+                constexpr bool outer_stroke = false;
+
+                render::RenderItem stroke_item = geometry::extrude_triangle(item.vertices, item.vertex_count, -render::inner_stroke_width());
+
+                render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
         }
     }

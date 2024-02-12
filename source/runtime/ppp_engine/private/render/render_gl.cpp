@@ -57,6 +57,9 @@ namespace ppp
             f32 _stroke_width = 1.0f;
             s32 _stroke_color = 0xFF000000;
             bool _stroke_enable = false;
+            f32 _inner_stroke_width = 1.0f;
+            s32 _inner_stroke_color = 0xFF000000;
+            bool _inner_stroke_enable = false;
             s32 _tint_color = 0xFFFFFFFF;
             bool _tint_enable = false;
 
@@ -594,6 +597,20 @@ namespace ppp
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+            if (internal::_image_drawing_data->batch_count() > 0)
+            {
+                glUseProgram(internal::_image_shader_program);
+                u32 u_mpv_loc = glGetUniformLocation(internal::_image_shader_program, "u_worldviewproj");
+                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
+
+                // We draw all images first this 
+                // An effect of this will be that filled shapes are drawn on top of images ( a z-index might be in order here )
+                // This however will make sure inner-stroke is possible
+                internal::draw_images(internal::_image_drawing_data, internal::_image_shader_program);
+
+                glUseProgram(0);
+            }
+
             if (internal::_points_drawing_data->batch_count() > 0
                 || internal::_lines_drawing_data->batch_count() > 0
                 || internal::_triangle_drawing_data->batch_count() > 0)
@@ -611,21 +628,14 @@ namespace ppp
                 internal::draw_lines(internal::_lines_drawing_data);
 
                 // Triangles
-                internal::draw_triangles(internal::_triangle_stroke_drawing_data);
+
+                // We draw the triangles first and afterwards the stroke
+                // This only has to happen for the triangles because of the inner stroke capabilities
+                // If we would draw the triangles last no inner stroke would be visible
                 internal::draw_triangles(internal::_triangle_drawing_data);
+                internal::draw_triangles(internal::_triangle_stroke_drawing_data);
 
                 internal::draw_triangles(internal::_image_stroke_drawing_data);
-
-                glUseProgram(0);
-            }
-
-            if (internal::_image_drawing_data->batch_count() > 0)
-            {
-                glUseProgram(internal::_image_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(internal::_image_shader_program, "u_worldviewproj");
-                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
-
-                internal::draw_images(internal::_image_drawing_data, internal::_image_shader_program);
 
                 glUseProgram(0);
             }
@@ -664,6 +674,21 @@ namespace ppp
         void push_stroke_enable(bool enable)
         {
             internal::_stroke_enable = enable;
+        }
+
+        void push_inner_stroke_width(f32 w)
+        {
+            internal::_inner_stroke_width = w;
+        }
+
+        void push_inner_stroke_color(const glm::vec4& color)
+        {
+            internal::_inner_stroke_color = internal::convert_color(color);
+        }
+
+        void push_inner_stroke_enable(bool enable)
+        {
+            internal::_inner_stroke_enable = enable;
         }
 
         void push_tint_color(const glm::vec4& color)
@@ -807,7 +832,7 @@ namespace ppp
             }
         }
 
-        void submit_stroke_render_item(TopologyType topology, const RenderItem& item)
+        void submit_stroke_render_item(TopologyType topology, const RenderItem& item, bool outer)
         {
             if (internal::_stroke_enable == false && internal::_fill_enable == false)
             {
@@ -816,7 +841,7 @@ namespace ppp
                 return;
             }
 
-            glm::vec4 stroke_color = internal::convert_color(internal::_stroke_color);
+            glm::vec4 stroke_color = outer ? internal::convert_color(internal::_stroke_color) : internal::convert_color(internal::_inner_stroke_color);
 
             switch (topology)
             {
@@ -844,9 +869,9 @@ namespace ppp
             
         }
 
-        void submit_stroke_image_item(const RenderItem& item)
+        void submit_stroke_image_item(const RenderItem& item, bool outer)
         {
-            glm::vec4 stroke_color = internal::convert_color(internal::_stroke_color);
+            glm::vec4 stroke_color = outer ? internal::convert_color(internal::_stroke_color) : internal::convert_color(internal::_inner_stroke_color);
 
             internal::_image_stroke_drawing_data->append(item, stroke_color, transform::active_world());
         }
@@ -872,9 +897,19 @@ namespace ppp
             return internal::_stroke_enable;
         }
 
+        bool inner_stroke_enabled()
+        {
+            return internal::_inner_stroke_enable;
+        }
+
         f32 stroke_width()
         {
             return internal::_stroke_width;
+        }
+
+        f32 inner_stroke_width()
+        {
+            return internal::_inner_stroke_width;
         }
         
         bool tint_enabled()
@@ -895,6 +930,11 @@ namespace ppp
         glm::vec4 stroke()
         {
             return internal::convert_color(internal::_stroke_color);
+        }
+
+        glm::vec4 inner_stroke()
+        {
+            return internal::convert_color(internal::_inner_stroke_color);
         }
         
         glm::vec4 tint()

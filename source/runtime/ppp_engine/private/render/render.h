@@ -83,10 +83,17 @@ namespace ppp
         void push_stroke_width(f32 w);
         void push_stroke_color(const glm::vec4& color);
         void push_stroke_enable(bool enable);
+        void push_inner_stroke_width(f32 w);
+        void push_inner_stroke_color(const glm::vec4& color);
+        void push_inner_stroke_enable(bool enable);
 
         bool stroke_enabled();
         f32 stroke_width();
         glm::vec4 stroke();
+
+        bool inner_stroke_enabled();
+        f32 inner_stroke_width();
+        glm::vec4 inner_stroke();
 
         // Tint
         void push_tint_color(const glm::vec4& color);
@@ -108,11 +115,11 @@ namespace ppp
         void update_image_item(u32 id, f32 x, f32 y, f32 width, f32 height, s32 channels, u8* data);
 
         void submit_image_item(const ImageItem& item);
-        void submit_stroke_image_item(const RenderItem& item);
+        void submit_stroke_image_item(const RenderItem& item, bool outer);
 
         // Render Item
         void submit_render_item(TopologyType topology, const RenderItem& item);
-        void submit_stroke_render_item(TopologyType topology, const RenderItem& item);
+        void submit_stroke_render_item(TopologyType topology, const RenderItem& item, bool outer);
 
         // Clear 
         void clear_color(f32 r, f32 g, f32 b, f32 a);

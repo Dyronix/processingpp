@@ -112,9 +112,20 @@ namespace ppp
 
             if (render::stroke_enabled())
             {
+                constexpr bool outer_stroke = true;
+
                 render::RenderItem stroke_item = geometry::image::extrude_image(item.vertices, item.vertex_count, render::stroke_width());
 
-                render::submit_stroke_image_item(stroke_item);
+                render::submit_stroke_image_item(stroke_item, outer_stroke);
+            }
+
+            if (render::inner_stroke_enabled())
+            {
+                constexpr bool outer_stroke = false;
+
+                render::RenderItem stroke_item = geometry::image::extrude_image(item.vertices, item.vertex_count, -render::inner_stroke_width());
+
+                render::submit_stroke_image_item(stroke_item, outer_stroke);
             }
         }
 
