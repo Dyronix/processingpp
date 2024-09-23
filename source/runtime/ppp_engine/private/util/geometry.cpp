@@ -216,8 +216,8 @@ namespace ppp
 
                     _image_data.vertices[0].texcoord = glm::vec2(0.0f, 0.0f);
                     _image_data.vertices[1].texcoord = glm::vec2(1.0f, 0.0f);
-                    _image_data.vertices[2].texcoord = glm::vec2(0.0f, 1.0f);
-                    _image_data.vertices[3].texcoord = glm::vec2(1.0f, 1.0f);
+                    _image_data.vertices[2].texcoord = glm::vec2(1.0f, 1.0f);
+                    _image_data.vertices[3].texcoord = glm::vec2(0.0f, 1.0f);
 
                     if (from_corner == false)
                     {
