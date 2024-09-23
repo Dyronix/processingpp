@@ -11,7 +11,31 @@
 
 namespace ppp
 {
-    image::Image _image;
+    constexpr int _window_width = 1280;
+    constexpr int _window_height = 720;
+    constexpr int _canvas_width = 600;
+    constexpr int _canvas_height = 600;
+
+    void setup_canvas()
+    {
+        rendering::create_canvas((_window_width / 2) - (_canvas_width / 2), (_window_height / 2) - (_canvas_height / 2), _canvas_width, _canvas_height);
+
+        color::background(15);
+    }
+
+    void setup_input_events()
+    {
+        keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
+
+        mouse::add_mouse_pressed_callback(
+            [](mouse::MouseCode code)
+        {
+            if (code == mouse::MouseCode::BUTTON_LEFT)
+            {
+                structure::redraw();
+            }
+        });
+    }
 
     AppParams entry()
     {
@@ -25,43 +49,14 @@ namespace ppp
 
     void setup()
     {
-        keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
+        setup_canvas();
+        setup_input_events();
 
-        rendering::create_canvas((1280 / 2) - 200, (720 / 2) - 200, 400.0f, 400.0f);
-
-        color::background(15);
-
-        _image = image::load("blank.png");
+        shapes::rect_mode(shapes::ShapeMode::CORNER);
     }
 
     void draw()
     {
-        transform::push();       
-        {
-            transform::translate(environment::canvas_width() / 2, environment::canvas_height() / 2);
-
-            //    transform::push();
-            //    {
-            //        color::fill(255);
-            //        transform::scale(2.0f, 2.0f);
-            //        shapes::rect(0, 0, 100, 100);
-            //    }
-            //    transform::pop();
-
-            shapes::rect_mode(shapes::ShapeMode::CORNER);
-            color::stroke_weight(5);
-            color::stroke(0, 255, 0, 255);
-
-            color::fill(255, 0, 0, 255);
-            shapes::ellipse(-50, 0, 75, 75);
-            shapes::rect(50, 0, 75, 75);
-            shapes::triangle(0, 150, 25, 200, 50, 150);
-            //shapes::rect(150, 0, 100, 100);
-            //shapes::line(0, 0, 100, 100);
-            //shapes::point(0, 0);
-
-            image::draw(_image.id, 0, -100, 100, 100);
-        }
-        transform::pop();
+        structure::no_loop();
     }
 }
