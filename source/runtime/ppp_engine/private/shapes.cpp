@@ -12,7 +12,7 @@ namespace ppp
     {
         namespace internal
         {
-            ShapeMode _rect_mode = ShapeMode::CENTER;
+            ShapeMode _rect_mode = ShapeMode::CORNER;
             ShapeMode _ellipse_mode = ShapeMode::CENTER;
             ShapeMode _triangle_mode = ShapeMode::CENTER;
         }
