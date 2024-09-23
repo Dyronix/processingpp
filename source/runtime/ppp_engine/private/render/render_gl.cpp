@@ -594,6 +594,17 @@ namespace ppp
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+            if (internal::_image_drawing_data->batch_count() > 0)
+            {
+                glUseProgram(internal::_image_shader_program);
+                u32 u_mpv_loc = glGetUniformLocation(internal::_image_shader_program, "u_worldviewproj");
+                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
+
+                internal::draw_images(internal::_image_drawing_data, internal::_image_shader_program);
+
+                glUseProgram(0);
+            }
+
             if (internal::_points_drawing_data->batch_count() > 0
                 || internal::_lines_drawing_data->batch_count() > 0
                 || internal::_triangle_drawing_data->batch_count() > 0)
@@ -603,29 +614,18 @@ namespace ppp
                 glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
 
                 // Points
-                internal::draw_points(internal::_points_stroke_drawing_data);
                 internal::draw_points(internal::_points_drawing_data);
+                internal::draw_points(internal::_points_stroke_drawing_data);
 
                 // Lines
-                internal::draw_lines(internal::_lines_stroke_drawing_data);
                 internal::draw_lines(internal::_lines_drawing_data);
+                internal::draw_lines(internal::_lines_stroke_drawing_data);
 
                 // Triangles
-                internal::draw_triangles(internal::_triangle_stroke_drawing_data);
                 internal::draw_triangles(internal::_triangle_drawing_data);
+                internal::draw_triangles(internal::_triangle_stroke_drawing_data);
 
                 internal::draw_triangles(internal::_image_stroke_drawing_data);
-
-                glUseProgram(0);
-            }
-
-            if (internal::_image_drawing_data->batch_count() > 0)
-            {
-                glUseProgram(internal::_image_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(internal::_image_shader_program, "u_worldviewproj");
-                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
-
-                internal::draw_images(internal::_image_drawing_data, internal::_image_shader_program);
 
                 glUseProgram(0);
             }
