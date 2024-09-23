@@ -8,6 +8,11 @@ set(CMAKE_CXX_STANDARD 17)
 # Enable folder structure in the IDE
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Set output directories for each configuration (Debug, Release, etc.)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>)
+
 if(MSVC)
 	# Remove the always defined _WINDOWS flag
 	# CPP
