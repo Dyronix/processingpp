@@ -31,6 +31,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/perlin_noise.cpp
     # engine
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/shapes.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/random.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/transform.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/color.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/environment.cpp
@@ -46,6 +47,7 @@ target_sources(processing_engine PRIVATE
 
 target_sources(processing_engine PUBLIC 
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/shapes.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/random.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/transform.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/color.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/environment.h

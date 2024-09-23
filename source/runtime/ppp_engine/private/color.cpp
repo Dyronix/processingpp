@@ -141,6 +141,36 @@ namespace ppp
             render::push_stroke_width(w);
         }
 
+        void inner_stroke(int grayscale)
+        {
+            render::push_inner_stroke_enable(true);
+            render::push_inner_stroke_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 255.0f));
+        }
+
+        void inner_stroke(int grayscale, int alpha)
+        {
+            render::push_inner_stroke_enable(true);
+            render::push_inner_stroke_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
+        }
+
+        void inner_stroke(int r, int g, int b, int a)
+        {
+            render::push_inner_stroke_enable(true);
+            render::push_inner_stroke_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
+        }
+
+        void inner_stroke(const Color& c)
+        {
+            render::push_inner_stroke_enable(true);
+            render::push_inner_stroke_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
+        }
+
+        void inner_stroke_weight(float w)
+        {
+            render::push_inner_stroke_enable(true);
+            render::push_inner_stroke_width(w);
+        }
+
         unsigned int convert_color(const glm::u8vec4& color)
         {
             unsigned int out;
