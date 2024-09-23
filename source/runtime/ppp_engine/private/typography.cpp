@@ -1,5 +1,11 @@
 #include "typography.h"
+#include "render/render.h"
+#include "resources/font_pool.h"
+
 #include "util/log.h"
+#include "util/types.h"
+
+#include <glad/glad.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -8,21 +14,85 @@ namespace ppp
 {
     namespace typography
     {
+        namespace internal
+        {
+            GLint _prev_unpack_alignment = 4;
+
+            void set_pixel_storage(GLint storage)
+            {
+                glGetIntegerv(GL_UNPACK_ALIGNMENT, &_prev_unpack_alignment);
+
+                // Set pixel unpack alignment to 1 byte (no row padding). 
+                // Useful for tightly packed textures (e.g., font glyphs or non-multiple-of-4 widths).
+                glPixelStorei(GL_UNPACK_ALIGNMENT, storage);
+            }
+
+            void restore_pixel_storage()
+            {
+                glPixelStorei(GL_UNPACK_ALIGNMENT, _prev_unpack_alignment);
+            }
+        
+            font_pool::characcter_map load_characters(FT_Face face, u32 characters_to_load)
+            {
+                font_pool::characcter_map characters;
+
+                for (u8 c = 0; c < characters_to_load; c++)
+                {
+                    // load character glyph
+                    if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+                    {
+                        log::error("Failed to load glyph: ", c);
+                        continue;
+                    }
+
+                    u32 texture_id = render::create_image_item(
+                        face->glyph->bitmap.width,
+                        face->glyph->bitmap.rows,
+                        1,
+                        face->glyph->bitmap.buffer,
+                        render::ImageFilterType::LINEAR,
+                        render::ImageWrapType::CLAMP_TO_EDGE);
+
+                    // store character for later use
+                    font_pool::Character character = 
+                    {
+                        texture_id,
+                        glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+                        glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+                        static_cast<u32>(face->glyph->advance.x)
+                    };
+
+                    characters.emplace(c, character);
+                }
+
+                return characters;
+            }
+        }
+
         void text_size(float size)
         {
+            
         }
 
         void text(const std::string &text)
         {
+            
         }
 
-        Font load_font(const std::string &font)
+        void text_font(const font_id& font)
         {
-            // FreeType
-            // --------
-            FT_Library ft;
+            font_pool::load_active_font(font);
+        }
 
-            // All functions return a value different than 0 whenever an error occurred
+        font_id load_font(const std::string& path, unsigned int characters_to_load)
+        {
+            if (font_pool::has_font(path))
+            {
+                const font_pool::Font* font = font_pool::font_at_path(path);
+                return font->font_id;
+            }
+
+            FT_Library ft;
             if (FT_Init_FreeType(&ft))
             {
                 log::error("Could not init FreeType Library");
@@ -30,61 +100,35 @@ namespace ppp
             }
 
             FT_Face face;
-            if (FT_New_Face(ft, font.c_str(), 0, &face))
+            if (FT_New_Face(ft, path.c_str(), 0, &face))
             {
-                log::error("Failed to load font: ", font);
+                log::error("Failed to load font: ", path);
                 return {};
             }
 
-            // // set size to load glyphs as
-            // FT_Set_Pixel_Sizes(face, 0, 48);
+            font_pool::Font font;
 
-            // // disable byte-alignment restriction
-            // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            font.file_path = path;
+            font.font_id = std::hash<std::string>{} (path);
 
-            // // load first 128 characters of ASCII set
-            // for (unsigned char c = 0; c < 128; c++)
-            // {
-            //     // Load character glyph
-            //     if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-            //     {
-            //         log::error("Failed to load Glyph: ", c);
-            //         continue;
-            //     }
+            // set size to load glyphs as
+            FT_Set_Pixel_Sizes(face, 0, 48);
 
-            //     // generate texture
-            //     unsigned int texture;
-            //     glGenTextures(1, &texture);
-            //     glBindTexture(GL_TEXTURE_2D, texture);
-            //     glTexImage2D(
-            //         GL_TEXTURE_2D,
-            //         0,
-            //         GL_RED,
-            //         face->glyph->bitmap.width,
-            //         face->glyph->bitmap.rows,
-            //         0,
-            //         GL_RED,
-            //         GL_UNSIGNED_BYTE,
-            //         face->glyph->bitmap.buffer);
-            //     // set texture options
-            //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            //     // now store character for later use
-            //     Character character = {
-            //         texture,
-            //         glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-            //         glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-            //         static_cast<unsigned int>(face->glyph->advance.x)};
-            //     Characters.insert(std::pair<char, Character>(c, character));
-            // }
+            internal::set_pixel_storage(1);
 
-            // glBindTexture(GL_TEXTURE_2D, 0);
+            font.characters = internal::load_characters(face, characters_to_load);
+
+            assert(font.characters.size() == characters_to_load);
+
+            internal::restore_pixel_storage();
 
             // destroy FreeType once we're finished
             FT_Done_Face(face);
             FT_Done_FreeType(ft);
+
+            font_pool::add_new_font(font);
+
+            return font.font_id;
         }
     }
 }

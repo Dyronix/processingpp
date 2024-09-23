@@ -9,6 +9,8 @@ namespace ppp
         namespace internal
         {
             std::unordered_map<std::string, Font> _fonts;
+
+            const Font* _active_font = nullptr;
         }
 
         bool initialize()
@@ -31,7 +33,7 @@ namespace ppp
             auto it = std::find_if(std::cbegin(internal::_fonts), std::cend(internal::_fonts),
                 [id](const auto& pair)
             {
-                return pair.second.image_id == id;
+                return pair.second.font_id == id;
             });
 
             return it != internal::_fonts.cend();
@@ -54,7 +56,7 @@ namespace ppp
                 auto it = std::find_if(std::cbegin(internal::_fonts), std::cend(internal::_fonts),
                     [id](const auto& pair)
                 {
-                    return pair.second.image_id == id;
+                    return pair.second.font_id == id;
                 });
 
                 return &it->second;
@@ -63,9 +65,24 @@ namespace ppp
             return nullptr;
         }
 
+        void load_active_font(u64 id)
+        {
+            const Font* font = font_at_id(id);
+
+            if (font != nullptr)
+            {
+                internal::_active_font = font;
+            }
+        }
+
         void add_new_font(const Font& font)
         {
             internal::_fonts.insert(std::make_pair(font.file_path, font));
+        }
+
+        const Font* active_font()
+        {
+            return internal::_active_font;
         }
     }
 }

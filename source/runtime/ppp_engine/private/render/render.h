@@ -47,6 +47,18 @@ namespace ppp
             size_t index_count;
         };
 
+        enum class ImageFilterType
+        {
+            NEAREST,
+            LINEAR
+        };
+
+        enum class ImageWrapType
+        {
+            CLAMP_TO_EDGE,
+            REPEAT, 
+        };
+
         struct ImageItem
         {
             VertexPosTex* vertices;
@@ -56,7 +68,7 @@ namespace ppp
 
             u32 image_id;
         };
-
+        
         struct ScissorRect
         {
             s32 x;
@@ -111,11 +123,15 @@ namespace ppp
 
         // Image Item
         u32 create_image_item(f32 width, f32 height, s32 channels, u8* data);
+        u32 create_image_item(f32 width, f32 height, s32 channels, u8* data, ImageFilterType filter_type, ImageWrapType wrap_type);
 
         void update_image_item(u32 id, f32 x, f32 y, f32 width, f32 height, s32 channels, u8* data);
 
         void submit_image_item(const ImageItem& item);
         void submit_stroke_image_item(const RenderItem& item, bool outer);
+
+        // Font Item
+        void submit_font_item(const ImageItem& item);
 
         // Render Item
         void submit_render_item(TopologyType topology, const RenderItem& item);

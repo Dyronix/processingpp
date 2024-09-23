@@ -1,5 +1,5 @@
 #include "render/render.h"
-#include "render/render_batch.h"
+#include "render/render_gl_batch.h"
 #include "render_transform.h"
 #include "util/log.h"
 
@@ -81,6 +81,13 @@ namespace ppp
                 glm::vec4 color;
             };
             struct image_vertex_format
+            {
+                glm::vec3 position;
+                glm::vec2 texcoord;
+                glm::vec4 color;
+                f32       texture_idx;
+            };
+            struct font_vertex_format
             {
                 glm::vec3 position;
                 glm::vec2 texcoord;
@@ -189,6 +196,7 @@ namespace ppp
 
             u32	_color_shader_program = 0;
             u32 _image_shader_program = 0;
+            u32 _font_shader_program = 0;
 
             void compile_color_shader_program()
             {
@@ -324,6 +332,69 @@ namespace ppp
                 glDeleteShader(vert_shader);
                 glDeleteShader(frag_shader);
             }
+            void compile_font_shader_program()
+            {
+                const auto* const vs_source =
+                    "#version 460 core												        \n\
+		            layout (location = 0) in vec4 a_position;	                            \n\
+                                                                                            \n\
+                    out vec2 a_texcoord;							                        \n\
+		            							                                            \n\
+		            uniform mat4 u_worldviewproj;				                            \n\
+																		                    \n\
+		            void main()														        \n\
+		            {																        \n\
+		            	gl_Position = u_worldviewproj * vec4(a_position.xy, 0.0, 1.0);		\n\
+		            	a_texcoord = a_position.zw;		                                    \n\
+		            }";
+
+                const auto* const fs_source =
+                    "#version 460 core												        \n\
+		            in vec2 a_texcoord;												        \n\
+		            																        \n\
+		            uniform sampler2D u_text;											    \n\
+		            uniform vec3 u_text_color;										        \n\
+		            																        \n\
+		            void main()														        \n\
+		            {																        \n\
+		            	vec4 sampled = vec4(1.0, 1.0, 1.0, texture(u_text, a_texcoord).r);	\n\
+		            	color = vec4(u_text_color, 1.0) * sampled;		                    \n\
+		            }";
+
+                GLuint vert_shader = 0;
+                GLuint frag_shader = 0;
+
+                _font_shader_program = glCreateProgram();
+
+                GLboolean res = compile_shader(&vert_shader, GL_VERTEX_SHADER, vs_source);
+                if (!res)
+                {
+                    log::error("Renderer failed to compile vertex shader");
+                    return;
+                }
+
+                res = compile_shader(&frag_shader, GL_FRAGMENT_SHADER, fs_source);
+                if (!res)
+                {
+                    log::error("Renderer failed to compile fragment shader");
+                    return;
+                }
+
+                glAttachShader(_font_shader_program, vert_shader);
+                glAttachShader(_font_shader_program, frag_shader);
+
+                if (!link_program(_font_shader_program))
+                {
+                    glDeleteShader(vert_shader);
+                    glDeleteShader(frag_shader);
+                    glDeleteProgram(_font_shader_program);
+                    log::error("Renderer failed to link shader program");
+                    return;
+                }
+
+                glDeleteShader(vert_shader);
+                glDeleteShader(frag_shader);
+            }
 
             std::unique_ptr<PrimitiveDrawingData<point_vertex_format>> _points_drawing_data;
             std::unique_ptr<PrimitiveDrawingData<point_vertex_format>> _points_stroke_drawing_data;
@@ -336,6 +407,8 @@ namespace ppp
 
             std::unique_ptr<TextureDrawingData<image_vertex_format>> _image_drawing_data;
             std::unique_ptr<PrimitiveDrawingData<triangle_vertex_format>> _image_stroke_drawing_data;
+
+            std::unique_ptr<TextureDrawingData<image_vertex_format>> _font_drawing_data;
 
             void draw_points(const std::unique_ptr<PrimitiveDrawingData<point_vertex_format>>& point_drawing_data)
             {
@@ -492,6 +565,7 @@ namespace ppp
 
             internal::compile_color_shader_program();
             internal::compile_image_shader_program();
+            internal::compile_font_shader_program();
             internal::create_frame_buffer();
 
             // Primitive Drawing Data
@@ -514,14 +588,14 @@ namespace ppp
             internal::_triangle_drawing_data = std::make_unique<PrimitiveDrawingData<internal::triangle_vertex_format>>(max_triangle_vertices, max_triangle_indices);
             internal::_triangle_stroke_drawing_data = std::make_unique<PrimitiveDrawingData<internal::triangle_vertex_format>>(max_triangle_vertices, max_triangle_indices);
 
-            // Image Drawing Data
             s32 max_texture_units = 0;
             glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
-
+            
             s32 max_images = std::min(max_texture_units, internal::_max_texture_units);
             s32 size_vertex_buffer = max_images * 4;
             s32 size_index_buffer = max_images * 4 * 3;
 
+            // Image Drawing Data
             internal::_image_drawing_data = std::make_unique<TextureDrawingData<internal::image_vertex_format>>(max_images);
             internal::_image_stroke_drawing_data = std::make_unique<PrimitiveDrawingData<internal::triangle_vertex_format>>(size_vertex_buffer, size_index_buffer);
 
@@ -530,11 +604,15 @@ namespace ppp
             s32 black = 0xFF000000;
             internal::_black_texture_image_id = create_image_item(1, 1, 4, (u8*)&black);
 
+            // Font Drawing Data
+            internal::_font_drawing_data = std::make_unique<TextureDrawingData<internal::image_vertex_format>>(max_images);
+
             return true;
         }
 
         void terminate()
         {
+            internal::_font_drawing_data->release();
             internal::_image_drawing_data->release();
             internal::_image_stroke_drawing_data->release();
             internal::_triangle_drawing_data->release();
@@ -555,6 +633,7 @@ namespace ppp
             internal::_triangle_stroke_drawing_data->reset();
             internal::_image_drawing_data->reset();
             internal::_image_stroke_drawing_data->reset();
+            internal::_font_drawing_data->reset();
 
             glBindFramebuffer(GL_FRAMEBUFFER, internal::_render_fbo);
 
@@ -596,6 +675,20 @@ namespace ppp
 
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+            if(internal::_font_drawing_data->batch_count() > 0)
+            {
+                glUseProgram(internal::_font_shader_program);
+                u32 u_mpv_loc = glGetUniformLocation(internal::_font_shader_program, "u_worldviewproj");
+                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
+
+                // We draw all images first this 
+                // An effect of this will be that filled shapes are drawn on top of images ( a z-index might be in order here )
+                // This however will make sure inner-stroke is possible
+                internal::draw_images(internal::_font_drawing_data, internal::_font_shader_program);
+
+                glUseProgram(0);
+            }
 
             if (internal::_image_drawing_data->batch_count() > 0)
             {
@@ -716,6 +809,11 @@ namespace ppp
 
         u32 create_image_item(f32 width, f32 height, s32 channels, u8* data)
         {
+            return create_image_item(width, height, channels, data, ImageFilterType::NEAREST, ImageWrapType::REPEAT);
+        }
+
+        u32 create_image_item(f32 width, f32 height, s32 channels, u8* data, ImageFilterType filter_type, ImageWrapType wrap_type)
+        {
             GLint format = GL_INVALID_VALUE;
             GLint usage = GL_INVALID_VALUE;
 
@@ -741,14 +839,34 @@ namespace ppp
                 assert(false);
             }
 
+            GLint filter = GL_INVALID_VALUE;
+
+            switch(filter_type)
+            {
+                case ImageFilterType::NEAREST: filter = GL_NEAREST; break;
+                case ImageFilterType::LINEAR: filter = GL_LINEAR; break;
+                default:
+                    assert(false);
+            }
+
+            GLint wrap = GL_INVALID_VALUE;
+
+            switch(wrap_type)
+            {
+                case ImageWrapType::CLAMP_TO_EDGE: wrap = GL_CLAMP_TO_EDGE; break;
+                case ImageWrapType::REPEAT: wrap = GL_REPEAT; break;
+                default:
+                    assert(false);
+            }
+
             u32 texture_id;
 
             glGenTextures(1, &texture_id);
             glBindTexture(GL_TEXTURE_2D, texture_id);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 
             glTexImage2D(
                 GL_TEXTURE_2D,						// What (target)
@@ -861,12 +979,18 @@ namespace ppp
             }
         }
 
+        void submit_font_item(const ImageItem& item)
+        {
+            glm::vec4 tint_color = internal::convert_color(internal::_tint_color);
+
+            internal::_font_drawing_data->append(item, tint_color, transform::active_world());
+        }
+
         void submit_image_item(const ImageItem& item)
         {
             glm::vec4 tint_color = internal::convert_color(internal::_tint_color);
 
             internal::_image_drawing_data->append(item, tint_color, transform::active_world());
-            
         }
 
         void submit_stroke_image_item(const RenderItem& item, bool outer)

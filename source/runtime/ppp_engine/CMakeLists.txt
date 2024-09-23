@@ -6,6 +6,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.cpp
     # resources
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_pool.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_pool.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.cpp
     # device
@@ -14,7 +16,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.cpp
     # render
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_gl_batch.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render.h
@@ -42,6 +44,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/data.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/mathematics.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/trigonometry.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/typography.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/image.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/entrypoint.cpp)
 
@@ -58,6 +61,7 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/data.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/mathematics.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/trigonometry.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/typography.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/image.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/entrypoint.h)
 

@@ -1,22 +1,18 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 namespace ppp
 {
     namespace typography
     {
-        using font_id = unsigned int;
-
-        struct Font
-        {
-            font_id id = 0;
-        };
+        using font_id = unsigned long long;
 
         void text_size(float size);
         void text(const std::string& text, float x, float y);
-        void text_font(const Font& font);
+        void text_font(const font_id& font);
 
-        Font load_font(const std::string& font);
+        font_id load_font(const std::string& path, unsigned int characters_to_load = 128);
     }
 }
