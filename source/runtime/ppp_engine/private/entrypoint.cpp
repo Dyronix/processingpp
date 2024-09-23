@@ -5,6 +5,7 @@
 #include "device/device.h"
 #include "render/render.h"
 #include "resources/texture_pool.h"
+#include "resources/font_pool.h"
 
 #include "util/log.h"
 #include "util/types.h"
@@ -31,6 +32,11 @@ namespace ppp
         #endif
 
         if (!texture_pool::initialize())
+        {
+            return -1;
+        }
+
+        if(!font_pool::initialize())
         {
             return -1;
         }
@@ -72,6 +78,7 @@ namespace ppp
     //-------------------------------------------------------------------------
     s32 quit(const AppParams& app_params)
     {
+        font_pool::terminate();
         texture_pool::terminate();
         render::terminate();
         device::terminate();
