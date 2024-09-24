@@ -11,6 +11,7 @@
 #include "util/types.h"
 
 #include <iostream>
+#include <filesystem>
 
 #include <GLFW/glfw3.h>
 
@@ -87,8 +88,13 @@ namespace ppp
     }
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    for (int i = 0; i < argc; ++i)
+    {
+        ppp::log::info("Application argument: {}", argv[i]);
+    }
+
     ppp::AppParams app_params = ppp::entry();
 
     s32 result = 0;

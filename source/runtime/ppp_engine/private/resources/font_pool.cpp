@@ -28,7 +28,7 @@ namespace ppp
             return internal::_fonts.find(file_path) != internal::_fonts.cend();
         }
 
-        bool has_font(s32 id)
+        bool has_font(u64 id)
         {
             auto it = std::find_if(std::cbegin(internal::_fonts), std::cend(internal::_fonts),
                 [id](const auto& pair)
@@ -49,7 +49,7 @@ namespace ppp
             return nullptr;
         }
 
-        const Font* font_at_id(s32 id)
+        const Font* font_at_id(u64 id)
         {
             if (has_font(id))
             {

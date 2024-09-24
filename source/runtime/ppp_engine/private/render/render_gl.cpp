@@ -196,7 +196,6 @@ namespace ppp
 
             u32	_color_shader_program = 0;
             u32 _image_shader_program = 0;
-            u32 _font_shader_program = 0;
 
             void compile_color_shader_program()
             {
@@ -325,69 +324,6 @@ namespace ppp
                     glDeleteShader(vert_shader);
                     glDeleteShader(frag_shader);
                     glDeleteProgram(_image_shader_program);
-                    log::error("Renderer failed to link shader program");
-                    return;
-                }
-
-                glDeleteShader(vert_shader);
-                glDeleteShader(frag_shader);
-            }
-            void compile_font_shader_program()
-            {
-                const auto* const vs_source =
-                    "#version 460 core												        \n\
-		            layout (location = 0) in vec4 a_position;	                            \n\
-                                                                                            \n\
-                    out vec2 a_texcoord;							                        \n\
-		            							                                            \n\
-		            uniform mat4 u_worldviewproj;				                            \n\
-																		                    \n\
-		            void main()														        \n\
-		            {																        \n\
-		            	gl_Position = u_worldviewproj * vec4(a_position.xy, 0.0, 1.0);		\n\
-		            	a_texcoord = a_position.zw;		                                    \n\
-		            }";
-
-                const auto* const fs_source =
-                    "#version 460 core												        \n\
-		            in vec2 a_texcoord;												        \n\
-		            																        \n\
-		            uniform sampler2D u_text;											    \n\
-		            uniform vec3 u_text_color;										        \n\
-		            																        \n\
-		            void main()														        \n\
-		            {																        \n\
-		            	vec4 sampled = vec4(1.0, 1.0, 1.0, texture(u_text, a_texcoord).r);	\n\
-		            	color = vec4(u_text_color, 1.0) * sampled;		                    \n\
-		            }";
-
-                GLuint vert_shader = 0;
-                GLuint frag_shader = 0;
-
-                _font_shader_program = glCreateProgram();
-
-                GLboolean res = compile_shader(&vert_shader, GL_VERTEX_SHADER, vs_source);
-                if (!res)
-                {
-                    log::error("Renderer failed to compile vertex shader");
-                    return;
-                }
-
-                res = compile_shader(&frag_shader, GL_FRAGMENT_SHADER, fs_source);
-                if (!res)
-                {
-                    log::error("Renderer failed to compile fragment shader");
-                    return;
-                }
-
-                glAttachShader(_font_shader_program, vert_shader);
-                glAttachShader(_font_shader_program, frag_shader);
-
-                if (!link_program(_font_shader_program))
-                {
-                    glDeleteShader(vert_shader);
-                    glDeleteShader(frag_shader);
-                    glDeleteProgram(_font_shader_program);
                     log::error("Renderer failed to link shader program");
                     return;
                 }
@@ -565,7 +501,6 @@ namespace ppp
 
             internal::compile_color_shader_program();
             internal::compile_image_shader_program();
-            internal::compile_font_shader_program();
             internal::create_frame_buffer();
 
             // Primitive Drawing Data
@@ -678,14 +613,14 @@ namespace ppp
 
             if(internal::_font_drawing_data->batch_count() > 0)
             {
-                glUseProgram(internal::_font_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(internal::_font_shader_program, "u_worldviewproj");
+                glUseProgram(internal::_image_shader_program);
+                u32 u_mpv_loc = glGetUniformLocation(internal::_image_shader_program, "u_worldviewproj");
                 glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
 
                 // We draw all images first this 
                 // An effect of this will be that filled shapes are drawn on top of images ( a z-index might be in order here )
                 // This however will make sure inner-stroke is possible
-                internal::draw_images(internal::_font_drawing_data, internal::_font_shader_program);
+                internal::draw_images(internal::_font_drawing_data, internal::_image_shader_program);
 
                 glUseProgram(0);
             }

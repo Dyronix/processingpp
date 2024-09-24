@@ -8,6 +8,7 @@
 #include "transform.h"
 #include "environment.h"
 #include "image.h"
+#include "typography.h"
 
 namespace ppp
 {
@@ -15,6 +16,8 @@ namespace ppp
     constexpr int _window_height = 720;
     constexpr int _canvas_width = 600;
     constexpr int _canvas_height = 600;
+
+    typography::font_id _font;
 
     void setup_canvas()
     {
@@ -37,6 +40,16 @@ namespace ppp
         });
     }
 
+    void load_font()
+    {
+        _font = typography::load_font("fonts/PokemonGb-RAeo.ttf");
+    }
+
+    void activate_font()
+    {
+        typography::text_font(_font);
+    }
+
     AppParams entry()
     {
         AppParams app_params;
@@ -52,11 +65,16 @@ namespace ppp
         setup_canvas();
         setup_input_events();
 
+        load_font();
+        activate_font();
+
         shapes::rect_mode(shapes::ShapeMode::CORNER);
     }
 
     void draw()
     {
-        structure::no_loop();
+        //structure::no_loop();
+
+        typography::text("Hello World", 10, 10);
     }
 }

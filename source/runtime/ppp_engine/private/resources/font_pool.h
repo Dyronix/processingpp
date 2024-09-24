@@ -17,6 +17,8 @@ namespace ppp
             glm::ivec2  size;        // Size of glyph
             glm::ivec2  bearing;     // Offset from baseline to left/top of glyph
             u32         advance;     // Offset to advance to next glyph
+            glm::vec2   texcoord;
+            glm::vec2   texcoord_size;
         };
 
         using characcter_map = std::map<s8, Character>;
