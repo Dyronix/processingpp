@@ -16,7 +16,7 @@ namespace ppp
         struct Font
         {
             std::string file_path = {};
-
+            u32 size = -1;
             typography::FontAtlas atlas;
         };
 
