@@ -42,7 +42,11 @@ namespace ppp
 
     void load_font()
     {
-        _font = typography::load_font("fonts/PokemonGb-RAeo.ttf", 36);
+        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 36);
+        if (_font == -1)
+        {
+            exit(EXIT_FAILURE);
+        }
     }
 
     void activate_font()
@@ -73,7 +77,7 @@ namespace ppp
 
     void draw()
     {
-        //structure::no_loop();
+        structure::no_loop();
 
         color::fill({ 235, 0, 0, 255 });
         typography::text("Hello World", 100, 100);
