@@ -40,3 +40,12 @@ MESSAGE(STATUS ${SOURCE_EXAMPLES_DIRECTORY})
 add_subdirectory(${SOURCE_THIRDPARTY_DIRECTORY})
 add_subdirectory(${SOURCE_RUNTIME_DIRECTORY})
 add_subdirectory(${SOURCE_EXAMPLES_DIRECTORY})
+
+# Add a custom target that always builds and runs the copy command
+add_custom_target(copy-content ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/content" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/content"
+    COMMENT "Copying \"${CMAKE_SOURCE_DIR}/content\" folder to \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/content\""
+    VERBATIM
+)
+
+set_property(TARGET copy-content PROPERTY FOLDER "programs")
