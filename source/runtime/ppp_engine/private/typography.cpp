@@ -7,10 +7,6 @@
 #include "util/types.h"
 #include "util/geometry.h"
 
-#include <glad/glad.h>
-
-#include <algorithm>
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -18,28 +14,18 @@ namespace ppp
 {
     namespace typography
     {
-        namespace internal
+        void text_size(unsigned int size)
         {
-            GLint _prev_unpack_alignment = 4;
+            const font_pool::Font* active_font = font_pool::active_font();
 
-            void set_pixel_storage(GLint storage)
+            if (active_font->size * 0.5f > size || active_font->size * 2.0f < size)
             {
-                glGetIntegerv(GL_UNPACK_ALIGNMENT, &_prev_unpack_alignment);
-
-                // Set pixel unpack alignment to 1 byte (no row padding). 
-                // Useful for tightly packed textures (e.g., font glyphs or non-multiple-of-4 widths).
-                glPixelStorei(GL_UNPACK_ALIGNMENT, storage);
+                // Append new size to font atlas
             }
-
-            void restore_pixel_storage()
+            else
             {
-                glPixelStorei(GL_UNPACK_ALIGNMENT, _prev_unpack_alignment);
+                // Change font scale
             }
-        }
-
-        void text_size(float size)
-        {
-            
         }
 
         void text(const std::string &text, float x, float y)
@@ -85,7 +71,7 @@ namespace ppp
             if (FT_Init_FreeType(&ft))
             {
                 log::error("Could not init FreeType Library");
-                return {};
+                return -1;
             }
 
             auto buffer = fileio::read_binary_file(path);
@@ -93,8 +79,8 @@ namespace ppp
             FT_Face face;
             if (FT_New_Memory_Face(ft, reinterpret_cast<const FT_Byte*>(buffer.data()), buffer.size(), 0, &face))
             {
-                log::error("Failed to load font: ", path);
-                return {};
+                log::error("Failed to load font: {}", path);
+                return -1;
             }
 
             // set size to load glyphs as
@@ -103,6 +89,7 @@ namespace ppp
             font_pool::Font font;
 
             font.file_path = path;
+            font.size = size;
             font.atlas = make_font_atlas(face, characters_to_load);
 
             assert(font.atlas.characters.size() == characters_to_load);
