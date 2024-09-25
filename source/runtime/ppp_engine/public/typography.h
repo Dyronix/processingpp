@@ -9,7 +9,7 @@ namespace ppp
     {
         using font_id = unsigned int;
 
-        void text_size(float size);
+        void text_size(unsigned int size);
         void text(const std::string& text, float x, float y);
         void text_font(const font_id& font);
 
