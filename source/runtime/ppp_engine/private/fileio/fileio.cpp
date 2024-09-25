@@ -4,6 +4,7 @@
 
 #include <unordered_map>
 #include <fstream>
+
 #include <assert.h>
 
 namespace ppp
@@ -14,19 +15,72 @@ namespace ppp
 		{
 			std::unordered_map<std::string, std::string> _wildcards;
 
+			class Path
+			{
+			public:
+				Path(const std::string& full_path = "")
+				{
+					u64 dot_pos = full_path.find_last_of('.');
+
+					assert(dot_pos != std::string::npos && "Path must have a filename and an extension");
+
+					_path = full_path.substr(0, full_path.find_last_of(get_separator())); // Extract the path
+					_filename = full_path.substr(full_path.find_last_of(get_separator()) + 1, dot_pos - (full_path.find_last_of(get_separator()) + 1)); // Extract filename without extension
+					_extension = full_path.substr(dot_pos); // Extract extension
+
+					_path = ensure_trailing_separator(_path);
+				}
+
+				void append(const std::string& component)
+				{
+					_path = ensure_trailing_separator(_path);
+					_path += component;
+				}
+
+				// Method to get the complete path as a string, including filename with extension
+				std::string str() const
+				{
+					std::string full_path = ensure_trailing_separator(_path) + _filename + _extension;;
+
+					return string::string_replace(full_path, "\\", "/");
+				}
+
+			private:
+				std::string _path;	
+				std::string _filename;
+				std::string _extension;
+
+				std::string ensure_trailing_separator(const std::string& path) const
+				{
+					char separator = get_separator();
+
+					if (!path.empty() && path.back() != separator)
+					{
+						return path + separator;
+					}
+
+					return path;
+				}
+
+				char get_separator() const
+				{
+					return '/';
+				}
+			};
+
 			std::string get_path(const std::string& filename)
 			{
-				std::string full_path = filename;
+				Path full_path(filename);
 
 				for (const auto& p : _wildcards)
 				{
-					if (full_path.find(p.first) != std::string::npos)
+					if (full_path.str().find(p.first) != std::string::npos)
 					{
-						full_path = string::string_replace(full_path, p.first, p.second);
+						full_path = Path(string::string_replace(full_path.str(), p.first, p.second));
 					}
 				}
 
-				return full_path;
+				return full_path.str();
 			}
 		}
 
@@ -83,7 +137,7 @@ namespace ppp
 
 			// Read file
 			file.seekg(0, std::ios::end);
-			const size_t size = file.tellg();
+			const u64 size = file.tellg();
 			std::string buffer(size, '\0');
 			file.seekg(0);
 			if (file.read(&buffer[0], size))
