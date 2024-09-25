@@ -207,17 +207,17 @@ namespace ppp
 
             namespace image
             {
-                std::array<render::VertexPosTex, 4>& make_quad_vertices(bool from_corner, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+                std::array<render::VertexPosTex, 4>& make_quad_vertices(bool from_corner, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float uvsx, float uvsy, float uvex, float uvey)
                 {
                     _image_data.vertices[0].position = glm::vec3(x1, y1, 0);
                     _image_data.vertices[1].position = glm::vec3(x2, y2, 0);
                     _image_data.vertices[2].position = glm::vec3(x3, y3, 0);
                     _image_data.vertices[3].position = glm::vec3(x4, y4, 0);
 
-                    _image_data.vertices[0].texcoord = glm::vec2(0.0f, 0.0f);
-                    _image_data.vertices[1].texcoord = glm::vec2(1.0f, 0.0f);
-                    _image_data.vertices[2].texcoord = glm::vec2(1.0f, 1.0f);
-                    _image_data.vertices[3].texcoord = glm::vec2(0.0f, 1.0f);
+                    _image_data.vertices[0].texcoord = glm::vec2(uvsx, uvey);
+                    _image_data.vertices[1].texcoord = glm::vec2(uvex, uvey);
+                    _image_data.vertices[2].texcoord = glm::vec2(uvex, uvsy);
+                    _image_data.vertices[3].texcoord = glm::vec2(uvsx, uvsy);
 
                     if (from_corner == false)
                     {
@@ -237,6 +237,11 @@ namespace ppp
                     }
 
                     return _image_data.vertices;
+                }
+
+                std::array<render::VertexPosTex, 4>& make_quad_vertices(bool from_corner, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+                {
+                    return make_quad_vertices(from_corner, x1, y1, x2, y2, x3, y3, x4, y4, 0.0, 1.0, 1.0, 0.0f);
                 }
 
                 std::array<render::Index, 6>& make_image_indices()
@@ -281,6 +286,25 @@ namespace ppp
             render::ImageItem make_image(bool from_corner, float x, float y, float w, float h, s32 image_id)
             {
                 auto& vertices = internal::image::make_quad_vertices(from_corner, x, y, x + w, y, x + w, y + h, x, y + h);
+                auto& indices = internal::image::make_image_indices();
+
+                render::ImageItem item;
+
+                item.vertices = vertices.data();
+                item.vertex_count = vertices.size();
+                item.indices = indices.data();
+                item.index_count = indices.size();
+                item.image_id = image_id;
+
+                return item;
+            }
+        }
+
+        namespace font
+        {
+            render::ImageItem make_font(bool from_corner, float x, float y, float w, float h, float uv_start_x, float uv_start_y, float uv_end_x, float uv_end_y, s32 image_id)
+            {
+                auto& vertices = internal::image::make_quad_vertices(from_corner, x, y, x + w, y, x + w, y + h, x, y + h, uv_start_x, uv_start_y, uv_end_x, uv_end_y);
                 auto& indices = internal::image::make_image_indices();
 
                 render::ImageItem item;

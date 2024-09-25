@@ -24,9 +24,10 @@ static_assert(sizeof(u16) == 2, "uint16 must be 2 bytes big"); // NOLINT
 static_assert(sizeof(u32) == 4, "uint32 must be 4 bytes big"); // NOLINT
 static_assert(sizeof(u64) == 8, "uint64 must be 8 bytes big"); // NOLINT
 
+using slong = signed long;
 using ulong = unsigned long;
 
-static_assert(sizeof(long) == sizeof(s32), "long should be the same size as int32");
+static_assert(sizeof(slong) == sizeof(s32), "long should be the same size as int32");
 static_assert(sizeof(ulong) == sizeof(u32), "ulong should be the same size as uint32");
 
 using char8 = s8;

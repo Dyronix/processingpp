@@ -28,12 +28,12 @@ namespace ppp
             return internal::_fonts.find(file_path) != internal::_fonts.cend();
         }
 
-        bool has_font(u64 id)
+        bool has_font(u32 id)
         {
             auto it = std::find_if(std::cbegin(internal::_fonts), std::cend(internal::_fonts),
                 [id](const auto& pair)
             {
-                return pair.second.font_id == id;
+                return pair.second.atlas.texture_id == id;
             });
 
             return it != internal::_fonts.cend();
@@ -49,14 +49,14 @@ namespace ppp
             return nullptr;
         }
 
-        const Font* font_at_id(u64 id)
+        const Font* font_at_id(u32 id)
         {
             if (has_font(id))
             {
                 auto it = std::find_if(std::cbegin(internal::_fonts), std::cend(internal::_fonts),
                     [id](const auto& pair)
                 {
-                    return pair.second.font_id == id;
+                    return pair.second.atlas.texture_id == id;
                 });
 
                 return &it->second;
@@ -65,7 +65,7 @@ namespace ppp
             return nullptr;
         }
 
-        void load_active_font(u64 id)
+        void load_active_font(u32 id)
         {
             const Font* font = font_at_id(id);
 

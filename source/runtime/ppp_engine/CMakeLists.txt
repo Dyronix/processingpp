@@ -6,6 +6,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.cpp
     # resources
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_atlas.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_atlas.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_pool.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.h

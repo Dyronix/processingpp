@@ -12,6 +12,11 @@ namespace ppp
             render::ImageItem make_image(bool from_corner, float x, float y, float w, float h, s32 image_id);
         }
 
+        namespace font
+        {
+            render::ImageItem make_font(bool from_corner, float x, float y, float w, float h, float uv_start_x, float uv_start_y, float uv_end_x, float uv_end_y, s32 image_id);
+        }
+
         render::RenderItem extrude_point(render::VertexPos* vertices, int vertex_count, float extrusion_width);
         render::RenderItem extrude_line(render::VertexPos* vertices, int vertex_count, float extrusion_width);
         render::RenderItem extrude_ellipse(render::VertexPos* vertices, int vertex_count, float extrusion_width);

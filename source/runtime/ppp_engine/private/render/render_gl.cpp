@@ -196,6 +196,7 @@ namespace ppp
 
             u32	_color_shader_program = 0;
             u32 _image_shader_program = 0;
+            u32 _font_shader_program = 0;
 
             void compile_color_shader_program()
             {
@@ -293,7 +294,7 @@ namespace ppp
                     void main()                                                                 \n\
                     {                                                                           \n\
                         int idx = int(v_texture_idx);                                           \n\
-                        vec4 color = texture(s_image[idx], v_texture) * v_tint_color; \n\
+                        vec4 color = texture(s_image[idx], v_texture) * v_tint_color;           \n\
                         frag_color = color;                                                     \n\
                     }";
 
@@ -324,6 +325,81 @@ namespace ppp
                     glDeleteShader(vert_shader);
                     glDeleteShader(frag_shader);
                     glDeleteProgram(_image_shader_program);
+                    log::error("Renderer failed to link shader program");
+                    return;
+                }
+
+                glDeleteShader(vert_shader);
+                glDeleteShader(frag_shader);
+            }
+            void compile_font_shader_program()
+            {
+                const auto* const vs_source =
+                    "#version 460 core                                                          \n\
+                                                                                                \n\
+                    layout (location = 0) in vec3 a_position;                                   \n\
+                    layout (location = 1) in vec2 a_texture;                                    \n\
+                    layout (location = 2) in vec4 a_tint_color;                                 \n\
+                    layout (location = 3) in float a_texture_idx;                               \n\
+                    layout (location = 4) uniform mat4 u_worldviewproj;                         \n\
+                                                                                                \n\
+                    out vec4 v_tint_color;                                                      \n\
+                    out vec2 v_texture;                                                         \n\
+                    out float v_texture_idx;                                                    \n\
+                                                                                                \n\
+                    void main()                                                                 \n\
+                    {						                                                    \n\
+                        v_tint_color = a_tint_color;                                            \n\
+                        v_texture = a_texture;                                                  \n\
+                        v_texture_idx = a_texture_idx;                                          \n\
+                    	gl_Position = u_worldviewproj * vec4(a_position, 1.0);                  \n\
+                    }";
+
+                const auto* const fs_source =
+                    "#version 460 core                                                          \n\
+                                                                                                \n\
+                    layout (binding = 0) uniform sampler2D s_image[8];                          \n\
+                                                                                                \n\
+                    in vec4 v_tint_color;                                                       \n\
+                    in vec2 v_texture;                                                          \n\
+                    in float v_texture_idx;                                                     \n\
+                                                                                                \n\
+                    out vec4 frag_color;                                                        \n\
+                                                                                                \n\
+                    void main()                                                                 \n\
+                    {                                                                           \n\
+                        int idx = int(v_texture_idx);                                           \n\
+                        vec4 color = vec4(v_tint_color.rgb, texture(s_image[idx], v_texture).r);\n\
+                        frag_color = color;                                                     \n\
+                    }";
+
+                GLuint vert_shader = 0;
+                GLuint frag_shader = 0;
+
+                _font_shader_program = glCreateProgram();
+
+                GLboolean res = compile_shader(&vert_shader, GL_VERTEX_SHADER, vs_source);
+                if (!res)
+                {
+                    log::error("Renderer failed to compile vertex shader");
+                    return;
+                }
+
+                res = compile_shader(&frag_shader, GL_FRAGMENT_SHADER, fs_source);
+                if (!res)
+                {
+                    log::error("Renderer failed to compile fragment shader");
+                    return;
+                }
+
+                glAttachShader(_font_shader_program, vert_shader);
+                glAttachShader(_font_shader_program, frag_shader);
+
+                if (!link_program(_font_shader_program))
+                {
+                    glDeleteShader(vert_shader);
+                    glDeleteShader(frag_shader);
+                    glDeleteProgram(_font_shader_program);
                     log::error("Renderer failed to link shader program");
                     return;
                 }
@@ -501,6 +577,7 @@ namespace ppp
 
             internal::compile_color_shader_program();
             internal::compile_image_shader_program();
+            internal::compile_font_shader_program();
             internal::create_frame_buffer();
 
             // Primitive Drawing Data
@@ -613,14 +690,14 @@ namespace ppp
 
             if(internal::_font_drawing_data->batch_count() > 0)
             {
-                glUseProgram(internal::_image_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(internal::_image_shader_program, "u_worldviewproj");
+                glUseProgram(internal::_font_shader_program);
+                u32 u_mpv_loc = glGetUniformLocation(internal::_font_shader_program, "u_worldviewproj");
                 glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
 
                 // We draw all images first this 
                 // An effect of this will be that filled shapes are drawn on top of images ( a z-index might be in order here )
                 // This however will make sure inner-stroke is possible
-                internal::draw_images(internal::_font_drawing_data, internal::_image_shader_program);
+                internal::draw_images(internal::_font_drawing_data, internal::_font_shader_program);
 
                 glUseProgram(0);
             }
@@ -916,9 +993,9 @@ namespace ppp
 
         void submit_font_item(const ImageItem& item)
         {
-            glm::vec4 tint_color = internal::convert_color(internal::_tint_color);
+            glm::vec4 fill_color = internal::convert_color(internal::_fill_color);
 
-            internal::_font_drawing_data->append(item, tint_color, transform::active_world());
+            internal::_font_drawing_data->append(item, fill_color, transform::active_world());
         }
 
         void submit_image_item(const ImageItem& item)
