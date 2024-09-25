@@ -6,19 +6,30 @@
 #include "render/render.h"
 #include "resources/texture_pool.h"
 #include "resources/font_pool.h"
+#include "fileio/fileio.h"
 
 #include "util/log.h"
 #include "util/types.h"
 
 #include <iostream>
-#include <filesystem>
 
 #include <GLFW/glfw3.h>
 
 namespace ppp
 {
+    namespace internal
+    {
+        //-------------------------------------------------------------------------
+        std::string get_working_directory(const std::string& executable_path)
+        {
+            size_t last_slash_pos = executable_path.find_last_of("/\\");
+
+            return executable_path.substr(0, last_slash_pos + 1);
+        }
+    }
+
     //-------------------------------------------------------------------------
-    s32 init(const AppParams& app_params)
+    s32 init(const AppParams& app_params, const std::string& executable_path)
     {
         if (!device::initialize(app_params.window_width, app_params.window_height))
         {
@@ -41,6 +52,8 @@ namespace ppp
         {
             return -1;
         }
+
+        fileio::add_wildcard("local:", internal::get_working_directory(executable_path));
 
         color::background(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -99,7 +112,7 @@ int main(int argc, char** argv)
 
     s32 result = 0;
 
-    result = init(app_params);
+    result = init(app_params, argv[0]);
     if (result != 0)
     {
         ppp::log::error("Failed to initialize app");
