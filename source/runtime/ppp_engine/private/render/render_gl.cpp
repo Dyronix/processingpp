@@ -87,13 +87,6 @@ namespace ppp
                 glm::vec4 color;
                 f32       texture_idx;
             };
-            struct font_vertex_format
-            {
-                glm::vec3 position;
-                glm::vec2 texcoord;
-                glm::vec4 color;
-                f32       texture_idx;
-            };
 
             bool compile_shader(GLuint* shader, GLenum type, const GLchar* source)
             {
