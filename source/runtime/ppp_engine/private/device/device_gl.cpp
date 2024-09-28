@@ -19,6 +19,8 @@ namespace ppp
             u64 _current_frame_idx = 0;
             u64 _desired_frame_idx = 1;
 
+            u32 _target_frame_rate = 60;
+
             std::unordered_map<u32, bool> _key_pressed;
             std::unordered_map<u32, bool> _key_down;
             std::unordered_map<u32, bool> _key_released;
@@ -467,6 +469,11 @@ namespace ppp
             glfwSetWindowShouldClose(internal::_window, true);
         }
 
+        void target_frame_rate(u32 rate)
+        {
+            internal::_target_frame_rate = rate;
+        }
+
         bool is_looping()
         {
             return internal::_is_looping;
@@ -480,6 +487,21 @@ namespace ppp
         bool should_close()
         {
             return glfwWindowShouldClose(internal::_window);
+        }
+
+        u32 current_frame_index()
+        {
+            return internal::_current_frame_idx;
+        }
+
+        u32 desired_frame_index()
+        {
+            return internal::_desired_frame_idx;
+        }
+
+        u32 target_frame_rate()
+        {
+            return internal::_target_frame_rate;
         }
     }
 }

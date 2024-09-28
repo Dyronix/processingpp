@@ -73,9 +73,15 @@ namespace ppp
         void present();
         void poll_events();
         void request_quit();
+        void target_frame_rate(u32 rate);
 
         bool is_looping();
         bool can_draw();
         bool should_close();
+
+        u32 current_frame_index();
+        u32 desired_frame_index();
+
+        u32 target_frame_rate();
     }
 }

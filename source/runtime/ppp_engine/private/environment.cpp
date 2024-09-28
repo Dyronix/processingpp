@@ -13,6 +13,26 @@ namespace ppp
             log::info(message);
         }
 
+        void frame_rate(unsigned int frame_rate)
+        {
+            device::target_frame_rate(frame_rate);
+        }
+
+        unsigned int frame_rate()
+        {
+            return device::target_frame_rate();
+        }
+
+        unsigned int frame_count()
+        {
+            return device::current_frame_index();
+        }
+
+        float delta_time()
+        {
+            return 1.0f/60.0f;
+        }
+
         float window_width()
         {
             s32 width = 0;

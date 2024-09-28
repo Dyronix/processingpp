@@ -8,6 +8,13 @@ namespace ppp
     {
         void print(const std::string& message);
 
+        void frame_rate(unsigned int frame_rate);
+
+        unsigned int frame_rate();
+        unsigned int frame_count();
+
+        float delta_time();
+
         float window_width();
         float window_height();
 

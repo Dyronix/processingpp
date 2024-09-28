@@ -10,6 +10,7 @@
 
 #include "util/log.h"
 #include "util/types.h"
+#include "util/steady_clock.h"
 
 #include <iostream>
 
@@ -64,8 +65,13 @@ namespace ppp
     //-------------------------------------------------------------------------
     s32 run(const AppParams& app_params)
     {
+        const u32 target_fps = device::target_frame_rate();
+        const clock::milliseconds frame_duration(1000 / target_fps);
+
         while (!device::should_close())
         {
+            auto frame_start = ppp::clock::now();
+
             if (device::can_draw())
             {
                 // render
@@ -85,6 +91,18 @@ namespace ppp
             // poll new window events
             // ----
             device::poll_events();
+
+            // force app to run at a certain framerate
+            // ----
+            auto frame_end = ppp::clock::now();  // Get end time
+            auto frame_time = ppp::clock::duration(frame_start, frame_end);
+
+            if (frame_time.count() < frame_duration.count())
+            {
+                // Sleep for the remaining time to maintain the target frame rate
+                ppp::clock::milliseconds sleep_time = frame_duration - frame_time;
+                ppp::clock::sleep_for(sleep_time);
+            }
         }
 
         return 0;

@@ -33,6 +33,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/types.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/perlin_noise.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/perlin_noise.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/steady_clock.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/steady_clock.cpp
     # engine
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/shapes.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/random.cpp
