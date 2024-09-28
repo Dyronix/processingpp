@@ -84,6 +84,9 @@ namespace ppp
         void render();
         void end();
 
+        // Camera
+        void push_active_camera(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj);
+
         // Fill
         void push_fill_color(const glm::vec4& color);
         void push_fill_enable(bool enable);

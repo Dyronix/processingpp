@@ -17,6 +17,17 @@ namespace ppp
     {
         namespace internal
         {
+            struct camera
+            {
+                glm::vec3 eye;
+                glm::vec3 center;
+                glm::vec3 up;
+
+                glm::mat4 proj;
+            };
+
+            camera _active_camera = {};
+
             u32 index_type()
             {
                 if (typeid(Index).hash_code() == typeid(u32).hash_code()) return GL_UNSIGNED_INT;
@@ -568,6 +579,11 @@ namespace ppp
             internal::_scissor_height = h;
             internal::_scissor_enable = false;
 
+            internal::_active_camera.eye = glm::vec3(0.0f, 0.0f, 100.0f);
+            internal::_active_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
+            internal::_active_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
+            internal::_active_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
+
             internal::compile_color_shader_program();
             internal::compile_image_shader_program();
             internal::compile_font_shader_program();
@@ -674,8 +690,8 @@ namespace ppp
             f32 w = static_cast<f32>(internal::_frame_buffer_width);
             f32 h = static_cast<f32>(internal::_frame_buffer_height);
 
-            glm::mat4 p = glm::ortho(0.0f, w, 0.0f, h, -100.0f, 100.0f);
-            glm::mat4 v = glm::lookAt(glm::vec3(0.0f, 0.0f, 100.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            glm::mat4 p = internal::_active_camera.proj;
+            glm::mat4 v = glm::lookAt(internal::_active_camera.eye, internal::_active_camera.center, internal::_active_camera.up);
             glm::mat4 vp = p * v;
 
             glEnable(GL_BLEND);
@@ -747,6 +763,15 @@ namespace ppp
         void end()
         {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+
+        void push_active_camera(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj)
+        {
+            internal::_active_camera.eye = eye;
+            internal::_active_camera.center = center;
+            internal::_active_camera.up = up;
+
+            internal::_active_camera.proj = proj;
         }
 
         void push_fill_color(const glm::vec4& color)

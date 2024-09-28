@@ -188,19 +188,19 @@ set(LIBRARY_VERSION "${LIBRARY_SOVERSION}.${LIBTOOL_AGE}.${LIBTOOL_REVISION}")
 # External dependency library detection is automatic.  See the notes at the
 # top of this file, for how to force or disable dependencies completely.
 option(FT_DISABLE_ZLIB
-  "Disable use of system zlib and use internal zlib library instead." OFF)
+  "Disable use of system zlib and use internal zlib library instead." ON)
 cmake_dependent_option(FT_REQUIRE_ZLIB
   "Require system zlib instead of internal zlib library." OFF
   "NOT FT_DISABLE_ZLIB" OFF)
 
 option(FT_DISABLE_BZIP2
-  "Disable support of bzip2 compressed fonts." OFF)
+  "Disable support of bzip2 compressed fonts." ON)
 cmake_dependent_option(FT_REQUIRE_BZIP2
   "Require support of bzip2 compressed fonts." OFF
   "NOT FT_DISABLE_BZIP2" OFF)
 
 option(FT_DISABLE_PNG
-  "Disable support of PNG compressed OpenType embedded bitmaps." OFF)
+  "Disable support of PNG compressed OpenType embedded bitmaps." ON)
 cmake_dependent_option(FT_REQUIRE_PNG
   "Require support of PNG compressed OpenType embedded bitmaps." OFF
   "NOT FT_DISABLE_PNG" OFF)
@@ -212,10 +212,13 @@ cmake_dependent_option(FT_REQUIRE_HARFBUZZ
   "NOT FT_DISABLE_HARFBUZZ" OFF)
 
 option(FT_DISABLE_BROTLI
-  "Disable support of compressed WOFF2 fonts." OFF)
+  "Disable support of compressed WOFF2 fonts." ON)
 cmake_dependent_option(FT_REQUIRE_BROTLI
   "Require support of compressed WOFF2 fonts." OFF
   "NOT FT_DISABLE_BROTLI" OFF)
+
+option(FT_DISABLE_PKGCONFIG
+  "Disable PkgConfig support" ON)
 
 option(FT_ENABLE_ERROR_STRINGS
   "Enable support for meaningful error descriptions." OFF)
@@ -248,7 +251,9 @@ endif ()
 
 
 # Find dependencies
-include(FindPkgConfig)
+if(NOT FT_DISABLE_PKGCONFIG)
+  include(FindPkgConfig)
+endif()
 
 if (NOT FT_DISABLE_HARFBUZZ)
   set(HARFBUZZ_MIN_VERSION "2.0.0")
