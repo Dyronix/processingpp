@@ -3,6 +3,7 @@
 
 #include "util/log.h"
 #include "util/types.h"
+#include "util/steady_clock.h"
 
 #include <GLFW/glfw3.h>
 
@@ -20,6 +21,9 @@ namespace ppp
             u64 _desired_frame_idx = 1;
 
             u32 _target_frame_rate = 60;
+
+            clock::time_point _previous_frame_time;
+            clock::milliseconds _delta_frame_time(0);
 
             std::unordered_map<u32, bool> _key_pressed;
             std::unordered_map<u32, bool> _key_down;
@@ -404,6 +408,9 @@ namespace ppp
 
             internal::center_window(internal::_window);
 
+            // Initialize frame time
+            internal::_previous_frame_time = clock::now();
+
             return true;
         }
         void terminate()
@@ -411,6 +418,14 @@ namespace ppp
             // glfw: terminate, clearing all previously allocated GLFW resources.
             // ------------------------------------------------------------------
             glfwTerminate();
+        }
+
+        void tick()
+        {
+            auto current_frame_time = clock::now();
+
+            internal::_delta_frame_time = clock::duration(internal::_previous_frame_time, current_frame_time);
+            internal::_previous_frame_time = current_frame_time;
         }
 
         void window_width(s32* w)
@@ -502,6 +517,22 @@ namespace ppp
         u32 target_frame_rate()
         {
             return internal::_target_frame_rate;
+        }
+
+        f32 max_frame_time()
+        {
+            return 1.0f / internal::_target_frame_rate;
+        }
+
+        f32 delta_time()
+        {
+            if (internal::_is_looping)
+            {
+                return std::chrono::duration<float>(internal::_delta_frame_time).count();
+            }
+            
+            log::info("We specified that the game should not be looping, calling delta_time could result in weird results. returning 0");
+            return 0.0f;
         }
     }
 }

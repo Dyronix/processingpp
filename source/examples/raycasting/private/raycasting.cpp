@@ -7,6 +7,7 @@
 #include "events.h"
 #include "structure.h"
 #include "image.h"
+#include "typography.h"
 
 #include "boundary.h"
 #include "particle.h"
@@ -15,9 +16,11 @@
 
 namespace ppp
 {
-    std::vector<raycasting::Boundary> walls;
+    std::vector<raycasting::Boundary> _walls;
 
-    raycasting::Particle particle(200, 200);
+    raycasting::Particle _particle(200, 200);
+
+    typography::font_id _font;
 
     AppParams entry()
     {
@@ -46,24 +49,43 @@ namespace ppp
 
             raycasting::Boundary b(x1, x2, y1, y2);
 
-            walls.push_back(b);
+            _walls.push_back(b);
         }
 
-        walls.push_back(raycasting::Boundary(0, 1, 400, 1));
-        walls.push_back(raycasting::Boundary(400, 0, 400, 400));
-        walls.push_back(raycasting::Boundary(400, 400, 0, 400));
-        walls.push_back(raycasting::Boundary(1, 400, 1, 0));
+        _walls.push_back(raycasting::Boundary(0, 1, 400, 1));
+        _walls.push_back(raycasting::Boundary(400, 0, 400, 400));
+        _walls.push_back(raycasting::Boundary(400, 400, 0, 400));
+        _walls.push_back(raycasting::Boundary(1, 400, 1, 0));
+
+        environment::frame_rate(60);
+
+        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 16);
+        if (_font == -1)
+        {
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+            typography::text_font(_font);
+        }
     }
 
     void draw()
     {
-        for (const raycasting::Boundary& b : walls)
+        for (const raycasting::Boundary& b : _walls)
         {
             b.show();
         }
 
-        particle.set_position(mouse::mouse_x(), mouse::mouse_y());
-        particle.look(walls);
-        particle.show();
+        _particle.set_position(mouse::mouse_x(), mouse::mouse_y());
+        _particle.look(_walls);
+        _particle.show();
+
+        color::fill({255,0,0,255});
+        std::string str_frame_rate = std::to_string(environment::frame_rate());
+        std::string str_delta_time = std::to_string(environment::delta_time());
+
+        typography::text(str_frame_rate, 10, 10);
+        typography::text(str_delta_time, 70, 10);
     }
 }

@@ -29,10 +29,15 @@ namespace ppp
         }
 
         void text(const std::string &text, float x, float y)
-        {
-            f32 scale = 1.0f;
-            
+        {           
             const font_pool::Font* active_font = font_pool::active_font();
+            if (active_font == nullptr)
+            {
+                log::warn("No font specified as active font, please call typography::text_font");
+                return;
+            }
+
+            f32 scale = 1.0f;
 
             std::string::const_iterator it;
             for(it = std::cbegin(text); it != std::cend(text); ++it)

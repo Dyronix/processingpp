@@ -65,13 +65,8 @@ namespace ppp
     //-------------------------------------------------------------------------
     s32 run(const AppParams& app_params)
     {
-        const u32 target_fps = device::target_frame_rate();
-        const clock::milliseconds frame_duration(1000 / target_fps);
-
         while (!device::should_close())
         {
-            auto frame_start = ppp::clock::now();
-
             if (device::can_draw())
             {
                 // render
@@ -91,17 +86,17 @@ namespace ppp
             // poll new window events
             // ----
             device::poll_events();
+            device::tick();
 
             // force app to run at a certain framerate
             // ----
-            auto frame_end = ppp::clock::now();  // Get end time
-            auto frame_time = ppp::clock::duration(frame_start, frame_end);
-
-            if (frame_time.count() < frame_duration.count())
+            if (device::delta_time() < device::max_frame_time())
             {
-                // Sleep for the remaining time to maintain the target frame rate
-                ppp::clock::milliseconds sleep_time = frame_duration - frame_time;
-                ppp::clock::sleep_for(sleep_time);
+                f32 sleep_time_seconds = device::max_frame_time() - device::delta_time();
+
+                // Convert seconds to milliseconds for sleeping
+                clock::milliseconds sleep_time(static_cast<s32>(sleep_time_seconds * 1000));
+                clock::accurate_sleep_for(sleep_time);
             }
         }
 
@@ -130,7 +125,7 @@ int main(int argc, char** argv)
 
     s32 result = 0;
 
-    result = init(app_params, argv[0]);
+    result = ppp::init(app_params, argv[0]);
     if (result != 0)
     {
         ppp::log::error("Failed to initialize app");

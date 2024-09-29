@@ -1,7 +1,8 @@
 #pragma once
 
+#include "util/types.h"
+
 #include <chrono>
-#include <thread>
 
 namespace ppp
 {
@@ -14,6 +15,7 @@ namespace ppp
 
         milliseconds duration(time_point start, time_point end);
 
-        void sleep_for(milliseconds duration);
+        void precise_sleep_for(milliseconds duration);
+        void accurate_sleep_for(milliseconds duration);
     }
 }

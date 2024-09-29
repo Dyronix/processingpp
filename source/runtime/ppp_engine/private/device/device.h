@@ -63,6 +63,7 @@ namespace ppp
 
         bool initialize(s32 w, s32 h);
         void terminate();
+        void tick();
 
         void window_width(s32* w);
         void window_height(s32* h);
@@ -83,5 +84,8 @@ namespace ppp
         u32 desired_frame_index();
 
         u32 target_frame_rate();
+
+        f32 max_frame_time();
+        f32 delta_time();
     }
 }

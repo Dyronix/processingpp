@@ -30,7 +30,7 @@ namespace ppp
 
         float delta_time()
         {
-            return 1.0f/60.0f;
+            return device::delta_time();
         }
 
         float window_width()

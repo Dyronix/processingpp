@@ -77,9 +77,13 @@ namespace ppp
 
     void draw()
     {
-        structure::no_loop();
+        //structure::no_loop();
 
-        color::fill({ 235, 0, 0, 255 });
-        typography::text("Hello World", 100, 100);
+        color::fill({ 255,0,0,255 });
+        std::string str_frame_rate = std::to_string(environment::frame_rate());
+        std::string str_delta_time = std::to_string(environment::delta_time());
+
+        typography::text(str_frame_rate, 10, 10);
+        typography::text(str_delta_time, 90, 10);
     }
 }
