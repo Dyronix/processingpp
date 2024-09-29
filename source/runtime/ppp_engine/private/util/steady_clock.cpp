@@ -46,8 +46,8 @@ namespace ppp
         {
             using namespace std::chrono;
 
-            // If the duration is greater than 10 milliseconds, sleep for most of it
-            // This threshold is used because sleep durations shorter than 10 milliseconds 
+            // If the duration is greater than 15 milliseconds, sleep for most of it
+            // This threshold is used because sleep durations shorter than ~15 milliseconds 
             // may not be accurately represented by std::this_thread::sleep_for(), 
             // leading to potential delays that can accumulate over multiple frames.
             // For very short durations, busy-waiting ensures that we achieve higher precision,
@@ -56,7 +56,7 @@ namespace ppp
             constexpr auto min_sleep_duration = 15ms; // 15 milliseconds
             if (duration > min_sleep_duration)
             {
-                milliseconds sleep_duration(duration.count() - 1);
+                milliseconds sleep_duration(duration.count());
                 internal::sleep_for(sleep_duration);
 
                 duration -= sleep_duration;
