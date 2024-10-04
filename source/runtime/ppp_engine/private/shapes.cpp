@@ -164,5 +164,53 @@ namespace ppp
                 render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
         }
+
+        //-------------------------------------------------------------------------
+        void box(float width, float height, float depth)
+        {
+            render::RenderItem item = geometry::make_box(width, height, depth);
+
+            render::submit_render_item(render::TopologyType::TRIANGLES, item);
+        }
+        
+        //-------------------------------------------------------------------------
+        void cylinder(float radius, float height, float detailx, float detaily, bool bottom_cap, bool top_cap)
+        {
+            render::RenderItem item = geometry::make_cylinder(radius, height, detailx, detaily, bottom_cap, top_cap);
+
+            render::submit_render_item(render::TopologyType::TRIANGLES, item);
+        }
+        
+        //-------------------------------------------------------------------------
+        void plane(float width, float height)
+        {
+            render::RenderItem item = geometry::make_plane(width, height);
+
+            render::submit_render_item(render::TopologyType::TRIANGLES, item);
+        }
+        
+        //-------------------------------------------------------------------------
+        void sphere(float radius, float detailx, float detaily)
+        {
+            render::RenderItem item = geometry::make_sphere(radius, detailx, detaily);
+
+            render::submit_render_item(render::TopologyType::TRIANGLES, item);
+        }
+        
+        //-------------------------------------------------------------------------
+        void torus(float radius, float tube_radius, float detailx, float detaily)
+        {
+            render::RenderItem item = geometry::make_torus(radius, tube_radius, detailx, detaily);
+
+            render::submit_render_item(render::TopologyType::TRIANGLES, item);
+        }
+
+        //-------------------------------------------------------------------------
+        void cone(float radius, float height, float detailx, float detaily, bool cap)
+        {
+            render::RenderItem item = geometry::make_cone(radius, height, detailx, detaily, cap);
+
+            render::submit_render_item(render::TopologyType::TRIANGLES, item);
+        }
     }
 }

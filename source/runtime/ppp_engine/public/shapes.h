@@ -22,5 +22,12 @@ namespace ppp
         void rect(float x, float y, float w, float h);
         void square(float x, float y, float s);
         void triangle(float x1, float y1, float x2, float y2, float x3, float y3);
+
+        void box(float width, float height, float depth);
+        void cylinder(float radius, float height, float detailx = 24, float detaily = 1, bool bottom_cap = true, bool top_cap = true);
+        void plane(float width, float height);
+        void sphere(float radius, float detailx = 24, float detaily = 16);
+        void torus(float radius, float tube_radius, float detailx = 24, float detaily = 16);
+        void cone(float radius, float height, float detailx = 24, float detaily = 1, bool cap = true);
     }
 }

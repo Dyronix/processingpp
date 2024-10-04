@@ -9,6 +9,7 @@
 #include "environment.h"
 #include "image.h"
 #include "typography.h"
+#include "camera.h"
 
 namespace ppp
 {
@@ -21,7 +22,7 @@ namespace ppp
 
     void setup_canvas()
     {
-        rendering::create_canvas((_window_width / 2) - (_canvas_width / 2), (_window_height / 2) - (_canvas_height / 2), _canvas_width, _canvas_height);
+        //rendering::create_canvas((_window_width / 2) - (_canvas_width / 2), (_window_height / 2) - (_canvas_height / 2), _canvas_width, _canvas_height);
 
         color::background(15);
     }
@@ -72,7 +73,10 @@ namespace ppp
         load_font();
         activate_font();
 
-        shapes::rect_mode(shapes::ShapeMode::CORNER);
+        //shapes::rect_mode(shapes::ShapeMode::CORNER);
+
+        camera::perspective(55.0f, _window_width/_window_height, 0.1f, 1000.0f);
+        camera::camera(20, -40, 80);
     }
 
     void draw()
@@ -80,10 +84,25 @@ namespace ppp
         //structure::no_loop();
 
         color::fill({ 255,0,0,255 });
-        std::string str_frame_rate = std::to_string(environment::frame_rate());
-        std::string str_delta_time = std::to_string(environment::delta_time());
 
-        typography::text(str_frame_rate, 10, 10);
-        typography::text(str_delta_time, 90, 10);
+        //std::string str_frame_rate = std::to_string(environment::frame_rate());
+        //std::string str_delta_time = std::to_string(environment::delta_time());
+        //
+        //typography::text(str_frame_rate, 10, 10);
+        //typography::text(str_delta_time, 140, 10);
+
+        int x = 0;
+
+        for (int i = -5; i <= 5; ++i)
+        {
+            transform::push();
+            transform::translate(x, 0.0f);
+            //shapes::box(10.0f, 10.0f, 10.0f);
+            shapes::cylinder(5.0f, 10.0f, 12.0f);
+            transform::pop();
+            x = (i * 15);
+        }
+
+        //shapes::cylinder(5.0f, 10.0f, 12.0f);
     }
 }

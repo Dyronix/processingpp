@@ -2,31 +2,40 @@
 
 #include "render/render.h"
 
+#include "util/types.h"
+
 namespace ppp
 {
     namespace geometry
     {
         namespace image
         {
-            render::RenderItem extrude_image(render::VertexPosTex* vertices, int vertex_count, float extrusion_width);
-            render::ImageItem make_image(bool from_corner, float x, float y, float w, float h, s32 image_id);
+            render::RenderItem extrude_image(render::VertexPosTex* vertices, int vertex_count, f32 extrusion_width);
+            render::ImageItem make_image(bool from_corner, f32 x, f32 y, f32 w, f32 h, s32 image_id);
         }
 
         namespace font
         {
-            render::ImageItem make_font(bool from_corner, float x, float y, float w, float h, float uv_start_x, float uv_start_y, float uv_end_x, float uv_end_y, s32 image_id);
+            render::ImageItem make_font(bool from_corner, f32 x, f32 y, f32 w, f32 h, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y, s32 image_id);
         }
 
-        render::RenderItem extrude_point(render::VertexPos* vertices, int vertex_count, float extrusion_width);
-        render::RenderItem extrude_line(render::VertexPos* vertices, int vertex_count, float extrusion_width);
-        render::RenderItem extrude_ellipse(render::VertexPos* vertices, int vertex_count, float extrusion_width);
-        render::RenderItem extrude_polygon(render::VertexPos* vertices, int vertex_count, float extrusion_width);
-        render::RenderItem extrude_triangle(render::VertexPos* vertices, int vertex_count, float extrusion_width);
+        render::RenderItem extrude_point(render::VertexPos* vertices, int vertex_count, f32 extrusion_width);
+        render::RenderItem extrude_line(render::VertexPos* vertices, int vertex_count, f32 extrusion_width);
+        render::RenderItem extrude_ellipse(render::VertexPos* vertices, int vertex_count, f32 extrusion_width);
+        render::RenderItem extrude_polygon(render::VertexPos* vertices, int vertex_count, f32 extrusion_width);
+        render::RenderItem extrude_triangle(render::VertexPos* vertices, int vertex_count, f32 extrusion_width);
 
-        render::RenderItem make_point(float x, float y);
-        render::RenderItem make_line(float x1, float y1, float x2, float y2);
-        render::RenderItem make_ellipse(bool from_corner, float x, float y, float w, float h, int detail = 25);
-        render::RenderItem make_polygon(bool from_corner, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
-        render::RenderItem make_triangle(bool from_corner, float x1, float y1, float x2, float y2, float x3, float y3);
+        render::RenderItem make_point(f32 x, f32 y);
+        render::RenderItem make_line(f32 x1, f32 y1, f32 x2, f32 y2);
+        render::RenderItem make_ellipse(bool from_corner, f32 x, f32 y, f32 w, f32 h, int detail = 25);
+        render::RenderItem make_polygon(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3, f32 x4, f32 y4);
+        render::RenderItem make_triangle(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3);
+
+        render::RenderItem make_box(f32 width, f32 height, f32 depth);
+        render::RenderItem make_cylinder(f32 radius, f32 height, f32 detail = 24, bool bottom_cap = true, bool top_cap = true);
+        render::RenderItem make_plane(f32 width, f32 height);
+        render::RenderItem make_sphere(f32 radius, f32 detailx = 24, f32 detaily = 16);
+        render::RenderItem make_torus(f32 radius, f32 tube_radius, f32 detailx = 24, f32 detaily = 16);
+        render::RenderItem make_cone(f32 radius, f32 height, f32 detailx = 24, f32 detaily = 1, bool cap = true);
     }
 }
