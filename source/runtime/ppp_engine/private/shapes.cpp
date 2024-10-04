@@ -36,6 +36,28 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void rasterization_mode(RasterizationMode mode)
+        {
+            if ((s32)mode & (s32)RasterizationMode::SOLID)
+            {
+                render::push_solid_rendering(true);
+            }
+            else
+            {
+                render::push_solid_rendering(false);
+            }
+
+            if ((s32)mode & (s32)RasterizationMode::WIREFRAME)
+            {
+                render::push_wireframe_rendering(true);
+            }
+            else
+            {
+                render::push_wireframe_rendering(false);
+            }
+        }
+
+        //-------------------------------------------------------------------------
         void ellipse(float x, float y, float w, float h, int detail)
         {
             render::RenderItem item = geometry::make_ellipse(internal::_ellipse_mode == ShapeMode::CORNER, x, y, w, h, detail);
@@ -174,9 +196,9 @@ namespace ppp
         }
         
         //-------------------------------------------------------------------------
-        void cylinder(float radius, float height, float detailx, float detaily, bool bottom_cap, bool top_cap)
+        void cylinder(float radius, float height, float detail, bool bottom_cap, bool top_cap)
         {
-            render::RenderItem item = geometry::make_cylinder(radius, height, detailx, detaily, bottom_cap, top_cap);
+            render::RenderItem item = geometry::make_cylinder(radius, height, detail, bottom_cap, top_cap);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }
@@ -190,9 +212,9 @@ namespace ppp
         }
         
         //-------------------------------------------------------------------------
-        void sphere(float radius, float detailx, float detaily)
+        void sphere(float radius, float detail)
         {
-            render::RenderItem item = geometry::make_sphere(radius, detailx, detaily);
+            render::RenderItem item = geometry::make_sphere(radius, detail);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }
@@ -206,9 +228,25 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void cone(float radius, float height, float detailx, float detaily, bool cap)
+        void cone(float radius, float height, float detail, bool cap)
         {
-            render::RenderItem item = geometry::make_cone(radius, height, detailx, detaily, cap);
+            render::RenderItem item = geometry::make_cone(radius, height, detail, cap);
+
+            render::submit_render_item(render::TopologyType::TRIANGLES, item);
+        }
+
+        //-------------------------------------------------------------------------
+        void tetrahedron(float width, float height)
+        {
+            render::RenderItem item = geometry::make_tetrahedron(width, height);
+
+            render::submit_render_item(render::TopologyType::TRIANGLES, item);
+        }
+
+        //-------------------------------------------------------------------------
+        void octahedron(float width, float height)
+        {
+            render::RenderItem item = geometry::make_octahedron(width, height);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }

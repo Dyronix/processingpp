@@ -75,9 +75,9 @@ namespace ppp
                     8, 9, 10, 8, 10, 11,
                     // Right face
                     12, 14, 13, 12, 15, 14,
-                    // Top face
-                    16, 17, 18, 16, 18, 19,
                     // Bottom face
+                    16, 18, 17, 16, 19, 18,
+                    // Top face
                     20, 21, 22, 20, 22, 23
                 };
 
@@ -94,6 +94,36 @@ namespace ppp
                 std::array<render::VertexPos, 4> vertices;
                 std::array<render::Index, 6> indices = { 0, 1 ,3, 1, 3, 2 };
             } _plane_data;
+
+            struct sphere_data
+            {
+                render::VertexPosArr vertices;
+                render::Indices indices;
+            } _sphere_data;
+
+            struct torus_data
+            {
+                render::VertexPosArr vertices;
+                render::Indices indices;
+            } _torus_data;
+
+            struct cone_data
+            {
+                render::VertexPosArr vertices;
+                render::Indices indices;
+            } _cone_data;
+
+            struct tetrahedron_data
+            {
+                std::array<render::VertexPos, 4> vertices;
+                std::array<render::Index, 12> indices = { 0, 1, 2, 0, 2, 3, 0, 3, 1, 1, 2, 3 };
+            } _tetrahedron_data;
+
+            struct octahedron_data
+            {
+                std::array<render::VertexPos, 6> vertices;
+                std::array<render::Index, 24> indices = { 0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1, 5, 1, 2, 5, 2, 3, 5, 3, 4, 5, 4, 1 };
+            } _octahedron_data;
 
             template<typename TVertexType>
             void extrude_vertices(std::vector<render::VertexPos>& new_vertices, const TVertexType& center, TVertexType* vertices, s32 vertex_count, f32 extrusion_width)
@@ -139,7 +169,7 @@ namespace ppp
 
                 for (s32 t = 1; t < total_nr_vertices; ++t)
                 {
-                    f32 angle = (t / static_cast<f32>(detail)) * glm::two_pi<f32>();
+                    f32 angle = (t / static_cast<f32>(detail)) * constants::two_pi();
 
                     f32 v_x = sin(angle) * w;
                     f32 v_y = cos(angle) * h;
@@ -267,7 +297,7 @@ namespace ppp
 
                 for (s32 t = 1; t < total_nr_vertices / 2; ++t)
                 {
-                    f32 angle = (t / static_cast<f32>(detail)) * glm::two_pi<f32>();
+                    f32 angle = (t / static_cast<f32>(detail)) * constants::two_pi();
 
                     f32 v_x = cos(angle) * r;
                     f32 v_z = sin(angle) * r;
@@ -284,12 +314,112 @@ namespace ppp
 
             std::array<render::VertexPos, 4>& make_plane_vertices(f32 width, f32 height)
             {
-                _polygon_data.vertices[0].position = glm::vec3(x1, y1, 0);
-                _polygon_data.vertices[1].position = glm::vec3(x2, y2, 0);
-                _polygon_data.vertices[2].position = glm::vec3(x3, y3, 0);
-                _polygon_data.vertices[3].position = glm::vec3(x4, y4, 0);
+                _plane_data.vertices[0] = { glm::vec3(-width / 2, -height / 2, 0.0f) }; // Bottom Left
+                _plane_data.vertices[1] = { glm::vec3(width / 2, -height / 2, 0.0f) };  // Bottom Right
+                _plane_data.vertices[2] = { glm::vec3(width / 2, height / 2, 0.0f) };   // Top Right
+                _plane_data.vertices[3] = { glm::vec3(-width / 2, height / 2, 0.0f) };  // Top Left
 
-                return _polygon_data.vertices;
+                return _plane_data.vertices;
+            }
+
+            std::vector<render::VertexPos>& make_sphere_vertices(f32 r, s32 detail)
+            {
+                _sphere_data.vertices.clear();
+
+                // Iterate through the latitudes and longitudes to create the sphere vertices
+                for (s32 lat = 0; lat <= detail; ++lat)
+                {
+                    f32 theta = lat * constants::pi() / detail; // Latitude angle
+                    for (s32 lon = 0; lon <= detail; ++lon)
+                    {
+                        f32 phi = lon * constants::two_pi() / detail; // Longitude angle
+
+                        // Calculate the x, y, z coordinates
+                        f32 x = r * sin(theta) * cos(phi);
+                        f32 y = r * cos(theta);
+                        f32 z = r * sin(theta) * sin(phi);
+
+                        // Store the vertex
+                        _sphere_data.vertices.push_back({ glm::vec3(x, y, z) });
+                    }
+                }
+
+                return _sphere_data.vertices;
+            }
+
+            std::vector<render::VertexPos>& make_torus_vertices(f32 r, f32 tr, s32 detailx, s32 detaily)
+            {
+                _torus_data.vertices.clear();
+
+                for (s32 i = 0; i < detailx; ++i)
+                {
+                    f32 theta = i * constants::two_pi() / detailx;
+
+                    for (s32 j = 0; j < detaily; ++j)
+                    {
+                        f32 phi = j * constants::two_pi() / detaily;
+                        f32 x = (r + tr * cos(phi)) * cos(theta);
+                        f32 y = (r + tr * cos(phi)) * sin(theta);
+                        f32 z = tr * sin(phi);
+
+                        _torus_data.vertices.push_back({ glm::vec3(x, y, z) });
+                    }
+                }
+
+                return _torus_data.vertices;
+            }
+
+            std::vector<render::VertexPos>& make_cone_vertices(f32 r, f32 h, s32 detail, bool cap)
+            {
+                // Total vertices: apex (1) + base vertices (detail) + center vertex (1 if cap)
+                int total_nr_vertices = detail + 1 + (cap ? 1 : 0);
+
+                _cone_data.vertices.clear();
+                _cone_data.vertices.resize(total_nr_vertices);
+
+                // Apex vertex (top of the cone)
+                _cone_data.vertices[0].position = glm::vec3{ 0.0f, -h, 0.0f }; // Apex
+
+                // Base vertices
+                for (int t = 1; t <= detail; ++t)
+                {
+                    float angle = (t - 1) / static_cast<float>(detail) * constants::two_pi(); // Angle for the current vertex
+
+                    float v_x = cos(angle) * r; // X coordinate for base
+                    float v_z = sin(angle) * r; // Z coordinate for base
+
+                    _cone_data.vertices[t].position = glm::vec3(v_x, 0.0f, v_z); // Base vertices
+                }
+
+                // If cap is true, add the center vertex for the base
+                if (cap)
+                {
+                    _cone_data.vertices[total_nr_vertices - 1].position = glm::vec3{ 0.0f, 0.0f, 0.0f }; // Center of the base
+                }
+
+                return _cone_data.vertices;
+            }
+
+            std::array<render::VertexPos, 4>& make_tetrahedron_vertices(f32 w, f32 h)
+            {
+                _tetrahedron_data.vertices[0] = { glm::vec3(0, h, 0) };
+                _tetrahedron_data.vertices[1] = { glm::vec3(-w, -h, w) };
+                _tetrahedron_data.vertices[2] = { glm::vec3(w, -h, w) };
+                _tetrahedron_data.vertices[3] = { glm::vec3(0, -h, -w) };
+
+                return _tetrahedron_data.vertices;
+            }
+
+            std::array<render::VertexPos, 6>& make_octa_hedron_vertices(f32 w, f32 h)
+            {
+                _octahedron_data.vertices[0] = { glm::vec3(0, h, 0) };
+                _octahedron_data.vertices[1] = { glm::vec3(w, 0, 0) };
+                _octahedron_data.vertices[2] = { glm::vec3(0, 0, w) };
+                _octahedron_data.vertices[3] = { glm::vec3(-w, 0, 0) };
+                _octahedron_data.vertices[4] = { glm::vec3(0, 0, -w) };
+                _octahedron_data.vertices[5] = { glm::vec3(0, -h, 0) };
+
+                return _octahedron_data.vertices;
             }
 
             std::vector<render::Index>& make_ellipse_indices(f32 x, f32 y, f32 w, f32 h, s32 detail = 25)
@@ -405,6 +535,116 @@ namespace ppp
             std::array<render::Index, 6>& make_plane_indices()
             {
                 return _plane_data.indices;
+            }
+
+            std::vector<render::Index>& make_sphere_indices(s32 detail)
+            {
+                _sphere_data.indices.clear();
+
+                // Create indices for drawing triangles
+                for (s32 lat = 0; lat < detail; ++lat)
+                {
+                    for (s32 lon = 0; lon < detail; ++lon)
+                    {
+                        s32 first = (lat * (detail + 1)) + lon; // Current vertex
+                        s32 second = first + detail + 1; // Vertex below
+
+                        // Two triangles for each square on the sphere
+                        _sphere_data.indices.push_back(first);
+                        _sphere_data.indices.push_back(second);
+                        _sphere_data.indices.push_back(first + 1);
+
+                        _sphere_data.indices.push_back(second);
+                        _sphere_data.indices.push_back(second + 1);
+                        _sphere_data.indices.push_back(first + 1);
+                    }
+                }
+
+                return _sphere_data.indices;
+            }
+
+            std::vector<render::Index>& make_torus_indices(s32 detailx, s32 detaily)
+            {
+                _torus_data.indices.clear();
+
+                for (s32 i = 0; i < detailx; ++i)
+                {
+                    for (s32 j = 0; j < detaily; ++j)
+                    {
+                        s32 next_i = (i + 1) % detailx;
+                        s32 next_j = (j + 1) % detaily;
+
+                        _torus_data.indices.push_back(i * detaily + j);
+                        _torus_data.indices.push_back(next_i * detaily + j);
+                        _torus_data.indices.push_back(i * detaily + next_j);
+
+                        _torus_data.indices.push_back(next_i * detaily + j);
+                        _torus_data.indices.push_back(next_i * detaily + next_j);
+                        _torus_data.indices.push_back(i * detaily + next_j);
+                    }
+                }
+
+                return _torus_data.indices;
+            }
+
+            std::vector<render::Index>& make_cone_indices(s32 detail, bool cap)
+            {
+                // Calculate the total number of indices for the sides of the cone
+                s32 total_nr_indices = detail * 3;
+
+                // If cap is true, we will add additional indices for the base
+                if (cap)
+                {
+                    total_nr_indices += detail * 3; // Additional indices for base triangles
+                }
+
+                _cone_data.indices.clear();
+                _cone_data.indices.resize(total_nr_indices);
+
+                s32 i = 0;
+
+                // Create indices for the sides of the cone
+                for (s32 t = 0; t < total_nr_indices / 2; t += 3)
+                {
+                    _cone_data.indices[t + 0] = 0;
+                    _cone_data.indices[t + 1] = i + 1;
+                    _cone_data.indices[t + 2] = i + 2;
+
+                    ++i;
+                }
+
+                // Loop back to the first triangle
+                _cone_data.indices[(total_nr_indices / 2) - 1] = 1;
+
+                // If cap is true, create indices for the base
+                if (cap)
+                {
+                    i = 0;
+
+                    for (s32 t = total_nr_indices / 2; t < total_nr_indices; t += 3)
+                    {
+                        _cone_data.indices[t + 0] = _cone_data.vertices.size() - 1;
+                        _cone_data.indices[t + 1] = i + 1;
+                        _cone_data.indices[t + 2] = i + 2;
+
+                        ++i;
+                    }
+                }
+
+                // Loop back to the first triangle
+                _cone_data.indices[total_nr_indices - 1] = 1;
+
+                return _cone_data.indices;
+            }
+
+            std::array<render::Index, 12>& make_tetrahedron_indices()
+            {
+                return _tetrahedron_data.indices;
+            }
+
+            std::array<render::Index, 24>& make_octahedron_indices()
+            {
+                return _octahedron_data.indices;
             }
 
             namespace image
@@ -674,7 +914,7 @@ namespace ppp
             return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
         }
 
-        render::RenderItem make_cylinder(f32 radius, f32 height, f32 detail, bool bottom_cap, bool top_cap)
+        render::RenderItem make_cylinder(f32 radius, f32 height, s32 detail, bool bottom_cap, bool top_cap)
         {
             auto& vertices = internal::make_cylinder_vertices(radius, height, detail);
             auto& indices = internal::make_cylinder_indices(height, detail, bottom_cap, top_cap);
@@ -685,24 +925,49 @@ namespace ppp
         render::RenderItem make_plane(f32 width, f32 height)
         {
             auto& vertices = internal::make_plane_vertices(width, height);
-            auto& indices = internal::make_plane_indices(width, height);
+            auto& indices = internal::make_plane_indices();
 
             return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
         }
 
-        render::RenderItem make_sphere(f32 radius, f32 detailx, f32 detaily)
+        render::RenderItem make_sphere(f32 radius, s32 detail)
         {
-            return render::RenderItem{};
+            auto& vertices = internal::make_sphere_vertices(radius, detail);
+            auto& indices = internal::make_sphere_indices(detail);
+
+            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
         }
 
-        render::RenderItem make_torus(f32 radius, f32 tube_radius, f32 detailx, f32 detaily)
+        render::RenderItem make_torus(f32 radius, f32 tube_radius, s32 detailx, s32 detaily)
         {
-            return render::RenderItem{};
+            auto& vertices = internal::make_torus_vertices(radius, tube_radius, detailx, detaily);
+            auto& indices = internal::make_torus_indices(detailx, detaily);
+
+            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
         }
 
-        render::RenderItem make_cone(f32 radius, f32 height, f32 detailx, f32 detaily, bool cap)
+        render::RenderItem make_cone(f32 radius, f32 height, s32 detail, bool cap)
         {
-            return render::RenderItem{};
+            auto& vertices = internal::make_cone_vertices(radius, height, detail, cap);
+            auto& indices = internal::make_cone_indices(detail, cap);
+
+            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
+        }
+
+        render::RenderItem make_tetrahedron(f32 width, f32 height)
+        {
+            auto& vertices = internal::make_tetrahedron_vertices(width, height);
+            auto& indices = internal::make_tetrahedron_indices();
+
+            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
+        }
+
+        render::RenderItem make_octahedron(f32 width, f32 height)
+        {
+            auto& vertices = internal::make_octa_hedron_vertices(width, height);
+            auto& indices = internal::make_octahedron_indices();
+
+            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
         }
     }
 }
