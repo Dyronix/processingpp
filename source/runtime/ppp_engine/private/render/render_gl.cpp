@@ -57,6 +57,11 @@ namespace ppp
                     ((color >> 0) & 0xFF) * scale);
             }
 
+            bool _solid_rendering = true;
+            bool _wireframe_rendering = true;
+            f32 _wireframe_linewidth = 3.0f;
+            s32 _wireframe_color = 0x000000FF;
+
             s32 _scissor_x = -1;
             s32 _scissor_y = -1;
             s32 _scissor_width = -1;
@@ -171,6 +176,7 @@ namespace ppp
             s32 _frame_buffer_height = -1;
 
             u32 _render_fbo;
+            u32 _render_depth_rbo;
             u32 _render_texture;
 
             void create_frame_buffer()
@@ -185,6 +191,11 @@ namespace ppp
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _render_texture, 0);
+
+                glGenRenderbuffers(1, &_render_depth_rbo);
+                glBindRenderbuffer(GL_RENDERBUFFER, _render_depth_rbo);
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, _frame_buffer_width, _frame_buffer_height);
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _render_depth_rbo);
 
                 u32 attachments[1] = { GL_COLOR_ATTACHMENT0 };
                 glDrawBuffers(1, attachments);
@@ -205,26 +216,28 @@ namespace ppp
             void compile_color_shader_program()
             {
                 const auto* const vs_source =
-                    "#version 460 core												\n\
-		            layout (location = 0) in vec4 a_position;						\n\
-		            layout (location = 1) in vec4 a_color;							\n\
-		            layout (location = 2) uniform mat4 u_worldviewproj;				\n\
-		            out vec4 v_color;												\n\
-																		            \n\
-		            void main()														\n\
-		            {																\n\
-		            	v_color = a_color;											\n\
-		            	gl_Position = u_worldviewproj * a_position, 1.0;			\n\
+                    "#version 460 core												            \n\
+		            layout (location = 0) in vec4 a_position;						            \n\
+		            layout (location = 1) in vec4 a_color;							            \n\
+		            layout (location = 2) uniform mat4 u_worldviewproj;				            \n\
+		            layout (location = 3) uniform bool u_wireframe;                             \n\
+		            layout (location = 4) uniform vec4 u_wireframe_color;                       \n\
+		            out vec4 v_color;												            \n\
+																		                        \n\
+		            void main()														            \n\
+		            {																            \n\
+		            	v_color = u_wireframe ? u_wireframe_color : a_color;	                \n\
+		            	gl_Position = u_worldviewproj * a_position, 1.0;			            \n\
 		            }";
 
                 const auto* const fs_source =
-                    "#version 460 core												\n\
-		            in vec4 v_color;												\n\
-		            out vec4 frag_color;											\n\
-		            																\n\
-		            void main()														\n\
-		            {																\n\
-		            	frag_color = v_color;										\n\
+                    "#version 460 core												            \n\
+		            in vec4 v_color;												            \n\
+		            out vec4 frag_color;											            \n\
+		            																            \n\
+		            void main()														            \n\
+		            {																            \n\
+		            	frag_color = v_color;										            \n\
 		            }";
 
                 GLuint vert_shader = 0;
@@ -264,42 +277,44 @@ namespace ppp
             void compile_image_shader_program()
             {
                 const auto* const vs_source =
-                    "#version 460 core                                                          \n\
-                                                                                                \n\
-                    layout (location = 0) in vec3 a_position;                                   \n\
-                    layout (location = 1) in vec2 a_texture;                                    \n\
-                    layout (location = 2) in vec4 a_tint_color;                                 \n\
-                    layout (location = 3) in float a_texture_idx;                               \n\
-                    layout (location = 4) uniform mat4 u_worldviewproj;                         \n\
-                                                                                                \n\
-                    out vec4 v_tint_color;                                                      \n\
-                    out vec2 v_texture;                                                         \n\
-                    out float v_texture_idx;                                                    \n\
-                                                                                                \n\
-                    void main()                                                                 \n\
-                    {						                                                    \n\
-                        v_tint_color = a_tint_color;                                            \n\
-                        v_texture = a_texture;                                                  \n\
-                        v_texture_idx = a_texture_idx;                                          \n\
-                    	gl_Position = u_worldviewproj * vec4(a_position, 1.0);                  \n\
+                    "#version 460 core                                                                          \n\
+                                                                                                                \n\
+                    layout (location = 0) in vec3 a_position;                                                   \n\
+                    layout (location = 1) in vec2 a_texture;                                                    \n\
+                    layout (location = 2) in vec4 a_tint_color;                                                 \n\
+                    layout (location = 3) in float a_texture_idx;                                               \n\
+                    layout (location = 4) uniform mat4 u_worldviewproj;                                         \n\
+                    layout (location = 5) uniform bool u_wireframe;                                             \n\
+                    layout (location = 6) uniform vec4 u_wireframe_color;                                       \n\
+                                                                                                                \n\
+                    out vec4 v_tint_color;                                                                      \n\
+                    out vec2 v_texture;                                                                         \n\
+                    out float v_texture_idx;                                                                    \n\
+                                                                                                                \n\
+                    void main()                                                                                 \n\
+                    {						                                                                    \n\
+                        v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;	                        \n\
+                        v_texture = a_texture;                                                                  \n\
+                        v_texture_idx = a_texture_idx;                                                          \n\
+                    	gl_Position = u_worldviewproj * vec4(a_position, 1.0);                                  \n\
                     }";
 
                 const auto* const fs_source =
-                    "#version 460 core                                                          \n\
-                                                                                                \n\
-                    layout (binding = 0) uniform sampler2D s_image[8];                          \n\
-                                                                                                \n\
-                    in vec4 v_tint_color;                                                       \n\
-                    in vec2 v_texture;                                                          \n\
-                    in float v_texture_idx;                                                     \n\
-                                                                                                \n\
-                    out vec4 frag_color;                                                        \n\
-                                                                                                \n\
-                    void main()                                                                 \n\
-                    {                                                                           \n\
-                        int idx = int(v_texture_idx);                                           \n\
-                        vec4 color = texture(s_image[idx], v_texture) * v_tint_color;           \n\
-                        frag_color = color;                                                     \n\
+                    "#version 460 core                                                                          \n\
+                                                                                                                \n\
+                    layout (binding = 0) uniform sampler2D s_image[8];                                          \n\
+                                                                                                                \n\
+                    in vec4 v_tint_color;                                                                       \n\
+                    in vec2 v_texture;                                                                          \n\
+                    in float v_texture_idx;                                                                     \n\
+                                                                                                                \n\
+                    out vec4 frag_color;                                                                        \n\
+                                                                                                                \n\
+                    void main()                                                                                 \n\
+                    {                                                                                           \n\
+                        int idx = int(v_texture_idx);                                                           \n\
+                        vec4 color = texture(s_image[idx], v_texture) * v_tint_color;                           \n\
+                        frag_color = color;                                                                     \n\
                     }";
 
                 GLuint vert_shader = 0;
@@ -339,42 +354,44 @@ namespace ppp
             void compile_font_shader_program()
             {
                 const auto* const vs_source =
-                    "#version 460 core                                                          \n\
-                                                                                                \n\
-                    layout (location = 0) in vec3 a_position;                                   \n\
-                    layout (location = 1) in vec2 a_texture;                                    \n\
-                    layout (location = 2) in vec4 a_tint_color;                                 \n\
-                    layout (location = 3) in float a_texture_idx;                               \n\
-                    layout (location = 4) uniform mat4 u_worldviewproj;                         \n\
-                                                                                                \n\
-                    out vec4 v_tint_color;                                                      \n\
-                    out vec2 v_texture;                                                         \n\
-                    out float v_texture_idx;                                                    \n\
-                                                                                                \n\
-                    void main()                                                                 \n\
-                    {						                                                    \n\
-                        v_tint_color = a_tint_color;                                            \n\
-                        v_texture = a_texture;                                                  \n\
-                        v_texture_idx = a_texture_idx;                                          \n\
-                    	gl_Position = u_worldviewproj * vec4(a_position, 1.0);                  \n\
+                    "#version 460 core                                                                          \n\
+                                                                                                                \n\
+                    layout (location = 0) in vec3 a_position;                                                   \n\
+                    layout (location = 1) in vec2 a_texture;                                                    \n\
+                    layout (location = 2) in vec4 a_tint_color;                                                 \n\
+                    layout (location = 3) in float a_texture_idx;                                               \n\
+                    layout (location = 4) uniform mat4 u_worldviewproj;                                         \n\
+                    layout (location = 5) uniform bool u_wireframe;                                             \n\
+                    layout (location = 6) uniform vec4 u_wireframe_color;                                       \n\
+                                                                                                                \n\
+                    out vec4 v_tint_color;                                                                      \n\
+                    out vec2 v_texture;                                                                         \n\
+                    out float v_texture_idx;                                                                    \n\
+                                                                                                                \n\
+                    void main()                                                                                 \n\
+                    {						                                                                    \n\
+                        v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;                          \n\
+                        v_texture = a_texture;                                                                  \n\
+                        v_texture_idx = a_texture_idx;                                                          \n\
+                    	gl_Position = u_worldviewproj * vec4(a_position, 1.0);                                  \n\
                     }";
 
                 const auto* const fs_source =
-                    "#version 460 core                                                          \n\
-                                                                                                \n\
-                    layout (binding = 0) uniform sampler2D s_image[8];                          \n\
-                                                                                                \n\
-                    in vec4 v_tint_color;                                                       \n\
-                    in vec2 v_texture;                                                          \n\
-                    in float v_texture_idx;                                                     \n\
-                                                                                                \n\
-                    out vec4 frag_color;                                                        \n\
-                                                                                                \n\
-                    void main()                                                                 \n\
-                    {                                                                           \n\
-                        int idx = int(v_texture_idx);                                           \n\
-                        vec4 color = vec4(v_tint_color.rgb, texture(s_image[idx], v_texture).r);\n\
-                        frag_color = color;                                                     \n\
+                    "#version 460 core                                                                          \n\
+                                                                                                                \n\
+                    layout (binding = 0) uniform sampler2D s_image[8];                                          \n\
+                                                                                                                \n\
+                    in vec4 v_tint_color;                                                                       \n\
+                    in vec2 v_texture;                                                                          \n\
+                    in float v_texture_idx;                                                                     \n\
+                                                                                                                \n\
+                    out vec4 frag_color;                                                                        \n\
+                                                                                                                \n\
+                    void main()                                                                                 \n\
+                    {                                                                                           \n\
+                        int idx = int(v_texture_idx);                                                           \n\
+                        vec4 color = vec4(v_tint_color.rgb, texture(s_image[idx], v_texture).r);                \n\
+                        frag_color = color;                                                                     \n\
                     }";
 
                 GLuint vert_shader = 0;
@@ -662,7 +679,8 @@ namespace ppp
             glViewport(0, 0, internal::_frame_buffer_width, internal::_frame_buffer_height);
 
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClearDepth(1.0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Reset to the user clear color
             glm::vec4 bg_color = internal::convert_color(internal::_bg_color);
@@ -682,7 +700,7 @@ namespace ppp
                 glDisable(GL_SCISSOR_TEST);
             }
 
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
         void render()
@@ -695,7 +713,12 @@ namespace ppp
             glm::mat4 vp = p * v;
 
             glEnable(GL_BLEND);
+            glEnable(GL_CULL_FACE);
+            glEnable(GL_DEPTH_TEST);
+            
+            glCullFace(GL_BACK);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glDepthFunc(GL_LESS);
 
             if(internal::_font_drawing_data->batch_count() > 0)
             {
@@ -706,7 +729,26 @@ namespace ppp
                 // We draw all images first this 
                 // An effect of this will be that filled shapes are drawn on top of images ( a z-index might be in order here )
                 // This however will make sure inner-stroke is possible
-                internal::draw_images(internal::_font_drawing_data, internal::_font_shader_program);
+                if (internal::_solid_rendering)
+                {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glUniform1i(glGetUniformLocation(internal::_font_shader_program, "u_wireframe"), GL_FALSE);
+
+                    internal::draw_images(internal::_font_drawing_data, internal::_font_shader_program);
+                }
+                
+                if (internal::_wireframe_rendering)
+                {
+                    internal::_font_drawing_data->load_first_batch();
+
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                    glLineWidth(internal::_wireframe_linewidth);
+                    glUniform1i(glGetUniformLocation(internal::_font_shader_program, "u_wireframe"), GL_TRUE);
+                    glm::vec4 wireframe_color = internal::convert_color(internal::_wireframe_color);
+                    glUniform4fv(glGetUniformLocation(internal::_font_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
+
+                    internal::draw_images(internal::_font_drawing_data, internal::_font_shader_program);
+                }
 
                 glUseProgram(0);
             }
@@ -720,7 +762,26 @@ namespace ppp
                 // We draw all images first this 
                 // An effect of this will be that filled shapes are drawn on top of images ( a z-index might be in order here )
                 // This however will make sure inner-stroke is possible
-                internal::draw_images(internal::_image_drawing_data, internal::_image_shader_program);
+                if (internal::_solid_rendering)
+                {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glUniform1i(glGetUniformLocation(internal::_image_shader_program, "u_wireframe"), GL_FALSE);
+
+                    internal::draw_images(internal::_image_drawing_data, internal::_image_shader_program);
+                }
+
+                if(internal::_wireframe_rendering)
+                {
+                    internal::_image_drawing_data->load_first_batch();
+
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                    glLineWidth(internal::_wireframe_linewidth);
+                    glUniform1i(glGetUniformLocation(internal::_image_shader_program, "u_wireframe"), GL_TRUE);
+                    glm::vec4 wireframe_color = internal::convert_color(internal::_wireframe_color);
+                    glUniform4fv(glGetUniformLocation(internal::_image_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
+
+                    internal::draw_images(internal::_image_drawing_data, internal::_image_shader_program);
+                }
 
                 glUseProgram(0);
             }
@@ -733,23 +794,47 @@ namespace ppp
                 u32 u_mpv_loc = glGetUniformLocation(internal::_color_shader_program, "u_worldviewproj");
                 glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
 
-                // Points
-                internal::draw_points(internal::_points_drawing_data);
-                internal::draw_points(internal::_points_stroke_drawing_data);
+                if (internal::_solid_rendering)
+                {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glUniform1i(glGetUniformLocation(internal::_color_shader_program, "u_wireframe"), GL_FALSE);
 
-                // Lines
-                internal::draw_lines(internal::_lines_drawing_data);
-                internal::draw_lines(internal::_lines_stroke_drawing_data);
+                    // Points
+                    internal::draw_points(internal::_points_drawing_data);
+                    internal::draw_points(internal::_points_stroke_drawing_data);
 
-                // Triangles
+                    // Lines
+                    internal::draw_lines(internal::_lines_drawing_data);
+                    internal::draw_lines(internal::_lines_stroke_drawing_data);
 
-                // We draw the triangles first and afterwards the stroke
-                // This only has to happen for the triangles because of the inner stroke capabilities
-                // If we would draw the triangles last no inner stroke would be visible
-                internal::draw_triangles(internal::_triangle_drawing_data);
-                internal::draw_triangles(internal::_triangle_stroke_drawing_data);
+                    // Triangles
+                    // We draw the triangles first and afterwards the stroke
+                    // This only has to happen for the triangles because of the inner stroke capabilities
+                    // If we would draw the triangles last no inner stroke would be visible
+                    internal::draw_triangles(internal::_triangle_drawing_data);
+                    internal::draw_triangles(internal::_triangle_stroke_drawing_data);
 
-                internal::draw_triangles(internal::_image_stroke_drawing_data);
+                    internal::draw_triangles(internal::_image_stroke_drawing_data);
+                }
+
+                if (internal::_wireframe_rendering)
+                {
+                    internal::_triangle_drawing_data->load_first_batch();
+                    internal::_triangle_stroke_drawing_data->load_first_batch();
+
+                    internal::_image_stroke_drawing_data->load_first_batch();
+
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                    glLineWidth(internal::_wireframe_linewidth);
+                    glUniform1i(glGetUniformLocation(internal::_color_shader_program, "u_wireframe"), GL_TRUE);
+                    glm::vec4 wireframe_color = internal::convert_color(internal::_wireframe_color);
+                    glUniform4fv(glGetUniformLocation(internal::_color_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
+
+                    internal::draw_triangles(internal::_triangle_drawing_data);
+                    internal::draw_triangles(internal::_triangle_stroke_drawing_data);
+
+                    internal::draw_triangles(internal::_image_stroke_drawing_data);
+                }
 
                 glUseProgram(0);
             }
@@ -776,18 +861,22 @@ namespace ppp
 
         void push_solid_rendering(bool enable)
         {
+            internal::_solid_rendering = enable;
         }
 
         void push_wireframe_rendering(bool enable)
         {
+            internal::_wireframe_rendering = enable;
         }
 
         void push_wireframe_linewidth(f32 line_width)
         {
+            internal::_wireframe_linewidth = line_width;
         }
 
         void push_wireframe_color(const glm::vec4& color)
         {
+            internal::_wireframe_color = internal::convert_color(color);
         }
 
         void push_fill_color(const glm::vec4& color)
