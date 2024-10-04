@@ -97,11 +97,11 @@ namespace ppp
         {
             transform::push();
             transform::translate(x, 0.0f);
-            shapes::box(10.0f, 10.0f, 10.0f);
-            //shapes::cylinder(5.0f, 10.0f, 12.0f);
+            //shapes::box(10.0f, 10.0f, 10.0f);
+            shapes::cylinder(5.0f, 10.0f, 12.0f);
             //shapes::plane(5.0f, 5.0f);
             //shapes::torus(6.0f, 2.0f, 8.0f, 8.0f);
-            //shapes::sphere(6.0f);
+            //shapes::sphere(6.0f, 12.0f);
             //shapes::cone(6.0f, 8.0f);
             //shapes::tetrahedron(6.0f, 6.0f);
             //shapes::octahedron(6.0f, 6.0f);
@@ -109,6 +109,6 @@ namespace ppp
             x = (i * 15);
         }
 
-        //shapes::cone(6.0f, 8.0f, 12.0f, true);
+        //shapes::cylinder(10.0f, 50.0f, 12.0f);
     }
 }
