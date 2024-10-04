@@ -34,5 +34,15 @@ namespace ppp
 
             render::push_scissor_enable(false);
         }
+
+        void wireframe_linewidth(float line_width)
+        {
+            render::push_wireframe_linewidth(line_width);
+        }
+
+        void wireframe_color(float r, float g, float b)
+        {
+            render::push_wireframe_color({r, g, b, 1.0f});
+        }
     }
 }

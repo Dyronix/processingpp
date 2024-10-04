@@ -87,6 +87,12 @@ namespace ppp
         // Camera
         void push_active_camera(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj);
 
+        // Rasterization
+        void push_solid_rendering(bool enable);
+        void push_wireframe_rendering(bool enable);
+        void push_wireframe_linewidth(f32 line_width);
+        void push_wireframe_color(const glm::vec4& color);
+
         // Fill
         void push_fill_color(const glm::vec4& color);
         void push_fill_enable(bool enable);

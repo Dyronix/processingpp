@@ -774,6 +774,22 @@ namespace ppp
             internal::_active_camera.proj = proj;
         }
 
+        void push_solid_rendering(bool enable)
+        {
+        }
+
+        void push_wireframe_rendering(bool enable)
+        {
+        }
+
+        void push_wireframe_linewidth(f32 line_width)
+        {
+        }
+
+        void push_wireframe_color(const glm::vec4& color)
+        {
+        }
+
         void push_fill_color(const glm::vec4& color)
         {
             internal::_fill_color = internal::convert_color(color);
