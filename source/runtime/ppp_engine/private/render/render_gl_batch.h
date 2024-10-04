@@ -182,6 +182,11 @@ namespace ppp
                 glDeleteVertexArrays(1, &m_vao);
             }
 
+            void load_first_batch()
+            {
+                m_draw_batch = 0;
+            }
+
             const PrimitiveBatch<T>* next_batch()
             {
                 if (m_draw_batch < m_batches.size())
@@ -414,6 +419,11 @@ namespace ppp
                 glDeleteBuffers(1, &m_vbo);
                 glDeleteBuffers(1, &m_ebo);
                 glDeleteVertexArrays(1, &m_vao);
+            }
+
+            void load_first_batch()
+            {
+                m_draw_batch = 0;
             }
 
             const TextureBatch<T>* next_batch()
