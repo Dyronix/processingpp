@@ -92,7 +92,7 @@ namespace ppp
             struct plane_data
             {
                 std::array<render::VertexPos, 4> vertices;
-                std::array<render::Index, 6> indices = { 0, 1 ,3, 1, 3, 2 };
+                std::array<render::Index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
             } _plane_data;
 
             struct sphere_data
@@ -116,7 +116,10 @@ namespace ppp
             struct tetrahedron_data
             {
                 std::array<render::VertexPos, 4> vertices;
-                std::array<render::Index, 12> indices = { 0, 1, 2, 0, 2, 3, 0, 3, 1, 1, 2, 3 };
+                std::array<render::Index, 12> indices = { 0, 1, 2,
+                    0, 2, 3,
+                    0, 3, 1,
+                    1, 3, 2 };
             } _tetrahedron_data;
 
             struct octahedron_data
@@ -476,8 +479,8 @@ namespace ppp
                     for (s32 t = 0; t < total_nr_indices; t += 3)
                     {
                         _cylinder_data.indices[index_offset + 0] = 0;         // Center vertex of top cap
-                        _cylinder_data.indices[index_offset + 1] = i + 1;     // First perimeter vertex
-                        _cylinder_data.indices[index_offset + 2] = i + 2;     // Next perimeter vertex
+                        _cylinder_data.indices[index_offset + 1] = i + 2;     // First perimeter vertex
+                        _cylinder_data.indices[index_offset + 2] = i + 1;     // Next perimeter vertex
                         ++i;
                         index_offset += 3;
                     }
@@ -509,25 +512,25 @@ namespace ppp
                 for (s32 j = 0; j < detail - 1; ++j)
                 {
                     // First triangle of quad (Top -> Bottom -> Next Top)
-                    _cylinder_data.indices[side_start + 0] = j + 1;                       // Top current vertex
-                    _cylinder_data.indices[side_start + 1] = bottom_cap_start + j + 1;    // Bottom current vertex
-                    _cylinder_data.indices[side_start + 2] = j + 2;                       // Top next vertex
+                    _cylinder_data.indices[side_start + 0] = j + 1;                         // Top current vertex
+                    _cylinder_data.indices[side_start + 1] = j + 2;                         // Bottom current vertex
+                    _cylinder_data.indices[side_start + 2] = bottom_cap_start + j + 1;      // Top next vertex
 
                     // Second triangle of quad (Bottom -> Next Bottom -> Next Top)
-                    _cylinder_data.indices[side_start + 3] = bottom_cap_start + j + 1;    // Bottom current vertex
-                    _cylinder_data.indices[side_start + 4] = bottom_cap_start + j + 2;    // Bottom next vertex
-                    _cylinder_data.indices[side_start + 5] = j + 2;                       // Top next vertex
+                    _cylinder_data.indices[side_start + 3] = bottom_cap_start + j + 1;      // Bottom current vertex
+                    _cylinder_data.indices[side_start + 4] = j + 2;                         // Bottom next vertex
+                    _cylinder_data.indices[side_start + 5] = bottom_cap_start + j + 2;      // Top next vertex
 
                     side_start += 6;
                 }
 
-                _cylinder_data.indices[side_start + 0] = detail;                           // Last top perimeter vertex
-                _cylinder_data.indices[side_start + 1] = bottom_cap_start + detail;        // Last bottom perimeter vertex
-                _cylinder_data.indices[side_start + 2] = 1;                                // First top perimeter vertex (to close the loop)
+                _cylinder_data.indices[side_start + 0] = detail;                            // Last top perimeter vertex
+                _cylinder_data.indices[side_start + 1] = 1;                                 // Last bottom perimeter vertex
+                _cylinder_data.indices[side_start + 2] = bottom_cap_start + detail;         // First top perimeter vertex (to close the loop)
 
-                _cylinder_data.indices[side_start + 3] = bottom_cap_start + detail;        // Last bottom perimeter vertex
-                _cylinder_data.indices[side_start + 4] = bottom_cap_start + 1;             // First bottom perimeter vertex (to close the loop)
-                _cylinder_data.indices[side_start + 5] = 1;                                // First top perimeter vertex (to close the loop)
+                _cylinder_data.indices[side_start + 3] = bottom_cap_start + detail;         // Last bottom perimeter vertex
+                _cylinder_data.indices[side_start + 4] = 1;                                 // First bottom perimeter vertex (to close the loop)
+                _cylinder_data.indices[side_start + 5] = bottom_cap_start + 1;              // First top perimeter vertex (to close the loop)
 
                 return _cylinder_data.indices;
             }
