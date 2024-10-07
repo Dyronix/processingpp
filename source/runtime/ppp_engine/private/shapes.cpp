@@ -1,6 +1,7 @@
 #include "shapes.h"
 #include "render/render.h"
-#include "util/geometry.h"
+#include "util/geometry_2d.h"
+#include "util/geometry_3d.h"
 
 #include <glm/glm.hpp>
 
