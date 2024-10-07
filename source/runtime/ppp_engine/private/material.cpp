@@ -14,7 +14,7 @@ namespace ppp
 
         }
 
-        void shader(shader_id id)
+        void shader(shader_program_id id)
         {
 
         }
@@ -34,12 +34,12 @@ namespace ppp
 
         }
 
-        shader_id create_shader(const std::string& vertex_source, const std::string& fragment_source)
+        shader_program_id create_shader(const std::string& vertex_source, const std::string& fragment_source)
         {
 
         }
 
-        shader_id load_shader(const std::string& vertex_path, const std::string& fragment_path)
+        shader_program_id load_shader(const std::string& vertex_path, const std::string& fragment_path)
         {
 
         }
