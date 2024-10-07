@@ -10,6 +10,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_atlas.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_pool.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/shader_pool.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/shader_pool.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.cpp
     # device
@@ -18,15 +20,19 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.cpp
     # render
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_gl_batch.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_shaders.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_gl.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shaders.h
     # util
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/hash.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_2d.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_3d.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_2d.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_3d.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/log.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/string_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/string_ops.cpp
@@ -48,6 +54,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/events.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/data.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/mathematics.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/material.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/trigonometry.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/typography.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/image.cpp
@@ -66,6 +73,7 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/events.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/data.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/mathematics.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/material.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/trigonometry.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/typography.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/image.h
