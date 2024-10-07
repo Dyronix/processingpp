@@ -6,6 +6,7 @@
 #include "render/render.h"
 #include "resources/texture_pool.h"
 #include "resources/font_pool.h"
+#include "resources/shader_pool.h"
 #include "fileio/fileio.h"
 
 #include "util/log.h"
@@ -50,6 +51,11 @@ namespace ppp
         }
 
         if(!font_pool::initialize())
+        {
+            return -1;
+        }
+
+        if(!shader_pool::initialize())
         {
             return -1;
         }
