@@ -37,7 +37,7 @@ namespace ppp
             struct polygon_data
             {
                 std::array<render::VertexPos, 4> vertices;
-                std::array<render::Index, 6> indices = { 0, 1 ,3, 1, 3, 2 };
+                std::array<render::Index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
 
                 std::vector<render::VertexPos> extrude_vertices;
                 std::vector<render::Index> extrude_indices;
@@ -56,7 +56,7 @@ namespace ppp
             struct image_data
             {
                 std::array<render::VertexPosTex, 4> vertices;
-                std::array<render::Index, 6> indices = { 0, 1 ,3, 1, 3, 2 };
+                std::array<render::Index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
 
                 std::vector<render::VertexPos> extrude_vertices;
                 std::vector<render::Index> extrude_indices;;

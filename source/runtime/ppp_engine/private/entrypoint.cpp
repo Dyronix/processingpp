@@ -96,13 +96,16 @@ namespace ppp
 
             // force app to run at a certain framerate
             // ----
-            if (device::delta_time() < device::max_frame_time())
+            if (device::is_looping())
             {
-                f32 sleep_time_seconds = device::max_frame_time() - device::delta_time();
+                if (device::delta_time() < device::max_frame_time())
+                {
+                    f32 sleep_time_seconds = device::max_frame_time() - device::delta_time();
 
-                // Convert seconds to milliseconds for sleeping
-                clock::milliseconds sleep_time(static_cast<s32>(sleep_time_seconds * 1000));
-                clock::accurate_sleep_for(sleep_time);
+                    // Convert seconds to milliseconds for sleeping
+                    clock::milliseconds sleep_time(static_cast<s32>(sleep_time_seconds * 1000));
+                    clock::accurate_sleep_for(sleep_time);
+                }
             }
         }
 
