@@ -36,12 +36,12 @@ namespace ppp
 
         shader_program_id create_shader(const std::string& vertex_source, const std::string& fragment_source)
         {
-
+            return -1;
         }
 
         shader_program_id load_shader(const std::string& vertex_path, const std::string& fragment_path)
         {
-
+            return -1;
         }
     }
 }
