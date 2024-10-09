@@ -317,7 +317,7 @@ namespace ppp
             internal::_scissor_height = h;
             internal::_scissor_enable = false;
 
-            internal::_active_camera.eye = glm::vec3(0.0f, 0.0f, 100.0f);
+            internal::_active_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
             internal::_active_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
             internal::_active_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
             internal::_active_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
