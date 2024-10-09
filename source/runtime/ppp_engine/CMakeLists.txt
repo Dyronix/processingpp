@@ -34,6 +34,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_2d.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_3d.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/log.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/color_ops.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/color_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/string_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/string_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/types.h
