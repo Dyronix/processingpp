@@ -229,10 +229,14 @@ namespace ppp
         public:
             using ImageMap = std::unordered_map<u32, s32>;
 
-            TextureBatch(s32 size_textures)
+            TextureBatch(s32 size_textures, s32 size_vertex_buffer, s32 size_index_buffer)
                 : m_max_texture_count(size_textures)
+                , m_max_vertex_count(size_vertex_buffer)
+                , m_max_index_count(size_index_buffer)
             {
                 assert(size_textures > 0);
+                assert(size_vertex_buffer > 0);
+                assert(size_index_buffer > 0);
 
                 m_size_vertex_buffer = size_textures * 4;
                 m_size_index_buffer = size_textures * 4 * 3;
@@ -266,17 +270,17 @@ namespace ppp
                     fmt.position.z = transformed_position.z;
                     fmt.texcoord = item.vertices[i].texcoord;
                     fmt.color = color;
-                    fmt.texture_idx = existing_image ? (f32)m_image_ids.at(item.image_id) : (f32)m_nr_triangles;
+                    fmt.texture_idx = existing_image ? (f32)m_image_ids.at(item.image_id) : (f32)m_nr_samplers;
                     m_vertices[m_nr_active_vertices] = fmt;
                     ++m_nr_active_vertices;
                 }
 
                 if (!existing_image)
                 {
-                    m_image_sampler_ids[m_nr_triangles] = m_nr_triangles;
-                    m_image_ids.insert(std::make_pair(item.image_id, m_nr_triangles));
+                    m_image_sampler_ids[m_nr_samplers] = m_nr_samplers;
+                    m_image_ids.insert(std::make_pair(item.image_id, m_nr_samplers));
 
-                    ++m_nr_triangles;
+                    ++m_nr_samplers;
                 }
             }
 
@@ -284,14 +288,25 @@ namespace ppp
             {
                 m_nr_active_vertices = 0;
                 m_nr_active_indices = 0;
-                m_nr_triangles = 0;
+                m_nr_samplers = 0;
 
                 m_image_ids.clear();
             }
 
-            bool can_add(s32 nr_vertices, s32 nr_indices) const
+            bool can_add(u32 image_id, s32 nr_vertices, s32 nr_indices) const
             {
-                return m_nr_active_vertices + nr_vertices < m_size_vertex_buffer && m_nr_active_indices + nr_indices < m_size_index_buffer;
+                // Can we add another image index to this batch
+                bool image_buffer_full = false;
+                if (m_image_ids.find(image_id) == std::cend(m_image_ids))
+                {
+                    image_buffer_full = m_image_ids.size() + 1 >= m_max_texture_count;
+                }
+
+                // Can we add more vertices to this batch
+                bool vertex_buffer_full = m_nr_active_vertices + nr_vertices >= m_max_vertex_count;
+                bool index_buffer_full = m_nr_active_indices + nr_indices >= m_max_index_count;
+
+                return !image_buffer_full && !vertex_buffer_full && !index_buffer_full;
             }
 
             const T* vertices() const { return m_vertices.get(); }
@@ -301,12 +316,14 @@ namespace ppp
 
             u32 active_vertex_count() const { return m_nr_active_vertices; }
             u32 active_index_count() const { return m_nr_active_indices; }
-            u32 active_texture_count() const { return m_nr_triangles; }
+            u32 active_texture_count() const { return m_nr_samplers; }
 
             u64 vertex_buffer_byte_size() const { return sizeof(T) * m_nr_active_vertices; }
             u64 index_buffer_byte_size() const { return sizeof(Index) * m_nr_active_indices; }
 
             u32 max_texture_count() const { return m_max_texture_count; }
+            s32 max_vertex_count() const { return m_max_vertex_count; }
+            s32 max_index_count() const { return m_max_index_count; }
 
         private:
             using VertexBuffer = std::unique_ptr<T[]>;
@@ -318,12 +335,14 @@ namespace ppp
 
             u32             m_nr_active_vertices = 0;
             u32             m_nr_active_indices = 0;
-            u32             m_nr_triangles = 0;
+            u32             m_nr_samplers = 0;
 
             SamplerBuffer   m_image_sampler_ids = {};
             ImageMap        m_image_ids = {};
 
             const u32       m_max_texture_count = 0;
+            const s32       m_max_vertex_count = 0;
+            const s32       m_max_index_count = 0;
 
             s32             m_size_vertex_buffer = 0;
             s32             m_size_index_buffer = 0;
@@ -332,15 +351,14 @@ namespace ppp
         class TextureDrawingData
         {
         public:
-            TextureDrawingData(s32 size_textures)
+            TextureDrawingData(s32 size_textures, s32 size_vertex_buffer, s32 size_index_buffer)
             {
                 assert(size_textures > 0);
+                assert(size_vertex_buffer > 0);
+                assert(size_index_buffer > 0);
 
                 // Already start with one batch
-                m_batches.push_back(TextureBatch<T>(size_textures));
-
-                s32 size_vertex_buffer = size_textures * 4;
-                s32 size_index_buffer = size_textures * 4 * 3;
+                m_batches.push_back(TextureBatch<T>(size_textures, size_vertex_buffer, size_index_buffer));
 
                 // Allocate VAO
                 glGenVertexArrays(1, &m_vao);
@@ -382,7 +400,7 @@ namespace ppp
 
             void append(const ImageItem& item, const glm::vec4& color, const glm::mat4& world)
             {
-                if (m_batches[m_push_batch].can_add(item.vertex_count, item.index_count))
+                if (m_batches[m_push_batch].can_add(item.image_id, item.vertex_count, item.index_count))
                 {
                     m_batches[m_push_batch].append(item, color, world);
                 }
@@ -391,8 +409,10 @@ namespace ppp
                     if (m_batches.size() <= m_push_batch + 1)
                     {
                         u32 max_texture_count = m_batches[m_push_batch].max_texture_count();
+                        s32 max_vertex_count = m_batches[m_push_batch].max_vertex_count();
+                        s32 max_index_count = m_batches[m_push_batch].max_index_count();
 
-                        m_batches.push_back(TextureBatch<T>(max_texture_count));
+                        m_batches.push_back(TextureBatch<T>(max_texture_count, max_vertex_count, max_index_count));
                     }
 
                     ++m_push_batch;

@@ -348,12 +348,10 @@ namespace ppp
             glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
             
             s32 max_images = std::min(max_texture_units, internal::_max_texture_units);
-            s32 size_vertex_buffer = max_images * 4;
-            s32 size_index_buffer = max_images * 4 * 3;
 
             // Image Drawing Data
-            internal::_image_drawing_data = std::make_unique<TextureDrawingData<internal::image_vertex_format>>(max_images);
-            internal::_image_stroke_drawing_data = std::make_unique<PrimitiveDrawingData<internal::triangle_vertex_format>>(size_vertex_buffer, size_index_buffer);
+            internal::_image_drawing_data = std::make_unique<TextureDrawingData<internal::image_vertex_format>>(max_images, max_triangle_vertices, max_triangle_indices);
+            internal::_image_stroke_drawing_data = std::make_unique<PrimitiveDrawingData<internal::triangle_vertex_format>>(max_triangle_vertices, max_triangle_indices);
 
             s32 white = 0xFFFFFFFF;
             internal::_white_texture_image_id = create_image_item(1, 1, 4, (u8*)&white);
@@ -361,7 +359,7 @@ namespace ppp
             internal::_black_texture_image_id = create_image_item(1, 1, 4, (u8*)&black);
 
             // Font Drawing Data
-            internal::_font_drawing_data = std::make_unique<TextureDrawingData<internal::image_vertex_format>>(max_images);
+            internal::_font_drawing_data = std::make_unique<TextureDrawingData<internal::image_vertex_format>>(max_images, max_triangle_vertices, max_triangle_indices);
 
             return true;
         }
