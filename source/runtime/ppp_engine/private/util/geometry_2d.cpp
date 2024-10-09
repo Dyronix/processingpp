@@ -63,7 +63,7 @@ namespace ppp
             } _image_data;
 
             template<typename TVertexType>
-            void extrude_vertices(std::vector<render::VertexPos>& new_vertices, const TVertexType& center, TVertexType* vertices, s32 vertex_count, f32 extrusion_width)
+            void extrude_vertices(std::vector<render::VertexPos>& new_vertices, const TVertexType& center, const TVertexType* vertices, s32 vertex_count, f32 extrusion_width)
             {
                 for (s32 i = 0; i < vertex_count; ++i)
                 {
@@ -260,7 +260,7 @@ namespace ppp
 
         namespace image
         {
-            render::RenderItem extrude_image(render::VertexPosTex* vertices, s32 vertex_count, f32 extrusion_width)
+            render::render_item extrude_image(const render::VertexPosTex* vertices, s32 vertex_count, f32 extrusion_width)
             {
                 constexpr s32 vertices_per_triangle = 4;
                 constexpr s32 vertices_per_extrusion_segment = 2;
@@ -281,27 +281,28 @@ namespace ppp
                 internal::extrude_vertices(internal::_image_data.extrude_vertices, { center }, vertices, vertex_count, extrusion_width);
                 internal::extrude_indices(internal::_image_data.extrude_indices, vertex_count);
 
-                render::RenderItem new_render_item;
-                new_render_item.vertices = internal::_image_data.extrude_vertices.data();
-                new_render_item.vertex_count = internal::_image_data.extrude_vertices.size();
-                new_render_item.indices = internal::_image_data.extrude_indices.data();
-                new_render_item.index_count = internal::_image_data.extrude_indices.size();
+                render::render_item new_render_item;
+
+                new_render_item.add_component(render::make_vertex_component(
+                    internal::_image_data.extrude_vertices.data(),
+                    internal::_image_data.extrude_vertices.size()));
+                new_render_item.add_component(render::make_index_component(
+                    internal::_image_data.extrude_indices.data(),
+                    internal::_image_data.extrude_indices.size()));
 
                 return new_render_item;
             }
 
-            render::ImageItem make_image(bool from_corner, f32 x, f32 y, f32 w, f32 h, s32 image_id)
+            render::render_item make_image(bool from_corner, f32 x, f32 y, f32 w, f32 h, s32 image_id)
             {
                 auto& vertices = internal::image::make_quad_vertices(from_corner, x, y, x + w, y, x + w, y + h, x, y + h);
                 auto& indices = internal::image::make_image_indices();
 
-                render::ImageItem item;
+                render::render_item item;
 
-                item.vertices = vertices.data();
-                item.vertex_count = vertices.size();
-                item.indices = indices.data();
-                item.index_count = indices.size();
-                item.image_id = image_id;
+                item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+                item.add_component(render::make_index_component(indices.data(), indices.size()));
+                item.add_component(render::make_texture_component(image_id));
 
                 return item;
             }
@@ -309,31 +310,29 @@ namespace ppp
 
         namespace font
         {
-            render::ImageItem make_font(bool from_corner, f32 x, f32 y, f32 w, f32 h, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y, s32 image_id)
+            render::render_item make_font(bool from_corner, f32 x, f32 y, f32 w, f32 h, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y, s32 image_id)
             {
                 auto& vertices = internal::image::make_quad_vertices(from_corner, x, y, x + w, y, x + w, y + h, x, y + h, uv_start_x, uv_start_y, uv_end_x, uv_end_y);
                 auto& indices = internal::image::make_image_indices();
 
-                render::ImageItem item;
+                render::render_item item;
 
-                item.vertices = vertices.data();
-                item.vertex_count = vertices.size();
-                item.indices = indices.data();
-                item.index_count = indices.size();
-                item.image_id = image_id;
+                item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+                item.add_component(render::make_index_component(indices.data(), indices.size()));
+                item.add_component(render::make_texture_component(image_id));
 
                 return item;
             }
         }
 
-        render::RenderItem extrude_point(render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width)
+        render::render_item extrude_point(const render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width)
         {
             const bool from_center = true;
 
             return geometry::make_ellipse(from_center, vertices[0].position.x, vertices[0].position.y, extrusion_width, extrusion_width);
         }
 
-        render::RenderItem extrude_line(render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width)
+        render::render_item extrude_line(const render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width)
         {
             const bool from_center = true;
 
@@ -346,7 +345,7 @@ namespace ppp
             return geometry::make_polygon(from_center, stroke_x1, stroke_y1, stroke_x2, stroke_y2, stroke_x3, stroke_y3, stroke_x4, stroke_y4);
         }
 
-        render::RenderItem extrude_ellipse(render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width)
+        render::render_item extrude_ellipse(const render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width)
         {
             constexpr s32 vertices_per_triangle = 3;
             constexpr s32 vertices_per_extrusion_segment = 2;
@@ -362,16 +361,19 @@ namespace ppp
             internal::extrude_vertices(internal::_ellipse_data.extrude_vertices, center, &vertices[1], vertex_count - 1, extrusion_width);
             internal::extrude_indices(internal::_ellipse_data.extrude_indices, vertex_count - 1);
 
-            render::RenderItem new_render_item;
-            new_render_item.vertices = internal::_ellipse_data.extrude_vertices.data();
-            new_render_item.vertex_count = internal::_ellipse_data.extrude_vertices.size();
-            new_render_item.indices = internal::_ellipse_data.extrude_indices.data();
-            new_render_item.index_count = internal::_ellipse_data.extrude_indices.size();
+            render::render_item new_render_item;
+
+            new_render_item.add_component(render::make_vertex_component(
+                internal::_ellipse_data.extrude_vertices.data(),
+                internal::_ellipse_data.extrude_vertices.size()));
+            new_render_item.add_component(render::make_index_component(
+                internal::_ellipse_data.extrude_indices.data(),
+                internal::_ellipse_data.extrude_indices.size()));
 
             return new_render_item;
         }
 
-        render::RenderItem extrude_polygon(render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width)
+        render::render_item extrude_polygon(const render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width)
         {
             constexpr s32 vertices_per_triangle = 4;
             constexpr s32 vertices_per_extrusion_segment = 2;
@@ -392,16 +394,19 @@ namespace ppp
             internal::extrude_vertices(internal::_polygon_data.extrude_vertices, { center }, vertices, vertex_count, extrusion_width);
             internal::extrude_indices(internal::_polygon_data.extrude_indices, vertex_count);
 
-            render::RenderItem new_render_item;
-            new_render_item.vertices = internal::_polygon_data.extrude_vertices.data();
-            new_render_item.vertex_count = internal::_polygon_data.extrude_vertices.size();
-            new_render_item.indices = internal::_polygon_data.extrude_indices.data();
-            new_render_item.index_count = internal::_polygon_data.extrude_indices.size();
+            render::render_item new_render_item;
+
+            new_render_item.add_component(render::make_vertex_component(
+                internal::_polygon_data.extrude_vertices.data(),
+                internal::_polygon_data.extrude_vertices.size()));
+            new_render_item.add_component(render::make_index_component(
+                internal::_polygon_data.extrude_indices.data(),
+                internal::_polygon_data.extrude_indices.size()));
 
             return new_render_item;
         }
 
-        render::RenderItem extrude_triangle(render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width)
+        render::render_item extrude_triangle(const render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width)
         {
             constexpr s32 vertices_per_triangle = 4;
             constexpr s32 vertices_per_extrusion_segment = 2;
@@ -422,53 +427,81 @@ namespace ppp
             internal::extrude_vertices(internal::_triangle_data.extrude_vertices, { center }, vertices, vertex_count, extrusion_width);
             internal::extrude_indices(internal::_triangle_data.extrude_indices, vertex_count);
 
-            render::RenderItem new_render_item;
-            new_render_item.vertices = internal::_triangle_data.extrude_vertices.data();
-            new_render_item.vertex_count = internal::_triangle_data.extrude_vertices.size();
-            new_render_item.indices = internal::_triangle_data.extrude_indices.data();
-            new_render_item.index_count = internal::_triangle_data.extrude_indices.size();
+            render::render_item new_render_item;
+
+            new_render_item.add_component(render::make_vertex_component(
+                internal::_triangle_data.extrude_vertices.data(),
+                internal::_triangle_data.extrude_vertices.size()));
+            new_render_item.add_component(render::make_index_component(
+                internal::_triangle_data.extrude_indices.data(), 
+                internal::_triangle_data.extrude_indices.size()));
 
             return new_render_item;
         }
 
-        render::RenderItem make_point(f32 x, f32 y)
+        render::render_item make_point(f32 x, f32 y)
         {
             internal::_point_data.vertex.position.x = x;
             internal::_point_data.vertex.position.y = y;
 
-            return render::RenderItem { &internal::_point_data.vertex, 1, &internal::_point_data.index, 1 };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(&internal::_point_data.vertex, 1));
+            item.add_component(render::make_index_component(&internal::_point_data.index, 1));
+
+            return item;
         }
 
-        render::RenderItem make_line(f32 x1, f32 y1, f32 x2, f32 y2)
+        render::render_item make_line(f32 x1, f32 y1, f32 x2, f32 y2)
         {
             internal::_line_data.vertices[0].position = glm::vec3(x1, y1, 0.0f);
             internal::_line_data.vertices[1].position = glm::vec3(x2, y2, 0.0f);
 
-            return render::RenderItem { internal::_line_data.vertices.data(), internal::_line_data.vertices.size(), internal::_line_data.indices.data(), internal::_line_data.indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(internal::_line_data.vertices.data(), internal::_line_data.vertices.size()));
+            item.add_component(render::make_index_component(internal::_line_data.indices.data(), internal::_line_data.indices.size()));
+
+            return item;
         }
 
-        render::RenderItem make_ellipse(bool from_corner, f32 x, f32 y, f32 w, f32 h, s32 detail)
+        render::render_item make_ellipse(bool from_corner, f32 x, f32 y, f32 w, f32 h, s32 detail)
         {
             auto& vertices = internal::make_ellipse_vertices(from_corner, x, y, w, h, detail);
             auto& indices = internal::make_ellipse_indices(x, y, w, h, detail);
 
-            return render::RenderItem { vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
 
-        render::RenderItem make_polygon(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3, f32 x4, f32 y4)
+        render::render_item make_polygon(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3, f32 x4, f32 y4)
         {
             auto& vertices = internal::make_polygon_vertices(from_corner, x1, y1, x2, y2, x3, y3, x4, y4);
             auto& indices = internal::make_polygon_indices();
 
-            return render::RenderItem { vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
 
-        render::RenderItem make_triangle(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3)
+        render::render_item make_triangle(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3)
         {
             auto& vertices = internal::make_triangle_vertices(from_corner, x1, y1, x2, y2, x3, y3);
             auto& indices = internal::make_triangle_indices();
 
-            return render::RenderItem { vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
     }
 }

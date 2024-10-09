@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/types.h"
+#include "util/log.h"
 
 #include <glad/glad.h>
 
@@ -29,23 +30,34 @@ namespace ppp
                 m_indices = std::make_unique<Index[]>(size_index_buffer);
             }
 
-            void append(const RenderItem& item, const glm::vec4& color, const glm::mat4& world)
+            void append(const render_item& item, const glm::vec4& color, const glm::mat4& world)
             {
-                memcpy(&m_indices[m_nr_active_indices], item.indices, sizeof(Index) * item.index_count);
+                auto vertex_comp = item.get_component<vertex_component<T>>();
+                auto index_comp = item.get_component<index_component>();
+
+                assert(vertex_comp != nullptr);
+                assert(index_comp != nullptr);
+
+                auto verts = vertex_comp->vertices();
+                u64 vert_count = vertex_comp->vertex_count();
+                auto idxs = index_comp->indices();
+                u64 idx_count = index_comp->index_count();
+
+                memcpy(&m_indices[m_nr_active_indices], idxs, sizeof(Index) * idx_count);
 
                 // For each index that was added we need to offset it with the amount of indices that are already within the array.
-                for (s32 i = 0; i < item.index_count; ++i)
+                for (s32 i = 0; i < idx_count; ++i)
                 {
                     m_indices[m_nr_active_indices + i] += m_nr_active_vertices;
                 }
 
-                m_nr_active_indices += item.index_count;
+                m_nr_active_indices += idx_count;
 
                 T fmt = {};
 
-                for (s32 i = 0; i < item.vertex_count; ++i)
+                for (s32 i = 0; i < vert_count; ++i)
                 {
-                    glm::vec4 transformed_position = world * glm::vec4(item.vertices[i].position, 1.0f);
+                    glm::vec4 transformed_position = world * glm::vec4(verts[i].position, 1.0f);
 
                     fmt.position.x = transformed_position.x;
                     fmt.position.y = transformed_position.y;
@@ -140,9 +152,18 @@ namespace ppp
                 glBindVertexArray(0);
             }
 
-            void append(const RenderItem& item, const glm::vec4& color, const glm::mat4& world)
+            void append(const render_item& item, const glm::vec4& color, const glm::mat4& world)
             {
-                if (m_batches[m_push_batch].can_add(item.vertex_count, item.index_count))
+                auto vertex_comp = item.get_component<vertex_component<T>>();
+                auto index_comp = item.get_component<index_component>();
+
+                if (vertex_comp == nullptr || index_comp == nullptr)
+                {
+                    log::error("render item does not have vertex or index component");
+                    exit(EXIT_FAILURE);
+                }
+
+                if (m_batches[m_push_batch].can_add(vertex_comp->vertex_count(), index_comp->index_count()))
                 {
                     m_batches[m_push_batch].append(item, color, world);
                 }
@@ -244,29 +265,48 @@ namespace ppp
                 m_image_ids.reserve(size_textures);
             }
 
-            void append(const ImageItem& item, const glm::vec4& color, const glm::mat4& world)
+            void append(const render_item& item, const glm::vec4& color, const glm::mat4& world)
             {
-                bool existing_image = m_image_ids.find(item.image_id) != std::cend(m_image_ids);
+                auto vertex_comp = item.get_component<vertex_component<T>>();
+                auto index_comp = item.get_component<index_component>();
 
-                memcpy(&m_indices[m_nr_active_indices], item.indices, sizeof(Index) * item.index_count);
+                assert(vertex_comp != nullptr);
+                assert(index_comp != nullptr);
+
+                auto texture_comp = item.get_component<texture_component>();
+                if (texture_comp == nullptr)
+                {
+                    log::error("render item does not have texture component");
+                    exit(EXIT_FAILURE);
+                }
+
+                auto verts = vertex_comp->vertices();
+                u64 vert_count = vertex_comp->vertex_count();
+                auto idxs = index_comp->indices();
+                u64 idx_count = index_comp->index_count();
+                u32 image_id = texture_comp->texture_id();
+
+                bool existing_image = m_image_ids.find(image_id) != std::cend(m_image_ids);
+
+                memcpy(&m_indices[m_nr_active_indices], idxs, sizeof(Index) * idx_count);
                 // For each index that was added we need to offset it with the amount of indices that are already within the array.
-                for (s32 i = 0; i < item.index_count; ++i)
+                for (s32 i = 0; i < idx_count; ++i)
                 {
                     m_indices[m_nr_active_indices + i] += m_nr_active_vertices;
                 }
-                m_nr_active_indices += item.index_count;
+                m_nr_active_indices += idx_count;
 
                 T fmt = {};
 
-                for (s32 i = 0; i < item.vertex_count; ++i)
+                for (s32 i = 0; i < vert_count; ++i)
                 {
-                    glm::vec4 transformed_position = world * glm::vec4(item.vertices[i].position, 1.0f);
+                    glm::vec4 transformed_position = world * glm::vec4(verts[i].position, 1.0f);
                     fmt.position.x = transformed_position.x;
                     fmt.position.y = transformed_position.y;
                     fmt.position.z = transformed_position.z;
-                    fmt.texcoord = item.vertices[i].texcoord;
+                    fmt.texcoord = verts[i].texcoord;
                     fmt.color = color;
-                    fmt.texture_idx = existing_image ? (f32)m_image_ids.at(item.image_id) : (f32)m_nr_triangles;
+                    fmt.texture_idx = existing_image ? (f32)m_image_ids.at(image_id) : (f32)m_nr_triangles;
                     m_vertices[m_nr_active_vertices] = fmt;
                     ++m_nr_active_vertices;
                 }
@@ -274,7 +314,7 @@ namespace ppp
                 if (!existing_image)
                 {
                     m_image_sampler_ids[m_nr_triangles] = m_nr_triangles;
-                    m_image_ids.insert(std::make_pair(item.image_id, m_nr_triangles));
+                    m_image_ids.insert(std::make_pair(image_id, m_nr_triangles));
 
                     ++m_nr_triangles;
                 }
@@ -380,9 +420,18 @@ namespace ppp
                 glBindVertexArray(0);
             }
 
-            void append(const ImageItem& item, const glm::vec4& color, const glm::mat4& world)
+            void append(const render_item& item, const glm::vec4& color, const glm::mat4& world)
             {
-                if (m_batches[m_push_batch].can_add(item.vertex_count, item.index_count))
+                auto vertex_comp = item.get_component<vertex_component<T>>();
+                auto index_comp = item.get_component<index_component>();
+
+                if (vertex_comp == nullptr || index_comp == nullptr)
+                {
+                    log::error("render item does not have vertex or index component");
+                    exit(EXIT_FAILURE);
+                }
+
+                if (m_batches[m_push_batch].can_add(vertex_comp->vertex_count(), index_comp->index_count()))
                 {
                     m_batches[m_push_batch].append(item, color, world);
                 }

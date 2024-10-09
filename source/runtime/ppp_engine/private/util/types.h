@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include <atomic>
 #include <vector>
 
@@ -84,4 +86,34 @@ namespace ppp
 
         inline u32 f32_to_uint8(f32 val) { return (u32)(internal::saturate(val) * 255.0f + 0.5f); }
     }
+
+    // Alias for the type used to represent unique object type IDs.
+    using object_type_tag = u64;
+
+    // type_tag class template, used to generate a unique ID for each distinct type T.
+    template <typename T>
+    class type_tag
+    {
+    public:
+        // The value() method returns the unique ID for the type T.
+        static object_type_tag value()
+        {
+            return m_id;
+        }
+
+    private:
+        static object_type_tag m_id;
+    };
+
+    // The next() method returns the next unique ID.
+    inline object_type_tag next()
+    {
+        // 'next_id' is initialized to 0 the first time this function is called.
+        // It is incremented after each use to ensure every type gets a unique ID.
+        static object_type_tag current_id = 0;
+        return current_id++;
+    }
+
+    template<typename T>
+    object_type_tag type_tag<T>::m_id = next();
 }

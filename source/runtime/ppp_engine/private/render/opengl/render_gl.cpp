@@ -778,7 +778,7 @@ namespace ppp
             glBindTexture(GL_TEXTURE_2D, 0);
         }
 
-        void submit_render_item(TopologyType topology, const RenderItem& item)
+        void submit_render_item(TopologyType topology, const render_item& item)
         {
             if (internal::_stroke_enable == false && internal::_fill_enable == false)
             {
@@ -807,7 +807,7 @@ namespace ppp
             }
         }
 
-        void submit_stroke_render_item(TopologyType topology, const RenderItem& item, bool outer)
+        void submit_stroke_render_item(TopologyType topology, const render_item& item, bool outer)
         {
             if (internal::_stroke_enable == false && internal::_fill_enable == false)
             {
@@ -836,21 +836,21 @@ namespace ppp
             }
         }
 
-        void submit_font_item(const ImageItem& item)
+        void submit_font_item(const render_item& item)
         {
             glm::vec4 fill_color = internal::convert_color(internal::_fill_color);
 
             internal::_font_drawing_data->append(item, fill_color, transform::active_world());
         }
 
-        void submit_image_item(const ImageItem& item)
+        void submit_image_item(const render_item& item)
         {
             glm::vec4 tint_color = internal::convert_color(internal::_tint_color);
 
             internal::_image_drawing_data->append(item, tint_color, transform::active_world());
         }
 
-        void submit_stroke_image_item(const RenderItem& item, bool outer)
+        void submit_stroke_image_item(const render_item& item, bool outer)
         {
             glm::vec4 stroke_color = outer ? internal::convert_color(internal::_stroke_color) : internal::convert_color(internal::_inner_stroke_color);
 

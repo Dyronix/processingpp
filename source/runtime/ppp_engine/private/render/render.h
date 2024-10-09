@@ -3,6 +3,8 @@
 #include "util/hash.h"
 #include "util/types.h"
 
+#include "render_item_components.h"
+
 #include <glm/glm.hpp>
 
 #include <vector>
@@ -39,14 +41,6 @@ namespace ppp
             TRIANGLES
         };
 
-        struct RenderItem
-        {
-            VertexPos* vertices;
-            size_t vertex_count;
-            Index* indices;
-            size_t index_count;
-        };
-
         enum class ImageFilterType
         {
             NEAREST,
@@ -57,16 +51,6 @@ namespace ppp
         {
             CLAMP_TO_EDGE,
             REPEAT, 
-        };
-
-        struct ImageItem
-        {
-            VertexPosTex* vertices;
-            size_t vertex_count;
-            Index* indices;
-            size_t index_count;
-
-            u32 image_id;
         };
         
         struct ScissorRect
@@ -136,15 +120,15 @@ namespace ppp
 
         void update_image_item(u32 id, f32 x, f32 y, f32 width, f32 height, s32 channels, u8* data);
 
-        void submit_image_item(const ImageItem& item);
-        void submit_stroke_image_item(const RenderItem& item, bool outer);
+        void submit_image_item(const render_item& item);
+        void submit_stroke_image_item(const render_item& item, bool outer);
 
         // Font Item
-        void submit_font_item(const ImageItem& item);
+        void submit_font_item(const render_item& item);
 
         // Render Item
-        void submit_render_item(TopologyType topology, const RenderItem& item);
-        void submit_stroke_render_item(TopologyType topology, const RenderItem& item, bool outer);
+        void submit_render_item(TopologyType topology, const render_item& item);
+        void submit_stroke_render_item(TopologyType topology, const render_item& item, bool outer);
 
         // Clear 
         void clear_color(f32 r, f32 g, f32 b, f32 a);

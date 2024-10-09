@@ -61,24 +61,32 @@ namespace ppp
         //-------------------------------------------------------------------------
         void ellipse(float x, float y, float w, float h, int detail)
         {
-            render::RenderItem item = geometry::make_ellipse(internal::_ellipse_mode == ShapeMode::CORNER, x, y, w, h, detail);
+            render::render_item item = geometry::make_ellipse(internal::_ellipse_mode == ShapeMode::CORNER, x, y, w, h, detail);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
 
             if (render::stroke_enabled())
             {
+                auto vert_comp = item.get_component<render::vertex_component<render::VertexPos>>();
+
+                assert(vert_comp != nullptr);
+
                 constexpr bool outer_stroke = true;
 
-                auto stroke_item = geometry::extrude_ellipse(item.vertices, item.vertex_count, render::stroke_width());
+                auto stroke_item = geometry::extrude_ellipse(vert_comp->vertices(), vert_comp->vertex_count(), render::stroke_width());
 
                 render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
 
             if (render::inner_stroke_enabled())
             {
+                auto vert_comp = item.get_component<render::vertex_component<render::VertexPos>>();
+
+                assert(vert_comp != nullptr);
+
                 constexpr bool outer_stroke = false;
 
-                auto stroke_item = geometry::extrude_ellipse(item.vertices, item.vertex_count, -render::inner_stroke_width());
+                auto stroke_item = geometry::extrude_ellipse(vert_comp->vertices(), vert_comp->vertex_count(), -render::inner_stroke_width());
 
                 render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -93,15 +101,19 @@ namespace ppp
         //-------------------------------------------------------------------------
         void line(float x1, float y1, float x2, float y2)
         {
-            render::RenderItem item = geometry::make_line(x1, y1, x2, y2);
+            render::render_item item = geometry::make_line(x1, y1, x2, y2);
 
             render::submit_render_item(render::TopologyType::LINES, item);
 
             if (render::stroke_enabled())
             {
+                auto vert_comp = item.get_component<render::vertex_component<render::VertexPos>>();
+
+                assert(vert_comp != nullptr);
+
                 constexpr bool outer_stroke = true;
 
-                render::RenderItem stroke_item = geometry::extrude_line(item.vertices, item.vertex_count, render::stroke_width());
+                render::render_item stroke_item = geometry::extrude_line(vert_comp->vertices(), vert_comp->vertex_count(), render::stroke_width());
 
                 render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -110,15 +122,19 @@ namespace ppp
         //-------------------------------------------------------------------------
         void point(float x, float y)
         {
-            render::RenderItem item = geometry::make_point(x, y);
+            render::render_item item = geometry::make_point(x, y);
 
             render::submit_render_item(render::TopologyType::POINTS, item);
 
             if (render::stroke_enabled())
             {
+                auto vert_comp = item.get_component<render::vertex_component<render::VertexPos>>();
+
+                assert(vert_comp != nullptr);
+
                 constexpr bool outer_stroke = true;
 
-                render::RenderItem stroke_item = geometry::extrude_point(item.vertices, item.vertex_count, render::stroke_width());
+                render::render_item stroke_item = geometry::extrude_point(vert_comp->vertices(), vert_comp->vertex_count(), render::stroke_width());
 
                 render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -127,24 +143,32 @@ namespace ppp
         //-------------------------------------------------------------------------
         void polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
         {
-            render::RenderItem item = geometry::make_polygon(internal::_rect_mode == ShapeMode::CORNER, x1, y1, x2, y2, x3, y3, x4, y4);
+            render::render_item item = geometry::make_polygon(internal::_rect_mode == ShapeMode::CORNER, x1, y1, x2, y2, x3, y3, x4, y4);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
 
             if (render::stroke_enabled())
             {
+                auto vert_comp = item.get_component<render::vertex_component<render::VertexPos>>();
+
+                assert(vert_comp != nullptr);
+
                 constexpr bool outer_stroke = true;
 
-                auto stroke_item = geometry::extrude_polygon(item.vertices, item.vertex_count, render::stroke_width());
+                auto stroke_item = geometry::extrude_polygon(vert_comp->vertices(), vert_comp->vertex_count(), render::stroke_width());
                 
                 render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
 
             if (render::inner_stroke_enabled())
             {
+                auto vert_comp = item.get_component<render::vertex_component<render::VertexPos>>();
+
+                assert(vert_comp != nullptr);
+
                 constexpr bool outer_stroke = false;
 
-                render::RenderItem stroke_item = geometry::extrude_polygon(item.vertices, item.vertex_count, -render::inner_stroke_width());
+                render::render_item stroke_item = geometry::extrude_polygon(vert_comp->vertices(), vert_comp->vertex_count(), -render::inner_stroke_width());
 
                 render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -165,24 +189,32 @@ namespace ppp
         //-------------------------------------------------------------------------
         void triangle(float x1, float y1, float x2, float y2, float x3, float y3)
         {
-            render::RenderItem item = geometry::make_triangle(internal::_triangle_mode == ShapeMode::CORNER, x1, y1, x2, y2, x3, y3);
+            render::render_item item = geometry::make_triangle(internal::_triangle_mode == ShapeMode::CORNER, x1, y1, x2, y2, x3, y3);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
 
             if (render::stroke_enabled())
             {
+                auto vert_comp = item.get_component<render::vertex_component<render::VertexPos>>();
+
+                assert(vert_comp != nullptr);
+
                 constexpr bool outer_stroke = true;
 
-                auto stroke_item = geometry::extrude_triangle(item.vertices, item.vertex_count, render::stroke_width());
+                auto stroke_item = geometry::extrude_triangle(vert_comp->vertices(), vert_comp->vertex_count(), render::stroke_width());
 
                 render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
 
             if (render::inner_stroke_enabled())
             {
+                auto vert_comp = item.get_component<render::vertex_component<render::VertexPos>>();
+
+                assert(vert_comp != nullptr);
+
                 constexpr bool outer_stroke = false;
 
-                render::RenderItem stroke_item = geometry::extrude_triangle(item.vertices, item.vertex_count, -render::inner_stroke_width());
+                render::render_item stroke_item = geometry::extrude_triangle(vert_comp->vertices(), vert_comp->vertex_count(), -render::inner_stroke_width());
 
                 render::submit_stroke_render_item(render::TopologyType::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -191,7 +223,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void box(float width, float height, float depth)
         {
-            render::RenderItem item = geometry::make_box(width, height, depth);
+            render::render_item item = geometry::make_box(width, height, depth);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }
@@ -199,7 +231,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void cylinder(float radius, float height, float detail, bool bottom_cap, bool top_cap)
         {
-            render::RenderItem item = geometry::make_cylinder(radius, height, detail, bottom_cap, top_cap);
+            render::render_item item = geometry::make_cylinder(radius, height, detail, bottom_cap, top_cap);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }
@@ -207,7 +239,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void plane(float width, float height)
         {
-            render::RenderItem item = geometry::make_plane(width, height);
+            render::render_item item = geometry::make_plane(width, height);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }
@@ -215,7 +247,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void sphere(float radius, float detail)
         {
-            render::RenderItem item = geometry::make_sphere(radius, detail);
+            render::render_item item = geometry::make_sphere(radius, detail);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }
@@ -223,7 +255,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void torus(float radius, float tube_radius, float detailx, float detaily)
         {
-            render::RenderItem item = geometry::make_torus(radius, tube_radius, detailx, detaily);
+            render::render_item item = geometry::make_torus(radius, tube_radius, detailx, detaily);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }
@@ -231,7 +263,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void cone(float radius, float height, float detail, bool cap)
         {
-            render::RenderItem item = geometry::make_cone(radius, height, detail, cap);
+            render::render_item item = geometry::make_cone(radius, height, detail, cap);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }
@@ -239,7 +271,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void tetrahedron(float width, float height)
         {
-            render::RenderItem item = geometry::make_tetrahedron(width, height);
+            render::render_item item = geometry::make_tetrahedron(width, height);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }
@@ -247,7 +279,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void octahedron(float width, float height)
         {
-            render::RenderItem item = geometry::make_octahedron(width, height);
+            render::render_item item = geometry::make_octahedron(width, height);
 
             render::submit_render_item(render::TopologyType::TRIANGLES, item);
         }

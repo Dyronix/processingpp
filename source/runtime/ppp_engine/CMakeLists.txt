@@ -27,6 +27,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shaders.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_components.h
     # util
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/hash.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_2d.h

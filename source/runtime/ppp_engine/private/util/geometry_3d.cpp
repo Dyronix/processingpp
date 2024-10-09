@@ -449,68 +449,108 @@ namespace ppp
             }
         }
 
-        render::RenderItem make_box(f32 width, f32 height, f32 depth)
+        render::render_item make_box(f32 width, f32 height, f32 depth)
         {
             auto& vertices = internal::make_box_vertices(width, height, depth);
             auto& indices = internal::make_box_indices();
 
-            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
 
-        render::RenderItem make_cylinder(f32 radius, f32 height, s32 detail, bool bottom_cap, bool top_cap)
+        render::render_item make_cylinder(f32 radius, f32 height, s32 detail, bool bottom_cap, bool top_cap)
         {
             auto& vertices = internal::make_cylinder_vertices(radius, height, detail);
             auto& indices = internal::make_cylinder_indices(height, detail, bottom_cap, top_cap);
 
-            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
 
-        render::RenderItem make_plane(f32 width, f32 height)
+        render::render_item make_plane(f32 width, f32 height)
         {
             auto& vertices = internal::make_plane_vertices(width, height);
             auto& indices = internal::make_plane_indices();
 
-            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
 
-        render::RenderItem make_sphere(f32 radius, s32 detail)
+        render::render_item make_sphere(f32 radius, s32 detail)
         {
             auto& vertices = internal::make_sphere_vertices(radius, detail);
             auto& indices = internal::make_sphere_indices(detail);
 
-            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
 
-        render::RenderItem make_torus(f32 radius, f32 tube_radius, s32 detailx, s32 detaily)
+        render::render_item make_torus(f32 radius, f32 tube_radius, s32 detailx, s32 detaily)
         {
             auto& vertices = internal::make_torus_vertices(radius, tube_radius, detailx, detaily);
             auto& indices = internal::make_torus_indices(detailx, detaily);
 
-            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
 
-        render::RenderItem make_cone(f32 radius, f32 height, s32 detail, bool cap)
+        render::render_item make_cone(f32 radius, f32 height, s32 detail, bool cap)
         {
             auto& vertices = internal::make_cone_vertices(radius, height, detail, cap);
             auto& indices = internal::make_cone_indices(detail, cap);
 
-            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
 
-        render::RenderItem make_tetrahedron(f32 width, f32 height)
+        render::render_item make_tetrahedron(f32 width, f32 height)
         {
             auto& vertices = internal::make_tetrahedron_vertices(width, height);
             auto& indices = internal::make_tetrahedron_indices();
 
-            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
 
-        render::RenderItem make_octahedron(f32 width, f32 height)
+        render::render_item make_octahedron(f32 width, f32 height)
         {
             auto& vertices = internal::make_octa_hedron_vertices(width, height);
             auto& indices = internal::make_octahedron_indices();
 
-            return render::RenderItem{ vertices.data(), vertices.size(), indices.data(), indices.size() };
+            render::render_item item;
+
+            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
+            item.add_component(render::make_index_component(indices.data(), indices.size()));
+
+            return item;
         }
     }
 }

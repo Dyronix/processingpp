@@ -50,7 +50,7 @@ namespace ppp
                 f32 w = ch.size.x * scale;
                 f32 h = ch.size.y * scale;
 
-                render::ImageItem item = geometry::font::make_font(true, xpos, ypos, w, h, ch.uv_start.x, ch.uv_start.y, ch.uv_end.x, ch.uv_end.y, active_font->atlas.texture_id);
+                render::render_item item = geometry::font::make_font(true, xpos, ypos, w, h, ch.uv_start.x, ch.uv_start.y, ch.uv_end.x, ch.uv_end.y, active_font->atlas.texture_id);
 
                 render::submit_font_item(item);
 
