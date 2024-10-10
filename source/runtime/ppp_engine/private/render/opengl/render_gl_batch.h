@@ -32,14 +32,14 @@ namespace ppp
 
             void append(const render_item& item, const glm::vec4& color, const glm::mat4& world)
             {
-                auto vertex_comp = item.get_component<vertex_component<T>>();
+                auto vertex_comp = item.get_component<vertex_component>();
                 auto index_comp = item.get_component<index_component>();
 
                 assert(vertex_comp != nullptr);
                 assert(index_comp != nullptr);
 
-                auto verts = vertex_comp->vertices();
                 u64 vert_count = vertex_comp->vertex_count();
+                auto vert_positions = vertex_comp->get_attribute_data<glm::vec3>(vertex_attribute_type::POSITION);
                 auto idxs = index_comp->indices();
                 u64 idx_count = index_comp->index_count();
 
@@ -57,7 +57,7 @@ namespace ppp
 
                 for (s32 i = 0; i < vert_count; ++i)
                 {
-                    glm::vec4 transformed_position = world * glm::vec4(verts[i].position, 1.0f);
+                    glm::vec4 transformed_position = world * glm::vec4(vert_positions[i], 1.0f);
 
                     fmt.position.x = transformed_position.x;
                     fmt.position.y = transformed_position.y;
@@ -154,7 +154,7 @@ namespace ppp
 
             void append(const render_item& item, const glm::vec4& color, const glm::mat4& world)
             {
-                auto vertex_comp = item.get_component<vertex_component<T>>();
+                auto vertex_comp = item.get_component<vertex_component>();
                 auto index_comp = item.get_component<index_component>();
 
                 if (vertex_comp == nullptr || index_comp == nullptr)
@@ -267,7 +267,7 @@ namespace ppp
 
             void append(const render_item& item, const glm::vec4& color, const glm::mat4& world)
             {
-                auto vertex_comp = item.get_component<vertex_component<T>>();
+                auto vertex_comp = item.get_component<vertex_component>();
                 auto index_comp = item.get_component<index_component>();
 
                 assert(vertex_comp != nullptr);
@@ -280,8 +280,9 @@ namespace ppp
                     exit(EXIT_FAILURE);
                 }
 
-                auto verts = vertex_comp->vertices();
                 u64 vert_count = vertex_comp->vertex_count();
+                auto vert_positions = vertex_comp->get_attribute_data<glm::vec3>(vertex_attribute_type::POSITION);
+                auto vert_texcoords = vertex_comp->get_attribute_data<glm::vec2>(vertex_attribute_type::TEXCOORD);
                 auto idxs = index_comp->indices();
                 u64 idx_count = index_comp->index_count();
                 u32 image_id = texture_comp->texture_id();
@@ -300,11 +301,11 @@ namespace ppp
 
                 for (s32 i = 0; i < vert_count; ++i)
                 {
-                    glm::vec4 transformed_position = world * glm::vec4(verts[i].position, 1.0f);
+                    glm::vec4 transformed_position = world * glm::vec4(vert_positions[i], 1.0f);
                     fmt.position.x = transformed_position.x;
                     fmt.position.y = transformed_position.y;
                     fmt.position.z = transformed_position.z;
-                    fmt.texcoord = verts[i].texcoord;
+                    fmt.texcoord = vert_texcoords[i];
                     fmt.color = color;
                     fmt.texture_idx = existing_image ? (f32)m_image_ids.at(image_id) : (f32)m_nr_triangles;
                     m_vertices[m_nr_active_vertices] = fmt;
@@ -422,7 +423,7 @@ namespace ppp
 
             void append(const render_item& item, const glm::vec4& color, const glm::mat4& world)
             {
-                auto vertex_comp = item.get_component<vertex_component<T>>();
+                auto vertex_comp = item.get_component<vertex_component>();
                 auto index_comp = item.get_component<index_component>();
 
                 if (vertex_comp == nullptr || index_comp == nullptr)

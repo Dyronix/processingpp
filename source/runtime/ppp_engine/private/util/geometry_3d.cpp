@@ -12,7 +12,7 @@ namespace ppp
         {
             struct box_data
             {
-                std::array<render::VertexPos, 24> vertices;
+                std::array<glm::vec3, 24> vertices;
                 std::array<render::Index, 36> indices = 
                 {
                     // Front face
@@ -33,37 +33,37 @@ namespace ppp
 
             struct cylinder_data
             {
-                render::VertexPosArr vertices;
+                render::VertexPositionArr vertices;
                 render::Indices indices;
             } _cylinder_data;
 
             struct plane_data
             {
-                std::array<render::VertexPos, 4> vertices;
+                std::array<glm::vec3, 4> vertices;
                 std::array<render::Index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
             } _plane_data;
 
             struct sphere_data
             {
-                render::VertexPosArr vertices;
+                render::VertexPositionArr vertices;
                 render::Indices indices;
             } _sphere_data;
 
             struct torus_data
             {
-                render::VertexPosArr vertices;
+                render::VertexPositionArr vertices;
                 render::Indices indices;
             } _torus_data;
 
             struct cone_data
             {
-                render::VertexPosArr vertices;
+                render::VertexPositionArr vertices;
                 render::Indices indices;
             } _cone_data;
 
             struct tetrahedron_data
             {
-                std::array<render::VertexPos, 4> vertices;
+                std::array<glm::vec3, 4> vertices;
                 std::array<render::Index, 12> indices = { 0, 1, 2,
                     0, 2, 3,
                     0, 3, 1,
@@ -72,11 +72,11 @@ namespace ppp
 
             struct octahedron_data
             {
-                std::array<render::VertexPos, 6> vertices;
+                std::array<glm::vec3, 6> vertices;
                 std::array<render::Index, 24> indices = { 0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1, 5, 1, 2, 5, 2, 3, 5, 3, 4, 5, 4, 1 };
             } _octahedron_data;
 
-            std::array<render::VertexPos, 24>& make_box_vertices(f32 width, f32 height, f32 depth)
+            std::array<glm::vec3, 24>& make_box_vertices(f32 width, f32 height, f32 depth)
             {    
                 size_t index = 0;
 
@@ -119,15 +119,15 @@ namespace ppp
                 return _box_data.vertices;
             }
 
-            std::vector<render::VertexPos>& make_cylinder_vertices(f32 r, f32 h, s32 detail)
+            std::vector<glm::vec3>& make_cylinder_vertices(f32 r, f32 h, s32 detail)
             {
                 s32 total_nr_vertices = (detail + 1) * 2;
 
                 _cylinder_data.vertices.clear();
                 _cylinder_data.vertices.resize(total_nr_vertices);
 
-                _cylinder_data.vertices[0].position = glm::vec3{ 0.0f, (+h) / 2, 0.0f};
-                _cylinder_data.vertices[total_nr_vertices / 2].position = glm::vec3{ 0.0f, (-h) / 2, 0.0f};
+                _cylinder_data.vertices[0] = glm::vec3{ 0.0f, (+h) / 2, 0.0f};
+                _cylinder_data.vertices[total_nr_vertices / 2] = glm::vec3{ 0.0f, (-h) / 2, 0.0f};
 
                 for (s32 t = 1; t < total_nr_vertices / 2; ++t)
                 {
@@ -139,14 +139,14 @@ namespace ppp
                     s32 top_index = t;
                     s32 bottom_index = (total_nr_vertices / 2) + t; 
 
-                    _cylinder_data.vertices[top_index].position = glm::vec3(v_x, (+h) / 2, v_z);
-                    _cylinder_data.vertices[bottom_index].position = glm::vec3(v_x, (-h) / 2, v_z);
+                    _cylinder_data.vertices[top_index] = glm::vec3(v_x, (+h) / 2, v_z);
+                    _cylinder_data.vertices[bottom_index] = glm::vec3(v_x, (-h) / 2, v_z);
                 }
 
                 return _cylinder_data.vertices;
             }
 
-            std::array<render::VertexPos, 4>& make_plane_vertices(f32 width, f32 height)
+            std::array<glm::vec3, 4>& make_plane_vertices(f32 width, f32 height)
             {
                 _plane_data.vertices[0] = { glm::vec3(-width / 2, -height / 2, 0.0f) }; // Bottom Left
                 _plane_data.vertices[1] = { glm::vec3(width / 2, -height / 2, 0.0f) };  // Bottom Right
@@ -156,7 +156,7 @@ namespace ppp
                 return _plane_data.vertices;
             }
 
-            std::vector<render::VertexPos>& make_sphere_vertices(f32 r, s32 detail)
+            std::vector<glm::vec3>& make_sphere_vertices(f32 r, s32 detail)
             {
                 _sphere_data.vertices.clear();
 
@@ -181,7 +181,7 @@ namespace ppp
                 return _sphere_data.vertices;
             }
 
-            std::vector<render::VertexPos>& make_torus_vertices(f32 r, f32 tr, s32 detailx, s32 detaily)
+            std::vector<glm::vec3>& make_torus_vertices(f32 r, f32 tr, s32 detailx, s32 detaily)
             {
                 _torus_data.vertices.clear();
 
@@ -203,7 +203,7 @@ namespace ppp
                 return _torus_data.vertices;
             }
 
-            std::vector<render::VertexPos>& make_cone_vertices(f32 r, f32 h, s32 detail, bool cap)
+            std::vector<glm::vec3>& make_cone_vertices(f32 r, f32 h, s32 detail, bool cap)
             {
                 // Total vertices: apex (1) + base vertices (detail) + center vertex (1 if cap)
                 int total_nr_vertices = detail + 1 + (cap ? 1 : 0);
@@ -212,7 +212,7 @@ namespace ppp
                 _cone_data.vertices.resize(total_nr_vertices);
 
                 // Apex vertex (top of the cone)
-                _cone_data.vertices[0].position = glm::vec3{ 0.0f, -h, 0.0f }; // Apex
+                _cone_data.vertices[0] = glm::vec3{ 0.0f, -h, 0.0f }; // Apex
 
                 // Base vertices
                 for (int t = 1; t <= detail; ++t)
@@ -222,19 +222,19 @@ namespace ppp
                     float v_x = cos(angle) * r; // X coordinate for base
                     float v_z = sin(angle) * r; // Z coordinate for base
 
-                    _cone_data.vertices[t].position = glm::vec3(v_x, 0.0f, v_z); // Base vertices
+                    _cone_data.vertices[t] = glm::vec3(v_x, 0.0f, v_z); // Base vertices
                 }
 
                 // If cap is true, add the center vertex for the base
                 if (cap)
                 {
-                    _cone_data.vertices[total_nr_vertices - 1].position = glm::vec3{ 0.0f, 0.0f, 0.0f }; // Center of the base
+                    _cone_data.vertices[total_nr_vertices - 1] = glm::vec3{ 0.0f, 0.0f, 0.0f }; // Center of the base
                 }
 
                 return _cone_data.vertices;
             }
 
-            std::array<render::VertexPos, 4>& make_tetrahedron_vertices(f32 w, f32 h)
+            std::array<glm::vec3, 4>& make_tetrahedron_vertices(f32 w, f32 h)
             {
                 _tetrahedron_data.vertices[0] = { glm::vec3(0, h, 0) };
                 _tetrahedron_data.vertices[1] = { glm::vec3(-w, -h, w) };
@@ -244,7 +244,7 @@ namespace ppp
                 return _tetrahedron_data.vertices;
             }
 
-            std::array<render::VertexPos, 6>& make_octa_hedron_vertices(f32 w, f32 h)
+            std::array<glm::vec3, 6>& make_octa_hedron_vertices(f32 w, f32 h)
             {
                 _octahedron_data.vertices[0] = { glm::vec3(0, h, 0) };
                 _octahedron_data.vertices[1] = { glm::vec3(w, 0, 0) };
@@ -456,8 +456,13 @@ namespace ppp
 
             render::render_item item;
 
-            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
-            item.add_component(render::make_index_component(indices.data(), indices.size()));
+            auto vert_comp = render::make_vertex_component(vertices.size());
+            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
+            
+            auto idx_comp = render::make_index_component(indices.data(), indices.size());
+
+            item.add_component(std::move(vert_comp));
+            item.add_component(std::move(idx_comp));
 
             return item;
         }
@@ -469,8 +474,13 @@ namespace ppp
 
             render::render_item item;
 
-            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
-            item.add_component(render::make_index_component(indices.data(), indices.size()));
+            auto vert_comp = render::make_vertex_component(vertices.size());
+            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
+            
+            auto idx_comp = render::make_index_component(indices.data(), indices.size());
+
+            item.add_component(std::move(vert_comp));
+            item.add_component(std::move(idx_comp));
 
             return item;
         }
@@ -482,8 +492,13 @@ namespace ppp
 
             render::render_item item;
 
-            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
-            item.add_component(render::make_index_component(indices.data(), indices.size()));
+            auto vert_comp = render::make_vertex_component(vertices.size());
+            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
+            
+            auto idx_comp = render::make_index_component(indices.data(), indices.size());
+
+            item.add_component(std::move(vert_comp));
+            item.add_component(std::move(idx_comp));
 
             return item;
         }
@@ -495,8 +510,13 @@ namespace ppp
 
             render::render_item item;
 
-            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
-            item.add_component(render::make_index_component(indices.data(), indices.size()));
+            auto vert_comp = render::make_vertex_component(vertices.size());
+            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
+            
+            auto idx_comp = render::make_index_component(indices.data(), indices.size());
+
+            item.add_component(std::move(vert_comp));
+            item.add_component(std::move(idx_comp));
 
             return item;
         }
@@ -508,8 +528,13 @@ namespace ppp
 
             render::render_item item;
 
-            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
-            item.add_component(render::make_index_component(indices.data(), indices.size()));
+            auto vert_comp = render::make_vertex_component(vertices.size());
+            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
+            
+            auto idx_comp = render::make_index_component(indices.data(), indices.size());
+
+            item.add_component(std::move(vert_comp));
+            item.add_component(std::move(idx_comp));
 
             return item;
         }
@@ -521,8 +546,13 @@ namespace ppp
 
             render::render_item item;
 
-            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
-            item.add_component(render::make_index_component(indices.data(), indices.size()));
+            auto vert_comp = render::make_vertex_component(vertices.size());
+            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
+            
+            auto idx_comp = render::make_index_component(indices.data(), indices.size());
+
+            item.add_component(std::move(vert_comp));
+            item.add_component(std::move(idx_comp));
 
             return item;
         }
@@ -534,8 +564,13 @@ namespace ppp
 
             render::render_item item;
 
-            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
-            item.add_component(render::make_index_component(indices.data(), indices.size()));
+            auto vert_comp = render::make_vertex_component(vertices.size());
+            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
+            
+            auto idx_comp = render::make_index_component(indices.data(), indices.size());
+
+            item.add_component(std::move(vert_comp));
+            item.add_component(std::move(idx_comp));
 
             return item;
         }
@@ -547,8 +582,13 @@ namespace ppp
 
             render::render_item item;
 
-            item.add_component(render::make_vertex_component(vertices.data(), vertices.size()));
-            item.add_component(render::make_index_component(indices.data(), indices.size()));
+            auto vert_comp = render::make_vertex_component(vertices.size());
+            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
+            
+            auto idx_comp = render::make_index_component(indices.data(), indices.size());
+
+            item.add_component(std::move(vert_comp));
+            item.add_component(std::move(idx_comp));
 
             return item;
         }

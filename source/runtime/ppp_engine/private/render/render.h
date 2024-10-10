@@ -15,19 +15,8 @@ namespace ppp
     {
         using Index = u32;
 
-        struct VertexPos
-        {
-            glm::vec3 position;
-        };
-
-        struct VertexPosTex
-        {
-            glm::vec3 position;
-            glm::vec2 texcoord;
-        };
-
-        using VertexPosArr = std::vector<VertexPos>;
-        using VertexPosTexArr = std::vector<VertexPosTex>;
+        using VertexPositionArr = std::vector<glm::vec3>;
+        using VertexTexCoordArr = std::vector<glm::vec2>;
         using Indices = std::vector<Index>;
 
         constexpr u32 DEPTH_BUFFER_BIT = 0x00000100;

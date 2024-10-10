@@ -112,26 +112,30 @@ namespace ppp
 
             if (render::stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component<render::VertexPosTex>>();
+                auto vert_comp = item.get_component<render::vertex_component>();
 
                 assert(vert_comp != nullptr);
 
                 constexpr bool outer_stroke = true;
 
-                render::render_item stroke_item = geometry::image::extrude_image(vert_comp->vertices(), vert_comp->vertex_count(), render::stroke_width());
+                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
+
+                render::render_item stroke_item = geometry::image::extrude_image(vertex_positions, vert_comp->vertex_count(), render::stroke_width());
 
                 render::submit_stroke_image_item(stroke_item, outer_stroke);
             }
 
             if (render::inner_stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component<render::VertexPosTex>>();
+                auto vert_comp = item.get_component<render::vertex_component>();
 
                 assert(vert_comp != nullptr);
 
                 constexpr bool outer_stroke = false;
 
-                render::render_item stroke_item = geometry::image::extrude_image(vert_comp->vertices(), vert_comp->vertex_count(), -render::inner_stroke_width());
+                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
+
+                render::render_item stroke_item = geometry::image::extrude_image(vertex_positions, vert_comp->vertex_count(), -render::inner_stroke_width());
 
                 render::submit_stroke_image_item(stroke_item, outer_stroke);
             }

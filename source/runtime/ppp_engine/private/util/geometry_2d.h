@@ -10,7 +10,7 @@ namespace ppp
     {
         namespace image
         {
-            render::render_item extrude_image(const render::VertexPosTex* vertices, s32 vertex_count, f32 extrusion_width);
+            render::render_item extrude_image(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width);
             
             render::render_item make_image(bool from_corner, f32 x, f32 y, f32 w, f32 h, s32 image_id);
         }
@@ -20,11 +20,11 @@ namespace ppp
             render::render_item make_font(bool from_corner, f32 x, f32 y, f32 w, f32 h, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y, s32 image_id);
         }
 
-        render::render_item extrude_point(const render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width);
-        render::render_item extrude_line(const render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width);
-        render::render_item extrude_ellipse(const render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width);
-        render::render_item extrude_polygon(const render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width);
-        render::render_item extrude_triangle(const render::VertexPos* vertices, s32 vertex_count, f32 extrusion_width);
+        render::render_item extrude_point(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width);
+        render::render_item extrude_line(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width);
+        render::render_item extrude_ellipse(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width);
+        render::render_item extrude_polygon(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width);
+        render::render_item extrude_triangle(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width);
 
         render::render_item make_point(f32 x, f32 y);
         render::render_item make_line(f32 x1, f32 y1, f32 x2, f32 y2);
