@@ -45,16 +45,22 @@ namespace ppp
             UNSIGNED_INT
         };
 
+        s32 size_in_bytes_for_data_type(vertex_attribute_data_type type);
+        s32 component_count_for_vertex_attribute(vertex_attribute_type type);
+
         struct vertex_attribute_layout
         {
-            vertex_attribute_type type;
-            vertex_attribute_data_type data_type;
+            vertex_attribute_type type;             // type of the attribute, these are similar to the semantics in shaders (POSITION, NORMAL, TEXCOORD0)
+            vertex_attribute_data_type data_type;   // data type of the attribute (FLOAT, UNSIGNED INT)
 
-            s32 idx;
-            s32 count;
-            s32 normalized;
-            u64 stride;
-            u64 offset;
+            s32 idx;        // attribute index 
+            s32 count;      // attribute component count, for instance glm::vec3 component count == 3
+            s32 normalized; // attribute values are normalized
+            u64 stride;     // size the full vertex type ( so stride of a vertex with position (vec3) and color (vec4) would be (3 * 4) + (4 * 4) 
+            u64 offset;     // offset in the vertex type ( so offset of color within a vertex with position (vec3) and color (vec4) would be 12
+
+            u64 element_size_in_bytes() const { return size_in_bytes_for_data_type(data_type); }
+            u64 total_size_in_bytes() const { return count * element_size_in_bytes(); }
         };
 
         using vertex_attribute_blob = std::vector<u8>;
@@ -81,6 +87,7 @@ namespace ppp
 
             template<typename T>
             const T* get_attribute_data(vertex_attribute_type type) const;
+            const vertex_attribute_map& get_attribute_data() const;
 
             u64 vertex_count() const;
 
@@ -99,8 +106,7 @@ namespace ppp
             auto it = m_attributes.find(type);
             if(it == std::cend(m_attributes))
             {
-                log::error("unable to find attribute");
-                exit(EXIT_FAILURE);
+                return nullptr;
             }
 
             return reinterpret_cast<const T*>(it->second.blob.data());

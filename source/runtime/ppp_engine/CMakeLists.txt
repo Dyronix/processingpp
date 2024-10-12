@@ -29,6 +29,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shaders.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_components.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_components.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.cpp
     # util
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/hash.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_2d.h

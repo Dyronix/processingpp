@@ -7,31 +7,6 @@ namespace ppp
         namespace internal
         {
             //-------------------------------------------------------------------------
-            static s32 size_in_bytes_for_data_type(vertex_attribute_data_type type)
-            {
-                switch (type)
-                {
-                case vertex_attribute_data_type::FLOAT: return 4;
-                case vertex_attribute_data_type::UNSIGNED_INT: return 4;
-                }
-                return 0;  // Fallback to avoid compiler warnings
-            }
-
-            //-------------------------------------------------------------------------
-            static s32 component_count_for_vertex_attribute(vertex_attribute_type type)
-            {
-                switch (type)
-                {
-                case vertex_attribute_type::POSITION:       return 3;
-                case vertex_attribute_type::NORMAL:         return 3;
-                case vertex_attribute_type::TEXCOORD:       return 2;
-                case vertex_attribute_type::COLOR:          return 4;
-                case vertex_attribute_type::TEXTURE_INDEX:  return 1;
-                }
-                return 0;  // Fallback to avoid compiler warnings
-            }
-
-            //-------------------------------------------------------------------------
             static u64 calculate_attribute_type_size_in_bytes(const vertex_attribute_map& attributes)
             {
                 u64 total = 0;
@@ -44,6 +19,31 @@ namespace ppp
                 }
                 return total;
             }
+        }
+
+        //-------------------------------------------------------------------------
+        s32 size_in_bytes_for_data_type(vertex_attribute_data_type type)
+        {
+            switch (type)
+            {
+            case vertex_attribute_data_type::FLOAT: return 4;
+            case vertex_attribute_data_type::UNSIGNED_INT: return 4;
+            }
+            return 0;  // Fallback to avoid compiler warnings
+        }
+
+        //-------------------------------------------------------------------------
+        s32 component_count_for_vertex_attribute(vertex_attribute_type type)
+        {
+            switch (type)
+            {
+            case vertex_attribute_type::POSITION:       return 3;
+            case vertex_attribute_type::NORMAL:         return 3;
+            case vertex_attribute_type::TEXCOORD:       return 2;
+            case vertex_attribute_type::COLOR:          return 4;
+            case vertex_attribute_type::TEXTURE_INDEX:  return 1;
+            }
+            return 0;  // Fallback to avoid compiler warnings
         }
 
         // Vertex Component
@@ -88,7 +88,13 @@ namespace ppp
             add_attribute(type, vertex_attribute_data_type::UNSIGNED_INT, data);
         }
 
-        //-------------------------------------------------------------------------
+        //-------------------------------------------------------------------------|
+        const vertex_attribute_map& vertex_component::get_attribute_data() const
+        {
+            return m_attributes;
+        }
+
+        //-------------------------------------------------------------------------|
         u64 vertex_component::vertex_count() const
         {
             return m_vertex_count;
@@ -101,8 +107,8 @@ namespace ppp
             if (it == std::cend(m_attributes))
             {
                 s32 layout_idx = m_attributes.size(); // layout idx will change once we assign the first value
-                s32 component_count = internal::component_count_for_vertex_attribute(type);
-                s32 total_data_type_size_in_bytes = internal::size_in_bytes_for_data_type(data_type);
+                s32 component_count = component_count_for_vertex_attribute(type);
+                s32 total_data_type_size_in_bytes = size_in_bytes_for_data_type(data_type);
                 u64 total_attrib_size_in_bytes = internal::calculate_attribute_type_size_in_bytes(m_attributes);
 
                 // Initialize layout attributes
@@ -132,8 +138,8 @@ namespace ppp
 
             for(auto& pair : m_attributes)
             {
-                s32 component_count = internal::component_count_for_vertex_attribute(pair.second.layout.type);
-                s32 size_in_bytes = internal::size_in_bytes_for_data_type(pair.second.layout.data_type);
+                s32 component_count = component_count_for_vertex_attribute(pair.second.layout.type);
+                s32 size_in_bytes = size_in_bytes_for_data_type(pair.second.layout.data_type);
 
                 pair.second.layout.stride = total_attrib_size_in_bytes;
                 pair.second.layout.offset = total_attrib_size_in_bytes * pair.second.layout.idx;

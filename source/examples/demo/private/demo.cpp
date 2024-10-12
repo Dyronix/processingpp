@@ -19,7 +19,7 @@ namespace ppp
     constexpr int _canvas_height = 600;
 
     typography::font_id _font;
-    image::Image _image;
+    //image::Image _image;
 
     void setup_canvas()
     {
@@ -45,7 +45,7 @@ namespace ppp
     void load_font()
     {
         _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 36);
-        _image = image::load("local:content/container.jpg");
+        //_image = image::load("local:content/container.jpg");
     }
 
     void activate_font()
@@ -81,13 +81,31 @@ namespace ppp
     {
         //structure::no_loop();
 
-        //color::fill({ 255,0,0,255 });
+        color::fill({ 255,0,0,255 });
+        
+        color::stroke({ 255,0,0,255 });
+        color::stroke_weight(5.0f);
 
-        ////std::string str_frame_rate = std::to_string(environment::frame_rate());
-        ////std::string str_delta_time = std::to_string(environment::delta_time());
-        ////
-        ////typography::text(str_frame_rate, 10, 10);
-        ////typography::text(str_delta_time, 140, 10);
+        shapes::line(10.0f, 100.0f, 400.0f, 100.0f);
+        shapes::line(10.0f, 200.0f, 400.0f, 200.0f);
+        shapes::line(10.0f, 300.0f, 400.0f, 300.0f);
+
+        int x = 10;
+
+        for (int i = 0; i < 20; ++i)
+        {
+            shapes::point((float)x, 150.0f);
+            shapes::point((float)x, 250.0f);
+            shapes::point((float)x, 350.0f);
+
+            x += 15;
+        }
+
+        //////std::string str_frame_rate = std::to_string(environment::frame_rate());
+        //////std::string str_delta_time = std::to_string(environment::delta_time());
+        //////
+        //////typography::text(str_frame_rate, 10, 10);
+        //////typography::text(str_delta_time, 140, 10);
 
         //int x = 0;
 
@@ -96,7 +114,7 @@ namespace ppp
         //    transform::push();
         //    transform::translate(x, 0.0f);
         //    //shapes::box(10.0f, 10.0f, 10.0f);
-        //    //shapes::cylinder(5.0f, 10.0f, 12.0f);
+        //    shapes::cylinder(5.0f, 10.0f, 12.0f);
         //    //shapes::plane(5.0f, 5.0f);
         //    //shapes::torus(6.0f, 2.0f, 8.0f, 8.0f);
         //    //shapes::sphere(6.0f, 12.0f);
@@ -110,11 +128,11 @@ namespace ppp
         //shapes::box(10.0f, 10.0f, 10.0f);
         ////shapes::cylinder(10.0f, 50.0f, 12.0f);
 
-        int x = 0;
-        for (int i = 0; i < 10; ++i)
-        {
-            image::draw(_image.id, x, 0.0f, 10.0f, 10.0f);
-            x = (i * 15);
-        }
+        //int x = 0;
+        //for (int i = 0; i < 10; ++i)
+        //{
+        //    image::draw(_image.id, x, 0.0f, 10.0f, 10.0f);
+        //    x = (i * 15);
+        //}
     }
 }
