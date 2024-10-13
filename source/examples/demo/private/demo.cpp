@@ -19,7 +19,7 @@ namespace ppp
     constexpr int _canvas_height = 600;
 
     typography::font_id _font;
-    //image::Image _image;
+    image::Image _image;
 
     void setup_canvas()
     {
@@ -45,7 +45,7 @@ namespace ppp
     void load_font()
     {
         _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 36);
-        //_image = image::load("local:content/container.jpg");
+        _image = image::load("local:content/container.jpg");
     }
 
     void activate_font()
@@ -71,10 +71,11 @@ namespace ppp
         load_font();
         activate_font();
 
-        //shapes::rect_mode(shapes::ShapeMode::CORNER);
+        shapes::rect_mode(shapes::ShapeMode::CORNER);
+        image::image_mode(image::ImageMode::CORNER);
 
-        camera::perspective(55.0f, _window_width/_window_height, 0.1f, 1000.0f);
-        camera::camera(20, -40, 80);
+        //camera::perspective(55.0f, _window_width/_window_height, 0.1f, 1000.0f);
+        //camera::camera(20, -40, 80);
     }
 
     void draw()
@@ -107,32 +108,32 @@ namespace ppp
         //////typography::text(str_frame_rate, 10, 10);
         //////typography::text(str_delta_time, 140, 10);
 
-        int x = 0;
-
-        for (int i = -5; i <= 5; ++i)
-        {
-            transform::push();
-            transform::translate(x, 0.0f);
-            shapes::box(10.0f, 10.0f, 10.0f);
-            //shapes::cylinder(5.0f, 10.0f, 12.0f);
-            //shapes::plane(5.0f, 5.0f);
-            //shapes::torus(6.0f, 2.0f, 8.0f, 8.0f);
-            //shapes::sphere(6.0f, 12.0f);
-            //shapes::cone(6.0f, 8.0f);
-            //shapes::tetrahedron(6.0f, 6.0f);
-            //shapes::octahedron(6.0f, 6.0f);
-            transform::pop();
-            x = (i * 15);
-        }
+        //int x = 0;
+        //
+        //for (int i = -5; i <= 5; ++i)
+        //{
+        //    transform::push();
+        //    transform::translate(x, 0.0f);
+        //    shapes::box(10.0f, 10.0f, 10.0f);
+        //    //shapes::cylinder(5.0f, 10.0f, 12.0f);
+        //    //shapes::plane(5.0f, 5.0f);
+        //    //shapes::torus(6.0f, 2.0f, 8.0f, 8.0f);
+        //    //shapes::sphere(6.0f, 12.0f);
+        //    //shapes::cone(6.0f, 8.0f);
+        //    //shapes::tetrahedron(6.0f, 6.0f);
+        //    //shapes::octahedron(6.0f, 6.0f);
+        //    transform::pop();
+        //    x = (i * 15);
+        //}
 
         //shapes::box(10.0f, 10.0f, 10.0f);
         ////shapes::cylinder(10.0f, 50.0f, 12.0f);
 
-        //int x = 0;
-        //for (int i = 0; i < 10; ++i)
-        //{
-        //    image::draw(_image.id, x, 0.0f, 10.0f, 10.0f);
-        //    x = (i * 15);
-        //}
+        int x = 96;
+        for (int i = 0; i < 9; ++i)
+        {
+            image::draw(_image.id, x, 64.0f, 64, 64);
+            x += 128;
+        }
     }
 }
