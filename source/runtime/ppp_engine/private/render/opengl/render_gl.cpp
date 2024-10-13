@@ -121,11 +121,55 @@ namespace ppp
                     vertex_attribute_type::COLOR,
                     vertex_attribute_data_type::FLOAT,
 
-                    0,
+                    1,
                     4,
                     false,
                     sizeof(triangle_vertex_format),
                     3 * sizeof(float)
+                }
+            };
+
+            std::array<vertex_attribute_layout, 4> _pos_tex_col_layout
+            {
+                vertex_attribute_layout{
+                    vertex_attribute_type::POSITION,
+                    vertex_attribute_data_type::FLOAT,
+
+                    0,
+                    3,
+                    false,
+                    sizeof(image_vertex_format),
+                    0
+                },
+                vertex_attribute_layout{
+                    vertex_attribute_type::TEXCOORD,
+                    vertex_attribute_data_type::FLOAT,
+
+                    1,
+                    2,
+                    false,
+                    sizeof(triangle_vertex_format),
+                    3 * sizeof(float)
+                },
+                vertex_attribute_layout{
+                    vertex_attribute_type::COLOR,
+                    vertex_attribute_data_type::FLOAT,
+
+                    2,
+                    4,
+                    false,
+                    sizeof(triangle_vertex_format),
+                    3 * sizeof(float) + 2 * sizeof(float)
+                },
+                vertex_attribute_layout{
+                    vertex_attribute_type::TEXTURE_INDEX,
+                    vertex_attribute_data_type::FLOAT,
+
+                    3,
+                    1,
+                    false,
+                    sizeof(triangle_vertex_format),
+                    3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
                 }
             };
 
