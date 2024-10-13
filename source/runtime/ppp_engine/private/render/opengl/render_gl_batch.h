@@ -5,6 +5,8 @@
 #include "util/types.h"
 #include "util/log.h"
 
+#include "memory/weak_array.h"
+
 #include <glad/glad.h>
 
 #include <glm/glm.hpp>
@@ -520,8 +522,6 @@ namespace ppp
             Batch(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count)
                 : m_max_vertex_count(size_vertex_buffer)
                 , m_max_index_count(size_index_buffer)
-                , m_layouts(layouts)
-                , m_layout_count(layout_count)
                 , m_vertex_buffer(layouts, layout_count, size_vertex_buffer)
                 , m_index_buffer(std::make_unique<Index[]>(size_index_buffer))
             {
@@ -586,9 +586,6 @@ namespace ppp
             u32 max_vertex_count() const { return m_max_vertex_count; }
             u32 max_index_count() const { return m_max_index_count; }
 
-            const vertex_attribute_layout* layouts() const { return m_layouts; }
-            const u64 layout_count() const { return m_layout_count; }
-
         private:
             void copy_vertex_data(const vertex_component* vertex_comp)
             {
@@ -650,15 +647,13 @@ namespace ppp
 
             const u32 m_max_vertex_count = 0;
             const u32 m_max_index_count = 0;
-
-            const vertex_attribute_layout* m_layouts;
-            const u64 m_layout_count;
         };
 
         class BatchDrawingData
         {
         public:
             BatchDrawingData(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count)
+                :m_layouts(layouts, layout_count)
             {
                 assert(size_vertex_buffer > 0);
                 assert(size_index_buffer > 0);
@@ -721,10 +716,7 @@ namespace ppp
                         u32 max_vertex_count = m_batches[m_push_batch].max_vertex_count();
                         u32 max_index_count = m_batches[m_push_batch].max_index_count();
 
-                        const vertex_attribute_layout* layouts = m_batches[m_push_batch].layouts();
-                        const u64 layout_count = m_batches[m_push_batch].layout_count();
-
-                        m_batches.push_back(Batch(max_vertex_count, max_index_count, layouts, layout_count));
+                        m_batches.push_back(Batch(max_vertex_count, max_index_count, m_layouts.data(), m_layouts.size()));
                     }
 
                     ++m_push_batch;
@@ -792,7 +784,6 @@ namespace ppp
                 }
                 return 0;  // Fallback to avoid compiler warnings
             }
-
             //-------------------------------------------------------------------------
             u64 calculate_total_size_vertex_type(const vertex_attribute_layout* layouts, u64 layout_count)
             {
@@ -819,6 +810,8 @@ namespace ppp
             s32 m_push_batch = 0;
 
             BatchArr m_batches;
+
+            memory::weak_array<const vertex_attribute_layout> m_layouts;
         };
     }
 }
