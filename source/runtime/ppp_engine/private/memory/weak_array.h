@@ -11,55 +11,55 @@ namespace ppp
         class weak_array
         {
         private:
-            T* ptr;       // Pointer to the first element of the array
-            u64 size;     // Size of the array
+            T* m_ptr;       // Pointer to the first element of the array
+            u64 m_size;     // Size of the array
 
         public:
             weak_array(T* arr_ptr, u64 arr_size)
-                : ptr(arr_ptr)
-                , size(arr_size)
+                : m_ptr(arr_ptr)
+                , m_size(arr_size)
             {
             }
 
             weak_array(std::initializer_list<T> list)
-                : ptr(const_cast<T*>(list.begin()))
-                , size(list.size())
+                : m_ptr(const_cast<T*>(list.begin()))
+                , m_size(list.size())
             {
             }
 
             T& operator[](u64 index)
             {
-                if (index >= size)
+                if (index >= m_size)
                 {
                     log::error("Index out of bounds");
                     exit(EXIT_FAILURE);
                 }
-                return ptr[index];
+                return m_ptr[index];
             }
 
             const T& operator[](u64 index) const
             {
-                if (index >= size)
+                if (index >= m_size)
                 {
                     log::error("Index out of bounds");
                     exit(EXIT_FAILURE);
                 }
-                return ptr[index];
+                return m_ptr[index];
             }
 
             u64 size() const
             {
-                return size;
+                return m_size;
             }
 
             T* data()
             {
-                return ptr;
+                return m_ptr;
             }
 
             const T* data() const
             {
-                return ptr;
+                return m_ptr;
             }
         };
     }
