@@ -23,10 +23,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void index_buffer::set_index_data(const u32* data_ptr, u64 data_count)
         {
-            for (u64 i = 0; i < data_count; ++i)
-            {
-                m_buffer[m_current_index_count + i] = data_ptr[i];
-            }
+            memcpy(m_buffer.get() + m_current_index_count, data_ptr, sizeof(u32) * data_count);
 
             m_current_index_count += data_count;
         }
@@ -35,6 +32,22 @@ namespace ppp
         void index_buffer::free()
         {
             m_current_index_count = 0;
+        }
+
+        //-------------------------------------------------------------------------
+        void index_buffer::transform_index_data(std::function<void(u32&)> transform_func)
+        {
+            transform_index_data(0, m_current_index_count, transform_func);
+        }
+
+        //-------------------------------------------------------------------------
+        void index_buffer::transform_index_data(u64 start_index, u64 end_index, std::function<void(u32&)> transform_func)
+        {
+            for (u64 i = start_index; i < end_index; ++i)
+            {
+                u32* index_ptr = reinterpret_cast<u32*>(m_buffer.get() + i);
+                transform_func(*index_ptr);
+            }
         }
 
         //-------------------------------------------------------------------------

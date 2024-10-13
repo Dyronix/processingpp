@@ -310,22 +310,27 @@ namespace ppp
                 assert(vertex_comp != nullptr);
                 assert(index_comp != nullptr);
 
-                s32 start_index = m_vertex_buffer.active_vertex_count();
-                s32 end_index = start_index + vertex_comp->vertex_count();
+                s32 start_index = 0;
+                s32 end_index = 0;
 
+                start_index = m_index_buffer.active_index_count();
+                end_index = start_index + index_comp->index_count();
                 copy_index_data(index_comp);
-                copy_vertex_data(vertex_comp);
+                transform_index_locations(start_index, end_index, m_vertex_buffer.active_vertex_count());
 
+                start_index = m_vertex_buffer.active_vertex_count();
+                end_index = start_index + vertex_comp->vertex_count();
+                copy_vertex_data(vertex_comp);
                 map_new_vertex_data(vertex_attribute_type::COLOR, (void*)&color[0]);
+                transform_vertex_positions(start_index, end_index, world);
 
                 ++m_nr_primitives;
-
-                transform_vertex_positions(start_index, end_index, world);
             }
 
             void reset() 
             {
                 m_vertex_buffer.free();
+                m_index_buffer.free();
 
                 m_nr_primitives = 0;
             }
@@ -359,7 +364,6 @@ namespace ppp
                     m_vertex_buffer.set_attribute_data(pair.first, pair.second.blob.data(), vertex_comp->vertex_count());
                 }
             }
-
             void copy_index_data(const index_component* index_comp)
             {
                 u64 idx_count = index_comp->index_count();
@@ -367,11 +371,6 @@ namespace ppp
                 assert(sizeof(index_comp->indices()[0]) == sizeof(Index) && "different index size was used");
 
                 m_index_buffer.set_index_data(index_comp->indices(), idx_count);
-
-                for (u64 i = 0; i < idx_count; ++i)
-                {
-                    m_index_buffer.get_data()[m_index_buffer.active_index_count() + i] += m_vertex_buffer.active_vertex_count();
-                }
             }
 
             void map_new_vertex_data(vertex_attribute_type type, void* data)
@@ -388,6 +387,13 @@ namespace ppp
                     position.x = transformed_pos.x;
                     position.y = transformed_pos.y;
                     position.z = transformed_pos.z;
+                });
+            }
+            void transform_index_locations(s32 start_index, s32 end_index, u64 offset)
+            {
+                m_index_buffer.transform_index_data(start_index, end_index, [&](u32& index)
+                {
+                    index += offset;
                 });
             }
 

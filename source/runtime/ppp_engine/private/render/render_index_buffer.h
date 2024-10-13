@@ -3,6 +3,7 @@
 #include "util/types.h"
 
 #include <memory>
+#include <functional>
 
 namespace ppp
 {
@@ -18,6 +19,9 @@ namespace ppp
             void set_index_data(const u32* data_ptr, u64 data_count);
 
             void free();
+
+            void transform_index_data(std::function<void(u32&)> transform_func);
+            void transform_index_data(u64 start_index, u64 end_index, std::function<void(u32&)> transform_func);
 
             u32* get_data();
             const u32* get_data() const;
