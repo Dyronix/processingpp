@@ -36,7 +36,7 @@ namespace ppp
             NORMAL,
             TEXCOORD,
             COLOR,
-            TEXTURE_INDEX
+            DIFFUSE_TEXTURE_INDEX
         };
 
         enum class vertex_attribute_data_type

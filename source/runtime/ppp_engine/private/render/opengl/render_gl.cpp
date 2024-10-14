@@ -148,7 +148,7 @@ namespace ppp
                     1,
                     2,
                     false,
-                    sizeof(triangle_vertex_format),
+                    sizeof(image_vertex_format),
                     3 * sizeof(float)
                 },
                 vertex_attribute_layout{
@@ -158,17 +158,17 @@ namespace ppp
                     2,
                     4,
                     false,
-                    sizeof(triangle_vertex_format),
+                    sizeof(image_vertex_format),
                     3 * sizeof(float) + 2 * sizeof(float)
                 },
                 vertex_attribute_layout{
-                    vertex_attribute_type::TEXTURE_INDEX,
+                    vertex_attribute_type::DIFFUSE_TEXTURE_INDEX,
                     vertex_attribute_data_type::FLOAT,
 
                     3,
                     1,
                     false,
-                    sizeof(triangle_vertex_format),
+                    sizeof(image_vertex_format),
                     3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
                 }
             };
@@ -227,10 +227,10 @@ namespace ppp
             std::unique_ptr<BatchDrawingData> _triangle_drawing_data;
             std::unique_ptr<BatchDrawingData> _triangle_stroke_drawing_data;
 
-            std::unique_ptr<TextureDrawingData<image_vertex_format>> _image_drawing_data;
+            std::unique_ptr<BatchDrawingData> _image_drawing_data;
             std::unique_ptr<BatchDrawingData> _image_stroke_drawing_data;
 
-            std::unique_ptr<TextureDrawingData<image_vertex_format>> _font_drawing_data;
+            std::unique_ptr<BatchDrawingData> _font_drawing_data;
 
             void draw_points(const std::unique_ptr<BatchDrawingData>& point_drawing_data)
             {
@@ -314,7 +314,7 @@ namespace ppp
                     glBindVertexArray(0);
                 }
             }
-            void draw_images(const std::unique_ptr<TextureDrawingData<image_vertex_format>>& image_draw_data, s32 shader_program)
+            void draw_images(const std::unique_ptr<BatchDrawingData>& image_draw_data, s32 shader_program)
             {
                 auto image_batch = image_draw_data->next_batch();
                 if (image_batch != nullptr)
@@ -324,8 +324,11 @@ namespace ppp
 
                     while (image_batch != nullptr)
                     {
+                        assert(image_batch->samplers());
+                        assert(image_batch->textures());
+
                         u32 u_tex_samplers_loc = glGetUniformLocation(shader_program, "s_image");
-                        glUniform1iv(u_tex_samplers_loc, image_batch->active_texture_count(), image_batch->samplers());
+                        glUniform1iv(u_tex_samplers_loc, image_batch->active_sampler_count(), image_batch->samplers());
 
                         #ifndef NDEBUG
                         if (image_batch->active_index_count() % 3 != 0)
@@ -335,18 +338,12 @@ namespace ppp
                         }
                         #endif
 
-
                         s32 i = 0;
                         s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                        for (const auto& pair : image_batch->image_ids())
+                        for (int i = 0; i < image_batch->active_texture_count(); ++i)
                         {
-                            u32 id = pair.first;
-                            s32 idx = pair.second;
-
                             glActiveTexture(GL_TEXTURE0 + (offset * i));
-                            glBindTexture(GL_TEXTURE_2D, id);
-
-                            ++i;
+                            glBindTexture(GL_TEXTURE_2D, image_batch->textures()[i]);
                         }
 
                         glBufferSubData(GL_ARRAY_BUFFER, 0, image_batch->vertex_buffer_byte_size(), image_batch->vertices());
@@ -414,14 +411,11 @@ namespace ppp
 
             s32 max_texture_units = 0;
             glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
-            
             s32 max_images = std::min(max_texture_units, internal::_max_texture_units);
-            s32 size_vertex_buffer = max_images * 4;
-            s32 size_index_buffer = max_images * 4 * 3;
 
             // Image Drawing Data
-            internal::_image_drawing_data = std::make_unique<TextureDrawingData<internal::image_vertex_format>>(max_images);
-            internal::_image_stroke_drawing_data = std::make_unique<BatchDrawingData>(size_vertex_buffer, size_index_buffer, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
+            internal::_image_drawing_data = std::make_unique<BatchDrawingData>(max_triangle_vertices, max_triangle_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images);
+            internal::_image_stroke_drawing_data = std::make_unique<BatchDrawingData>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
 
             s32 white = 0xFFFFFFFF;
             internal::_white_texture_image_id = create_image_item(1, 1, 4, (u8*)&white);
@@ -429,7 +423,7 @@ namespace ppp
             internal::_black_texture_image_id = create_image_item(1, 1, 4, (u8*)&black);
 
             // Font Drawing Data
-            internal::_font_drawing_data = std::make_unique<TextureDrawingData<internal::image_vertex_format>>(max_images);
+            internal::_font_drawing_data = std::make_unique<BatchDrawingData>(max_triangle_vertices, max_triangle_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images);
 
             return true;
         }

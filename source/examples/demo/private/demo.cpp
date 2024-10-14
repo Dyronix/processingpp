@@ -19,7 +19,8 @@ namespace ppp
     constexpr int _canvas_height = 600;
 
     typography::font_id _font;
-    image::Image _image;
+    image::Image _image_container;
+    image::Image _image_wall;
 
     void setup_canvas()
     {
@@ -45,7 +46,8 @@ namespace ppp
     void load_font()
     {
         _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 36);
-        _image = image::load("local:content/container.jpg");
+        _image_container = image::load("local:content/container.jpg");
+        _image_wall = image::load("local:content/wall.jpg");
     }
 
     void activate_font()
@@ -71,8 +73,9 @@ namespace ppp
         load_font();
         activate_font();
 
-        shapes::rect_mode(shapes::ShapeMode::CORNER);
+        //shapes::rect_mode(shapes::ShapeMode::CORNER);
         image::image_mode(image::ImageMode::CORNER);
+        shapes::rasterization_mode(shapes::RasterizationMode::SOLID);
 
         //camera::perspective(55.0f, _window_width/_window_height, 0.1f, 1000.0f);
         //camera::camera(20, -40, 80);
@@ -132,7 +135,14 @@ namespace ppp
         int x = 96;
         for (int i = 0; i < 9; ++i)
         {
-            image::draw(_image.id, x, 64.0f, 64, 64);
+            if (i % 2)
+            {
+                image::draw(_image_container.id, x, 64.0f, 64, 64);
+            }
+            else
+            {
+                image::draw(_image_wall.id, x, 64.0f, 64, 64);
+            }
             x += 128;
         }
     }

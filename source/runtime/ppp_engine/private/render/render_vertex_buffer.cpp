@@ -4,6 +4,18 @@ namespace ppp
 {
     namespace render
     {
+        namespace internal
+        {
+            struct vertex_buffer_meta
+            {
+                bool is_open;
+
+                u64 max_elements_to_set;
+            };
+
+            std::unordered_map<vertex_buffer*, vertex_buffer_meta> _vb_addition;
+        }
+
         //-------------------------------------------------------------------------
         vertex_buffer::vertex_buffer(const vertex_attribute_layout* layouts, u64 layout_count, u64 vertex_count)
             : m_layouts(layouts)
@@ -28,8 +40,26 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void vertex_buffer::set_attribute_data(vertex_attribute_type type, const void* data_ptr, u64 data_count)
+        void vertex_buffer::open_attribute_addition(u64 data_count)
         {
+            internal::_vb_addition[this].is_open = true;
+            internal::_vb_addition[this].max_elements_to_set = std::min(data_count, m_vertex_count - m_current_vertex_count);;
+        }
+
+        //-------------------------------------------------------------------------
+        void vertex_buffer::close_attribute_addition()
+        {
+            m_current_vertex_count = std::max(m_current_vertex_count, m_current_vertex_count + internal::_vb_addition[this].max_elements_to_set);
+
+            internal::_vb_addition[this].max_elements_to_set = 0;
+            internal::_vb_addition[this].is_open = false;
+        }
+
+        //-------------------------------------------------------------------------
+        void vertex_buffer::set_attribute_data(vertex_attribute_type type, const void* data_ptr)
+        {
+            assert(internal::_vb_addition[this].is_open);
+
             const vertex_attribute_layout* element_layout = find_layout(type);
             if (!element_layout)
             {
@@ -41,16 +71,12 @@ namespace ppp
             u64 element_stride = m_vertex_size;
             u64 element_size = element_layout->total_size_in_bytes();
 
-            u64 max_elements_to_set = std::min(data_count, m_vertex_count - m_current_vertex_count);
-
-            for (u64 i = 0; i < max_elements_to_set; ++i)
+            for (u64 i = 0; i < internal::_vb_addition[this].max_elements_to_set; ++i)
             {
                 const u8* src_ptr = reinterpret_cast<const u8*>(data_ptr) + i * element_size;
                 u8* dst_ptr = m_buffer.data() + (m_current_vertex_count + i) * element_stride + element_offset;
                 memcpy(dst_ptr, src_ptr, element_size);
             }
-
-            m_current_vertex_count = std::max(m_current_vertex_count, m_current_vertex_count + max_elements_to_set);
         }
 
         //-------------------------------------------------------------------------

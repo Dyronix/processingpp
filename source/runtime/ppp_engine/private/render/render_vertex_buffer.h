@@ -18,8 +18,11 @@ namespace ppp
 
             bool can_add_vertices(u64 count) const;
 
-            void set_attribute_data(vertex_attribute_type type, const void* data_ptr, u64 data_count);
-            void map_attribute_data(vertex_attribute_type type,const void* data_ptr);
+            void open_attribute_addition(u64 data_count);
+            void close_attribute_addition();
+
+            void set_attribute_data(vertex_attribute_type type, const void* data_ptr);
+            void map_attribute_data(vertex_attribute_type type, const void* data_ptr);
 
             void free();
 

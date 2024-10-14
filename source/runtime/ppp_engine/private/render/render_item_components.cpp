@@ -37,11 +37,11 @@ namespace ppp
         {
             switch (type)
             {
-            case vertex_attribute_type::POSITION:       return 3;
-            case vertex_attribute_type::NORMAL:         return 3;
-            case vertex_attribute_type::TEXCOORD:       return 2;
-            case vertex_attribute_type::COLOR:          return 4;
-            case vertex_attribute_type::TEXTURE_INDEX:  return 1;
+            case vertex_attribute_type::POSITION:               return 3;
+            case vertex_attribute_type::NORMAL:                 return 3;
+            case vertex_attribute_type::TEXCOORD:               return 2;
+            case vertex_attribute_type::COLOR:                  return 4;
+            case vertex_attribute_type::DIFFUSE_TEXTURE_INDEX:  return 1;
             }
             return 0;  // Fallback to avoid compiler warnings
         }
