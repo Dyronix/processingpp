@@ -13,12 +13,6 @@ namespace ppp
 {
     namespace render
     {
-        using Index = u32;
-
-        using VertexPositionArr = std::vector<glm::vec3>;
-        using VertexTexCoordArr = std::vector<glm::vec2>;
-        using Indices = std::vector<Index>;
-
         constexpr u32 DEPTH_BUFFER_BIT = 0x00000100;
         constexpr u32 STENCIL_BUFFER_BIT = 0x00000400;
         constexpr u32 COLOR_BUFFER_BIT = 0x00004000;

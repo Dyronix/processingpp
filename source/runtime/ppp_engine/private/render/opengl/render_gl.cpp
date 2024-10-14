@@ -1,6 +1,6 @@
 #include "render/render.h"
 #include "render/render_transform.h"
-#include "render/opengl/render_gl_batch.h"
+#include "render/render_batch.h"
 #include "resources/shader_pool.h"
 #include "util/log.h"
 
@@ -31,10 +31,10 @@ namespace ppp
 
             u32 index_type()
             {
-                if (typeid(Index).hash_code() == typeid(u32).hash_code()) return GL_UNSIGNED_INT;
-                if (typeid(Index).hash_code() == typeid(u16).hash_code()) return GL_UNSIGNED_SHORT;
+                if (typeid(index).hash_code() == typeid(u32).hash_code()) return GL_UNSIGNED_INT;
+                if (typeid(index).hash_code() == typeid(u16).hash_code()) return GL_UNSIGNED_SHORT;
 
-                log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(Index).name());
+                log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
                 return GL_UNSIGNED_INT;
             }
 
@@ -218,21 +218,21 @@ namespace ppp
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
             }
 
-            std::unique_ptr<BatchDrawingData> _points_drawing_data;
-            std::unique_ptr<BatchDrawingData> _points_stroke_drawing_data;
+            std::unique_ptr<batch_drawing_data> _points_drawing_data;
+            std::unique_ptr<batch_drawing_data> _points_stroke_drawing_data;
 
-            std::unique_ptr<BatchDrawingData> _lines_drawing_data;
-            std::unique_ptr<BatchDrawingData> _lines_stroke_drawing_data;
+            std::unique_ptr<batch_drawing_data> _lines_drawing_data;
+            std::unique_ptr<batch_drawing_data> _lines_stroke_drawing_data;
 
-            std::unique_ptr<BatchDrawingData> _triangle_drawing_data;
-            std::unique_ptr<BatchDrawingData> _triangle_stroke_drawing_data;
+            std::unique_ptr<batch_drawing_data> _triangle_drawing_data;
+            std::unique_ptr<batch_drawing_data> _triangle_stroke_drawing_data;
 
-            std::unique_ptr<BatchDrawingData> _image_drawing_data;
-            std::unique_ptr<BatchDrawingData> _image_stroke_drawing_data;
+            std::unique_ptr<batch_drawing_data> _image_drawing_data;
+            std::unique_ptr<batch_drawing_data> _image_stroke_drawing_data;
 
-            std::unique_ptr<BatchDrawingData> _font_drawing_data;
+            std::unique_ptr<batch_drawing_data> _font_drawing_data;
 
-            void draw_points(const std::unique_ptr<BatchDrawingData>& point_drawing_data)
+            void draw_points(const std::unique_ptr<batch_drawing_data>& point_drawing_data)
             {
                 auto points_batch = point_drawing_data->next_batch();
                 if (points_batch != nullptr)
@@ -254,7 +254,7 @@ namespace ppp
                     glBindVertexArray(0);
                 }
             }
-            void draw_lines(const std::unique_ptr<BatchDrawingData>& line_drawing_data)
+            void draw_lines(const std::unique_ptr<batch_drawing_data>& line_drawing_data)
             {
                 auto lines_batch = line_drawing_data->next_batch();
                 if (lines_batch != nullptr)
@@ -284,7 +284,7 @@ namespace ppp
                     glBindVertexArray(0);
                 }
             }
-            void draw_triangles(const std::unique_ptr<BatchDrawingData>& triangle_drawing_data)
+            void draw_triangles(const std::unique_ptr<batch_drawing_data>& triangle_drawing_data)
             {
                 auto triangle_batch = triangle_drawing_data->next_batch();
                 if (triangle_batch != nullptr)
@@ -314,7 +314,7 @@ namespace ppp
                     glBindVertexArray(0);
                 }
             }
-            void draw_images(const std::unique_ptr<BatchDrawingData>& image_draw_data, s32 shader_program)
+            void draw_images(const std::unique_ptr<batch_drawing_data>& image_draw_data, s32 shader_program)
             {
                 auto image_batch = image_draw_data->next_batch();
                 if (image_batch != nullptr)
@@ -402,20 +402,20 @@ namespace ppp
             s32 max_triangle_vertices = std::min(max_vertex_elements, internal::_max_triangles);
             s32 max_triangle_indices = std::min(max_index_elements, internal::_max_triangles * 3);
 
-            internal::_points_drawing_data = std::make_unique<BatchDrawingData>(max_point_vertices, max_point_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_points_stroke_drawing_data = std::make_unique<BatchDrawingData>(max_point_vertices, max_point_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_lines_drawing_data = std::make_unique<BatchDrawingData>(max_line_vertices, max_line_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_lines_stroke_drawing_data = std::make_unique<BatchDrawingData>(max_line_vertices, max_line_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_triangle_drawing_data = std::make_unique<BatchDrawingData>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_triangle_stroke_drawing_data = std::make_unique<BatchDrawingData>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
+            internal::_points_drawing_data = std::make_unique<batch_drawing_data>(max_point_vertices, max_point_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
+            internal::_points_stroke_drawing_data = std::make_unique<batch_drawing_data>(max_point_vertices, max_point_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
+            internal::_lines_drawing_data = std::make_unique<batch_drawing_data>(max_line_vertices, max_line_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
+            internal::_lines_stroke_drawing_data = std::make_unique<batch_drawing_data>(max_line_vertices, max_line_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
+            internal::_triangle_drawing_data = std::make_unique<batch_drawing_data>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
+            internal::_triangle_stroke_drawing_data = std::make_unique<batch_drawing_data>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
 
             s32 max_texture_units = 0;
             glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
             s32 max_images = std::min(max_texture_units, internal::_max_texture_units);
 
             // Image Drawing Data
-            internal::_image_drawing_data = std::make_unique<BatchDrawingData>(max_triangle_vertices, max_triangle_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images);
-            internal::_image_stroke_drawing_data = std::make_unique<BatchDrawingData>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
+            internal::_image_drawing_data = std::make_unique<batch_drawing_data>(max_triangle_vertices, max_triangle_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images);
+            internal::_image_stroke_drawing_data = std::make_unique<batch_drawing_data>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
 
             s32 white = 0xFFFFFFFF;
             internal::_white_texture_image_id = create_image_item(1, 1, 4, (u8*)&white);
@@ -423,7 +423,7 @@ namespace ppp
             internal::_black_texture_image_id = create_image_item(1, 1, 4, (u8*)&black);
 
             // Font Drawing Data
-            internal::_font_drawing_data = std::make_unique<BatchDrawingData>(max_triangle_vertices, max_triangle_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images);
+            internal::_font_drawing_data = std::make_unique<batch_drawing_data>(max_triangle_vertices, max_triangle_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images);
 
             return true;
         }

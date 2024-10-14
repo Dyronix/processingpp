@@ -13,7 +13,7 @@ namespace ppp
             struct box_data
             {
                 std::array<glm::vec3, 24> vertices;
-                std::array<render::Index, 36> indices = 
+                std::array<render::index, 36> indices = 
                 {
                     // Front face
                     0, 1, 2, 0, 2, 3,
@@ -33,38 +33,38 @@ namespace ppp
 
             struct cylinder_data
             {
-                render::VertexPositionArr vertices;
-                render::Indices indices;
+                std::vector<glm::vec3> vertices;
+                std::vector<render::index> indices;
             } _cylinder_data;
 
             struct plane_data
             {
                 std::array<glm::vec3, 4> vertices;
-                std::array<render::Index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
+                std::array<render::index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
             } _plane_data;
 
             struct sphere_data
             {
-                render::VertexPositionArr vertices;
-                render::Indices indices;
+                std::vector<glm::vec3> vertices;
+                std::vector<render::index> indices;
             } _sphere_data;
 
             struct torus_data
             {
-                render::VertexPositionArr vertices;
-                render::Indices indices;
+                std::vector<glm::vec3> vertices;
+                std::vector<render::index> indices;
             } _torus_data;
 
             struct cone_data
             {
-                render::VertexPositionArr vertices;
-                render::Indices indices;
+                std::vector<glm::vec3> vertices;
+                std::vector<render::index> indices;
             } _cone_data;
 
             struct tetrahedron_data
             {
                 std::array<glm::vec3, 4> vertices;
-                std::array<render::Index, 12> indices = { 0, 1, 2,
+                std::array<render::index, 12> indices = { 0, 1, 2,
                     0, 2, 3,
                     0, 3, 1,
                     1, 3, 2 };
@@ -73,7 +73,7 @@ namespace ppp
             struct octahedron_data
             {
                 std::array<glm::vec3, 6> vertices;
-                std::array<render::Index, 24> indices = { 0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1, 5, 1, 2, 5, 2, 3, 5, 3, 4, 5, 4, 1 };
+                std::array<render::index, 24> indices = { 0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1, 5, 1, 2, 5, 2, 3, 5, 3, 4, 5, 4, 1 };
             } _octahedron_data;
 
             std::array<glm::vec3, 24>& make_box_vertices(f32 width, f32 height, f32 depth)
@@ -256,12 +256,12 @@ namespace ppp
                 return _octahedron_data.vertices;
             }
 
-            std::array<render::Index, 36>& make_box_indices()
+            std::array<render::index, 36>& make_box_indices()
             {
                 return _box_data.indices;
             }
 
-            std::vector<render::Index>& make_cylinder_indices(f32 h, s32 detail, bool bottom_cap, bool top_cap)
+            std::vector<render::index>& make_cylinder_indices(f32 h, s32 detail, bool bottom_cap, bool top_cap)
             {
                 s32 total_nr_indices = detail * 3;
                 s32 total_indices = (top_cap ? total_nr_indices : 0) + (bottom_cap ? total_nr_indices : 0) + detail * 6;
@@ -333,12 +333,12 @@ namespace ppp
                 return _cylinder_data.indices;
             }
 
-            std::array<render::Index, 6>& make_plane_indices()
+            std::array<render::index, 6>& make_plane_indices()
             {
                 return _plane_data.indices;
             }
 
-            std::vector<render::Index>& make_sphere_indices(s32 detail)
+            std::vector<render::index>& make_sphere_indices(s32 detail)
             {
                 _sphere_data.indices.clear();
 
@@ -364,7 +364,7 @@ namespace ppp
                 return _sphere_data.indices;
             }
 
-            std::vector<render::Index>& make_torus_indices(s32 detailx, s32 detaily)
+            std::vector<render::index>& make_torus_indices(s32 detailx, s32 detaily)
             {
                 _torus_data.indices.clear();
 
@@ -388,7 +388,7 @@ namespace ppp
                 return _torus_data.indices;
             }
 
-            std::vector<render::Index>& make_cone_indices(s32 detail, bool cap)
+            std::vector<render::index>& make_cone_indices(s32 detail, bool cap)
             {
                 // Calculate the total number of indices for the sides of the cone
                 s32 total_nr_indices = detail * 3;
@@ -438,12 +438,12 @@ namespace ppp
                 return _cone_data.indices;
             }
 
-            std::array<render::Index, 12>& make_tetrahedron_indices()
+            std::array<render::index, 12>& make_tetrahedron_indices()
             {
                 return _tetrahedron_data.indices;
             }
 
-            std::array<render::Index, 24>& make_octahedron_indices()
+            std::array<render::index, 24>& make_octahedron_indices()
             {
                 return _octahedron_data.indices;
             }
