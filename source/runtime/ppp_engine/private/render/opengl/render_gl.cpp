@@ -2,7 +2,9 @@
 #include "render/render_transform.h"
 #include "render/render_batch.h"
 #include "resources/shader_pool.h"
+
 #include "util/log.h"
+#include "util/color_ops.h"
 
 #include <glad/glad.h>
 
@@ -31,31 +33,11 @@ namespace ppp
 
             u32 index_type()
             {
-                if (typeid(index).hash_code() == typeid(u32).hash_code()) return GL_UNSIGNED_INT;
-                if (typeid(index).hash_code() == typeid(u16).hash_code()) return GL_UNSIGNED_SHORT;
+                if (sizeof(index) == sizeof(u32)) return GL_UNSIGNED_INT;
+                if (sizeof(index) == sizeof(u16)) return GL_UNSIGNED_SHORT;
 
                 log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
                 return GL_UNSIGNED_INT;
-            }
-
-            u32 convert_color(const glm::vec4 color)
-            {
-                u32 out;
-                out = (conversions::f32_to_uint8(color.x)) << 24;
-                out |= (conversions::f32_to_uint8(color.y)) << 16;
-                out |= (conversions::f32_to_uint8(color.z)) << 8;
-                out |= (conversions::f32_to_uint8(color.w)) << 0;
-                return out;
-            }
-
-            glm::vec4 convert_color(u32 color)
-            {
-                f32 scale = 1.0f / 255.0f;
-                return glm::vec4(
-                    ((color >> 24) & 0xFF) * scale,
-                    ((color >> 16) & 0xFF) * scale,
-                    ((color >> 8) & 0xFF) * scale,
-                    ((color >> 0) & 0xFF) * scale);
             }
 
             bool _solid_rendering = true;
@@ -82,22 +64,13 @@ namespace ppp
 
             s32 _bg_color = 0xFF000000;
 
-            struct point_vertex_format
+            struct pos_col_format
             {
                 glm::vec3 position;
                 glm::vec4 color;
             };
-            struct line_vertex_format
-            {
-                glm::vec3 position;
-                glm::vec4 color;
-            };
-            struct triangle_vertex_format
-            {
-                glm::vec3 position;
-                glm::vec4 color;
-            };
-            struct image_vertex_format
+
+            struct pos_tex_col_format
             {
                 glm::vec3 position;
                 glm::vec2 texcoord;
@@ -114,7 +87,7 @@ namespace ppp
                     0,
                     3,
                     false,
-                    sizeof(triangle_vertex_format),
+                    sizeof(pos_col_format),
                     0
                 },
                 vertex_attribute_layout{
@@ -124,11 +97,10 @@ namespace ppp
                     1,
                     4,
                     false,
-                    sizeof(triangle_vertex_format),
+                    sizeof(pos_col_format),
                     3 * sizeof(float)
                 }
             };
-
             std::array<vertex_attribute_layout, 4> _pos_tex_col_layout
             {
                 vertex_attribute_layout{
@@ -138,7 +110,7 @@ namespace ppp
                     0,
                     3,
                     false,
-                    sizeof(image_vertex_format),
+                    sizeof(pos_tex_col_format),
                     0
                 },
                 vertex_attribute_layout{
@@ -148,7 +120,7 @@ namespace ppp
                     1,
                     2,
                     false,
-                    sizeof(image_vertex_format),
+                    sizeof(pos_tex_col_format),
                     3 * sizeof(float)
                 },
                 vertex_attribute_layout{
@@ -158,7 +130,7 @@ namespace ppp
                     2,
                     4,
                     false,
-                    sizeof(image_vertex_format),
+                    sizeof(pos_tex_col_format),
                     3 * sizeof(float) + 2 * sizeof(float)
                 },
                 vertex_attribute_layout{
@@ -168,9 +140,22 @@ namespace ppp
                     3,
                     1,
                     false,
-                    sizeof(image_vertex_format),
+                    sizeof(pos_tex_col_format),
                     3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
                 }
+            };
+
+            enum class batch_render_item_type
+            {
+                POINT,
+                LINE,
+                TRIANGLE,
+                IMAGE
+            };
+
+            class batch_renderer
+            {
+
             };
 
             constexpr s32 _max_points = 9'000;
@@ -389,6 +374,14 @@ namespace ppp
 
             internal::create_frame_buffer();
 
+            /*
+            
+            batch_renderer primitive_renderer(max_point_vertices, max_point_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), 0, shader_pool::tags::unlit_color);
+            batch_renderer image_renderer(max_point_vertices, max_point_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images, shader_pool::tags::unlit_image);
+            batch_renderer font_renderer(max_point_vertices, max_point_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images, shader_pool::tags::unlit_font);
+
+            */
+
             // Primitive Drawing Data
             s32 max_vertex_elements = 0;
             s32 max_index_elements = 0;
@@ -463,7 +456,7 @@ namespace ppp
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Reset to the user clear color
-            glm::vec4 bg_color = internal::convert_color(internal::_bg_color);
+            glm::vec4 bg_color = color::convert_color(internal::_bg_color);
             glClearColor(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
 
             if (internal::_scissor_enable)
@@ -504,6 +497,15 @@ namespace ppp
             glCullFace(GL_BACK);
             glDepthFunc(GL_LESS);
 
+            /*
+            
+            for(const batch_renderer& renderer : internal::_batch_renderer)
+            {
+                renderer.draw();
+            }
+
+            */
+
             if(internal::_font_drawing_data->batch_count() > 0)
             {
                 glUseProgram(unlit_font_shader_program);
@@ -528,7 +530,7 @@ namespace ppp
                     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                     glLineWidth(internal::_wireframe_linewidth);
                     glUniform1i(glGetUniformLocation(unlit_font_shader_program, "u_wireframe"), GL_TRUE);
-                    glm::vec4 wireframe_color = internal::convert_color(internal::_wireframe_color);
+                    glm::vec4 wireframe_color = color::convert_color(internal::_wireframe_color);
                     glUniform4fv(glGetUniformLocation(unlit_font_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
 
                     internal::draw_images(internal::_font_drawing_data, unlit_font_shader_program);
@@ -561,7 +563,7 @@ namespace ppp
                     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                     glLineWidth(internal::_wireframe_linewidth);
                     glUniform1i(glGetUniformLocation(unlit_texture_shader_program, "u_wireframe"), GL_TRUE);
-                    glm::vec4 wireframe_color = internal::convert_color(internal::_wireframe_color);
+                    glm::vec4 wireframe_color = color::convert_color(internal::_wireframe_color);
                     glUniform4fv(glGetUniformLocation(unlit_texture_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
 
                     internal::draw_images(internal::_image_drawing_data, unlit_texture_shader_program);
@@ -611,13 +613,13 @@ namespace ppp
                     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                     glLineWidth(internal::_wireframe_linewidth);
                     glUniform1i(glGetUniformLocation(unlit_color_shader_program, "u_wireframe"), GL_TRUE);
-                    glm::vec4 wireframe_color = internal::convert_color(internal::_wireframe_color);
+                    glm::vec4 wireframe_color = color::convert_color(internal::_wireframe_color);
                     glUniform4fv(glGetUniformLocation(unlit_color_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
 
                     internal::draw_triangles(internal::_triangle_drawing_data);
-                    //internal::draw_triangles(internal::_triangle_stroke_drawing_data);
+                    internal::draw_triangles(internal::_triangle_stroke_drawing_data);
 
-                    //internal::draw_triangles(internal::_image_stroke_drawing_data);
+                    internal::draw_triangles(internal::_image_stroke_drawing_data);
                 }
 
                 glUseProgram(0);
@@ -660,12 +662,12 @@ namespace ppp
 
         void push_wireframe_color(const glm::vec4& color)
         {
-            internal::_wireframe_color = internal::convert_color(color);
+            internal::_wireframe_color = color::convert_color(color);
         }
 
         void push_fill_color(const glm::vec4& color)
         {
-            internal::_fill_color = internal::convert_color(color);
+            internal::_fill_color = color::convert_color(color);
         }
 
         void push_fill_enable(bool enable)
@@ -680,7 +682,7 @@ namespace ppp
 
         void push_stroke_color(const glm::vec4& color)
         {
-            internal::_stroke_color = internal::convert_color(color);
+            internal::_stroke_color = color::convert_color(color);
         }
 
         void push_stroke_enable(bool enable)
@@ -695,7 +697,7 @@ namespace ppp
 
         void push_inner_stroke_color(const glm::vec4& color)
         {
-            internal::_inner_stroke_color = internal::convert_color(color);
+            internal::_inner_stroke_color = color::convert_color(color);
         }
 
         void push_inner_stroke_enable(bool enable)
@@ -705,7 +707,7 @@ namespace ppp
 
         void push_tint_color(const glm::vec4& color)
         {
-            internal::_tint_color = internal::convert_color(color);
+            internal::_tint_color = color::convert_color(color);
         }
 
         void push_tint_enable(bool enable)
@@ -849,7 +851,7 @@ namespace ppp
                 return;
             }
 
-            glm::vec4 fill_color = internal::convert_color(internal::_fill_enable ? internal::_fill_color : internal::_bg_color);
+            glm::vec4 fill_color = color::convert_color(internal::_fill_enable ? internal::_fill_color : internal::_bg_color);
 
             switch (topology)
             {
@@ -878,7 +880,7 @@ namespace ppp
                 return;
             }
 
-            glm::vec4 stroke_color = outer ? internal::convert_color(internal::_stroke_color) : internal::convert_color(internal::_inner_stroke_color);
+            glm::vec4 stroke_color = outer ? color::convert_color(internal::_stroke_color) : color::convert_color(internal::_inner_stroke_color);
 
             switch (topology)
             {
@@ -900,28 +902,28 @@ namespace ppp
 
         void submit_font_item(const render_item& item)
         {
-            glm::vec4 fill_color = internal::convert_color(internal::_fill_color);
+            glm::vec4 fill_color = color::convert_color(internal::_fill_color);
 
             internal::_font_drawing_data->append(item, fill_color, transform::active_world());
         }
 
         void submit_image_item(const render_item& item)
         {
-            glm::vec4 tint_color = internal::convert_color(internal::_tint_color);
+            glm::vec4 tint_color = color::convert_color(internal::_tint_color);
 
             internal::_image_drawing_data->append(item, tint_color, transform::active_world());
         }
 
         void submit_stroke_image_item(const render_item& item, bool outer)
         {
-            glm::vec4 stroke_color = outer ? internal::convert_color(internal::_stroke_color) : internal::convert_color(internal::_inner_stroke_color);
+            glm::vec4 stroke_color = outer ? color::convert_color(internal::_stroke_color) : color::convert_color(internal::_inner_stroke_color);
 
             internal::_image_stroke_drawing_data->append(item, stroke_color, transform::active_world());
         }
 
         void clear_color(f32 r, f32 g, f32 b, f32 a)
         {
-            internal::_bg_color = internal::convert_color(glm::vec4(r, g, b, a));
+            internal::_bg_color = color::convert_color(glm::vec4(r, g, b, a));
             glClearColor(r, g, b, a);
         }
 
@@ -967,22 +969,22 @@ namespace ppp
 
         glm::vec4 fill()
         {
-            return internal::convert_color(internal::_fill_color);
+            return color::convert_color(internal::_fill_color);
         }
         
         glm::vec4 stroke()
         {
-            return internal::convert_color(internal::_stroke_color);
+            return color::convert_color(internal::_stroke_color);
         }
 
         glm::vec4 inner_stroke()
         {
-            return internal::convert_color(internal::_inner_stroke_color);
+            return color::convert_color(internal::_inner_stroke_color);
         }
         
         glm::vec4 tint()
         {
-            return internal::convert_color(internal::_tint_color);
+            return color::convert_color(internal::_tint_color);
         }
         
         ScissorRect scissor()
