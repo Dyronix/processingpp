@@ -31,6 +31,8 @@ namespace ppp
             void reset();
 
             bool can_add(s32 nr_vertices, s32 nr_indices) const;
+
+            bool has_data() const;
             bool has_reserved_texture_space() const;
 
             const void* vertices() const;
@@ -58,7 +60,8 @@ namespace ppp
         class batch_drawing_data
         {
         public:
-            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, s32 size_textures = -1);
+            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count);
+            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count);
 
             void append(const render_item& item, const glm::vec4& color, const glm::mat4& world);
             void reset();
@@ -68,6 +71,7 @@ namespace ppp
             const batch* next_batch();
 
             s32 batch_count() const;
+            bool has_drawing_data() const;
 
             u32 vao() const;
             u32 vbo() const;

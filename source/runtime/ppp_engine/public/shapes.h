@@ -10,17 +10,12 @@ namespace ppp
             CORNER
         };
 
-        enum class RasterizationMode
-        {
-            SOLID = 1 << 0,
-            WIREFRAME = 1 << 1
-        };
-
         void ellipse_mode(ShapeMode mode);
         void rect_mode(ShapeMode mode);
         void triangle_mode(ShapeMode mode);
 
-        void rasterization_mode(RasterizationMode mode);
+        void enable_wireframe_mode(bool enable);
+        void enable_solid_mode(bool enable);
 
         void ellipse(float x, float y, float w, float h, int detail = 25);
         void circle(float x, float y, float r, int detail = 25);

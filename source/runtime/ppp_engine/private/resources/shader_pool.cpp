@@ -64,9 +64,9 @@ namespace ppp
             }
         }
 
-        shader_program get_shader_program(const std::string& tag)
+        shader_program get_shader_program(std::string_view tag)
         {
-            auto it = internal::get_shader_program_map().find(tag);
+            auto it = internal::get_shader_program_map().find(tag.data());
             return it != std::cend(internal::get_shader_program_map())
                 ? it->second
                 : 0;

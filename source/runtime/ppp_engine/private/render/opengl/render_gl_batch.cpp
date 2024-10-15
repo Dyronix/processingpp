@@ -60,6 +60,11 @@ namespace ppp
                 return m_vertex_buffer.active_vertex_count() + nr_vertices < m_max_vertex_count && m_index_buffer.active_index_count() + nr_indices < m_max_index_count;
             }
 
+            bool has_data() const
+            {
+                return m_vertex_buffer.active_vertex_count() > 0 || m_index_buffer.active_index_count() > 0;
+            }
+
             void add_vertices(const vertex_component* vertex_comp, const glm::vec4& color, const glm::mat4& world)
             {
                 assert(vertex_comp != nullptr);
@@ -165,8 +170,8 @@ namespace ppp
                 });
             }
 
-            const u32 m_max_vertex_count = 0;
-            const u32 m_max_index_count = 0;
+            const s32 m_max_vertex_count = 0;
+            const s32 m_max_index_count = 0;
 
             vertex_buffer m_vertex_buffer;
             index_buffer m_index_buffer;
@@ -189,6 +194,11 @@ namespace ppp
             bool can_add(s32 nr_textures)
             {
                 return has_reserved_texture_space() && m_image_to_sampler_map.size() + nr_textures < m_max_texture_count;
+            }
+
+            bool has_data() const
+            {
+                return m_images.size() > 0;
             }
 
             bool has_reserved_texture_space() const
@@ -236,7 +246,7 @@ namespace ppp
             std::vector<u32> m_images;
             std::vector<s32> m_samplers;
 
-            const u32 m_max_texture_count;
+            const s32 m_max_texture_count;
         };
 
         //-------------------------------------------------------------------------
@@ -309,6 +319,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        bool batch::has_data() const
+        {
+            return m_buffer_manager->has_data() || (m_texture_manager->has_reserved_texture_space() && m_texture_manager->has_data());
+        }
+
+        //-------------------------------------------------------------------------
         bool batch::has_reserved_texture_space() const { return m_texture_manager->has_reserved_texture_space(); }
 
         //-------------------------------------------------------------------------
@@ -342,7 +358,13 @@ namespace ppp
         u32 batch::max_texture_count() const { return m_texture_manager->max_texture_count(); }
 
         //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, s32 size_textures)
+        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count)
+            : batch_drawing_data(size_vertex_buffer, size_index_buffer, -1, layouts, layout_count)
+        {
+        }
+
+        //-------------------------------------------------------------------------
+        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count)
             : m_layouts(layouts)
             , m_layout_count(layout_count)
         {
@@ -469,6 +491,12 @@ namespace ppp
         s32 batch_drawing_data::batch_count() const
         {
             return static_cast<s32>(m_batches.size());
+        }
+
+        //-------------------------------------------------------------------------
+        bool batch_drawing_data::has_drawing_data() const
+        {
+            return std::any_of(m_batches.cbegin(), m_batches.cend(), [](const batch& b) { return b.has_data(); });
         }
 
         //-------------------------------------------------------------------------

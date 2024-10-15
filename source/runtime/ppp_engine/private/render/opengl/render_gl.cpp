@@ -1,6 +1,7 @@
 #include "render/render.h"
 #include "render/render_transform.h"
 #include "render/render_batch.h"
+#include "render/render_batch_renderer.h"
 #include "resources/shader_pool.h"
 
 #include "util/log.h"
@@ -14,6 +15,8 @@
 #include <unordered_map>
 #include <vector>
 #include <array>
+#include <functional>
+
 namespace ppp
 {
     namespace render
@@ -30,20 +33,6 @@ namespace ppp
             };
 
             camera _active_camera = {};
-
-            u32 index_type()
-            {
-                if (sizeof(index) == sizeof(u32)) return GL_UNSIGNED_INT;
-                if (sizeof(index) == sizeof(u16)) return GL_UNSIGNED_SHORT;
-
-                log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
-                return GL_UNSIGNED_INT;
-            }
-
-            bool _solid_rendering = true;
-            bool _wireframe_rendering = true;
-            f32 _wireframe_linewidth = 3.0f;
-            s32 _wireframe_color = 0x000000FF;
 
             s32 _scissor_x = -1;
             s32 _scissor_y = -1;
@@ -145,19 +134,6 @@ namespace ppp
                 }
             };
 
-            enum class batch_render_item_type
-            {
-                POINT,
-                LINE,
-                TRIANGLE,
-                IMAGE
-            };
-
-            class batch_renderer
-            {
-
-            };
-
             constexpr s32 _max_points = 9'000;
             constexpr s32 _max_lines = 9'000;
             constexpr s32 _max_triangles = 9'000;
@@ -203,146 +179,19 @@ namespace ppp
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
             }
 
-            std::unique_ptr<batch_drawing_data> _points_drawing_data;
-            std::unique_ptr<batch_drawing_data> _points_stroke_drawing_data;
+            std::unique_ptr<batch_renderer> _points_drawing_data;
+            std::unique_ptr<batch_renderer> _points_stroke_drawing_data;
 
-            std::unique_ptr<batch_drawing_data> _lines_drawing_data;
-            std::unique_ptr<batch_drawing_data> _lines_stroke_drawing_data;
+            std::unique_ptr<batch_renderer> _lines_drawing_data;
+            std::unique_ptr<batch_renderer> _lines_stroke_drawing_data;
 
-            std::unique_ptr<batch_drawing_data> _triangle_drawing_data;
-            std::unique_ptr<batch_drawing_data> _triangle_stroke_drawing_data;
+            std::unique_ptr<batch_renderer> _triangle_drawing_data;
+            std::unique_ptr<batch_renderer> _triangle_stroke_drawing_data;
 
-            std::unique_ptr<batch_drawing_data> _image_drawing_data;
-            std::unique_ptr<batch_drawing_data> _image_stroke_drawing_data;
+            std::unique_ptr<batch_renderer> _image_drawing_data;
+            std::unique_ptr<batch_renderer> _image_stroke_drawing_data;
 
-            std::unique_ptr<batch_drawing_data> _font_drawing_data;
-
-            void draw_points(const std::unique_ptr<batch_drawing_data>& point_drawing_data)
-            {
-                auto points_batch = point_drawing_data->next_batch();
-                if (points_batch != nullptr)
-                {
-                    glBindVertexArray(point_drawing_data->vao());
-                    glBindBuffer(GL_ARRAY_BUFFER, point_drawing_data->vbo());
-
-                    while (points_batch != nullptr)
-                    {
-                        glBufferSubData(GL_ARRAY_BUFFER, 0, points_batch->vertex_buffer_byte_size(), points_batch->vertices());
-                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, points_batch->index_buffer_byte_size(), points_batch->indices());
-
-                        glDrawElements(GL_POINTS, points_batch->active_index_count(), internal::index_type(), nullptr);
-
-                        points_batch = point_drawing_data->next_batch();
-                    }
-
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
-                }
-            }
-            void draw_lines(const std::unique_ptr<batch_drawing_data>& line_drawing_data)
-            {
-                auto lines_batch = line_drawing_data->next_batch();
-                if (lines_batch != nullptr)
-                {
-                    glBindVertexArray(line_drawing_data->vao());
-                    glBindBuffer(GL_ARRAY_BUFFER, line_drawing_data->vbo());
-
-                    while (lines_batch != nullptr)
-                    {
-                        #ifndef NDEBUG
-                        if (lines_batch->active_index_count() % 2 != 0)
-                        {
-                            log::error("Trying to render invalid number of lines: {}", lines_batch->active_index_count());
-                            return;
-                        }
-                        #endif
-
-                        glBufferSubData(GL_ARRAY_BUFFER, 0, lines_batch->vertex_buffer_byte_size(), lines_batch->vertices());
-                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, lines_batch->index_buffer_byte_size(), lines_batch->indices());
-
-                        glDrawElements(GL_LINES, lines_batch->active_index_count(), internal::index_type(), nullptr);
-
-                        lines_batch = line_drawing_data->next_batch();
-                    }
-
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
-                }
-            }
-            void draw_triangles(const std::unique_ptr<batch_drawing_data>& triangle_drawing_data)
-            {
-                auto triangle_batch = triangle_drawing_data->next_batch();
-                if (triangle_batch != nullptr)
-                {
-                    glBindVertexArray(triangle_drawing_data->vao());
-                    glBindBuffer(GL_ARRAY_BUFFER, triangle_drawing_data->vbo());
-
-                    while (triangle_batch != nullptr)
-                    {
-                        #ifndef NDEBUG
-                        if (triangle_batch->active_index_count() % 3 != 0)
-                        {
-                            log::error("Trying to render invalid number of triangles: {}", triangle_batch->active_index_count());
-                            return;
-                        }
-                        #endif
-
-                        glBufferSubData(GL_ARRAY_BUFFER, 0, triangle_batch->vertex_buffer_byte_size(), triangle_batch->vertices());
-                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, triangle_batch->index_buffer_byte_size(), triangle_batch->indices());
-
-                        glDrawElements(GL_TRIANGLES, triangle_batch->active_index_count(), internal::index_type(), nullptr);
-
-                        triangle_batch = triangle_drawing_data->next_batch();
-                    }
-
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
-                }
-            }
-            void draw_images(const std::unique_ptr<batch_drawing_data>& image_draw_data, s32 shader_program)
-            {
-                auto image_batch = image_draw_data->next_batch();
-                if (image_batch != nullptr)
-                {
-                    glBindVertexArray(image_draw_data->vao());
-                    glBindBuffer(GL_ARRAY_BUFFER, image_draw_data->vbo());
-
-                    while (image_batch != nullptr)
-                    {
-                        assert(image_batch->samplers());
-                        assert(image_batch->textures());
-
-                        u32 u_tex_samplers_loc = glGetUniformLocation(shader_program, "s_image");
-                        glUniform1iv(u_tex_samplers_loc, image_batch->active_sampler_count(), image_batch->samplers());
-
-                        #ifndef NDEBUG
-                        if (image_batch->active_index_count() % 3 != 0)
-                        {
-                            log::error("Trying to render invalid number of triangles: {}", image_batch->active_index_count());
-                            return;
-                        }
-                        #endif
-
-                        s32 i = 0;
-                        s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                        for (int i = 0; i < image_batch->active_texture_count(); ++i)
-                        {
-                            glActiveTexture(GL_TEXTURE0 + (offset * i));
-                            glBindTexture(GL_TEXTURE_2D, image_batch->textures()[i]);
-                        }
-
-                        glBufferSubData(GL_ARRAY_BUFFER, 0, image_batch->vertex_buffer_byte_size(), image_batch->vertices());
-                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, image_batch->index_buffer_byte_size(), image_batch->indices());
-
-                        glDrawElements(GL_TRIANGLES, image_batch->active_index_count(), internal::index_type(), nullptr);
-
-                        image_batch = image_draw_data->next_batch();
-                    }
-
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
-                }
-            }
+            std::unique_ptr<batch_renderer> _font_drawing_data;
 
             u32 _white_texture_image_id;
             u32 _black_texture_image_id;
@@ -350,7 +199,7 @@ namespace ppp
 
         bool initialize(s32 w, s32 h, void* user_data)
         {
-            // glad: load all OpenGL function pointers```
+            // glad: load all OpenGL function pointers
             // ---------------------------------------
             if (!gladLoadGLLoader((GLADloadproc)user_data))
             {
@@ -374,14 +223,6 @@ namespace ppp
 
             internal::create_frame_buffer();
 
-            /*
-            
-            batch_renderer primitive_renderer(max_point_vertices, max_point_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), 0, shader_pool::tags::unlit_color);
-            batch_renderer image_renderer(max_point_vertices, max_point_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images, shader_pool::tags::unlit_image);
-            batch_renderer font_renderer(max_point_vertices, max_point_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images, shader_pool::tags::unlit_font);
-
-            */
-
             // Primitive Drawing Data
             s32 max_vertex_elements = 0;
             s32 max_index_elements = 0;
@@ -395,20 +236,20 @@ namespace ppp
             s32 max_triangle_vertices = std::min(max_vertex_elements, internal::_max_triangles);
             s32 max_triangle_indices = std::min(max_index_elements, internal::_max_triangles * 3);
 
-            internal::_points_drawing_data = std::make_unique<batch_drawing_data>(max_point_vertices, max_point_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_points_stroke_drawing_data = std::make_unique<batch_drawing_data>(max_point_vertices, max_point_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_lines_drawing_data = std::make_unique<batch_drawing_data>(max_line_vertices, max_line_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_lines_stroke_drawing_data = std::make_unique<batch_drawing_data>(max_line_vertices, max_line_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_triangle_drawing_data = std::make_unique<batch_drawing_data>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_triangle_stroke_drawing_data = std::make_unique<batch_drawing_data>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
+            internal::_points_drawing_data = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color, max_point_vertices, max_point_indices, batch_primitive_type::POINTS);
+            internal::_points_stroke_drawing_data = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color, max_point_vertices, max_point_indices, batch_primitive_type::POINTS);
+            internal::_lines_drawing_data = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color, max_point_vertices, max_point_indices, batch_primitive_type::LINES);
+            internal::_lines_stroke_drawing_data = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color, max_point_vertices, max_point_indices, batch_primitive_type::LINES);
+            internal::_triangle_drawing_data = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color, max_point_vertices, max_point_indices, batch_primitive_type::TRIANGLES);
+            internal::_triangle_stroke_drawing_data = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color, max_point_vertices, max_point_indices, batch_primitive_type::TRIANGLES);
 
             s32 max_texture_units = 0;
             glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
             s32 max_images = std::min(max_texture_units, internal::_max_texture_units);
 
             // Image Drawing Data
-            internal::_image_drawing_data = std::make_unique<batch_drawing_data>(max_triangle_vertices, max_triangle_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images);
-            internal::_image_stroke_drawing_data = std::make_unique<batch_drawing_data>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
+            internal::_image_drawing_data = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_texture, max_triangle_vertices, max_triangle_indices, max_images, batch_primitive_type::TRIANGLES);
+            internal::_image_stroke_drawing_data = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color, max_point_vertices, max_point_indices, batch_primitive_type::TRIANGLES);
 
             s32 white = 0xFFFFFFFF;
             internal::_white_texture_image_id = create_image_item(1, 1, 4, (u8*)&white);
@@ -416,35 +257,35 @@ namespace ppp
             internal::_black_texture_image_id = create_image_item(1, 1, 4, (u8*)&black);
 
             // Font Drawing Data
-            internal::_font_drawing_data = std::make_unique<batch_drawing_data>(max_triangle_vertices, max_triangle_indices, internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), max_images);
+            internal::_font_drawing_data = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_font, max_triangle_vertices, max_triangle_indices, max_images, batch_primitive_type::TRIANGLES);
 
             return true;
         }
 
         void terminate()
         {
-            internal::_font_drawing_data->release();
-            internal::_image_drawing_data->release();
-            internal::_image_stroke_drawing_data->release();
-            internal::_triangle_drawing_data->release();
-            internal::_triangle_stroke_drawing_data->release();
-            internal::_lines_drawing_data->release();
-            internal::_lines_stroke_drawing_data->release();
-            internal::_points_drawing_data->release();
-            internal::_points_stroke_drawing_data->release();
+            internal::_font_drawing_data->terminate();
+            internal::_image_drawing_data->terminate();
+            internal::_image_stroke_drawing_data->terminate();
+            internal::_triangle_drawing_data->terminate();
+            internal::_triangle_stroke_drawing_data->terminate();
+            internal::_lines_drawing_data->terminate();
+            internal::_lines_stroke_drawing_data->terminate();
+            internal::_points_drawing_data->terminate();
+            internal::_points_stroke_drawing_data->terminate();
         }
 
         void begin()
         {
-            internal::_points_drawing_data->reset();
-            internal::_points_stroke_drawing_data->reset();
-            internal::_lines_drawing_data->reset();
-            internal::_lines_stroke_drawing_data->reset();
-            internal::_triangle_drawing_data->reset();
-            internal::_triangle_stroke_drawing_data->reset();
-            internal::_image_drawing_data->reset();
-            internal::_image_stroke_drawing_data->reset();
-            internal::_font_drawing_data->reset();
+            internal::_points_drawing_data->begin();
+            internal::_points_stroke_drawing_data->begin();
+            internal::_lines_drawing_data->begin();
+            internal::_lines_stroke_drawing_data->begin();
+            internal::_triangle_drawing_data->begin();
+            internal::_triangle_stroke_drawing_data->begin();
+            internal::_image_drawing_data->begin();
+            internal::_image_stroke_drawing_data->begin();
+            internal::_font_drawing_data->begin();
 
             glBindFramebuffer(GL_FRAMEBUFFER, internal::_render_fbo);
 
@@ -478,10 +319,6 @@ namespace ppp
 
         void render()
         {
-            shader_program unlit_color_shader_program = shader_pool::get_shader_program(shader_pool::tags::unlit_color);
-            shader_program unlit_texture_shader_program = shader_pool::get_shader_program(shader_pool::tags::unlit_texture);
-            shader_program unlit_font_shader_program = shader_pool::get_shader_program(shader_pool::tags::unlit_font);
-
             f32 w = static_cast<f32>(internal::_frame_buffer_width);
             f32 h = static_cast<f32>(internal::_frame_buffer_height);
 
@@ -497,133 +334,20 @@ namespace ppp
             glCullFace(GL_BACK);
             glDepthFunc(GL_LESS);
 
-            /*
-            
-            for(const batch_renderer& renderer : internal::_batch_renderer)
-            {
-                renderer.draw();
-            }
+            internal::_font_drawing_data->render(vp);
 
-            */
+            internal::_image_drawing_data->render(vp);
 
-            if(internal::_font_drawing_data->batch_count() > 0)
-            {
-                glUseProgram(unlit_font_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(unlit_font_shader_program, "u_worldviewproj");
-                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
+            internal::_points_drawing_data->render(vp);
+            internal::_points_stroke_drawing_data->render(vp);
 
-                // We draw all images first this 
-                // An effect of this will be that filled shapes are drawn on top of images ( a z-index might be in order here )
-                // This however will make sure inner-stroke is possible
-                if (internal::_solid_rendering)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glUniform1i(glGetUniformLocation(unlit_font_shader_program, "u_wireframe"), GL_FALSE);
+            internal::_lines_drawing_data->render(vp);
+            internal::_lines_stroke_drawing_data->render(vp);
 
-                    internal::draw_images(internal::_font_drawing_data, unlit_font_shader_program);
-                }
-                
-                if (internal::_wireframe_rendering)
-                {
-                    internal::_font_drawing_data->load_first_batch();
+            internal::_triangle_drawing_data->render(vp);
+            internal::_triangle_stroke_drawing_data->render(vp);
 
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glLineWidth(internal::_wireframe_linewidth);
-                    glUniform1i(glGetUniformLocation(unlit_font_shader_program, "u_wireframe"), GL_TRUE);
-                    glm::vec4 wireframe_color = color::convert_color(internal::_wireframe_color);
-                    glUniform4fv(glGetUniformLocation(unlit_font_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
-
-                    internal::draw_images(internal::_font_drawing_data, unlit_font_shader_program);
-                }
-
-                glUseProgram(0);
-            }
-
-            if (internal::_image_drawing_data->batch_count() > 0)
-            {
-                glUseProgram(unlit_texture_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(unlit_texture_shader_program, "u_worldviewproj");
-                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
-
-                // We draw all images first this 
-                // An effect of this will be that filled shapes are drawn on top of images ( a z-index might be in order here )
-                // This however will make sure inner-stroke is possible
-                if (internal::_solid_rendering)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glUniform1i(glGetUniformLocation(unlit_texture_shader_program, "u_wireframe"), GL_FALSE);
-
-                    internal::draw_images(internal::_image_drawing_data, unlit_texture_shader_program);
-                }
-
-                if(internal::_wireframe_rendering)
-                {
-                    internal::_image_drawing_data->load_first_batch();
-
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glLineWidth(internal::_wireframe_linewidth);
-                    glUniform1i(glGetUniformLocation(unlit_texture_shader_program, "u_wireframe"), GL_TRUE);
-                    glm::vec4 wireframe_color = color::convert_color(internal::_wireframe_color);
-                    glUniform4fv(glGetUniformLocation(unlit_texture_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
-
-                    internal::draw_images(internal::_image_drawing_data, unlit_texture_shader_program);
-                }
-
-                glUseProgram(0);
-            }
-
-            if (internal::_points_drawing_data->batch_count() > 0
-                || internal::_lines_drawing_data->batch_count() > 0
-                || internal::_triangle_drawing_data->batch_count() > 0)
-            {
-                glUseProgram(unlit_color_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(unlit_color_shader_program, "u_worldviewproj");
-                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
-
-                if (internal::_solid_rendering)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glUniform1i(glGetUniformLocation(unlit_color_shader_program, "u_wireframe"), GL_FALSE);
-
-                    // Points
-                    internal::draw_points(internal::_points_drawing_data);
-                    internal::draw_points(internal::_points_stroke_drawing_data);
-
-                    // Lines
-                    internal::draw_lines(internal::_lines_drawing_data);
-                    internal::draw_lines(internal::_lines_stroke_drawing_data);
-
-                    // Triangles
-                    // We draw the triangles first and afterwards the stroke
-                    // This only has to happen for the triangles because of the inner stroke capabilities
-                    // If we would draw the triangles last no inner stroke would be visible
-                    internal::draw_triangles(internal::_triangle_drawing_data);
-                    internal::draw_triangles(internal::_triangle_stroke_drawing_data);
-
-                    internal::draw_triangles(internal::_image_stroke_drawing_data);
-                }
-
-                if (internal::_wireframe_rendering)
-                {
-                    internal::_triangle_drawing_data->load_first_batch();
-                    internal::_triangle_stroke_drawing_data->load_first_batch();
-
-                    internal::_image_stroke_drawing_data->load_first_batch();
-
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glLineWidth(internal::_wireframe_linewidth);
-                    glUniform1i(glGetUniformLocation(unlit_color_shader_program, "u_wireframe"), GL_TRUE);
-                    glm::vec4 wireframe_color = color::convert_color(internal::_wireframe_color);
-                    glUniform4fv(glGetUniformLocation(unlit_color_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
-
-                    internal::draw_triangles(internal::_triangle_drawing_data);
-                    internal::draw_triangles(internal::_triangle_stroke_drawing_data);
-
-                    internal::draw_triangles(internal::_image_stroke_drawing_data);
-                }
-
-                glUseProgram(0);
-            }
+            internal::_image_stroke_drawing_data->render(vp);
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, internal::_render_fbo);
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -647,22 +371,34 @@ namespace ppp
 
         void push_solid_rendering(bool enable)
         {
-            internal::_solid_rendering = enable;
+            internal::_triangle_drawing_data->enable_solid_rendering(enable);
+            internal::_triangle_stroke_drawing_data->enable_solid_rendering(enable);
+
+            internal::_image_drawing_data->enable_solid_rendering(enable);
+            internal::_image_stroke_drawing_data->enable_solid_rendering(enable);
+
+            internal::_font_drawing_data->enable_solid_rendering(enable);
         }
 
         void push_wireframe_rendering(bool enable)
         {
-            internal::_wireframe_rendering = enable;
+            internal::_triangle_drawing_data->enable_wireframe_rendering(enable);
+            internal::_triangle_stroke_drawing_data->enable_wireframe_rendering(enable);
+            
+            internal::_image_drawing_data->enable_wireframe_rendering(enable);
+            internal::_image_stroke_drawing_data->enable_wireframe_rendering(enable);
+
+            internal::_font_drawing_data->enable_wireframe_rendering(enable);
         }
 
         void push_wireframe_linewidth(f32 line_width)
         {
-            internal::_wireframe_linewidth = line_width;
+            batch_renderer::set_wireframe_linewidth(line_width);
         }
 
         void push_wireframe_color(const glm::vec4& color)
         {
-            internal::_wireframe_color = color::convert_color(color);
+            batch_renderer::set_wireframe_linecolor(color::convert_color(color));
         }
 
         void push_fill_color(const glm::vec4& color)
@@ -856,13 +592,13 @@ namespace ppp
             switch (topology)
             {
             case TopologyType::POINTS:
-                internal::_points_drawing_data->append(item, fill_color, transform::active_world());
+                internal::_points_drawing_data->append_drawing_data(item, fill_color, transform::active_world());
                 break;
             case TopologyType::LINES:
-                internal::_lines_drawing_data->append(item, fill_color, transform::active_world());
+                internal::_lines_drawing_data->append_drawing_data(item, fill_color, transform::active_world());
                 break;
             case TopologyType::TRIANGLES:
-                internal::_triangle_drawing_data->append(item, fill_color, transform::active_world());
+                internal::_triangle_drawing_data->append_drawing_data(item, fill_color, transform::active_world());
                 break;
 
             default:
@@ -885,13 +621,13 @@ namespace ppp
             switch (topology)
             {
             case TopologyType::POINTS:
-                internal::_points_stroke_drawing_data->append(item, stroke_color, transform::active_world());
+                internal::_points_stroke_drawing_data->append_drawing_data(item, stroke_color, transform::active_world());
                 break;
             case TopologyType::LINES:
-                internal::_lines_stroke_drawing_data->append(item, stroke_color, transform::active_world());
+                internal::_lines_stroke_drawing_data->append_drawing_data(item, stroke_color, transform::active_world());
                 break;
             case TopologyType::TRIANGLES:
-                internal::_triangle_stroke_drawing_data->append(item, stroke_color, transform::active_world());
+                internal::_triangle_stroke_drawing_data->append_drawing_data(item, stroke_color, transform::active_world());
                 break;
 
             default:
@@ -904,21 +640,21 @@ namespace ppp
         {
             glm::vec4 fill_color = color::convert_color(internal::_fill_color);
 
-            internal::_font_drawing_data->append(item, fill_color, transform::active_world());
+            internal::_font_drawing_data->append_drawing_data(item, fill_color, transform::active_world());
         }
 
         void submit_image_item(const render_item& item)
         {
             glm::vec4 tint_color = color::convert_color(internal::_tint_color);
 
-            internal::_image_drawing_data->append(item, tint_color, transform::active_world());
+            internal::_image_drawing_data->append_drawing_data(item, tint_color, transform::active_world());
         }
 
         void submit_stroke_image_item(const render_item& item, bool outer)
         {
             glm::vec4 stroke_color = outer ? color::convert_color(internal::_stroke_color) : color::convert_color(internal::_inner_stroke_color);
 
-            internal::_image_stroke_drawing_data->append(item, stroke_color, transform::active_world());
+            internal::_image_stroke_drawing_data->append_drawing_data(item, stroke_color, transform::active_world());
         }
 
         void clear_color(f32 r, f32 g, f32 b, f32 a)

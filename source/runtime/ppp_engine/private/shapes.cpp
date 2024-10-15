@@ -36,26 +36,14 @@ namespace ppp
             internal::_triangle_mode = mode;
         }
 
-        //-------------------------------------------------------------------------
-        void rasterization_mode(RasterizationMode mode)
+        void enable_wireframe_mode(bool enable)
         {
-            if ((s32)mode & (s32)RasterizationMode::SOLID)
-            {
-                render::push_solid_rendering(true);
-            }
-            else
-            {
-                render::push_solid_rendering(false);
-            }
+            render::push_wireframe_rendering(enable);
+        }
 
-            if ((s32)mode & (s32)RasterizationMode::WIREFRAME)
-            {
-                render::push_wireframe_rendering(true);
-            }
-            else
-            {
-                render::push_wireframe_rendering(false);
-            }
+        void enable_solid_mode(bool enable)
+        {
+            render::push_solid_rendering(enable);
         }
 
         //-------------------------------------------------------------------------
