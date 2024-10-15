@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render/render_batch.h"
+#include "render/render_types.h"
 
 #include "util/types.h"
 
@@ -11,21 +12,13 @@ namespace ppp
         class vertex_attribute_layout;
         class render_item;
         
-        enum class batch_primitive_type
-        {
-            POINTS,
-            LINES,
-            TRIANGLES
-        };
-
         class batch_renderer
         {
         public:
             static void set_wireframe_linewidth(f32 width);
             static void set_wireframe_linecolor(s32 color);
 
-            batch_renderer(batch_primitive_type primitive_type, s32 max_vertices, s32 max_indices, vertex_attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag);
-            batch_renderer(batch_primitive_type primitive_type, s32 max_vertices, s32 max_indices, s32 max_textures, vertex_attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag);
+            batch_renderer(vertex_attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag, bool enable_texture_support = false);
 
             virtual ~batch_renderer();
 
@@ -34,7 +27,7 @@ namespace ppp
             void end();
             void terminate();
 
-            void append_drawing_data(const render_item& item, const glm::vec4& color, const glm::mat4& world);
+            void append_drawing_data(topology_type topology, const render_item& item, const glm::vec4& color, const glm::mat4& world);
 
             void enable_solid_rendering(bool enable);
             void enable_wireframe_rendering(bool enable);
@@ -43,40 +36,37 @@ namespace ppp
             bool wireframe_rendering_supported() const;
 
             u32 shader_program() const;
-            u32 primitive_type() const;
 
         protected:
-            virtual void on_render(batch_drawing_data& drawing_data) = 0;
+            virtual void on_render(topology_type type, batch_drawing_data& drawing_data) = 0;
 
         private:
-            static const s32 s_wireframe = 1 << 0;
-            static const s32 s_solid = 1 << 1;
-
-            static f32 s_wireframe_linewidth;
-            static s32 s_wireframe_linecolor;
+            using drawing_data_map = std::unordered_map<topology_type, batch_drawing_data>;
 
             std::string_view m_shader_tag;
+            drawing_data_map m_drawing_data_map;
             s32 m_rasterization_mode;
-            batch_drawing_data m_drawing_data;
-            u32 m_primitive_type;
+            vertex_attribute_layout* m_layouts;
+            u64 m_layout_count;
+            bool m_texture_support;
         };
 
         class primitive_batch_renderer : public batch_renderer
         {
         public:
-            primitive_batch_renderer(vertex_attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag, s32 max_vertices, s32 max_indices, batch_primitive_type primitive_type = batch_primitive_type::TRIANGLES);
+            primitive_batch_renderer(vertex_attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag);
             ~primitive_batch_renderer() override;
 
-            void on_render(batch_drawing_data& drawing_data) override;
+            void on_render(topology_type topology, batch_drawing_data& drawing_data) override;
         };
 
         class texture_batch_renderer : public batch_renderer
         {
         public:
-            texture_batch_renderer(vertex_attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag, s32 max_vertices, s32 max_indices, s32 max_textures, batch_primitive_type primitive_type = batch_primitive_type::TRIANGLES);
+            texture_batch_renderer(vertex_attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag);
             ~texture_batch_renderer() override;
 
-            void on_render(batch_drawing_data& drawing_data) override;
+            void on_render(topology_type topology, batch_drawing_data& drawing_data) override;
         };
     }
 }

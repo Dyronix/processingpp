@@ -13,6 +13,7 @@ namespace ppp
     {
         namespace internal
         {
+            //-------------------------------------------------------------------------
             GLenum convert_to_gl_data_type(vertex_attribute_data_type type)
             {
                 switch (type)
@@ -23,6 +24,7 @@ namespace ppp
                 return 0;  // Fallback to avoid compiler warnings
             }
 
+            //-------------------------------------------------------------------------
             u64 calculate_total_size_vertex_type(const vertex_attribute_layout* layouts, u64 layout_count)
             {
                 u64 total = 0;
@@ -42,6 +44,7 @@ namespace ppp
         class batch_buffer_manager
         {
         public:
+            //-------------------------------------------------------------------------
             batch_buffer_manager(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count)
                 : m_max_vertex_count(size_vertex_buffer)
                 , m_max_index_count(size_index_buffer)
@@ -55,16 +58,19 @@ namespace ppp
                 assert(layout_count > 0);
             }
 
+            //-------------------------------------------------------------------------
             bool can_add(s32 nr_vertices, s32 nr_indices) const
             {
                 return m_vertex_buffer.active_vertex_count() + nr_vertices < m_max_vertex_count && m_index_buffer.active_index_count() + nr_indices < m_max_index_count;
             }
 
+            //-------------------------------------------------------------------------
             bool has_data() const
             {
                 return m_vertex_buffer.active_vertex_count() > 0 || m_index_buffer.active_index_count() > 0;
             }
 
+            //-------------------------------------------------------------------------
             void add_vertices(const vertex_component* vertex_comp, const glm::vec4& color, const glm::mat4& world)
             {
                 assert(vertex_comp != nullptr);
@@ -79,6 +85,7 @@ namespace ppp
                 transform_vertex_positions(start_index, end_index, world);
             }
 
+            //-------------------------------------------------------------------------
             void add_vertices(const vertex_component* vertex_comp, s32 sampler_id, const glm::vec4& color, const glm::mat4& world)
             {
                 assert(vertex_comp != nullptr);
@@ -91,6 +98,7 @@ namespace ppp
                 transform_vertex_diffuse_texture_ids(start_index, end_index, sampler_id);
             }
 
+            //-------------------------------------------------------------------------
             void add_indices(const index_component* index_comp)
             {
                 assert(index_comp != nullptr);
@@ -101,24 +109,29 @@ namespace ppp
                 transform_index_locations(start_index, end_index, m_vertex_buffer.active_vertex_count());
             }
 
+            //-------------------------------------------------------------------------
             void reset()
             {
                 m_vertex_buffer.free();
                 m_index_buffer.free();
             }
 
+            //-------------------------------------------------------------------------
             u32 active_vertex_count() const { return m_vertex_buffer.active_vertex_count(); }
             u64 active_vertices_byte_size() const { return m_vertex_buffer.size_in_bytes(); }
             u32 active_index_count() const { return m_index_buffer.active_index_count(); }
             u64 active_indices_byte_size() const { return m_index_buffer.size_in_bytes(); }
 
+            //-------------------------------------------------------------------------
             u32 max_vertex_count() const { return m_max_vertex_count; }
             u32 max_index_count() const { return m_max_index_count; }
 
+            //-------------------------------------------------------------------------
             const void* vertices() const { return m_vertex_buffer.get_data().data(); }
             const void* indices() const { return m_index_buffer.get_data(); }
 
         private:
+            //-------------------------------------------------------------------------
             void copy_vertex_data(const vertex_component* vertex_comp)
             {
                 m_vertex_buffer.open_attribute_addition(vertex_comp->vertex_count());
@@ -130,6 +143,7 @@ namespace ppp
 
                 m_vertex_buffer.close_attribute_addition();
             }
+            //-------------------------------------------------------------------------
             void copy_index_data(const index_component* index_comp)
             {
                 u64 idx_count = index_comp->index_count();
@@ -139,11 +153,13 @@ namespace ppp
                 m_index_buffer.set_index_data(index_comp->indices(), idx_count);
             }
 
+            //-------------------------------------------------------------------------
             void map_new_vertex_data(vertex_attribute_type type, void* data)
             {
                 m_vertex_buffer.map_attribute_data(type, data);
             }
 
+            //-------------------------------------------------------------------------
             void transform_vertex_positions(s32 start_index, s32 end_index, const glm::mat4& world)
             {
                 m_vertex_buffer.transform_attribute_data<glm::vec3>(vertex_attribute_type::POSITION, start_index, end_index, [&](glm::vec3& position)
@@ -155,6 +171,7 @@ namespace ppp
                     position.z = transformed_pos.z;
                 });
             }
+            //-------------------------------------------------------------------------
             void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 sampler_id)
             {
                 m_vertex_buffer.transform_attribute_data<f32>(vertex_attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](float& id)
@@ -162,6 +179,7 @@ namespace ppp
                     id = (f32)sampler_id;
                 });
             }
+            //-------------------------------------------------------------------------
             void transform_index_locations(s32 start_index, s32 end_index, u64 offset)
             {
                 m_index_buffer.transform_index_data(start_index, end_index, [&](u32& index)
@@ -179,6 +197,7 @@ namespace ppp
         class batch_texture_manager
         {
         public:
+            //-------------------------------------------------------------------------
             batch_texture_manager(s32 size_textures)
                 :m_max_texture_count(size_textures)
             {
@@ -191,21 +210,25 @@ namespace ppp
                 }
             }
 
+            //-------------------------------------------------------------------------
             bool can_add(s32 nr_textures)
             {
                 return has_reserved_texture_space() && m_image_to_sampler_map.size() + nr_textures < m_max_texture_count;
             }
 
+            //-------------------------------------------------------------------------
             bool has_data() const
             {
                 return m_images.size() > 0;
             }
 
+            //-------------------------------------------------------------------------
             bool has_reserved_texture_space() const
             {
                 return m_max_texture_count > 0;
             }
 
+            //-------------------------------------------------------------------------
             s32 add_texture(u32 image_id)
             {
                 if (has_reserved_texture_space())
@@ -224,6 +247,7 @@ namespace ppp
                 return -1;
             }
 
+            //-------------------------------------------------------------------------
             void reset()
             {
                 m_image_to_sampler_map.clear();
@@ -232,12 +256,15 @@ namespace ppp
                 m_samplers.clear();
             }
 
+            //-------------------------------------------------------------------------
             const std::vector<s32>& samplers() const { return m_samplers; }
             const std::vector<u32>& textures() const { return m_images; }
 
+            //-------------------------------------------------------------------------
             u64 active_sampler_count() const { return has_reserved_texture_space() ? m_samplers.size() : 0; }
             u64 active_texture_count() const { return has_reserved_texture_space() ? m_images.size() : 0; }
 
+            //-------------------------------------------------------------------------
             u32 max_texture_count() const { return has_reserved_texture_space() ? m_max_texture_count : 0; }
 
         private:
