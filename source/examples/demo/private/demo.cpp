@@ -19,8 +19,9 @@ namespace ppp
     constexpr int _canvas_height = 600;
 
     typography::font_id _font;
-    image::Image _image_container;
-    image::Image _image_wall;
+    
+    image::image _image_container;
+    image::image _image_wall;
 
     void setup_canvas()
     {
@@ -45,9 +46,7 @@ namespace ppp
 
     void load_font()
     {
-        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 36);
-        _image_container = image::load("local:content/container.jpg");
-        _image_wall = image::load("local:content/wall.jpg");
+        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 18);
     }
 
     void activate_font()
@@ -73,8 +72,11 @@ namespace ppp
         load_font();
         activate_font();
 
-        shapes::rect_mode(shapes::ShapeMode::CORNER);
-        image::image_mode(image::ImageMode::CORNER);
+        _image_container = image::load("local:content/container.jpg");
+        _image_wall = image::load("local:content/wall.jpg");
+
+        shapes::rect_mode(shapes::shape_mode_type::CORNER);
+        image::image_mode(image::image_mode_type::CORNER);
 
         shapes::enable_wireframe_mode(true);
         shapes::enable_solid_mode(true);
@@ -123,18 +125,25 @@ namespace ppp
             x = (i * 15);
         }
 
-        //int x = 96;
-        //for (int i = 0; i < 9; ++i)
-        //{
-        //    if (i % 2)
-        //    {
-        //        image::draw(_image_container.id, x, 64.0f, 64, 64);
-        //    }
-        //    else
-        //    {
-        //        image::draw(_image_wall.id, x, 64.0f, 64, 64);
-        //    }
-        //    x += 128;
-        //}
+        x = 96;
+        for (int i = 0; i < 9; ++i)
+        {
+            if (i % 2)
+            {
+                image::draw(_image_container.id, x, 64.0f, 64, 64);
+            }
+            else
+            {
+                image::draw(_image_wall.id, x, 64.0f, 64, 64);
+            }
+            x += 128;
+        }
+
+        std::string str_frame_rate = "fps " + std::to_string(environment::frame_rate());
+        std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
+
+        typography::text(str_frame_rate, 10, _window_height - 30);
+        typography::text("-", 135, _window_height - 30);
+        typography::text(str_delta_time, 170, _window_height - 30);
     }
 }
