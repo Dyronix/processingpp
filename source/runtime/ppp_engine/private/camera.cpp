@@ -1,6 +1,6 @@
 #include "camera.h"
 #include "environment.h"
-
+#include "device/device_input.h"
 #include "render/render.h"
 #include "util/types.h"
 
@@ -163,6 +163,11 @@ namespace ppp
                 far);   
 
             internal::push_active_camera();
+        }
+
+        void orbit_control()
+        {
+            
         }
     }
 }

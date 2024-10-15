@@ -22,5 +22,7 @@ namespace ppp
 
         void ortho(float left, float right, float bottom, float top, float near, float far);
         void perspective(float fovy, float aspect, float near, float far);
+
+        void orbit_control();
     }
 }
