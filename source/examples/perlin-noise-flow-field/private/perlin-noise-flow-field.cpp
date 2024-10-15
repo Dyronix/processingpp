@@ -110,7 +110,7 @@ namespace ppp
     {
         _flow_field.clear();
 
-        shapes::rect_mode(shapes::ShapeMode::CORNER);
+        shapes::rect_mode(shapes::shape_mode_type::CORNER);
 
         float z_off = 0;
         float y_off = 0;

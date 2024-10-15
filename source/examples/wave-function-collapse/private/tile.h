@@ -14,7 +14,7 @@ namespace ppp
         public:
             static std::unique_ptr<Tile> rotate(const std::unique_ptr<Tile>& t, int num_rotations);
 
-            Tile(const image::Image& img, const std::vector<int>& edges);
+            Tile(const image::image& img, const std::vector<int>& edges);
 
         public:
             void show_image(int x, int y, int w, int h) const;
@@ -36,7 +36,7 @@ namespace ppp
             const std::vector<int>& left() const { return m_left; }
 
         private:
-            image::Image m_image;
+            image::image m_image;
             std::vector<int> m_edges;
             std::vector<int> m_up;
             std::vector<int> m_right;

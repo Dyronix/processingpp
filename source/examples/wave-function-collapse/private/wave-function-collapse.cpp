@@ -58,7 +58,7 @@ namespace ppp
         std::vector<int> options;
     };
 
-    std::vector<image::Image> _images;
+    std::vector<image::image> _images;
     std::vector<Cell> _grid;
 
     std::vector<std::vector<std::vector<int>>> _rules =
@@ -123,7 +123,7 @@ namespace ppp
         _images.push_back(image::load("tiles/demo/down.png"));
         _images.push_back(image::load("tiles/demo/left.png"));
 
-        image::image_mode(image::ImageMode::CORNER);
+        image::image_mode(image::image_mode_type::CORNER);
     }
 
     AppParams entry()

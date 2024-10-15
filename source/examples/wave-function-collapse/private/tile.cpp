@@ -30,7 +30,7 @@ namespace ppp
             // Rotate image
             image::load_pixels(tile->image_id());
             std::vector<image::pixels_s32> rotated_pixels = image::rotate_clockwise(image::pixels_as_u32(), tile->image_width(), tile->image_height(), num_rotations);
-            image::Image rotated_image = image::create(tile->image_width(), tile->image_height(), tile->image_channels(), (image::pixels_u8_ptr)rotated_pixels.data());
+            image::image rotated_image = image::create(tile->image_width(), tile->image_height(), tile->image_channels(), (image::pixels_u8_ptr)rotated_pixels.data());
 
             // Rotate edges
             std::vector<int> rotated_edges;
@@ -44,7 +44,7 @@ namespace ppp
             return std::make_unique<Tile>(rotated_image, rotated_edges);
         }
 
-        Tile::Tile(const image::Image& img, const std::vector<int>& edges)
+        Tile::Tile(const image::image& img, const std::vector<int>& edges)
             :m_image(img)
             ,m_edges(edges)
         {}

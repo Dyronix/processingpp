@@ -102,7 +102,7 @@ namespace ppp
         color::inner_stroke(0);
         color::inner_stroke_weight(5.0f);
 
-        shapes::rect_mode(shapes::ShapeMode::CORNER);
+        shapes::rect_mode(shapes::shape_mode_type::CORNER);
     }
 
     void draw()

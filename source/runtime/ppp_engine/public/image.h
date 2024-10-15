@@ -16,7 +16,7 @@ namespace ppp
         using pixels_s32 = unsigned int;
         using pixels_s32_ptr = pixels_s32*;
 
-        struct Image
+        struct image
         {
             image_id id = 0;
 
@@ -25,13 +25,13 @@ namespace ppp
             int channels = 0;
         };
 
-        enum class ImageMode
+        enum class image_mode_type
         {
             CENTER,
             CORNER
         };
 
-        void image_mode(ImageMode mode);
+        void image_mode(image_mode_type mode);
 
         void load_pixels(image_id id);
         void update_pixels(image_id id);
@@ -39,8 +39,8 @@ namespace ppp
         pixels_u8_ptr pixels_as_u8();
         pixels_s32_ptr pixels_as_u32();
 
-        Image load(const std::string& image);
-        Image create(float width, float height, int channels, pixels_u8_ptr data);
+        image load(const std::string& image);
+        image create(float width, float height, int channels, pixels_u8_ptr data);
 
         void draw(image_id image_id, float x, float y, float width, float height);
 

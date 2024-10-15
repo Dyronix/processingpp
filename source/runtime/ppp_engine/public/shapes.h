@@ -4,15 +4,15 @@ namespace ppp
 {
     namespace shapes
     {
-        enum class ShapeMode
+        enum class shape_mode_type
         {
             CENTER,
             CORNER
         };
 
-        void ellipse_mode(ShapeMode mode);
-        void rect_mode(ShapeMode mode);
-        void triangle_mode(ShapeMode mode);
+        void ellipse_mode(shape_mode_type mode);
+        void rect_mode(shape_mode_type mode);
+        void triangle_mode(shape_mode_type mode);
 
         void enable_wireframe_mode(bool enable);
         void enable_solid_mode(bool enable);
