@@ -150,7 +150,7 @@ namespace ppp
 
     namespace mouse
     {
-        enum class MouseCode
+        enum class mouse_code
         {
             BUTTON_LEFT,
             BUTTON_MIDDLE,
@@ -166,18 +166,25 @@ namespace ppp
         int prev_mouse_x();
         int prev_mouse_y();
 
-        MouseCode mouse_button();
+        mouse_code mouse_button();
+
+        float scroll_offset_x();
+        float scroll_offset_y();
 
         bool is_left_button_pressed();
         bool is_right_button_pressed();
         bool is_middle_button_pressed();
 
+        bool is_left_button_down();
+        bool is_right_button_down();
+        bool is_middle_button_down();
+
         bool is_any_mouse_button_pressed();
 
         void add_mouse_moved_callback(const std::function<void(int, int)>& callback);
         void add_mouse_dragged_callback(const std::function<void(int, int)>& callback);
-        void add_mouse_pressed_callback(const std::function<void(MouseCode)>& callback);
-        void add_mouse_released_callback(const std::function<void(MouseCode)>& callback);
+        void add_mouse_pressed_callback(const std::function<void(mouse_code)>& callback);
+        void add_mouse_released_callback(const std::function<void(mouse_code)>& callback);
         void add_mouse_horizontal_wheel_callback(const std::function<void(float)>& callback);
         void add_mouse_verticel_wheel_callback(const std::function<void(float)>& callback);
 
