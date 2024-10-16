@@ -106,9 +106,9 @@ namespace ppp
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
 
         mouse::add_mouse_pressed_callback(
-            [](mouse::MouseCode code)
+            [](mouse::mouse_code code)
         {
-            if (code == mouse::MouseCode::BUTTON_LEFT)
+            if (code == mouse::mouse_code::BUTTON_LEFT)
             {
                 structure::redraw();
             }
