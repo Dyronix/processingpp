@@ -29,17 +29,16 @@ namespace ppp
 
             namespace mouse
             {
-                using mouse_pos_callback = std::function<void(s32, s32)>;
+                using mouse_pos_callback = std::function<void(f32, f32)>;
                 using mouse_button_pressed_callback = std::function<void(s32, s32)>;
                 using mouse_button_released_callback = std::function<void(s32, s32)>;
                 using mouse_button_scroll_callback = std::function<void(f32, f32)>;
 
-                s32 mouse_x(GLFWwindow* window);
-                s32 mouse_y(GLFWwindow* window);
+                f32 mouse_x(GLFWwindow* window);
+                f32 mouse_y(GLFWwindow* window);
 
                 bool is_mouse_button_pressed(GLFWwindow* window, s32 code);
                 bool is_mouse_button_released(GLFWwindow* window, s32 code);
-                bool is_mouse_button_down(GLFWwindow* window, s32 code);
 
                 void lock_cursor(GLFWwindow* window);
                 void hide_cursor(GLFWwindow* window);
