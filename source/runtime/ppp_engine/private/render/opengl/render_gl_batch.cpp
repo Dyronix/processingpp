@@ -78,9 +78,7 @@ namespace ppp
                 s32 start_index = m_vertex_buffer.active_vertex_count();
                 s32 end_index = start_index + vertex_comp->vertex_count();
 
-                copy_vertex_data(vertex_comp);
-
-                map_new_vertex_data(vertex_attribute_type::COLOR, (void*)&color[0]);
+                copy_vertex_data(vertex_comp, color);
 
                 transform_vertex_positions(start_index, end_index, world);
             }
@@ -132,7 +130,7 @@ namespace ppp
 
         private:
             //-------------------------------------------------------------------------
-            void copy_vertex_data(const vertex_component* vertex_comp)
+            void copy_vertex_data(const vertex_component* vertex_comp, const glm::vec4& color)
             {
                 m_vertex_buffer.open_attribute_addition(vertex_comp->vertex_count());
 
@@ -140,6 +138,8 @@ namespace ppp
                 {
                     m_vertex_buffer.set_attribute_data(pair.first, pair.second.blob.data());
                 }
+
+                map_new_vertex_data(vertex_attribute_type::COLOR, (void*)&color[0]);
 
                 m_vertex_buffer.close_attribute_addition();
             }
