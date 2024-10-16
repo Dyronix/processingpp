@@ -39,6 +39,7 @@ namespace ppp
 
                 bool is_mouse_button_pressed(GLFWwindow* window, s32 code);
                 bool is_mouse_button_released(GLFWwindow* window, s32 code);
+                bool is_mouse_button_down(GLFWwindow* window, s32 code);
 
                 void lock_cursor(GLFWwindow* window);
                 void hide_cursor(GLFWwindow* window);

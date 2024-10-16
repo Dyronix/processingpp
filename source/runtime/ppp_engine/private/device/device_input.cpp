@@ -147,6 +147,11 @@ namespace ppp
                     return glfwGetMouseButton(window, code) == GLFW_RELEASE;
                 }
 
+                bool is_mouse_button_down(GLFWwindow* window, s32 code)
+                {
+                    return glfwGetMouseButton(window, code) == GLFW_REPEAT;
+                }
+
                 void lock_cursor(GLFWwindow* window)
                 {
                     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
