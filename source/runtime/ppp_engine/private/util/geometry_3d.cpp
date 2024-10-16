@@ -10,6 +10,8 @@ namespace ppp
     {
         namespace internal
         {
+            const std::string box_geomtry_tag = "box";
+
             struct box_data
             {
                 std::array<glm::vec3, 24> vertices;
@@ -447,24 +449,44 @@ namespace ppp
             {
                 return _octahedron_data.indices;
             }
+
+            class geometry_cache
+            {
+            public:
+                std::unordered_map<std::string, render::render_item> _render_items;
+            } _cache;
         }
 
-        render::render_item make_box(f32 width, f32 height, f32 depth)
+        render::render_item* make_box(f32 width, f32 height, f32 depth)
         {
-            auto& vertices = internal::make_box_vertices(width, height, depth);
-            auto& indices = internal::make_box_indices();
+            if (internal::_cache._render_items.find(internal::box_geomtry_tag) == internal::_cache._render_items.cend())
+            {
+                auto& vertices = internal::make_box_vertices(width, height, depth);
+                auto& indices = internal::make_box_indices();
 
-            render::render_item item;
+                auto vert_comp = render::make_vertex_component(vertices.size());
+                vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
 
-            auto vert_comp = render::make_vertex_component(vertices.size());
-            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
-            
-            auto idx_comp = render::make_index_component(indices.data(), indices.size());
+                auto idx_comp = render::make_index_component(indices.data(), indices.size());
 
-            item.add_component(std::move(vert_comp));
-            item.add_component(std::move(idx_comp));
+                internal::_cache._render_items.emplace(internal::box_geomtry_tag, render::render_item());
 
-            return item;
+                internal::_cache._render_items.at(internal::box_geomtry_tag).add_component(std::move(vert_comp));
+                internal::_cache._render_items.at(internal::box_geomtry_tag).add_component(std::move(idx_comp));
+            }
+            else
+            {
+                auto& vertices = internal::make_box_vertices(width, height, depth);
+                auto& indices = internal::make_box_indices();
+
+                auto vert_comp = internal::_cache._render_items.at(internal::box_geomtry_tag).get_component<render::vertex_component>();
+                vert_comp->set_attribute(render::vertex_attribute_type::POSITION, vertices.data());
+
+                auto idx_comp = internal::_cache._render_items.at(internal::box_geomtry_tag).get_component<render::index_component>();
+                idx_comp->set_indices(indices.data(), indices.size());
+            }
+
+            return &internal::_cache._render_items.at(internal::box_geomtry_tag);
         }
 
         render::render_item make_cylinder(f32 radius, f32 height, s32 detail, bool bottom_cap, bool top_cap)

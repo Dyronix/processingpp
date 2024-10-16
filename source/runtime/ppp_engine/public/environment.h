@@ -10,6 +10,7 @@ namespace ppp
 
         void frame_rate(unsigned int frame_rate);
 
+        unsigned int average_frame_rate();
         unsigned int frame_rate();
         unsigned int frame_count();
 

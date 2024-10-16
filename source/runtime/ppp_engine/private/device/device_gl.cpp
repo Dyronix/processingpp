@@ -22,6 +22,9 @@ namespace ppp
 
             u32 _target_frame_rate = 60;
 
+            constexpr s32 _total_avg_frames = 100;
+            f64 _frame_times[_total_avg_frames] = { 0.0 };
+
             clock::time_point _previous_frame_time;
             clock::milliseconds _delta_frame_time(0);
 
@@ -458,6 +461,8 @@ namespace ppp
 
             internal::_delta_frame_time = clock::duration(internal::_previous_frame_time, current_frame_time);
             internal::_previous_frame_time = current_frame_time;
+
+            internal::_frame_times[current_frame_index() % internal::_total_avg_frames] = delta_time();
         }
 
         void window_width(s32* w)
@@ -544,6 +549,33 @@ namespace ppp
         u32 desired_frame_index()
         {
             return internal::_desired_frame_idx;
+        }
+
+        u32 current_frame_rate()
+        {
+            if (internal::_is_looping)
+            {
+                return 1.0f / delta_time();
+            }
+
+            return 0.0f;
+        }
+
+        u32 average_frame_rate()
+        {
+            f64 total_frame_time = 0.0;
+            for (s32 i = 0; i < internal::_total_avg_frames; ++i) 
+            {
+                total_frame_time += internal::_frame_times[i];
+            }
+
+            if (total_frame_time > 0.0) 
+            {
+                auto fps = internal::_total_avg_frames / total_frame_time;
+                return fps;
+            }
+
+            return 0;
         }
 
         u32 target_frame_rate()

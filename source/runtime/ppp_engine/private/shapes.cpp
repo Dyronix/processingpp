@@ -228,7 +228,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void box(float width, float height, float depth)
         {
-            render::render_item item = geometry::make_box(width, height, depth);
+            render::render_item& item = *geometry::make_box(width, height, depth);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
         }

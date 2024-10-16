@@ -86,6 +86,8 @@ namespace ppp
         u32 current_frame_index();
         u32 desired_frame_index();
 
+        u32 current_frame_rate();
+        u32 average_frame_rate();
         u32 target_frame_rate();
 
         f32 max_frame_time();

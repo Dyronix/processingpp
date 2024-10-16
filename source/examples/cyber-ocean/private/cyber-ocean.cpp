@@ -133,7 +133,7 @@ namespace ppp
 
         color::fill({0,0,0,255});
 
-        std::string str_frame_rate = "fps " + std::to_string(environment::frame_rate());
+        std::string str_frame_rate = "fps " + std::to_string(environment::average_frame_rate());
         std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
 
         typography::text(str_frame_rate, 10, _window_height - 30);
