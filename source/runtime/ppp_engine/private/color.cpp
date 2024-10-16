@@ -1,4 +1,5 @@
 #include "color.h"
+#include "mathematics.h"
 #include "render/render.h"
 #include "util/types.h"
 
@@ -171,24 +172,19 @@ namespace ppp
             render::push_inner_stroke_width(w);
         }
 
-        unsigned int convert_color(const glm::u8vec4& color)
+        Color lerp_color(const Color& c1, const Color& c2, float t)
         {
-            unsigned int out;
-            out = color.w << 24;
-            out |= color.z << 16;
-            out |= color.y << 8;
-            out |= color.x << 0;
-            return out;
-        }
+            // Clamp amt between 0 and 1 to prevent extrapolation
+            t = std::clamp(t, 0.0f, 1.0f);
 
-        unsigned int convert_color(const glm::vec4& color)
-        {
-            unsigned int out;
-            out = (conversions::f32_to_uint8(color.x)) << 24;
-            out |= (conversions::f32_to_uint8(color.y)) << 16;
-            out |= (conversions::f32_to_uint8(color.z)) << 8;
-            out |= (conversions::f32_to_uint8(color.w)) << 0;
-            return out;
+            Color result;
+
+            result.red = static_cast<int>(math::lerp((float)c1.red, (float)c2.red, t));
+            result.green = static_cast<int>(math::lerp((float)c1.green, (float)c2.green, t));
+            result.blue = static_cast<int>(math::lerp((float)c1.blue, (float)c2.blue, t));
+            result.alpha = static_cast<int>(math::lerp((float)c1.alpha, (float)c2.alpha, t));
+
+            return result;
         }
     }
 }
