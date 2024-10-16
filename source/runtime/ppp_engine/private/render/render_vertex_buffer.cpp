@@ -93,9 +93,9 @@ namespace ppp
             u64 element_stride = m_vertex_size;
             u64 element_size = element_layout->total_size_in_bytes();
 
-            for (u64 i = 0; i < m_current_vertex_count; ++i)
+            for (u64 i = 0; i < internal::_vb_addition[this].max_elements_to_set; ++i)
             {
-                u8* dst_ptr = m_buffer.data() + i * element_stride + element_offset;
+                u8* dst_ptr = m_buffer.data() + (m_current_vertex_count + i) * element_stride + element_offset;
                 memcpy(dst_ptr, data_ptr, element_size);
             }
         }
