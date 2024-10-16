@@ -33,9 +33,19 @@ namespace ppp
                 internal::_model_matrices.back() = glm::scale(internal::_model_matrices.back(), glm::vec3(scale, 1.0f));
             }
 
+            void scale(const glm::vec3& scale)
+            {
+                internal::_model_matrices.back() = glm::scale(internal::_model_matrices.back(), scale);
+            }
+
             void translate(const glm::vec2& translate)
             {
                 internal::_model_matrices.back() = glm::translate(internal::_model_matrices.back(), glm::vec3(translate, 1.0f));
+            }
+
+            void translate(const glm::vec3& translate)
+            {
+                internal::_model_matrices.back() = glm::translate(internal::_model_matrices.back(), translate);
             }
 
             glm::mat4 active_world()
