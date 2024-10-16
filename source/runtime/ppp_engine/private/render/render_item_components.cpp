@@ -88,6 +88,42 @@ namespace ppp
             add_attribute(type, vertex_attribute_data_type::UNSIGNED_INT, data);
         }
 
+        //-------------------------------------------------------------------------
+        void vertex_component::set_attribute(vertex_attribute_type type, glm::vec2* data)
+        {
+            set_attribute(type, vertex_attribute_data_type::FLOAT, data);
+        }
+
+        //-------------------------------------------------------------------------
+        void vertex_component::set_attribute(vertex_attribute_type type, glm::vec3* data)
+        {
+            set_attribute(type, vertex_attribute_data_type::FLOAT, data);
+        }
+
+        //-------------------------------------------------------------------------
+        void vertex_component::set_attribute(vertex_attribute_type type, f32* data)
+        {
+            set_attribute(type, vertex_attribute_data_type::FLOAT, data);
+        }
+
+        //-------------------------------------------------------------------------
+        void vertex_component::set_attribute(vertex_attribute_type type, glm::uvec2* data)
+        {
+            set_attribute(type, vertex_attribute_data_type::UNSIGNED_INT, data);
+        }
+
+        //-------------------------------------------------------------------------
+        void vertex_component::set_attribute(vertex_attribute_type type, glm::uvec3* data)
+        {
+            set_attribute(type, vertex_attribute_data_type::UNSIGNED_INT, data);
+        }
+
+        //-------------------------------------------------------------------------
+        void vertex_component::set_attribute(vertex_attribute_type type, u32* data)
+        {
+            set_attribute(type, vertex_attribute_data_type::UNSIGNED_INT, data);
+        }
+
         //-------------------------------------------------------------------------|
         const vertex_attribute_map& vertex_component::get_attribute_data() const
         {
@@ -132,6 +168,22 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void vertex_component::set_attribute(vertex_attribute_type type, vertex_attribute_data_type data_type, void* data)
+        {
+            assert(m_attributes.find(type) != std::cend(m_attributes));
+
+            s32 component_count = component_count_for_vertex_attribute(type);
+            s32 total_data_type_size_in_bytes = size_in_bytes_for_data_type(data_type);
+
+            // Calculate the total size needed and resize the blob
+            u64 total_size = (total_data_type_size_in_bytes * component_count) * m_vertex_count;
+            m_attributes[type].blob.resize(total_size);
+
+            // Copy data into the vector's memory
+            memcpy(m_attributes[type].blob.data(), data, total_size);
+        }
+
+        //-------------------------------------------------------------------------
         void vertex_component::evaluate_attributes()
         {
             u64 total_attrib_size_in_bytes = internal::calculate_attribute_type_size_in_bytes(m_attributes);
@@ -152,6 +204,13 @@ namespace ppp
             : m_indices(idxs)
             , m_index_count(count)
         {}
+
+        //-------------------------------------------------------------------------
+        void index_component::set_indices(u32* indices, u64 index_count)
+        {
+            m_indices = indices;
+            m_index_count = index_count;
+        }
 
         //-------------------------------------------------------------------------
         const u32* index_component::indices() const { return m_indices; }
