@@ -35,9 +35,9 @@ namespace ppp
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
 
         mouse::add_mouse_pressed_callback(
-            [](mouse::MouseCode code)
+            [](mouse::mouse_code code)
         {
-            if (code == mouse::MouseCode::BUTTON_LEFT)
+            if (code == mouse::mouse_code::BUTTON_LEFT)
             {
                 structure::redraw();
             }
@@ -87,6 +87,14 @@ namespace ppp
 
     void draw()
     {
+        camera::OrbitCameraOptions options;
+
+        options.zoom_sensitivity = 200.0f;
+        options.panning_sensitivity = 0.5f;
+        options.rotation_sensitivity = 0.5f;
+
+        camera::orbit_control(options);
+
         color::fill({ 255,0,0,255 });
         
         //color::stroke({ 255,0,0,255 });
