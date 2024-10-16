@@ -91,8 +91,8 @@ namespace ppp
 
             // poll new window events
             // ----
-            device::poll_events();
             device::tick();
+            device::poll_events();
 
             // force app to run at a certain framerate
             // ----
