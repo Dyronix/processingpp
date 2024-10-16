@@ -157,14 +157,14 @@ namespace ppp
             BUTTON_RIGHT
         };
 
-        int moved_x();
-        int moved_y();
+        float moved_x();
+        float moved_y();
         
-        int mouse_x();
-        int mouse_y();
+        float mouse_x();
+        float mouse_y();
 
-        int prev_mouse_x();
-        int prev_mouse_y();
+        float prev_mouse_x();
+        float prev_mouse_y();
 
         mouse_code mouse_button();
 
@@ -175,14 +175,10 @@ namespace ppp
         bool is_right_button_pressed();
         bool is_middle_button_pressed();
 
-        bool is_left_button_down();
-        bool is_right_button_down();
-        bool is_middle_button_down();
-
         bool is_any_mouse_button_pressed();
 
-        void add_mouse_moved_callback(const std::function<void(int, int)>& callback);
-        void add_mouse_dragged_callback(const std::function<void(int, int)>& callback);
+        void add_mouse_moved_callback(const std::function<void(float, float)>& callback);
+        void add_mouse_dragged_callback(const std::function<void(float, float)>& callback);
         void add_mouse_pressed_callback(const std::function<void(mouse_code)>& callback);
         void add_mouse_released_callback(const std::function<void(mouse_code)>& callback);
         void add_mouse_horizontal_wheel_callback(const std::function<void(float)>& callback);
