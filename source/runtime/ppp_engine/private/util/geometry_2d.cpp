@@ -16,40 +16,40 @@ namespace ppp
             struct point_data
             {
                 glm::vec3 vertex;
-                render::Index index = { 0 };
+                render::index index = { 0 };
             } _point_data;
 
             struct line_data
             {
                 std::array<glm::vec3, 2> vertices;
-                std::array<render::Index, 2> indices = { 0, 1 };
+                std::array<render::index, 2> indices = { 0, 1 };
             } _line_data;
 
             struct triangle_data
             {
                 std::array<glm::vec3, 3> vertices;
-                std::array<render::Index, 3> indices = { 0, 1, 2 };
+                std::array<render::index, 3> indices = { 0, 1, 2 };
 
-                render::VertexPositionArr extrude_vertices;
-                render::Indices extrude_indices;
+                std::vector<glm::vec3> extrude_vertices;
+                std::vector<render::index> extrude_indices;
             } _triangle_data;
 
             struct polygon_data
             {
                 std::array<glm::vec3, 4> vertices;
-                std::array<render::Index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
+                std::array<render::index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
 
-                render::VertexPositionArr extrude_vertices;
-                render::Indices extrude_indices;
+                std::vector<glm::vec3> extrude_vertices;
+                std::vector<render::index> extrude_indices;
             } _polygon_data;
 
             struct ellipse_data
             {
-                render::VertexPositionArr vertices;
-                render::Indices indices;
+                std::vector<glm::vec3> vertices;
+                std::vector<render::index> indices;
 
-                render::VertexPositionArr extrude_vertices;
-                render::Indices extrude_indices;
+                std::vector<glm::vec3> extrude_vertices;
+                std::vector<render::index> extrude_indices;
 
             } _ellipse_data;
 
@@ -57,14 +57,14 @@ namespace ppp
             {
                 std::array<glm::vec3, 4> vertex_position;
                 std::array<glm::vec2, 4> vertex_texcoords;
-                std::array<render::Index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
+                std::array<render::index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
 
-                render::VertexPositionArr extrude_vertices;
-                render::Indices extrude_indices;
+                std::vector<glm::vec3> extrude_vertices;
+                std::vector<render::index> extrude_indices;
             } _image_data;
 
             template<typename TVertexType>
-            void extrude_vertices(render::VertexPositionArr& new_vertices, const TVertexType& center, const TVertexType* vertices, s32 vertex_count, f32 extrusion_width)
+            void extrude_vertices(std::vector<glm::vec3>& new_vertices, const TVertexType& center, const TVertexType* vertices, s32 vertex_count, f32 extrusion_width)
             {
                 for (s32 i = 0; i < vertex_count; ++i)
                 {
@@ -78,7 +78,7 @@ namespace ppp
                 }
             }
 
-            void extrude_indices(render::Indices& indices, s32 original_vertex_count)
+            void extrude_indices(std::vector<render::index>& indices, s32 original_vertex_count)
             {
                 constexpr s32 vertices_per_extrusion_segment = 2;
 
@@ -96,7 +96,7 @@ namespace ppp
                 }
             }
 
-            render::VertexPositionArr& make_ellipse_vertices(bool from_corner, f32 x, f32 y, f32 w, f32 h, s32 detail = 25)
+            std::vector<glm::vec3>& make_ellipse_vertices(bool from_corner, f32 x, f32 y, f32 w, f32 h, s32 detail = 25)
             {
                 s32 total_nr_vertices = detail + 1; // take center point into account
 
@@ -180,7 +180,7 @@ namespace ppp
                 return _triangle_data.vertices;
             }
 
-            render::Indices& make_ellipse_indices(f32 x, f32 y, f32 w, f32 h, s32 detail = 25)
+            std::vector<render::index>& make_ellipse_indices(f32 x, f32 y, f32 w, f32 h, s32 detail = 25)
             {
                 s32 total_nr_indices = detail * 3;
 
@@ -203,12 +203,12 @@ namespace ppp
                 return _ellipse_data.indices;
             }
 
-            std::array<render::Index, 6>& make_polygon_indices()
+            std::array<render::index, 6>& make_polygon_indices()
             {
                 return _polygon_data.indices;
             }
 
-            std::array<render::Index, 3>& make_triangle_indices()
+            std::array<render::index, 3>& make_triangle_indices()
             {
                 return _triangle_data.indices;
             }
@@ -252,7 +252,7 @@ namespace ppp
                     return make_quad_vertices(from_corner, x1, y1, x2, y2, x3, y3, x4, y4, 0.0, 1.0, 1.0, 0.0f);
                 }
 
-                std::array<render::Index, 6>& make_image_indices()
+                std::array<render::index, 6>& make_image_indices()
                 {
                     return _image_data.indices;
                 }

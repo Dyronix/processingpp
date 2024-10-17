@@ -18,9 +18,14 @@ namespace ppp
             device::target_frame_rate(frame_rate);
         }
 
+        unsigned int average_frame_rate()
+        {
+            return device::average_frame_rate();
+        }
+
         unsigned int frame_rate()
         {
-            return device::target_frame_rate();
+            return device::current_frame_rate();
         }
 
         unsigned int frame_count()

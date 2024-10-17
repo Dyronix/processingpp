@@ -351,66 +351,76 @@ namespace ppp
     {
         namespace internal
         {
-            int convert_key_to_glfw(MouseCode code)
+            int convert_key_to_glfw(mouse_code code)
             {
                 switch (code)
                 {
-                case MouseCode::BUTTON_LEFT: return GLFW_MOUSE_BUTTON_LEFT;
-                case MouseCode::BUTTON_RIGHT: return GLFW_MOUSE_BUTTON_RIGHT;
-                case MouseCode::BUTTON_MIDDLE: return GLFW_MOUSE_BUTTON_MIDDLE;
+                case mouse_code::BUTTON_LEFT: return GLFW_MOUSE_BUTTON_LEFT;
+                case mouse_code::BUTTON_RIGHT: return GLFW_MOUSE_BUTTON_RIGHT;
+                case mouse_code::BUTTON_MIDDLE: return GLFW_MOUSE_BUTTON_MIDDLE;
                 }
 
-                log::warn("Unknown MouseCode, returning Left Click");
+                log::warn("Unknown mouse_code, returning Left Click");
                 return GLFW_MOUSE_BUTTON_LEFT;
             }
 
-            MouseCode convert_key_to_ppp(int code)
+            mouse_code convert_key_to_ppp(int code)
             {
                 switch (code)
                 {
-                case GLFW_MOUSE_BUTTON_LEFT: return MouseCode::BUTTON_LEFT;
-                case GLFW_MOUSE_BUTTON_RIGHT: return MouseCode::BUTTON_RIGHT;
-                case GLFW_MOUSE_BUTTON_MIDDLE: return MouseCode::BUTTON_MIDDLE;
+                case GLFW_MOUSE_BUTTON_LEFT: return mouse_code::BUTTON_LEFT;
+                case GLFW_MOUSE_BUTTON_RIGHT: return mouse_code::BUTTON_RIGHT;
+                case GLFW_MOUSE_BUTTON_MIDDLE: return mouse_code::BUTTON_MIDDLE;
                 }
 
-                log::warn("Unknown MouseCode, returning Left Click");
-                return MouseCode::BUTTON_LEFT;
+                log::warn("Unknown mouse_code, returning Left Click");
+                return mouse_code::BUTTON_LEFT;
             }
         }
 
-        int moved_x()
+        float moved_x()
         {
             return device::input::mouse::moved_x();
         }
         
-        int moved_y()
+        float moved_y()
         {
             return device::input::mouse::moved_y();
         }
         
-        int mouse_x()
+        float mouse_x()
         {
             return device::input::mouse::mouse_x();
         }
         
-        int mouse_y()
+        float mouse_y()
         {
             return device::input::mouse::mouse_y();
         }
         
-        int prev_mouse_x()
+        float prev_mouse_x()
         {
             return device::input::mouse::prev_mouse_x();
         }
         
-        int prev_mouse_y()
+        float prev_mouse_y()
         {
             return device::input::mouse::prev_mouse_y();
         }
         
-        MouseCode mouse_button()
+        mouse_code mouse_button()
         {
             return internal::convert_key_to_ppp(device::input::mouse::mouse_button());
+        }
+
+        float scroll_offset_x()
+        {
+            return device::input::mouse::scroll_offset_x();
+        }
+
+        float scroll_offset_y()
+        {
+            return device::input::mouse::scroll_offset_y();
         }
         
         bool is_left_button_pressed()
@@ -427,23 +437,23 @@ namespace ppp
         {
             return device::input::mouse::is_middle_button_pressed();
         }
-        
+
         bool is_any_mouse_button_pressed()
         {
             return device::input::mouse::is_any_mouse_button_pressed();
         }
         
-        void add_mouse_moved_callback(const std::function<void(int, int)>& callback)
+        void add_mouse_moved_callback(const std::function<void(float, float)>& callback)
         {
             device::input::mouse::add_mouse_moved_callback(callback);
         }
         
-        void add_mouse_dragged_callback(const std::function<void(int, int)>& callback)
+        void add_mouse_dragged_callback(const std::function<void(float, float)>& callback)
         {
             device::input::mouse::add_mouse_dragged_callback(callback);
         }
         
-        void add_mouse_pressed_callback(const std::function<void(MouseCode)>& callback)
+        void add_mouse_pressed_callback(const std::function<void(mouse_code)>& callback)
         {
             device::input::mouse::add_mouse_pressed_callback(
                 [callback](int button, int mods)
@@ -452,7 +462,7 @@ namespace ppp
             });
         }
         
-        void add_mouse_released_callback(const std::function<void(MouseCode)>& callback)
+        void add_mouse_released_callback(const std::function<void(mouse_code)>& callback)
         {
             device::input::mouse::add_mouse_released_callback(
                 [callback](int button, int mods)
@@ -468,7 +478,7 @@ namespace ppp
         
         void add_mouse_verticel_wheel_callback(const std::function<void(float)>& callback)
         {
-            device::input::mouse::add_mouse_verticel_wheel_callback(callback);
+            device::input::mouse::add_mouse_vertical_wheel_callback(callback);
         }
         
         void request_pointer_lock()

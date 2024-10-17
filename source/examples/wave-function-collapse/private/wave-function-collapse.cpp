@@ -58,7 +58,7 @@ namespace ppp
         std::vector<int> options;
     };
 
-    std::vector<image::Image> _images;
+    std::vector<image::image> _images;
     std::vector<Cell> _grid;
 
     std::vector<std::vector<std::vector<int>>> _rules =
@@ -106,9 +106,9 @@ namespace ppp
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
 
         mouse::add_mouse_pressed_callback(
-            [](mouse::MouseCode code)
+            [](mouse::mouse_code code)
         {
-            if (code == mouse::MouseCode::BUTTON_LEFT)
+            if (code == mouse::mouse_code::BUTTON_LEFT)
             {
                 structure::redraw();
             }
@@ -123,7 +123,7 @@ namespace ppp
         _images.push_back(image::load("tiles/demo/down.png"));
         _images.push_back(image::load("tiles/demo/left.png"));
 
-        image::image_mode(image::ImageMode::CORNER);
+        image::image_mode(image::image_mode_type::CORNER);
     }
 
     AppParams entry()

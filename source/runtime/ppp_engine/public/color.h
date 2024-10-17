@@ -64,7 +64,6 @@ namespace ppp
         void inner_stroke(const Color& c);
         void inner_stroke_weight(float w);
 
-        unsigned int convert_color(const glm::u8vec4& color);
-        unsigned int convert_color(const glm::vec4& color);
+        Color lerp_color(const Color& c1, const Color& c2, float t);
     }
 }

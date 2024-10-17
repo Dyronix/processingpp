@@ -14,27 +14,29 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/shader_pool.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.cpp
-    # memory
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/weak_array.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_buffer.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_buffer.cpp
     # device
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_gl.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.cpp
     # render
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch_renderer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_shaders.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch_renderer.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_types.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shaders.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_components.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_components.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.cpp
     # util
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/hash.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_2d.h

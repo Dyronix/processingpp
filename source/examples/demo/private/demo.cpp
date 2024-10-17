@@ -19,7 +19,9 @@ namespace ppp
     constexpr int _canvas_height = 600;
 
     typography::font_id _font;
-    //image::Image _image;
+    
+    image::image _image_container;
+    image::image _image_wall;
 
     void setup_canvas()
     {
@@ -33,9 +35,9 @@ namespace ppp
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
 
         mouse::add_mouse_pressed_callback(
-            [](mouse::MouseCode code)
+            [](mouse::mouse_code code)
         {
-            if (code == mouse::MouseCode::BUTTON_LEFT)
+            if (code == mouse::mouse_code::BUTTON_LEFT)
             {
                 structure::redraw();
             }
@@ -44,8 +46,7 @@ namespace ppp
 
     void load_font()
     {
-        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 36);
-        //_image = image::load("local:content/container.jpg");
+        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 18);
     }
 
     void activate_font()
@@ -71,7 +72,14 @@ namespace ppp
         load_font();
         activate_font();
 
-        //shapes::rect_mode(shapes::ShapeMode::CORNER);
+        _image_container = image::load("local:content/container.jpg");
+        _image_wall = image::load("local:content/wall.jpg");
+
+        shapes::rect_mode(shapes::shape_mode_type::CORNER);
+        image::image_mode(image::image_mode_type::CORNER);
+
+        shapes::enable_wireframe_mode(true);
+        shapes::enable_solid_mode(true);
 
         camera::perspective(55.0f, _window_width/_window_height, 0.1f, 1000.0f);
         camera::camera(20, -40, 80);
@@ -79,7 +87,13 @@ namespace ppp
 
     void draw()
     {
-        //structure::no_loop();
+        camera::OrbitCameraOptions options;
+
+        options.zoom_sensitivity = 200.0f;
+        options.panning_sensitivity = 0.5f;
+        options.rotation_sensitivity = 0.5f;
+
+        camera::orbit_control(options);
 
         color::fill({ 255,0,0,255 });
         
@@ -101,14 +115,8 @@ namespace ppp
         //    x += 15;
         //}
 
-        //////std::string str_frame_rate = std::to_string(environment::frame_rate());
-        //////std::string str_delta_time = std::to_string(environment::delta_time());
-        //////
-        //////typography::text(str_frame_rate, 10, 10);
-        //////typography::text(str_delta_time, 140, 10);
-
         int x = 0;
-
+        
         for (int i = -5; i <= 5; ++i)
         {
             transform::push();
@@ -125,14 +133,25 @@ namespace ppp
             x = (i * 15);
         }
 
-        //shapes::box(10.0f, 10.0f, 10.0f);
-        ////shapes::cylinder(10.0f, 50.0f, 12.0f);
+        x = 96;
+        for (int i = 0; i < 9; ++i)
+        {
+            if (i % 2)
+            {
+                image::draw(_image_container.id, x, 64.0f, 64, 64);
+            }
+            else
+            {
+                image::draw(_image_wall.id, x, 64.0f, 64, 64);
+            }
+            x += 128;
+        }
 
-        //int x = 0;
-        //for (int i = 0; i < 10; ++i)
-        //{
-        //    image::draw(_image.id, x, 0.0f, 10.0f, 10.0f);
-        //    x = (i * 15);
-        //}
+        std::string str_frame_rate = "fps " + std::to_string(environment::frame_rate());
+        std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
+
+        typography::text(str_frame_rate, 10, _window_height - 30);
+        typography::text("-", 135, _window_height - 30);
+        typography::text(str_delta_time, 170, _window_height - 30);
     }
 }

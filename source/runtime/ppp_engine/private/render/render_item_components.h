@@ -36,7 +36,7 @@ namespace ppp
             NORMAL,
             TEXCOORD,
             COLOR,
-            TEXTURE_INDEX
+            DIFFUSE_TEXTURE_INDEX
         };
 
         enum class vertex_attribute_data_type
@@ -85,6 +85,13 @@ namespace ppp
             void add_attribute(vertex_attribute_type type, glm::uvec3* data);
             void add_attribute(vertex_attribute_type type, u32* data);
 
+            void set_attribute(vertex_attribute_type type, glm::vec2* data);
+            void set_attribute(vertex_attribute_type type, glm::vec3* data);
+            void set_attribute(vertex_attribute_type type, f32* data);
+            void set_attribute(vertex_attribute_type type, glm::uvec2* data);
+            void set_attribute(vertex_attribute_type type, glm::uvec3* data);
+            void set_attribute(vertex_attribute_type type, u32* data);
+
             template<typename T>
             const T* get_attribute_data(vertex_attribute_type type) const;
             const vertex_attribute_map& get_attribute_data() const;
@@ -93,6 +100,8 @@ namespace ppp
 
         private:
             void add_attribute(vertex_attribute_type type, vertex_attribute_data_type data_type, void* data);
+            void set_attribute(vertex_attribute_type type, vertex_attribute_data_type data_type, void* data);
+
             void evaluate_attributes();
 
             vertex_attribute_map m_attributes;
@@ -117,7 +126,10 @@ namespace ppp
         public:
             index_component(u32* idxs, u64 count);
 
+            void set_indices(u32* m_indices, u64 m_index_count);
+
             const u32* indices() const;
+
             u64 index_count() const;
 
         private:
@@ -147,6 +159,17 @@ namespace ppp
             void add_component(std::unique_ptr<T>&& component) 
             {
                 m_components[type_tag<T>::value()] = std::move(component);
+            }
+
+            template <typename T>
+            T* get_component()
+            {
+                auto it = m_components.find(type_tag<T>::value());
+                if (it != m_components.end())
+                {
+                    return static_cast<T*>(it->second.get());
+                }
+                return nullptr;
             }
 
             template <typename T>

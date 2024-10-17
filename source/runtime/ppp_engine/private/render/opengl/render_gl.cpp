@@ -1,8 +1,11 @@
 #include "render/render.h"
 #include "render/render_transform.h"
-#include "render/opengl/render_gl_batch.h"
+#include "render/render_batch.h"
+#include "render/render_batch_renderer.h"
 #include "resources/shader_pool.h"
+
 #include "util/log.h"
+#include "util/color_ops.h"
 
 #include <glad/glad.h>
 
@@ -12,12 +15,15 @@
 #include <unordered_map>
 #include <vector>
 #include <array>
+#include <functional>
+
 namespace ppp
 {
     namespace render
     {
         namespace internal
         {
+            //-------------------------------------------------------------------------
             struct camera
             {
                 glm::vec3 eye;
@@ -28,47 +34,17 @@ namespace ppp
             };
 
             camera _active_camera = {};
+            camera _image_camera = {};
+            camera _font_camera = {};
 
-            u32 index_type()
-            {
-                if (typeid(Index).hash_code() == typeid(u32).hash_code()) return GL_UNSIGNED_INT;
-                if (typeid(Index).hash_code() == typeid(u16).hash_code()) return GL_UNSIGNED_SHORT;
-
-                log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(Index).name());
-                return GL_UNSIGNED_INT;
-            }
-
-            u32 convert_color(const glm::vec4 color)
-            {
-                u32 out;
-                out = (conversions::f32_to_uint8(color.x)) << 24;
-                out |= (conversions::f32_to_uint8(color.y)) << 16;
-                out |= (conversions::f32_to_uint8(color.z)) << 8;
-                out |= (conversions::f32_to_uint8(color.w)) << 0;
-                return out;
-            }
-
-            glm::vec4 convert_color(u32 color)
-            {
-                f32 scale = 1.0f / 255.0f;
-                return glm::vec4(
-                    ((color >> 24) & 0xFF) * scale,
-                    ((color >> 16) & 0xFF) * scale,
-                    ((color >> 8) & 0xFF) * scale,
-                    ((color >> 0) & 0xFF) * scale);
-            }
-
-            bool _solid_rendering = true;
-            bool _wireframe_rendering = true;
-            f32 _wireframe_linewidth = 3.0f;
-            s32 _wireframe_color = 0x000000FF;
-
+            //-------------------------------------------------------------------------
             s32 _scissor_x = -1;
             s32 _scissor_y = -1;
             s32 _scissor_width = -1;
             s32 _scissor_height = -1;
             bool _scissor_enable = false;
 
+            //-------------------------------------------------------------------------
             s32 _fill_color = 0xFFFFFFFF;
             bool _fill_enable = true;
             f32 _stroke_width = 1.0f;
@@ -82,22 +58,15 @@ namespace ppp
 
             s32 _bg_color = 0xFF000000;
 
-            struct point_vertex_format
+            //-------------------------------------------------------------------------
+            struct pos_col_format
             {
                 glm::vec3 position;
                 glm::vec4 color;
             };
-            struct line_vertex_format
-            {
-                glm::vec3 position;
-                glm::vec4 color;
-            };
-            struct triangle_vertex_format
-            {
-                glm::vec3 position;
-                glm::vec4 color;
-            };
-            struct image_vertex_format
+
+            //-------------------------------------------------------------------------
+            struct pos_tex_col_format
             {
                 glm::vec3 position;
                 glm::vec2 texcoord;
@@ -105,6 +74,7 @@ namespace ppp
                 f32       texture_idx;
             };
 
+            //-------------------------------------------------------------------------
             std::array<vertex_attribute_layout, 2> _pos_col_layout =
             {
                 vertex_attribute_layout{
@@ -114,36 +84,78 @@ namespace ppp
                     0,
                     3,
                     false,
-                    sizeof(triangle_vertex_format),
+                    sizeof(pos_col_format),
                     0
                 },
                 vertex_attribute_layout{
                     vertex_attribute_type::COLOR,
                     vertex_attribute_data_type::FLOAT,
 
-                    0,
+                    1,
                     4,
                     false,
-                    sizeof(triangle_vertex_format),
+                    sizeof(pos_col_format),
                     3 * sizeof(float)
                 }
             };
+            std::array<vertex_attribute_layout, 4> _pos_tex_col_layout
+            {
+                vertex_attribute_layout{
+                    vertex_attribute_type::POSITION,
+                    vertex_attribute_data_type::FLOAT,
 
-            constexpr s32 _max_points = 9'000;
-            constexpr s32 _max_lines = 9'000;
-            constexpr s32 _max_triangles = 9'000;
-            constexpr s32 _max_texture_units = 8;
+                    0,
+                    3,
+                    false,
+                    sizeof(pos_tex_col_format),
+                    0
+                },
+                vertex_attribute_layout{
+                    vertex_attribute_type::TEXCOORD,
+                    vertex_attribute_data_type::FLOAT,
 
+                    1,
+                    2,
+                    false,
+                    sizeof(pos_tex_col_format),
+                    3 * sizeof(float)
+                },
+                vertex_attribute_layout{
+                    vertex_attribute_type::COLOR,
+                    vertex_attribute_data_type::FLOAT,
+
+                    2,
+                    4,
+                    false,
+                    sizeof(pos_tex_col_format),
+                    3 * sizeof(float) + 2 * sizeof(float)
+                },
+                vertex_attribute_layout{
+                    vertex_attribute_type::DIFFUSE_TEXTURE_INDEX,
+                    vertex_attribute_data_type::FLOAT,
+
+                    3,
+                    1,
+                    false,
+                    sizeof(pos_tex_col_format),
+                    3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
+                }
+            };
+
+            //-------------------------------------------------------------------------
             constexpr s32 _min_frame_buffer_width = 32;
             constexpr s32 _min_frame_buffer_height = 32;
 
+            //-------------------------------------------------------------------------
             s32 _frame_buffer_width = -1;
             s32 _frame_buffer_height = -1;
 
+            //-------------------------------------------------------------------------
             u32 _render_fbo;
             u32 _render_depth_rbo;
             u32 _render_texture;
 
+            //-------------------------------------------------------------------------
             void create_frame_buffer()
             {
                 glGenFramebuffers(1, &_render_fbo);
@@ -174,157 +186,18 @@ namespace ppp
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
             }
 
-            std::unique_ptr<BatchDrawingData> _points_drawing_data;
-            std::unique_ptr<BatchDrawingData> _points_stroke_drawing_data;
-
-            std::unique_ptr<BatchDrawingData> _lines_drawing_data;
-            std::unique_ptr<BatchDrawingData> _lines_stroke_drawing_data;
-
-            std::unique_ptr<BatchDrawingData> _triangle_drawing_data;
-            std::unique_ptr<BatchDrawingData> _triangle_stroke_drawing_data;
-
-            std::unique_ptr<TextureDrawingData<image_vertex_format>> _image_drawing_data;
-            std::unique_ptr<BatchDrawingData> _image_stroke_drawing_data;
-
-            std::unique_ptr<TextureDrawingData<image_vertex_format>> _font_drawing_data;
-
-            void draw_points(const std::unique_ptr<BatchDrawingData>& point_drawing_data)
-            {
-                auto points_batch = point_drawing_data->next_batch();
-                if (points_batch != nullptr)
-                {
-                    glBindVertexArray(point_drawing_data->vao());
-                    glBindBuffer(GL_ARRAY_BUFFER, point_drawing_data->vbo());
-
-                    while (points_batch != nullptr)
-                    {
-                        glBufferSubData(GL_ARRAY_BUFFER, 0, points_batch->vertex_buffer_byte_size(), points_batch->vertices());
-                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, points_batch->index_buffer_byte_size(), points_batch->indices());
-
-                        glDrawElements(GL_POINTS, points_batch->active_index_count(), internal::index_type(), nullptr);
-
-                        points_batch = point_drawing_data->next_batch();
-                    }
-
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
-                }
-            }
-            void draw_lines(const std::unique_ptr<BatchDrawingData>& line_drawing_data)
-            {
-                auto lines_batch = line_drawing_data->next_batch();
-                if (lines_batch != nullptr)
-                {
-                    glBindVertexArray(line_drawing_data->vao());
-                    glBindBuffer(GL_ARRAY_BUFFER, line_drawing_data->vbo());
-
-                    while (lines_batch != nullptr)
-                    {
-                        #ifndef NDEBUG
-                        if (lines_batch->active_index_count() % 2 != 0)
-                        {
-                            log::error("Trying to render invalid number of lines: {}", lines_batch->active_index_count());
-                            return;
-                        }
-                        #endif
-
-                        glBufferSubData(GL_ARRAY_BUFFER, 0, lines_batch->vertex_buffer_byte_size(), lines_batch->vertices());
-                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, lines_batch->index_buffer_byte_size(), lines_batch->indices());
-
-                        glDrawElements(GL_LINES, lines_batch->active_index_count(), internal::index_type(), nullptr);
-
-                        lines_batch = line_drawing_data->next_batch();
-                    }
-
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
-                }
-            }
-            void draw_triangles(const std::unique_ptr<BatchDrawingData>& triangle_drawing_data)
-            {
-                auto triangle_batch = triangle_drawing_data->next_batch();
-                if (triangle_batch != nullptr)
-                {
-                    glBindVertexArray(triangle_drawing_data->vao());
-                    glBindBuffer(GL_ARRAY_BUFFER, triangle_drawing_data->vbo());
-
-                    while (triangle_batch != nullptr)
-                    {
-                        #ifndef NDEBUG
-                        if (triangle_batch->active_index_count() % 3 != 0)
-                        {
-                            log::error("Trying to render invalid number of triangles: {}", triangle_batch->active_index_count());
-                            return;
-                        }
-                        #endif
-
-                        glBufferSubData(GL_ARRAY_BUFFER, 0, triangle_batch->vertex_buffer_byte_size(), triangle_batch->vertices());
-                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, triangle_batch->index_buffer_byte_size(), triangle_batch->indices());
-
-                        glDrawElements(GL_TRIANGLES, triangle_batch->active_index_count(), internal::index_type(), nullptr);
-
-                        triangle_batch = triangle_drawing_data->next_batch();
-                    }
-
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
-                }
-            }
-            void draw_images(const std::unique_ptr<TextureDrawingData<image_vertex_format>>& image_draw_data, s32 shader_program)
-            {
-                auto image_batch = image_draw_data->next_batch();
-                if (image_batch != nullptr)
-                {
-                    glBindVertexArray(image_draw_data->vao());
-                    glBindBuffer(GL_ARRAY_BUFFER, image_draw_data->vbo());
-
-                    while (image_batch != nullptr)
-                    {
-                        u32 u_tex_samplers_loc = glGetUniformLocation(shader_program, "s_image");
-                        glUniform1iv(u_tex_samplers_loc, image_batch->active_texture_count(), image_batch->samplers());
-
-                        #ifndef NDEBUG
-                        if (image_batch->active_index_count() % 3 != 0)
-                        {
-                            log::error("Trying to render invalid number of triangles: {}", image_batch->active_index_count());
-                            return;
-                        }
-                        #endif
-
-
-                        s32 i = 0;
-                        s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                        for (const auto& pair : image_batch->image_ids())
-                        {
-                            u32 id = pair.first;
-                            s32 idx = pair.second;
-
-                            glActiveTexture(GL_TEXTURE0 + (offset * i));
-                            glBindTexture(GL_TEXTURE_2D, id);
-
-                            ++i;
-                        }
-
-                        glBufferSubData(GL_ARRAY_BUFFER, 0, image_batch->vertex_buffer_byte_size(), image_batch->vertices());
-                        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, image_batch->index_buffer_byte_size(), image_batch->indices());
-
-                        glDrawElements(GL_TRIANGLES, image_batch->active_index_count(), internal::index_type(), nullptr);
-
-                        image_batch = image_draw_data->next_batch();
-                    }
-
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
-                }
-            }
-
-            u32 _white_texture_image_id;
-            u32 _black_texture_image_id;
+            //-------------------------------------------------------------------------
+            std::unique_ptr<batch_renderer> _primitive_batch_renderer;
+            std::unique_ptr<batch_renderer> _primitive_stroke_batch_renderer;
+            std::unique_ptr<batch_renderer> _image_batch_renderer;
+            std::unique_ptr<batch_renderer> _image_stroke_batch_renderer;
+            std::unique_ptr<batch_renderer> _font_batch_renderer;
         }
 
+        //-------------------------------------------------------------------------
         bool initialize(s32 w, s32 h, void* user_data)
         {
-            // glad: load all OpenGL function pointers```
+            // glad: load all OpenGL function pointers
             // ---------------------------------------
             if (!gladLoadGLLoader((GLADloadproc)user_data))
             {
@@ -346,74 +219,45 @@ namespace ppp
             internal::_active_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
             internal::_active_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
 
+            internal::_image_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
+            internal::_image_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
+            internal::_image_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
+            internal::_image_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
+
+            internal::_font_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
+            internal::_font_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
+            internal::_font_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
+            internal::_font_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
+
             internal::create_frame_buffer();
 
-            // Primitive Drawing Data
-            s32 max_vertex_elements = 0;
-            s32 max_index_elements = 0;
-            glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_vertex_elements);
-            glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_index_elements);
-
-            s32 max_point_vertices = std::min(max_vertex_elements, internal::_max_points);
-            s32 max_point_indices = std::min(max_index_elements, internal::_max_points * 1);
-            s32 max_line_vertices = std::min(max_vertex_elements, internal::_max_lines);
-            s32 max_line_indices = std::min(max_index_elements, internal::_max_lines * 2);
-            s32 max_triangle_vertices = std::min(max_vertex_elements, internal::_max_triangles);
-            s32 max_triangle_indices = std::min(max_index_elements, internal::_max_triangles * 3);
-
-            internal::_points_drawing_data = std::make_unique<BatchDrawingData>(max_point_vertices, max_point_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_points_stroke_drawing_data = std::make_unique<BatchDrawingData>(max_point_vertices, max_point_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_lines_drawing_data = std::make_unique<BatchDrawingData>(max_line_vertices, max_line_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_lines_stroke_drawing_data = std::make_unique<BatchDrawingData>(max_line_vertices, max_line_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_triangle_drawing_data = std::make_unique<BatchDrawingData>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-            internal::_triangle_stroke_drawing_data = std::make_unique<BatchDrawingData>(max_triangle_vertices, max_triangle_indices, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-
-            s32 max_texture_units = 0;
-            glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
-            
-            s32 max_images = std::min(max_texture_units, internal::_max_texture_units);
-            s32 size_vertex_buffer = max_images * 4;
-            s32 size_index_buffer = max_images * 4 * 3;
-
-            // Image Drawing Data
-            internal::_image_drawing_data = std::make_unique<TextureDrawingData<internal::image_vertex_format>>(max_images);
-            internal::_image_stroke_drawing_data = std::make_unique<BatchDrawingData>(size_vertex_buffer, size_index_buffer, internal::_pos_col_layout.data(), internal::_pos_col_layout.size());
-
-            s32 white = 0xFFFFFFFF;
-            internal::_white_texture_image_id = create_image_item(1, 1, 4, (u8*)&white);
-            s32 black = 0xFF000000;
-            internal::_black_texture_image_id = create_image_item(1, 1, 4, (u8*)&black);
-
-            // Font Drawing Data
-            internal::_font_drawing_data = std::make_unique<TextureDrawingData<internal::image_vertex_format>>(max_images);
+            internal::_primitive_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
+            internal::_primitive_stroke_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
+            internal::_image_batch_renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_texture);
+            internal::_image_stroke_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
+            internal::_font_batch_renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_font);
 
             return true;
         }
 
+        //-------------------------------------------------------------------------
         void terminate()
         {
-            internal::_font_drawing_data->release();
-            internal::_image_drawing_data->release();
-            internal::_image_stroke_drawing_data->release();
-            internal::_triangle_drawing_data->release();
-            internal::_triangle_stroke_drawing_data->release();
-            internal::_lines_drawing_data->release();
-            internal::_lines_stroke_drawing_data->release();
-            internal::_points_drawing_data->release();
-            internal::_points_stroke_drawing_data->release();
+            internal::_font_batch_renderer->terminate();
+            internal::_image_batch_renderer->terminate();
+            internal::_image_stroke_batch_renderer->terminate();
+            internal::_primitive_batch_renderer->terminate();
+            internal::_primitive_stroke_batch_renderer->terminate();
         }
 
+        //-------------------------------------------------------------------------
         void begin()
         {
-            internal::_points_drawing_data->reset();
-            internal::_points_stroke_drawing_data->reset();
-            internal::_lines_drawing_data->reset();
-            internal::_lines_stroke_drawing_data->reset();
-            internal::_triangle_drawing_data->reset();
-            internal::_triangle_stroke_drawing_data->reset();
-            internal::_image_drawing_data->reset();
-            internal::_image_stroke_drawing_data->reset();
-            internal::_font_drawing_data->reset();
+            internal::_primitive_batch_renderer->begin();
+            internal::_primitive_stroke_batch_renderer->begin();
+            internal::_image_batch_renderer->begin();
+            internal::_image_stroke_batch_renderer->begin();
+            internal::_font_batch_renderer->begin();
 
             glBindFramebuffer(GL_FRAMEBUFFER, internal::_render_fbo);
 
@@ -425,7 +269,7 @@ namespace ppp
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Reset to the user clear color
-            glm::vec4 bg_color = internal::convert_color(internal::_bg_color);
+            glm::vec4 bg_color = color::convert_color(internal::_bg_color);
             glClearColor(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
 
             if (internal::_scissor_enable)
@@ -445,12 +289,9 @@ namespace ppp
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
+        //-------------------------------------------------------------------------
         void render()
         {
-            shader_program unlit_color_shader_program = shader_pool::get_shader_program(shader_pool::tags::unlit_color);
-            shader_program unlit_texture_shader_program = shader_pool::get_shader_program(shader_pool::tags::unlit_texture);
-            shader_program unlit_font_shader_program = shader_pool::get_shader_program(shader_pool::tags::unlit_font);
-
             f32 w = static_cast<f32>(internal::_frame_buffer_width);
             f32 h = static_cast<f32>(internal::_frame_buffer_height);
 
@@ -466,124 +307,21 @@ namespace ppp
             glCullFace(GL_BACK);
             glDepthFunc(GL_LESS);
 
-            if(internal::_font_drawing_data->batch_count() > 0)
-            {
-                glUseProgram(unlit_font_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(unlit_font_shader_program, "u_worldviewproj");
-                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
+            internal::_primitive_batch_renderer->render(vp);
+            internal::_primitive_stroke_batch_renderer->render(vp);
 
-                // We draw all images first this 
-                // An effect of this will be that filled shapes are drawn on top of images ( a z-index might be in order here )
-                // This however will make sure inner-stroke is possible
-                if (internal::_solid_rendering)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glUniform1i(glGetUniformLocation(unlit_font_shader_program, "u_wireframe"), GL_FALSE);
+            p = internal::_image_camera.proj;
+            v = glm::lookAt(internal::_image_camera.eye, internal::_image_camera.center, internal::_image_camera.up);
+            vp = p * v;
 
-                    internal::draw_images(internal::_font_drawing_data, unlit_font_shader_program);
-                }
-                
-                if (internal::_wireframe_rendering)
-                {
-                    internal::_font_drawing_data->load_first_batch();
+            internal::_image_batch_renderer->render(vp);
+            internal::_image_stroke_batch_renderer->render(vp);
 
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glLineWidth(internal::_wireframe_linewidth);
-                    glUniform1i(glGetUniformLocation(unlit_font_shader_program, "u_wireframe"), GL_TRUE);
-                    glm::vec4 wireframe_color = internal::convert_color(internal::_wireframe_color);
-                    glUniform4fv(glGetUniformLocation(unlit_font_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
+            p = internal::_font_camera.proj;
+            v = glm::lookAt(internal::_font_camera.eye, internal::_font_camera.center, internal::_font_camera.up);
+            vp = p * v;
 
-                    internal::draw_images(internal::_font_drawing_data, unlit_font_shader_program);
-                }
-
-                glUseProgram(0);
-            }
-
-            if (internal::_image_drawing_data->batch_count() > 0)
-            {
-                glUseProgram(unlit_texture_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(unlit_texture_shader_program, "u_worldviewproj");
-                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
-
-                // We draw all images first this 
-                // An effect of this will be that filled shapes are drawn on top of images ( a z-index might be in order here )
-                // This however will make sure inner-stroke is possible
-                if (internal::_solid_rendering)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glUniform1i(glGetUniformLocation(unlit_texture_shader_program, "u_wireframe"), GL_FALSE);
-
-                    internal::draw_images(internal::_image_drawing_data, unlit_texture_shader_program);
-                }
-
-                if(internal::_wireframe_rendering)
-                {
-                    internal::_image_drawing_data->load_first_batch();
-
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glLineWidth(internal::_wireframe_linewidth);
-                    glUniform1i(glGetUniformLocation(unlit_texture_shader_program, "u_wireframe"), GL_TRUE);
-                    glm::vec4 wireframe_color = internal::convert_color(internal::_wireframe_color);
-                    glUniform4fv(glGetUniformLocation(unlit_texture_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
-
-                    internal::draw_images(internal::_image_drawing_data, unlit_texture_shader_program);
-                }
-
-                glUseProgram(0);
-            }
-
-            if (internal::_points_drawing_data->batch_count() > 0
-                || internal::_lines_drawing_data->batch_count() > 0
-                || internal::_triangle_drawing_data->batch_count() > 0)
-            {
-                glUseProgram(unlit_color_shader_program);
-                u32 u_mpv_loc = glGetUniformLocation(unlit_color_shader_program, "u_worldviewproj");
-                glUniformMatrix4fv(u_mpv_loc, 1, false, value_ptr(vp));
-
-                if (internal::_solid_rendering)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glUniform1i(glGetUniformLocation(unlit_color_shader_program, "u_wireframe"), GL_FALSE);
-
-                    // Points
-                    internal::draw_points(internal::_points_drawing_data);
-                    internal::draw_points(internal::_points_stroke_drawing_data);
-
-                    // Lines
-                    internal::draw_lines(internal::_lines_drawing_data);
-                    internal::draw_lines(internal::_lines_stroke_drawing_data);
-
-                    // Triangles
-                    // We draw the triangles first and afterwards the stroke
-                    // This only has to happen for the triangles because of the inner stroke capabilities
-                    // If we would draw the triangles last no inner stroke would be visible
-                    internal::draw_triangles(internal::_triangle_drawing_data);
-                    internal::draw_triangles(internal::_triangle_stroke_drawing_data);
-
-                    internal::draw_triangles(internal::_image_stroke_drawing_data);
-                }
-
-                if (internal::_wireframe_rendering)
-                {
-                    internal::_triangle_drawing_data->load_first_batch();
-                    internal::_triangle_stroke_drawing_data->load_first_batch();
-
-                    internal::_image_stroke_drawing_data->load_first_batch();
-
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glLineWidth(internal::_wireframe_linewidth);
-                    glUniform1i(glGetUniformLocation(unlit_color_shader_program, "u_wireframe"), GL_TRUE);
-                    glm::vec4 wireframe_color = internal::convert_color(internal::_wireframe_color);
-                    glUniform4fv(glGetUniformLocation(unlit_color_shader_program, "u_wireframe_color"), 1, &wireframe_color[0]);
-
-                    internal::draw_triangles(internal::_triangle_drawing_data);
-                    //internal::draw_triangles(internal::_triangle_stroke_drawing_data);
-
-                    //internal::draw_triangles(internal::_image_stroke_drawing_data);
-                }
-
-                glUseProgram(0);
-            }
+            internal::_font_batch_renderer->render(vp);
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, internal::_render_fbo);
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -591,11 +329,13 @@ namespace ppp
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
+        //-------------------------------------------------------------------------
         void end()
         {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
+        //-------------------------------------------------------------------------
         void push_active_camera(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj)
         {
             internal::_active_camera.eye = eye;
@@ -605,76 +345,103 @@ namespace ppp
             internal::_active_camera.proj = proj;
         }
 
+        //-------------------------------------------------------------------------
         void push_solid_rendering(bool enable)
         {
-            internal::_solid_rendering = enable;
+            internal::_primitive_batch_renderer->enable_solid_rendering(enable);
+            internal::_primitive_stroke_batch_renderer->enable_solid_rendering(enable);
+
+            internal::_image_batch_renderer->enable_solid_rendering(enable);
+            internal::_image_stroke_batch_renderer->enable_solid_rendering(enable);
+
+            internal::_font_batch_renderer->enable_solid_rendering(enable);
         }
 
+        //-------------------------------------------------------------------------
         void push_wireframe_rendering(bool enable)
         {
-            internal::_wireframe_rendering = enable;
+            internal::_primitive_batch_renderer->enable_wireframe_rendering(enable);
+            internal::_primitive_stroke_batch_renderer->enable_wireframe_rendering(enable);
+            
+            internal::_image_batch_renderer->enable_wireframe_rendering(enable);
+            internal::_image_stroke_batch_renderer->enable_wireframe_rendering(enable);
+
+            internal::_font_batch_renderer->enable_wireframe_rendering(enable);
         }
 
+        //-------------------------------------------------------------------------
         void push_wireframe_linewidth(f32 line_width)
         {
-            internal::_wireframe_linewidth = line_width;
+            batch_renderer::set_wireframe_linewidth(line_width);
         }
 
+        //-------------------------------------------------------------------------
         void push_wireframe_color(const glm::vec4& color)
         {
-            internal::_wireframe_color = internal::convert_color(color);
+            batch_renderer::set_wireframe_linecolor(color::convert_color(color));
         }
 
+        //-------------------------------------------------------------------------
         void push_fill_color(const glm::vec4& color)
         {
-            internal::_fill_color = internal::convert_color(color);
+            internal::_fill_color = color::convert_color(color);
         }
 
+        //-------------------------------------------------------------------------
         void push_fill_enable(bool enable)
         {
             internal::_fill_enable = enable;
         }
 
+        //-------------------------------------------------------------------------
         void push_stroke_width(f32 w)
         {
             internal::_stroke_width = w;
         }
 
+        //-------------------------------------------------------------------------
         void push_stroke_color(const glm::vec4& color)
         {
-            internal::_stroke_color = internal::convert_color(color);
+            internal::_stroke_color = color::convert_color(color);
         }
 
+        //-------------------------------------------------------------------------
         void push_stroke_enable(bool enable)
         {
             internal::_stroke_enable = enable;
         }
 
+        //-------------------------------------------------------------------------
         void push_inner_stroke_width(f32 w)
         {
             internal::_inner_stroke_width = w;
         }
 
+        //-------------------------------------------------------------------------
         void push_inner_stroke_color(const glm::vec4& color)
         {
-            internal::_inner_stroke_color = internal::convert_color(color);
+            internal::_inner_stroke_color = color::convert_color(color);
         }
 
+        //-------------------------------------------------------------------------
         void push_inner_stroke_enable(bool enable)
         {
             internal::_inner_stroke_enable = enable;
         }
 
+        //-------------------------------------------------------------------------
         void push_tint_color(const glm::vec4& color)
         {
-            internal::_tint_color = internal::convert_color(color);
+            internal::_tint_color = color::convert_color(color);
         }
 
+        //-------------------------------------------------------------------------
         void push_tint_enable(bool enable)
         {
             internal::_tint_enable = enable;
         }
 
+        //-------------------------------------------------------------------------
         void push_scissor(s32 x, s32 y, s32 width, s32 height)
         {
             internal::_scissor_x = x;
@@ -683,17 +450,20 @@ namespace ppp
             internal::_scissor_height = height;
         }
 
+        //-------------------------------------------------------------------------
         void push_scissor_enable(bool enable)
         {
             internal::_scissor_enable = enable;
         }
 
+        //-------------------------------------------------------------------------
         u32 create_image_item(f32 width, f32 height, s32 channels, u8* data)
         {
-            return create_image_item(width, height, channels, data, ImageFilterType::NEAREST, ImageWrapType::REPEAT);
+            return create_image_item(width, height, channels, data, image_filter_type::NEAREST, image_wrap_type::REPEAT);
         }
 
-        u32 create_image_item(f32 width, f32 height, s32 channels, u8* data, ImageFilterType filter_type, ImageWrapType wrap_type)
+        //-------------------------------------------------------------------------
+        u32 create_image_item(f32 width, f32 height, s32 channels, u8* data, image_filter_type filter_type, image_wrap_type wrap_type)
         {
             GLint format = GL_INVALID_VALUE;
             GLint usage = GL_INVALID_VALUE;
@@ -724,8 +494,8 @@ namespace ppp
 
             switch(filter_type)
             {
-                case ImageFilterType::NEAREST: filter = GL_NEAREST; break;
-                case ImageFilterType::LINEAR: filter = GL_LINEAR; break;
+                case image_filter_type::NEAREST: filter = GL_NEAREST; break;
+                case image_filter_type::LINEAR: filter = GL_LINEAR; break;
                 default:
                     assert(false);
             }
@@ -734,8 +504,8 @@ namespace ppp
 
             switch(wrap_type)
             {
-                case ImageWrapType::CLAMP_TO_EDGE: wrap = GL_CLAMP_TO_EDGE; break;
-                case ImageWrapType::REPEAT: wrap = GL_REPEAT; break;
+                case image_wrap_type::CLAMP_TO_EDGE: wrap = GL_CLAMP_TO_EDGE; break;
+                case image_wrap_type::REPEAT: wrap = GL_REPEAT; break;
                 default:
                     assert(false);
             }
@@ -765,6 +535,7 @@ namespace ppp
             return texture_id;
         }
 
+        //-------------------------------------------------------------------------
         void update_image_item(u32 id, f32 x, f32 y, f32 width, f32 height, s32 channels, u8* data)
         {
             GLint format = GL_INVALID_VALUE;
@@ -802,7 +573,8 @@ namespace ppp
             glBindTexture(GL_TEXTURE_2D, 0);
         }
 
-        void submit_render_item(TopologyType topology, const render_item& item)
+        //-------------------------------------------------------------------------
+        void submit_render_item(topology_type topology, const render_item& item)
         {
             if (internal::_stroke_enable == false && internal::_fill_enable == false)
             {
@@ -811,27 +583,13 @@ namespace ppp
                 return;
             }
 
-            glm::vec4 fill_color = internal::convert_color(internal::_fill_enable ? internal::_fill_color : internal::_bg_color);
+            glm::vec4 fill_color = color::convert_color(internal::_fill_enable ? internal::_fill_color : internal::_bg_color);
 
-            switch (topology)
-            {
-            case TopologyType::POINTS:
-                internal::_points_drawing_data->append(item, fill_color, transform::active_world());
-                break;
-            case TopologyType::LINES:
-                internal::_lines_drawing_data->append(item, fill_color, transform::active_world());
-                break;
-            case TopologyType::TRIANGLES:
-                internal::_triangle_drawing_data->append(item, fill_color, transform::active_world());
-                break;
-
-            default:
-                log::critical("Invalid topology type!");
-                break;
-            }
+            internal::_primitive_batch_renderer->append_drawing_data(topology, item, fill_color, transform::active_world());
         }
 
-        void submit_stroke_render_item(TopologyType topology, const render_item& item, bool outer)
+        //-------------------------------------------------------------------------
+        void submit_stroke_render_item(topology_type topology, const render_item& item, bool outer)
         {
             if (internal::_stroke_enable == false && internal::_fill_enable == false)
             {
@@ -840,113 +598,115 @@ namespace ppp
                 return;
             }
 
-            glm::vec4 stroke_color = outer ? internal::convert_color(internal::_stroke_color) : internal::convert_color(internal::_inner_stroke_color);
+            glm::vec4 stroke_color = outer ? color::convert_color(internal::_stroke_color) : color::convert_color(internal::_inner_stroke_color);
 
-            switch (topology)
-            {
-            case TopologyType::POINTS:
-                internal::_points_stroke_drawing_data->append(item, stroke_color, transform::active_world());
-                break;
-            case TopologyType::LINES:
-                internal::_lines_stroke_drawing_data->append(item, stroke_color, transform::active_world());
-                break;
-            case TopologyType::TRIANGLES:
-                internal::_triangle_stroke_drawing_data->append(item, stroke_color, transform::active_world());
-                break;
-
-            default:
-                log::critical("Invalid topology type!");
-                break;
-            }
+            internal::_primitive_stroke_batch_renderer->append_drawing_data(topology, item, stroke_color, transform::active_world());
         }
 
+        //-------------------------------------------------------------------------
         void submit_font_item(const render_item& item)
         {
-            glm::vec4 fill_color = internal::convert_color(internal::_fill_color);
+            glm::vec4 fill_color = color::convert_color(internal::_fill_color);
 
-            internal::_font_drawing_data->append(item, fill_color, transform::active_world());
+            internal::_font_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, fill_color, transform::active_world());
         }
 
+        //-------------------------------------------------------------------------
         void submit_image_item(const render_item& item)
         {
-            glm::vec4 tint_color = internal::convert_color(internal::_tint_color);
+            glm::vec4 tint_color = color::convert_color(internal::_tint_color);
 
-            internal::_image_drawing_data->append(item, tint_color, transform::active_world());
+            internal::_image_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, tint_color, transform::active_world());
         }
 
+        //-------------------------------------------------------------------------
         void submit_stroke_image_item(const render_item& item, bool outer)
         {
-            glm::vec4 stroke_color = outer ? internal::convert_color(internal::_stroke_color) : internal::convert_color(internal::_inner_stroke_color);
+            glm::vec4 stroke_color = outer ? color::convert_color(internal::_stroke_color) : color::convert_color(internal::_inner_stroke_color);
 
-            internal::_image_stroke_drawing_data->append(item, stroke_color, transform::active_world());
+            internal::_image_stroke_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, stroke_color, transform::active_world());
         }
 
+        //-------------------------------------------------------------------------
         void clear_color(f32 r, f32 g, f32 b, f32 a)
         {
-            internal::_bg_color = internal::convert_color(glm::vec4(r, g, b, a));
+            internal::_bg_color = color::convert_color(glm::vec4(r, g, b, a));
             glClearColor(r, g, b, a);
         }
 
+        //-------------------------------------------------------------------------
         void clear(u32 flags)
         {           
             glClear(flags);
         }
 
+        //-------------------------------------------------------------------------
         bool fill_enabled()
         {
             return internal::_fill_enable;
         }
         
+        //-------------------------------------------------------------------------
         bool stroke_enabled()
         {
             return internal::_stroke_enable;
         }
 
+        //-------------------------------------------------------------------------
         bool inner_stroke_enabled()
         {
             return internal::_inner_stroke_enable;
         }
 
+        //-------------------------------------------------------------------------
         f32 stroke_width()
         {
             return internal::_stroke_width;
         }
 
+        //-------------------------------------------------------------------------
         f32 inner_stroke_width()
         {
             return internal::_inner_stroke_width;
         }
         
+        //-------------------------------------------------------------------------
         bool tint_enabled()
         {
             return internal::_tint_enable;
         }
 
+        //-------------------------------------------------------------------------
         bool scissor_enabled()
         {
             return internal::_scissor_enable;
         }
 
+        //-------------------------------------------------------------------------
         glm::vec4 fill()
         {
-            return internal::convert_color(internal::_fill_color);
+            return color::convert_color(internal::_fill_color);
         }
         
+        //-------------------------------------------------------------------------
         glm::vec4 stroke()
         {
-            return internal::convert_color(internal::_stroke_color);
+            return color::convert_color(internal::_stroke_color);
         }
 
+        //-------------------------------------------------------------------------
         glm::vec4 inner_stroke()
         {
-            return internal::convert_color(internal::_inner_stroke_color);
+            return color::convert_color(internal::_inner_stroke_color);
         }
         
+        //-------------------------------------------------------------------------
         glm::vec4 tint()
         {
-            return internal::convert_color(internal::_tint_color);
+            return color::convert_color(internal::_tint_color);
         }
         
+        //-------------------------------------------------------------------------
         ScissorRect scissor()
         {
             return { internal::_scissor_x, internal::_scissor_y, internal::_scissor_width, internal::_scissor_height };

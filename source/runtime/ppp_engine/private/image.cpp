@@ -17,10 +17,10 @@ namespace ppp
     {
         namespace internal
         {
-            ImageMode _image_mode = ImageMode::CENTER;
+            auto _image_mode = image_mode_type::CENTER;
         }
 
-        void image_mode(ImageMode mode)
+        void image_mode(image_mode_type mode)
         {
             internal::_image_mode = mode;
         }
@@ -45,7 +45,7 @@ namespace ppp
             return (pixels_s32_ptr)texture_pool::active_pixels();
         }
 
-        Image load(const std::string& file_path)
+        image load(const std::string& file_path)
         {
             // Find image first
             if (texture_pool::has_image(file_path))
@@ -79,7 +79,7 @@ namespace ppp
             return { (image_id)img.image_id, img.width, img.height, img.channels };
         }
 
-        Image create(float width, float height, int channels, pixels_u8_ptr data)
+        image create(float width, float height, int channels, pixels_u8_ptr data)
         {
             texture_pool::Image img;
 
@@ -106,7 +106,7 @@ namespace ppp
 
         void draw(image_id image_id, float x, float y, float width, float height)
         {
-            render::render_item item = geometry::image::make_image(internal::_image_mode == ImageMode::CORNER, x, y, width, height, image_id);
+            render::render_item item = geometry::image::make_image(internal::_image_mode == image_mode_type::CORNER, x, y, width, height, image_id);
 
             render::submit_image_item(item);
 

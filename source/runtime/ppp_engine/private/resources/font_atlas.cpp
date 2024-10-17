@@ -199,8 +199,8 @@ namespace ppp
                 atlas.texture_height,
                 1,
                 atlas_buffer.data(),
-                render::ImageFilterType::LINEAR,
-                render::ImageWrapType::CLAMP_TO_EDGE);
+                render::image_filter_type::LINEAR,
+                render::image_wrap_type::CLAMP_TO_EDGE);
 
             return atlas;
         }

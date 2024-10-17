@@ -29,16 +29,19 @@ namespace ppp
 
             namespace mouse
             {
-                s32 moved_x();
-                s32 moved_y();
+                f32 moved_x();
+                f32 moved_y();
 
-                s32 mouse_x();
-                s32 mouse_y();
+                f32 mouse_x();
+                f32 mouse_y();
 
-                s32 prev_mouse_x();
-                s32 prev_mouse_y();
+                f32 prev_mouse_x();
+                f32 prev_mouse_y();
 
                 s32 mouse_button();
+
+                f32 scroll_offset_x();
+                f32 scroll_offset_y();
 
                 bool is_left_button_pressed();
                 bool is_right_button_pressed();
@@ -47,12 +50,12 @@ namespace ppp
                 bool is_any_mouse_button_pressed();
                 bool is_any_mouse_button_released();
 
-                void add_mouse_moved_callback(const std::function<void(s32, s32)>& callback);
-                void add_mouse_dragged_callback(const std::function<void(s32, s32)>& callback);
+                void add_mouse_moved_callback(const std::function<void(f32, f32)>& callback);
+                void add_mouse_dragged_callback(const std::function<void(f32, f32)>& callback);
                 void add_mouse_pressed_callback(const std::function<void(s32, s32)>& callback);
                 void add_mouse_released_callback(const std::function<void(s32, s32)>& callback);
                 void add_mouse_horizontal_wheel_callback(const std::function<void(f32)>& callback);
-                void add_mouse_verticel_wheel_callback(const std::function<void(f32)>& callback);
+                void add_mouse_vertical_wheel_callback(const std::function<void(f32)>& callback);
 
                 void request_pointer_lock();
                 void request_pointer_hide();
@@ -83,6 +86,8 @@ namespace ppp
         u32 current_frame_index();
         u32 desired_frame_index();
 
+        u32 current_frame_rate();
+        u32 average_frame_rate();
         u32 target_frame_rate();
 
         f32 max_frame_time();

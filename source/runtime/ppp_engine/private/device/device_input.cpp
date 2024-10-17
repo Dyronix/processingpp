@@ -23,7 +23,7 @@ namespace ppp
                     }
                 }
 
-                std::vector<std::function<void(s32, s32)>> _mouse_pos_callbacks;
+                std::vector<std::function<void(f32, f32)>> _mouse_pos_callbacks;
                 std::unordered_map<u32, std::vector<std::function<void(s32, s32)>>> _mouse_button_callbacks;
                 std::vector<std::function<void(f32, f32)>> _mouse_scroll_callbacks;
 
@@ -31,7 +31,7 @@ namespace ppp
                 {
                     for (const auto& c: _mouse_pos_callbacks)
                     {
-                        c((s32)xpos, (s32)ypos);
+                        c((f32)xpos, (f32)ypos);
                     }
                 }
 
@@ -99,42 +99,42 @@ namespace ppp
 
             namespace mouse
             {
-                s32 mouse_x(GLFWwindow* window)
+                f32 mouse_x(GLFWwindow* window)
                 {
                     f64 xpos, ypos;
                     glfwGetCursorPos(window, &xpos, &ypos);
 
                     if (render::scissor_enabled())
                     {
-                        s32 canvas_x = render::scissor().x;
-                        s32 width = render::scissor().w;
+                        f64 canvas_x = (f64)render::scissor().x;
+                        f64 width = (f64)render::scissor().w;
 
                         xpos = xpos - canvas_x;
                     }
 
-                    return (s32)xpos;
+                    return (f32)xpos;
                 }
 
-                s32 mouse_y(GLFWwindow* window)
+                f32 mouse_y(GLFWwindow* window)
                 {
                     f64 xpos, ypos;
                     glfwGetCursorPos(window, &xpos, &ypos);
 
                     if (render::scissor_enabled())
                     {
-                        s32 canvas_y = render::scissor().y;
-                        s32 height = render::scissor().h;
+                        f64 canvas_y = (f64)render::scissor().y;
+                        f64 height = (f64)render::scissor().h;
 
-                        ypos = ((ypos - canvas_y) - height) * -1;
+                        ypos = ((ypos - canvas_y) - height) * -1.0;
                     }
                     else
                     {
                         s32 width, height;
                         glfwGetWindowSize(window, &width, &height);
-                        ypos = ypos - height;
+                        ypos = ypos - (f64)height;
                     }
 
-                    return (s32)ypos;
+                    return (f32)ypos;
                 }
 
                 bool is_mouse_button_pressed(GLFWwindow* window, s32 code)
@@ -145,6 +145,11 @@ namespace ppp
                 bool is_mouse_button_released(GLFWwindow* window, s32 code)
                 {
                     return glfwGetMouseButton(window, code) == GLFW_RELEASE;
+                }
+
+                bool is_mouse_button_down(GLFWwindow* window, s32 code)
+                {
+                    return glfwGetMouseButton(window, code) == GLFW_REPEAT;
                 }
 
                 void lock_cursor(GLFWwindow* window)

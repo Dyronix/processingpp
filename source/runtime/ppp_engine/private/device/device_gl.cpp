@@ -22,6 +22,9 @@ namespace ppp
 
             u32 _target_frame_rate = 60;
 
+            constexpr s32 _total_avg_frames = 100;
+            f64 _frame_times[_total_avg_frames] = { 0.0 };
+
             clock::time_point _previous_frame_time;
             clock::milliseconds _delta_frame_time(0);
 
@@ -31,17 +34,20 @@ namespace ppp
 
             s32 _last_key_pressed = -1;
 
-            s32 _prev_mouse_x = -1;
-            s32 _current_mouse_x = -1;
-            s32 _prev_mouse_y = -1;
-            s32 _current_mouse_y = -1;
+            f32 _prev_mouse_x = -1;
+            f32 _current_mouse_x = -1;
+            f32 _prev_mouse_y = -1;
+            f32 _current_mouse_y = -1;
 
             std::unordered_map<u32, bool> _mouse_button_pressed;
             std::unordered_map<u32, bool> _mouse_button_released;
 
             s32 _last_mouse_button_pressed = -1;
 
-            std::vector<std::function<void(s32, s32)>> _dragging_callback;
+            f32 _scroll_offset_x = 0.0f;
+            f32 _scroll_offset_y = 0.0f;
+
+            std::vector<std::function<void(f32, f32)>> _dragging_callback;
 
             void center_window(GLFWwindow* window) 
             {
@@ -118,9 +124,9 @@ namespace ppp
                 {
                     bool r = is_key_pressed(internal::_window, code);
 
-                    internal::_key_pressed[code] = !r;
-                    internal::_key_down[code] = r;
-                    internal::_key_released[code] = !r;
+                    internal::_key_pressed[code] = r;
+                    internal::_key_down[code] = false;
+                    internal::_key_released[code] = false;
 
                     return r;
                 }
@@ -129,8 +135,8 @@ namespace ppp
                 {
                     bool r = is_key_released(internal::_window, code);
 
-                    internal::_key_pressed[code] = !r;
-                    internal::_key_down[code] = !r;
+                    internal::_key_pressed[code] = false;
+                    internal::_key_down[code] = false;
                     internal::_key_released[code] = r;
 
                     return r;
@@ -140,9 +146,9 @@ namespace ppp
                 {
                     bool r = is_key_down(internal::_window, code);
 
-                    internal::_key_pressed[code] = !r;
+                    internal::_key_pressed[code] = false;
                     internal::_key_down[code] = r;
-                    internal::_key_released[code] = !r;
+                    internal::_key_released[code] = false;
 
                     return r;
                 }
@@ -197,44 +203,42 @@ namespace ppp
 
             namespace mouse
             {
-                s32 moved_x()
+                f32 moved_x()
                 {
-                    if (internal::_prev_mouse_x != -1 && internal::_current_mouse_x != -1)
+                    if (prev_mouse_x() != -1.0f && mouse_x() != -1.0f)
                     {
-                        return std::abs(internal::_current_mouse_x - internal::_prev_mouse_x);
+                        return mouse_x() - prev_mouse_x();
                     }
 
                     return 0;
                 }
 
-                s32 moved_y()
+                f32 moved_y()
                 {
-                    if (internal::_prev_mouse_y != -1 && internal::_current_mouse_y != -1)
+                    if (prev_mouse_y() != -1.0f && mouse_y() != -1.0f)
                     {
-                        return std::abs(internal::_current_mouse_y - internal::_prev_mouse_y);
+                        return mouse_y() - prev_mouse_y();
                     }
 
                     return 0;
                 }
 
-                s32 mouse_x()
+                f32 mouse_x()
                 {
-                    internal::_current_mouse_x = mouse_x(internal::_window);
                     return internal::_current_mouse_x;
                 }
 
-                s32 mouse_y()
+                f32 mouse_y()
                 {
-                    internal::_current_mouse_y = mouse_y(internal::_window);
                     return internal::_current_mouse_y;
                 }
 
-                s32 prev_mouse_x()
+                f32 prev_mouse_x()
                 {
                     return internal::_prev_mouse_x;
                 }
 
-                s32 prev_mouse_y()
+                f32 prev_mouse_y()
                 {
                     return internal::_prev_mouse_y;
                 }
@@ -244,12 +248,22 @@ namespace ppp
                     return internal::_last_mouse_button_pressed;
                 }
 
+                f32 scroll_offset_x()
+                {
+                    return internal::_scroll_offset_x;
+                }
+
+                f32 scroll_offset_y()
+                {
+                    return internal::_scroll_offset_y;
+                }
+
                 bool is_left_button_pressed()
                 {
                     bool r = is_mouse_button_pressed(internal::_window, GLFW_MOUSE_BUTTON_LEFT);
 
                     internal::_mouse_button_pressed[GLFW_MOUSE_BUTTON_LEFT] = r;
-                    internal::_mouse_button_released[GLFW_MOUSE_BUTTON_LEFT] = !r;
+                    internal::_mouse_button_released[GLFW_MOUSE_BUTTON_LEFT] = false;
 
                     return r;
                 }
@@ -258,8 +272,8 @@ namespace ppp
                 {
                     bool r = is_mouse_button_pressed(internal::_window, GLFW_MOUSE_BUTTON_RIGHT);
 
-                    internal::_mouse_button_pressed[GLFW_MOUSE_BUTTON_LEFT] = r;
-                    internal::_mouse_button_released[GLFW_MOUSE_BUTTON_LEFT] = !r;
+                    internal::_mouse_button_pressed[GLFW_MOUSE_BUTTON_RIGHT] = r;
+                    internal::_mouse_button_released[GLFW_MOUSE_BUTTON_RIGHT] = false;
 
                     return r;
                 }
@@ -268,8 +282,8 @@ namespace ppp
                 {
                     bool r = is_mouse_button_pressed(internal::_window, GLFW_MOUSE_BUTTON_MIDDLE);
 
-                    internal::_mouse_button_pressed[GLFW_MOUSE_BUTTON_LEFT] = r;
-                    internal::_mouse_button_released[GLFW_MOUSE_BUTTON_LEFT] = !r;
+                    internal::_mouse_button_pressed[GLFW_MOUSE_BUTTON_MIDDLE] = r;
+                    internal::_mouse_button_released[GLFW_MOUSE_BUTTON_MIDDLE] = false;
 
                     return r;
                 }
@@ -292,12 +306,12 @@ namespace ppp
                     });
                 }
 
-                void add_mouse_moved_callback(const std::function<void(s32, s32)>& callback)
+                void add_mouse_moved_callback(const std::function<void(f32, f32)>& callback)
                 {
                     add_mouse_pos_callback(internal::_window, callback);
                 }
 
-                void add_mouse_dragged_callback(const std::function<void(s32, s32)>& callback)
+                void add_mouse_dragged_callback(const std::function<void(f32, f32)>& callback)
                 {
                     internal::_dragging_callback.push_back(callback);
                 }
@@ -321,7 +335,7 @@ namespace ppp
                     });
                 }
 
-                void add_mouse_verticel_wheel_callback(const std::function<void(f32)>& callback)
+                void add_mouse_vertical_wheel_callback(const std::function<void(f32)>& callback)
                 {
                     add_mouse_scroll_callback(internal::_window,
                         [callback](f32 xoffset, f32 yoffset)
@@ -396,7 +410,7 @@ namespace ppp
 
             // Register the mouse move callback so we can check if we are dragging along the screen
             input::mouse::add_mouse_moved_callback(
-                [](s32 xpos, s32 ypos)
+                [](f32 xpos, f32 ypos)
             {
                 if (input::mouse::is_any_mouse_button_pressed())
                 {
@@ -405,6 +419,18 @@ namespace ppp
                         c(xpos, ypos);
                     }
                 }
+            });
+
+            // Register the mouse scroll callback so we can check if we are scrolling
+            input::mouse::add_mouse_horizontal_wheel_callback(
+                [](f32 xoffset)
+            {
+                internal::_scroll_offset_x = xoffset;
+            });
+            input::mouse::add_mouse_vertical_wheel_callback(
+                [](f32 yoffset)
+            {
+                internal::_scroll_offset_y = yoffset;
             });
 
             internal::center_window(internal::_window);
@@ -423,10 +449,20 @@ namespace ppp
 
         void tick()
         {
+            internal::_prev_mouse_x = internal::_current_mouse_x;
+            internal::_prev_mouse_y = internal::_current_mouse_y;
+            internal::_current_mouse_x = input::mouse::mouse_x(internal::_window);
+            internal::_current_mouse_y = input::mouse::mouse_y(internal::_window);
+
+            internal::_scroll_offset_x = 0.0f;
+            internal::_scroll_offset_y = 0.0f;
+
             auto current_frame_time = clock::now();
 
             internal::_delta_frame_time = clock::duration(internal::_previous_frame_time, current_frame_time);
             internal::_previous_frame_time = current_frame_time;
+
+            internal::_frame_times[current_frame_index() % internal::_total_avg_frames] = delta_time();
         }
 
         void window_width(s32* w)
@@ -513,6 +549,33 @@ namespace ppp
         u32 desired_frame_index()
         {
             return internal::_desired_frame_idx;
+        }
+
+        u32 current_frame_rate()
+        {
+            if (internal::_is_looping)
+            {
+                return 1.0f / delta_time();
+            }
+
+            return 0.0f;
+        }
+
+        u32 average_frame_rate()
+        {
+            f64 total_frame_time = 0.0;
+            for (s32 i = 0; i < internal::_total_avg_frames; ++i) 
+            {
+                total_frame_time += internal::_frame_times[i];
+            }
+
+            if (total_frame_time > 0.0) 
+            {
+                auto fps = internal::_total_avg_frames / total_frame_time;
+                return fps;
+            }
+
+            return 0;
         }
 
         u32 target_frame_rate()

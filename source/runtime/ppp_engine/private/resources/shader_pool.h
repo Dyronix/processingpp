@@ -23,6 +23,6 @@ namespace ppp
         void add_shader_program(const std::string& tag, shader_program shader);
         void add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source);
 
-        shader_program get_shader_program(const std::string& tag);
+        shader_program get_shader_program(std::string_view tag);
     }
 }

@@ -1,6 +1,7 @@
 #include "camera.h"
 #include "environment.h"
-
+#include "events.h"
+#include "device/device.h"
 #include "render/render.h"
 #include "util/types.h"
 
@@ -12,20 +13,25 @@ namespace ppp
     {
         namespace internal
         {
-            struct Ortho
+            // Constants for sensitivity
+            const float _rotate_sensitivity = 0.05f;
+            const float _zoom_sensitivity = 1.0f;
+            const float _pan_ensitivity = 0.05f;
+
+            struct ortho
             {
                 float left, right, bottom, top = -1.0f;
                 float near, far = -1.0f;
             };
 
-            struct Perspective
+            struct perspective
             {
                 float fovy, aspect = -1.0f;
                 float near, far = -1.0f;
             };
 
-            Ortho       _active_ortho = {};
-            Perspective _active_perspective = {};           
+            ortho       _active_ortho = {};
+            perspective _active_perspective = {};           
             glm::mat4   _active_projection = glm::mat4(1.0f);
             bool        _active_projection_is_ortho = true;
             
@@ -46,7 +52,7 @@ namespace ppp
         {
             eyex = 0.0f;
             eyey = 0.0f;
-            eyez = 800.0f;
+            eyez = 100.0f;
 
             centerx = 0.0f;
             centery = 0.0f;
@@ -55,6 +61,10 @@ namespace ppp
             upx = 0.0f;
             upy = 1.0f;
             upz = 0.0f;
+
+            radius = glm::length(glm::vec3(eyex, eyey, eyez) - glm::vec3(centerx, centery, centerz));
+            azimuth = 0.0f;
+            polar = glm::radians(45.0f);
         }
 
         void Camera::set_position(float in_eyex, float in_eyey, float in_eyez)
@@ -62,6 +72,8 @@ namespace ppp
             eyex = in_eyex;
             eyey = in_eyey; 
             eyez = in_eyez;
+
+            radius = glm::length(glm::vec3(eyex, eyey, eyez) - glm::vec3(centerx, centery, centerz));
         }
         
         void Camera::set_up_direction(float in_upx, float in_upy, float in_upz)
@@ -76,6 +88,8 @@ namespace ppp
             centerx = in_centerx;
             centery = in_centery;
             centerz = in_centerz;
+
+            radius = glm::length(glm::vec3(eyex, eyey, eyez) - glm::vec3(centerx, centery, centerz));
         }
 
         Camera create_camera()
@@ -161,6 +175,61 @@ namespace ppp
                 aspect, 
                 near,   
                 far);   
+
+            internal::push_active_camera();
+        }
+
+        void orbit_control(OrbitCameraOptions options)
+        {
+            f32 zs = options.zoom_sensitivity != 0.0f ? options.zoom_sensitivity : internal::_zoom_sensitivity;
+            f32 rs = options.rotation_sensitivity != 0.0f ? options.rotation_sensitivity : internal::_rotate_sensitivity;
+            f32 ps = options.panning_sensitivity != 0.0f ? options.panning_sensitivity : internal::_pan_ensitivity;
+
+            f32 delta_x = mouse::moved_x();
+            f32 delta_y = mouse::moved_y();
+
+            f32 scroll = mouse::scroll_offset_y();
+
+            if (mouse::is_left_button_pressed())
+            {
+                internal::_active_camera.azimuth -= delta_x * rs * device::delta_time(); // Horizontal rotation (Azimuth)
+                internal::_active_camera.polar -= delta_y * rs * device::delta_time();   // Vertical rotation (Polar)
+
+                // Clamp polar angle to avoid flipping the camera
+                internal::_active_camera.polar = glm::clamp(internal::_active_camera.polar, 0.1f, glm::pi<float>() - 0.1f);
+            }
+
+            if (mouse::is_right_button_pressed())
+            {
+                glm::vec3 cam_eye = { internal::_active_camera.eyex,internal::_active_camera.eyey,internal::_active_camera.eyez };
+                glm::vec3 cam_target = { internal::_active_camera.centerx,internal::_active_camera.centery,internal::_active_camera.centerz };
+                glm::vec3 cam_up = { internal::_active_camera.upx,internal::_active_camera.upy,internal::_active_camera.upz };
+
+                glm::vec3 right = glm::normalize(glm::cross(cam_target - cam_eye, cam_up)); // Right vector
+                glm::vec3 up = glm::normalize(up);                              // Up vector
+
+                glm::vec3 pan_right = right * delta_x * ps * internal::_active_camera.radius * device::delta_time();
+                glm::vec3 pan_up = up * delta_y * ps * internal::_active_camera.radius * device::delta_time();
+
+                // Shift target position for panning
+                cam_target += -pan_right + pan_up;
+
+                internal::_active_camera.centerx = cam_target.x;
+                internal::_active_camera.centery = cam_target.y;
+                internal::_active_camera.centerz = cam_target.z;
+            }
+
+            if (scroll != 0.0f)
+            {
+                internal::_active_camera.radius -= scroll * zs * device::delta_time();
+
+                // Clamp radius to avoid zooming too close or too far
+                internal::_active_camera.radius = glm::clamp(internal::_active_camera.radius, options.min_zoom, options.max_zoom);
+            }
+
+            internal::_active_camera.eyex = internal::_active_camera.centerx + internal::_active_camera.radius * sin(internal::_active_camera.polar) * sin(internal::_active_camera.azimuth);
+            internal::_active_camera.eyey = internal::_active_camera.centery + internal::_active_camera.radius * cos(internal::_active_camera.polar);  // Height
+            internal::_active_camera.eyez = internal::_active_camera.centerz + internal::_active_camera.radius * sin(internal::_active_camera.polar) * cos(internal::_active_camera.azimuth);
 
             internal::push_active_camera();
         }

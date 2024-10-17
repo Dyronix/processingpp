@@ -91,9 +91,9 @@ namespace ppp
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
 
         mouse::add_mouse_pressed_callback(
-            [](mouse::MouseCode code)
+            [](mouse::mouse_code code)
         {
-            if (code == mouse::MouseCode::BUTTON_LEFT)
+            if (code == mouse::mouse_code::BUTTON_LEFT)
             {
                 structure::redraw();
             }
@@ -102,7 +102,7 @@ namespace ppp
         color::inner_stroke(0);
         color::inner_stroke_weight(5.0f);
 
-        shapes::rect_mode(shapes::ShapeMode::CORNER);
+        shapes::rect_mode(shapes::shape_mode_type::CORNER);
     }
 
     void draw()

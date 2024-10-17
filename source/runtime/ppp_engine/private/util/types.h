@@ -77,6 +77,11 @@ namespace ppp
 {
     using blob = std::vector<std::byte>;
 
+    namespace render
+    {
+        using index = u32;
+    }
+
     namespace conversions
     {
         namespace internal
