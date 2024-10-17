@@ -74,7 +74,7 @@ namespace ppp
         shapes::enable_solid_mode(true);
 
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 1000.0f);
-        camera::camera(20, -40, 600);
+        camera::camera(20, -40, 300);
 
         _color_top = { 255, 0, 0, 255 };     // Red for top
         _color_bottom = { 0, 0, 255, 255 };  // Blue for bottom

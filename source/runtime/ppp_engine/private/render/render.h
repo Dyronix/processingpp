@@ -30,7 +30,7 @@ namespace ppp
         void terminate();
 
         void begin();
-        void render();
+        void render(u32 shader, double time, u32 vao, const std::vector<glm::vec3>& points);
         void end();
 
         // Camera

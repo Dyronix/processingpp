@@ -289,8 +289,40 @@ namespace ppp
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
+        void render_geometry_shader(s32 shader, double time, u32 vao, const std::vector<glm::vec3>& points)
+        {
+            glm::mat4 p = internal::_active_camera.proj;
+            glm::mat4 v = glm::lookAt(internal::_active_camera.eye, internal::_active_camera.center, internal::_active_camera.up);
+            glm::mat4 vp = p * v;
+
+            // Use the shader program
+            glUseProgram(shader);
+
+            // Pass uniform variables
+            // Before drawing, pass the vp matrix as a uniform to the shader
+            GLuint vLocation = glGetUniformLocation(shader, "v");
+            GLuint pLocation = glGetUniformLocation(shader, "p");
+            GLuint vpLocation = glGetUniformLocation(shader, "vp");
+            glUniformMatrix4fv(vLocation, 1, GL_FALSE, value_ptr(v));
+            glUniformMatrix4fv(pLocation, 1, GL_FALSE, value_ptr(p));
+            glUniformMatrix4fv(vpLocation, 1, GL_FALSE, value_ptr(vp));
+
+            glUniform1f(glGetUniformLocation(shader, "amplitudeX"), 50);
+            glUniform1f(glGetUniformLocation(shader, "amplitudeZ"), 20.0f);
+            glUniform1f(glGetUniformLocation(shader, "movementSpeedX"), 0.025f);
+            glUniform1f(glGetUniformLocation(shader, "movementSpeedZ"), 0.015f);
+            glUniform1f(glGetUniformLocation(shader, "periodicScaleX"), 0.2f);
+            glUniform1f(glGetUniformLocation(shader, "periodicScaleZ"), 0.3f);
+            glUniform1f(glGetUniformLocation(shader, "time"), time);
+
+            // Draw points (which will generate cubes in the geometry shader)
+            glBindVertexArray(vao);
+            glDrawArrays(GL_POINTS, 0, points.size());
+            glBindVertexArray(0);
+        }
+
         //-------------------------------------------------------------------------
-        void render()
+        void render(u32 shader, double time, u32 vao, const std::vector<glm::vec3>& points)
         {
             f32 w = static_cast<f32>(internal::_frame_buffer_width);
             f32 h = static_cast<f32>(internal::_frame_buffer_height);
@@ -322,6 +354,8 @@ namespace ppp
             vp = p * v;
 
             internal::_font_batch_renderer->render(vp);
+
+            render_geometry_shader(shader, time, vao, points);
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, internal::_render_fbo);
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
