@@ -1,6 +1,7 @@
 #include "shapes.h"
 #include "render/render.h"
 #include "render/render_types.h"
+#include "resources/shader_pool.h"
 #include "util/geometry_2d.h"
 #include "util/geometry_3d.h"
 
@@ -136,7 +137,30 @@ namespace ppp
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
         }
-        
+
+        //-------------------------------------------------------------------------
+        void point(float x, float y, float z)
+        {
+            render::render_item item = geometry::make_point(x, y, z);
+
+            render::submit_render_item(render::topology_type::POINTS, item);
+
+            if (render::stroke_enabled())
+            {
+                auto vert_comp = item.get_component<render::vertex_component>();
+
+                assert(vert_comp != nullptr);
+
+                constexpr bool outer_stroke = true;
+
+                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
+
+                render::render_item stroke_item = geometry::extrude_point(vertex_positions, vert_comp->vertex_count(), render::stroke_width());
+
+                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+            }
+        }
+
         //-------------------------------------------------------------------------
         void polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
         {
@@ -228,7 +252,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void box(float width, float height, float depth)
         {
-            render::render_item& item = *geometry::make_box(width, height, depth);
+            render::render_item& item = geometry::make_box(width, height, depth);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
         }
@@ -287,6 +311,42 @@ namespace ppp
             render::render_item item = geometry::make_octahedron(width, height);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
+        }
+
+        //-------------------------------------------------------------------------
+        shape_id build_primitive_geometry(std::function<void()> callback)
+        {
+            render::begin_geometry_builder(shader_pool::tags::unlit_color);
+
+            callback();
+
+            render::end_geometry_builder();
+
+            return -1;
+        }
+
+        //-------------------------------------------------------------------------
+        shape_id build_textured_geometry(std::function<void()> callback)
+        {
+            render::begin_geometry_builder(shader_pool::tags::unlit_texture);
+
+            callback();
+
+            render::end_geometry_builder();
+
+            return -1;
+        }
+
+        //-------------------------------------------------------------------------
+        shape_id build_custom_geometry(const std::string& tag, std::function<void()> callback)
+        {
+            render::begin_geometry_builder(tag);
+
+            callback();
+
+            render::end_geometry_builder();
+
+            return -1;
         }
     }
 }

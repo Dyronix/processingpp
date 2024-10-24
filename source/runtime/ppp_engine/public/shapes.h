@@ -1,9 +1,14 @@
 #pragma once
 
+#include <functional>
+#include <string>
+
 namespace ppp
 {
     namespace shapes
     {
+        using shape_id = unsigned int;
+
         enum class shape_mode_type
         {
             CENTER,
@@ -21,6 +26,7 @@ namespace ppp
         void circle(float x, float y, float r, int detail = 25);
         void line(float x1, float y1, float x2, float y2);
         void point(float x, float y);
+        void point(float x, float y, float z);
         void polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
         void rect(float x, float y, float w, float h);
         void square(float x, float y, float s);
@@ -34,5 +40,9 @@ namespace ppp
         void cone(float radius, float height, float detail = 24, bool cap = true);
         void tetrahedron(float width, float height);
         void octahedron(float width, float height);
+
+        shape_id build_primitive_geometry(std::function<void()> callback);
+        shape_id build_textured_geometry(std::function<void()> callback);
+        shape_id build_custom_geometry(const std::string& tag, std::function<void()> callback);
     }
 }
