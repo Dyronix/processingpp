@@ -22,5 +22,17 @@ namespace ppp
             CLAMP_TO_EDGE,
             REPEAT,
         };
+
+        enum class batch_buffer_policy
+        {
+            IMMEDIATE,
+            STATIC
+        };
+
+        enum class batch_render_policy
+        {
+            BUILD_IN,
+            CUSTOM
+        };
     }
 }
