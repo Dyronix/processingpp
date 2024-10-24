@@ -1,5 +1,6 @@
 #include "image.h"
 #include "render/render.h"
+#include "render/render_brush.h"
 #include "fileio/fileio.h"
 #include "resources/texture_pool.h"
 #include "util/log.h"
@@ -110,7 +111,7 @@ namespace ppp
 
             render::submit_image_item(item);
 
-            if (render::stroke_enabled())
+            if (render::brush::stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -120,12 +121,12 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                render::render_item stroke_item = geometry::image::extrude_image(vertex_positions, vert_comp->vertex_count(), render::stroke_width());
+                render::render_item stroke_item = geometry::image::extrude_image(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
 
                 render::submit_stroke_image_item(stroke_item, outer_stroke);
             }
 
-            if (render::inner_stroke_enabled())
+            if (render::brush::inner_stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -135,7 +136,7 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                render::render_item stroke_item = geometry::image::extrude_image(vertex_positions, vert_comp->vertex_count(), -render::inner_stroke_width());
+                render::render_item stroke_item = geometry::image::extrude_image(vertex_positions, vert_comp->vertex_count(), -render::brush::inner_stroke_width());
 
                 render::submit_stroke_image_item(stroke_item, outer_stroke);
             }
@@ -143,31 +144,31 @@ namespace ppp
 
         void no_tint() 
         {
-            render::push_tint_enable(false);
+            render::brush::push_tint_enable(false);
         }
 
         void tint(int grayscale) 
         {
-            render::push_tint_enable(true);
-            render::push_tint_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 1.0f));
+            render::brush::push_tint_enable(true);
+            render::brush::push_tint_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 1.0f));
         }
 
         void tint(int grayscale, int alpha)
         {
-            render::push_tint_enable(true);
-            render::push_tint_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
+            render::brush::push_tint_enable(true);
+            render::brush::push_tint_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
         }
 
         void tint(int r, int g, int b, int a)
         {
-            render::push_tint_enable(true);
-            render::push_tint_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
+            render::brush::push_tint_enable(true);
+            render::brush::push_tint_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
         }
 
         void tint(const color::Color& c)
         {
-            render::push_tint_enable(true);
-            render::push_tint_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
+            render::brush::push_tint_enable(true);
+            render::brush::push_tint_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
         }
 
         std::vector<pixels_s32> rotate_clockwise(const pixels_s32_ptr arr, int width, int height, int num_rotations)

@@ -1,5 +1,6 @@
 #include "shapes.h"
 #include "render/render.h"
+#include "render/render_brush.h"
 #include "render/render_types.h"
 #include "resources/shader_pool.h"
 #include "util/geometry_2d.h"
@@ -55,7 +56,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
 
-            if (render::stroke_enabled())
+            if (render::brush::stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -65,12 +66,12 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                auto stroke_item = geometry::extrude_ellipse(vertex_positions, vert_comp->vertex_count(), render::stroke_width());
+                auto stroke_item = geometry::extrude_ellipse(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
 
-            if (render::inner_stroke_enabled())
+            if (render::brush::inner_stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -80,7 +81,7 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                auto stroke_item = geometry::extrude_ellipse(vertex_positions, vert_comp->vertex_count(), -render::inner_stroke_width());
+                auto stroke_item = geometry::extrude_ellipse(vertex_positions, vert_comp->vertex_count(), -render::brush::inner_stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -99,7 +100,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::LINES, item);
 
-            if (render::stroke_enabled())
+            if (render::brush::stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -109,7 +110,7 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                render::render_item stroke_item = geometry::extrude_line(vertex_positions, vert_comp->vertex_count(), render::stroke_width());
+                render::render_item stroke_item = geometry::extrude_line(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -122,7 +123,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::POINTS, item);
 
-            if (render::stroke_enabled())
+            if (render::brush::stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -132,7 +133,7 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                render::render_item stroke_item = geometry::extrude_point(vertex_positions, vert_comp->vertex_count(), render::stroke_width());
+                render::render_item stroke_item = geometry::extrude_point(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -145,7 +146,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::POINTS, item);
 
-            if (render::stroke_enabled())
+            if (render::brush::stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -155,7 +156,7 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                render::render_item stroke_item = geometry::extrude_point(vertex_positions, vert_comp->vertex_count(), render::stroke_width());
+                render::render_item stroke_item = geometry::extrude_point(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -168,7 +169,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
 
-            if (render::stroke_enabled())
+            if (render::brush::stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -178,12 +179,12 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                auto stroke_item = geometry::extrude_polygon(vertex_positions, vert_comp->vertex_count(), render::stroke_width());
+                auto stroke_item = geometry::extrude_polygon(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
                 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
 
-            if (render::inner_stroke_enabled())
+            if (render::brush::inner_stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -193,7 +194,7 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                render::render_item stroke_item = geometry::extrude_polygon(vertex_positions, vert_comp->vertex_count(), -render::inner_stroke_width());
+                render::render_item stroke_item = geometry::extrude_polygon(vertex_positions, vert_comp->vertex_count(), -render::brush::inner_stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -218,7 +219,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
 
-            if (render::stroke_enabled())
+            if (render::brush::stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -228,12 +229,12 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                auto stroke_item = geometry::extrude_triangle(vertex_positions, vert_comp->vertex_count(), render::stroke_width());
+                auto stroke_item = geometry::extrude_triangle(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
 
-            if (render::inner_stroke_enabled())
+            if (render::brush::inner_stroke_enabled())
             {
                 auto vert_comp = item.get_component<render::vertex_component>();
 
@@ -243,7 +244,7 @@ namespace ppp
 
                 auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
 
-                render::render_item stroke_item = geometry::extrude_triangle(vertex_positions, vert_comp->vertex_count(), -render::inner_stroke_width());
+                render::render_item stroke_item = geometry::extrude_triangle(vertex_positions, vert_comp->vertex_count(), -render::brush::inner_stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
