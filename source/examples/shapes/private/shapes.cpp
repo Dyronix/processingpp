@@ -19,8 +19,20 @@ namespace ppp
     constexpr int _canvas_width = 600;
     constexpr int _canvas_height = 600;
 
+    typography::font_id _font;
+
     image::image _image_container;
     image::image _image_wall;
+
+    void load_font()
+    {
+        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 18);
+    }
+
+    void activate_font()
+    {
+        typography::text_font(_font);
+    }
 
     void setup_canvas()
     {
@@ -55,6 +67,9 @@ namespace ppp
     {
         setup_canvas();
         setup_input_events();
+
+        load_font();
+        activate_font();
 
         shapes::rect_mode(shapes::shape_mode_type::CENTER);
         shapes::ellipse_mode(shapes::shape_mode_type::CENTER);
@@ -128,5 +143,12 @@ namespace ppp
             }
             x += 128;
         }
+
+        std::string str_frame_rate = "fps " + std::to_string(environment::frame_rate());
+        std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
+        
+        typography::text(str_frame_rate, 10, _window_height - 30);
+        typography::text("-", 135, _window_height - 30);
+        typography::text(str_delta_time, 170, _window_height - 30);
     }
 }
