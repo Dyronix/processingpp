@@ -128,7 +128,7 @@ namespace ppp
 		{
 			// Load file from disk
 			const std::string path = internal::get_path(filename);
-			std::ifstream file(path);
+			std::ifstream file(path, std::ios::binary | std::ios::ate);
 			if (!file.is_open())
 			{
 				log::error("File {} with full path {} was not found!", filename, path);
@@ -144,6 +144,21 @@ namespace ppp
 			{
 				return buffer;
 			}
+
+#ifdef _DEBUG
+			if (file.eof()) 
+			{
+				log::error("Reached end of file unexpectedly while reading file {} with full path {}", filename, path); 
+			}
+			else if (file.bad()) 
+			{
+				log::error("A serious I/O error occurred while reading file {} with full path {}", filename, path); 
+			}
+			else if (file.fail()) 
+			{
+				log::error("Failed to read file {} with full path {} due to a formatting or conversion issue", filename, path); 
+			}
+#endif
 
 			assert(false);
 			return {};

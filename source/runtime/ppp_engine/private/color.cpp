@@ -1,6 +1,7 @@
 #include "color.h"
 #include "mathematics.h"
 #include "render/render.h"
+#include "render/render_brush.h"
 #include "util/types.h"
 
 #include <glm/glm.hpp>
@@ -80,96 +81,96 @@ namespace ppp
 
         void no_fill()
         {
-            render::push_fill_enable(false);
+            render::brush::push_fill_enable(false);
         }
 
         void no_stroke()
         {
-            render::push_stroke_enable(false);
+            render::brush::push_stroke_enable(false);
         }
 
         void fill(int grayscale)
         {
-            render::push_fill_enable(true);
-            render::push_fill_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 255.0f));
+            render::brush::push_fill_enable(true);
+            render::brush::push_fill_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 255.0f));
         }
 
         void fill(int grayscale, int alpha)
         {
-            render::push_fill_enable(true);
-            render::push_fill_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
+            render::brush::push_fill_enable(true);
+            render::brush::push_fill_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
         }
 
         void fill(int r, int g, int b, int a)
         {
-            render::push_fill_enable(true);
-            render::push_fill_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
+            render::brush::push_fill_enable(true);
+            render::brush::push_fill_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
         }
 
         void fill(const Color& c)
         {
-            render::push_fill_enable(true);
-            render::push_fill_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
+            render::brush::push_fill_enable(true);
+            render::brush::push_fill_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
         }
 
         void stroke(int grayscale)
         {
-            render::push_stroke_enable(true);
-            render::push_stroke_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 255.0f));
+            render::brush::push_stroke_enable(true);
+            render::brush::push_stroke_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 255.0f));
         }
 
         void stroke(int grayscale, int alpha)
         {
-            render::push_stroke_enable(true);
-            render::push_stroke_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
+            render::brush::push_stroke_enable(true);
+            render::brush::push_stroke_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
         }
 
         void stroke(int r, int g, int b, int a)
         {
-            render::push_stroke_enable(true);
-            render::push_stroke_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
+            render::brush::push_stroke_enable(true);
+            render::brush::push_stroke_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
         }
 
         void stroke(const Color& c)
         {
-            render::push_stroke_enable(true);
-            render::push_stroke_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
+            render::brush::push_stroke_enable(true);
+            render::brush::push_stroke_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
         }
 
         void stroke_weight(float w)
         {
-            render::push_stroke_enable(true);
-            render::push_stroke_width(w);
+            render::brush::push_stroke_enable(true);
+            render::brush::push_stroke_width(w);
         }
 
         void inner_stroke(int grayscale)
         {
-            render::push_inner_stroke_enable(true);
-            render::push_inner_stroke_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 255.0f));
+            render::brush::push_inner_stroke_enable(true);
+            render::brush::push_inner_stroke_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 255.0f));
         }
 
         void inner_stroke(int grayscale, int alpha)
         {
-            render::push_inner_stroke_enable(true);
-            render::push_inner_stroke_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
+            render::brush::push_inner_stroke_enable(true);
+            render::brush::push_inner_stroke_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
         }
 
         void inner_stroke(int r, int g, int b, int a)
         {
-            render::push_inner_stroke_enable(true);
-            render::push_inner_stroke_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
+            render::brush::push_inner_stroke_enable(true);
+            render::brush::push_inner_stroke_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
         }
 
         void inner_stroke(const Color& c)
         {
-            render::push_inner_stroke_enable(true);
-            render::push_inner_stroke_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
+            render::brush::push_inner_stroke_enable(true);
+            render::brush::push_inner_stroke_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
         }
 
         void inner_stroke_weight(float w)
         {
-            render::push_inner_stroke_enable(true);
-            render::push_inner_stroke_width(w);
+            render::brush::push_inner_stroke_enable(true);
+            render::brush::push_inner_stroke_width(w);
         }
 
         Color lerp_color(const Color& c1, const Color& c2, float t)

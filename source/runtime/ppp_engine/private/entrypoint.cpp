@@ -14,7 +14,10 @@
 #include "util/steady_clock.h"
 
 #include <iostream>
-
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 namespace ppp
@@ -82,6 +85,7 @@ namespace ppp
                 draw();
 
                 render::render();
+
                 render::end();
 
                 // swap front/back buffers
