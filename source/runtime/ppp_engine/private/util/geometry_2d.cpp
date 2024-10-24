@@ -73,8 +73,23 @@ namespace ppp
                     glm::vec3 p1 = vertices[i];
                     glm::vec3 p2 = p1 + (dir * extrusion_width);
 
-                    new_vertices.push_back({ p1 });
-                    new_vertices.push_back({ p2 });
+                    // We need to switch winding order if the inner stroke is enabled
+                    if (extrusion_width < 0.0f)
+                    {
+                        // We will always render 2d geometry with an orthographic projection matrix
+                        // Putting the z to 1.0f makes sure the depth buffer does not cull the inner stroke
+                        p1.z = 1.0f;
+                        p2.z = 1.0f;
+
+                        new_vertices.push_back({ p2 });
+                        new_vertices.push_back({ p1 });
+                    }
+                    else
+                    {
+                        new_vertices.push_back({ p1 });
+                        new_vertices.push_back({ p2 });
+                    }
+
                 }
             }
 
@@ -87,8 +102,8 @@ namespace ppp
                 for (s32 i = 0; i < new_vertex_count; i += vertices_per_extrusion_segment)
                 {
                     indices.push_back((i + 0) % (new_vertex_count));
-                    indices.push_back((i + 2) % (new_vertex_count));
                     indices.push_back((i + 1) % (new_vertex_count));
+                    indices.push_back((i + 2) % (new_vertex_count));
 
                     indices.push_back((i + 2) % (new_vertex_count));
                     indices.push_back((i + 1) % (new_vertex_count));
@@ -109,8 +124,8 @@ namespace ppp
                 {
                     f32 angle = (t / static_cast<f32>(detail)) * constants::two_pi();
 
-                    f32 v_x = sin(angle) * w;
-                    f32 v_y = cos(angle) * h;
+                    f32 v_x = cos(angle) * w;
+                    f32 v_y = sin(angle) * h;
 
                     _ellipse_data.vertices[t] = glm::vec3(x + v_x, y + v_y, 0.0f);
                 }
@@ -347,22 +362,28 @@ namespace ppp
 
         render::render_item extrude_point(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width)
         {
-            const bool from_center = true;
+            const bool from_corner = false;
 
-            return geometry::make_ellipse(from_center, vertices[0].x, vertices[0].y, extrusion_width, extrusion_width);
+            return geometry::make_ellipse(from_corner, vertices[0].x, vertices[0].y, extrusion_width, extrusion_width);
         }
 
         render::render_item extrude_line(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width)
         {
-            const bool from_center = true;
+            const bool from_corner = true;
 
-            const f32 stroke_x1 = vertices[0].x - extrusion_width; const f32 stroke_x4 = vertices[1].y + extrusion_width;
-            const f32 stroke_y1 = vertices[0].y - extrusion_width; const f32 stroke_y4 = vertices[1].y + extrusion_width;
+            const f32 stroke_x1 = vertices[0].x - extrusion_width; 
+            const f32 stroke_y1 = vertices[0].y - extrusion_width; 
 
-            const f32 stroke_x2 = vertices[1].y + extrusion_width; const f32 stroke_x3 = vertices[0].y - extrusion_width;
-            const f32 stroke_y2 = vertices[1].y - extrusion_width; const f32 stroke_y3 = vertices[0].y + extrusion_width;
+            const f32 stroke_x2 = vertices[1].x + extrusion_width; 
+            const f32 stroke_y2 = vertices[1].y - extrusion_width; 
 
-            return geometry::make_polygon(from_center, stroke_x1, stroke_y1, stroke_x2, stroke_y2, stroke_x3, stroke_y3, stroke_x4, stroke_y4);
+            const f32 stroke_x3 = vertices[1].x + extrusion_width;
+            const f32 stroke_y3 = vertices[1].y + extrusion_width;
+
+            const f32 stroke_x4 = vertices[0].x - extrusion_width;
+            const f32 stroke_y4 = vertices[0].y + extrusion_width;
+
+            return geometry::make_polygon(from_corner, stroke_x1, stroke_y1, stroke_x2, stroke_y2, stroke_x3, stroke_y3, stroke_x4, stroke_y4);
         }
 
         render::render_item extrude_ellipse(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width)

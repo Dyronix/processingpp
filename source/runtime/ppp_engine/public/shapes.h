@@ -7,8 +7,6 @@ namespace ppp
 {
     namespace shapes
     {
-        using shape_id = unsigned int;
-
         enum class shape_mode_type
         {
             CENTER,
@@ -41,8 +39,8 @@ namespace ppp
         void tetrahedron(float width, float height);
         void octahedron(float width, float height);
 
-        shape_id build_primitive_geometry(std::function<void()> callback);
-        shape_id build_textured_geometry(std::function<void()> callback);
-        shape_id build_custom_geometry(const std::string& tag, std::function<void()> callback);
+        void build_primitive_geometry(std::function<void()> callback);
+        void build_textured_geometry(std::function<void()> callback);
+        void build_custom_geometry(const std::string& tag, std::function<void()> callback);
     }
 }

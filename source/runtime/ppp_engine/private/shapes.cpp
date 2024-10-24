@@ -315,39 +315,33 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        shape_id build_primitive_geometry(std::function<void()> callback)
+        void build_primitive_geometry(std::function<void()> callback)
         {
             render::begin_geometry_builder(shader_pool::tags::unlit_color);
 
             callback();
 
             render::end_geometry_builder();
-
-            return -1;
         }
 
         //-------------------------------------------------------------------------
-        shape_id build_textured_geometry(std::function<void()> callback)
+        void build_textured_geometry(std::function<void()> callback)
         {
             render::begin_geometry_builder(shader_pool::tags::unlit_texture);
 
             callback();
 
             render::end_geometry_builder();
-
-            return -1;
         }
 
         //-------------------------------------------------------------------------
-        shape_id build_custom_geometry(const std::string& tag, std::function<void()> callback)
+        void build_custom_geometry(const std::string& tag, std::function<void()> callback)
         {
             render::begin_geometry_builder(tag);
 
             callback();
 
             render::end_geometry_builder();
-
-            return -1;
         }
     }
 }

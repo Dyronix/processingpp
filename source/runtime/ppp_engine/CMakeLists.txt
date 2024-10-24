@@ -15,10 +15,10 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.cpp
     # device
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/glfw/device_glfw.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/glfw/device_glfw_input.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_gl.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.cpp
     # render
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch_renderer.cpp

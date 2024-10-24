@@ -22,8 +22,6 @@ namespace ppp
 
     material::shader_program _material_cyber_ocean;
 
-    shapes::shape_id _cyber_ocean;
-
     // Separate amplitudes for X and Z directions
     constexpr int _amplitude_x = 50; // height of the wave in the x-direction
     constexpr int _amplitude_z = 20;  // height of the wave in the z-direction
@@ -96,7 +94,7 @@ namespace ppp
 
     void create_cyber_ocean_geometry()
     {
-        _cyber_ocean = shapes::build_custom_geometry("cyber_ocean", &generate_cyber_ocean_grid);
+        shapes::build_custom_geometry("cyber_ocean", &generate_cyber_ocean_grid);
     }
 
     AppParams entry()

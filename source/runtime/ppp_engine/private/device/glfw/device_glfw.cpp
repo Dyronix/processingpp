@@ -462,7 +462,10 @@ namespace ppp
             internal::_delta_frame_time = clock::duration(internal::_previous_frame_time, current_frame_time);
             internal::_previous_frame_time = current_frame_time;
 
-            internal::_frame_times[current_frame_index() % internal::_total_avg_frames] = delta_time();
+            if (internal::_is_looping)
+            {
+                internal::_frame_times[current_frame_index() % internal::_total_avg_frames] = delta_time();
+            }
         }
 
         void window_width(s32* w)

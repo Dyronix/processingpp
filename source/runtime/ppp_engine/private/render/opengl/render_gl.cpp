@@ -221,7 +221,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             void submit_render_item(topology_type topology, const render_item& item)
             {
-                if (brush::stroke_enabled() == false && brush::fill_enabled() == false)
+                if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false && brush::fill_enabled() == false)
                 {
                     // When there is no "stroke" and there is no "fill" the object would be invisible.
                     // So we don't add anything to the drawing list.
@@ -621,7 +621,7 @@ namespace ppp
             }
             else
             {
-                if (brush::stroke_enabled() == false && brush::fill_enabled() == false)
+                if (brush::fill_enabled() == false)
                 {
                     // When there is no "stroke" and there is no "fill" the object would be invisible.
                     // So we don't add anything to the drawing list.
@@ -641,7 +641,7 @@ namespace ppp
                 return;
             }
 
-            if (brush::stroke_enabled() == false && brush::fill_enabled() == false)
+            if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false)
             {
                 // When there is no "stroke" and there is no "fill" the object would be invisible.
                 // So we don't add anything to the drawing list.
