@@ -5,13 +5,13 @@ layout(triangle_strip, max_vertices = 24) out;
 
 uniform mat4 u_worldviewproj;
 
-uniform float u_amplitude_x;
-uniform float u_amplitude_z;
+uniform int u_amplitude_x;
+uniform int u_amplitude_z;
 uniform float u_movement_speed_x;
 uniform float u_movement_speed_z;
 uniform float u_periodic_scale_x;
 uniform float u_periodic_scale_z;
-uniform float u_frame_count;
+uniform float u_total_time;
 uniform float u_cube_size;
 
 in vec4 v_color[];
@@ -19,8 +19,8 @@ out vec4 v_frag_color;
 
 void create_vertex(vec3 offset)
 {
-    float wave_height_x = sin((gl_in[0].gl_Position.x * u_periodic_scale_x) + u_movement_speed_x * u_frame_count) * u_amplitude_x;
-    float wave_height_z = sin((gl_in[0].gl_Position.z * u_periodic_scale_z) + u_movement_speed_z * u_frame_count) * u_amplitude_z;
+    float wave_height_x = sin((gl_in[0].gl_Position.x * u_periodic_scale_x) + u_movement_speed_x * u_total_time) * u_amplitude_x;
+    float wave_height_z = sin((gl_in[0].gl_Position.z * u_periodic_scale_z) + u_movement_speed_z * u_total_time) * u_amplitude_z;
     float y = wave_height_x + wave_height_z;
 
     // Interpolating color based on height
