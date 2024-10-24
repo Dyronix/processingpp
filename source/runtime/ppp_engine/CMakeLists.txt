@@ -24,6 +24,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch_renderer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_shaders.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_error.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_error.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch_renderer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.h
@@ -37,6 +39,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.h
     # util
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/hash.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_2d.h
