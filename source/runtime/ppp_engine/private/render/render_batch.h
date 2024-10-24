@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render/render_item_components.h"
+#include "render/render_types.h"
 
 #include <glm/glm.hpp>
 
@@ -60,8 +61,8 @@ namespace ppp
         class batch_drawing_data
         {
         public:
-            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count);
-            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count);
+            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, batch_buffer_policy buffer_policy);
+            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count, batch_buffer_policy buffer_policy);
 
             void append(const render_item& item, const glm::vec4& color, const glm::mat4& world);
             void reset();
@@ -88,6 +89,7 @@ namespace ppp
             s32 m_push_batch = 0;
 
             batch_arr m_batches;
+            batch_buffer_policy m_batch_buffer_policy;
 
             const vertex_attribute_layout* m_layouts;
             const u64 m_layout_count;

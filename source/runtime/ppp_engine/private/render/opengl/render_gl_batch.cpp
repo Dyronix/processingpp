@@ -2,6 +2,8 @@
 #include "render/render_vertex_buffer.h"
 #include "render/render_index_buffer.h"
 
+#include "render/opengl/render_gl_error.h"
+
 #include "util/types.h"
 #include "util/log.h"
 
@@ -385,15 +387,16 @@ namespace ppp
         u32 batch::max_texture_count() const { return m_texture_manager->max_texture_count(); }
 
         //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count)
-            : batch_drawing_data(size_vertex_buffer, size_index_buffer, -1, layouts, layout_count)
+        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, batch_buffer_policy buffer_policy)
+            : batch_drawing_data(size_vertex_buffer, size_index_buffer, -1, layouts, layout_count, buffer_policy)
         {
         }
 
         //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count)
+        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count, batch_buffer_policy buffer_policy)
             : m_layouts(layouts)
             , m_layout_count(layout_count)
+            , m_batch_buffer_policy(buffer_policy)
         {
             assert(size_vertex_buffer > 0);
             assert(size_index_buffer > 0);
@@ -405,33 +408,33 @@ namespace ppp
             m_batches.emplace_back(size_vertex_buffer, size_index_buffer, layouts, layout_count, size_textures);
 
             // Allocate VAO
-            glGenVertexArrays(1, &m_vao);
-            glBindVertexArray(m_vao);
+            GL_CALL(glGenVertexArrays(1, &m_vao));
+            GL_CALL(glBindVertexArray(m_vao));
 
             // Allocate VBO
-            glGenBuffers(1, &m_vbo);
-            glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+            GL_CALL(glGenBuffers(1, &m_vbo));
+            GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, m_vbo));
             const size_t size_vbo = internal::calculate_total_size_vertex_type(layouts, layout_count) * size_vertex_buffer;
-            glBufferData(GL_ARRAY_BUFFER, size_vbo, nullptr, GL_DYNAMIC_DRAW);
+            GL_CALL(glBufferData(GL_ARRAY_BUFFER, size_vbo, nullptr, GL_DYNAMIC_DRAW));
 
             for (u64 i = 0; i < layout_count; ++i)
             {
                 const vertex_attribute_layout& layout = layouts[i];
 
-                glEnableVertexAttribArray(i);
-                glVertexAttribPointer(i, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset);
+                GL_CALL(glEnableVertexAttribArray(i));
+                GL_CALL(glVertexAttribPointer(i, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset));
             }
 
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
             // Allocate EBO
-            glGenBuffers(1, &m_ebo);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+            GL_CALL(glGenBuffers(1, &m_ebo));
+            GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo));
             const size_t size_ebo = sizeof(index) * size_index_buffer;
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW));
+            GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
-            glBindVertexArray(0);
+            GL_CALL(glBindVertexArray(0));
         }
 
         //-------------------------------------------------------------------------
@@ -474,12 +477,17 @@ namespace ppp
         //-------------------------------------------------------------------------
         void batch_drawing_data::reset()
         {
-            for (batch& b : m_batches)
+            // We clear everything if we are in immediate mode
+            if (m_batch_buffer_policy == batch_buffer_policy::IMMEDIATE)
             {
-                b.reset();
+                for (batch& b : m_batches)
+                {
+                    b.reset();
+                }
+
+                m_push_batch = 0;
             }
 
-            m_push_batch = 0;
             m_draw_batch = 0;
         }
 
@@ -488,9 +496,9 @@ namespace ppp
         {
             reset();
 
-            glDeleteBuffers(1, &m_vbo);
-            glDeleteBuffers(1, &m_ebo);
-            glDeleteVertexArrays(1, &m_vao);
+            GL_CALL(glDeleteBuffers(1, &m_vbo));
+            GL_CALL(glDeleteBuffers(1, &m_ebo));
+            GL_CALL(glDeleteVertexArrays(1, &m_vao));
         }
 
         //-------------------------------------------------------------------------
