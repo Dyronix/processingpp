@@ -13,7 +13,7 @@ namespace ppp
     {
         namespace internal
         {
-            struct point_data
+            struct point_2d_data
             {
                 glm::vec3 vertex;
                 render::index index = { 0 };
@@ -466,6 +466,7 @@ namespace ppp
         {
             internal::_point_data.vertex.x = x;
             internal::_point_data.vertex.y = y;
+            internal::_point_data.vertex.z = 0.0f;
 
             render::render_item item;
 
