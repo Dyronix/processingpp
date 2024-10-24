@@ -13,9 +13,9 @@ namespace ppp
     {
         namespace internal
         {      
-            std::unordered_map<std::string, shader_program>& get_shader_program_map()
+            std::unordered_map<std::string, u32>& get_shader_program_map()
             {
-                static std::unordered_map<std::string, shader_program> s_shader_program_map;
+                static std::unordered_map<std::string, u32> s_shader_program_map;
 
                 return s_shader_program_map;
             }
@@ -38,33 +38,47 @@ namespace ppp
             }
         }
 
-        void add_shader_program(const std::string& tag, shader_program shader_prog)
+        bool has_shader(const std::string& tag)
+        {
+            auto it = internal::get_shader_program_map().find(tag);
+            return it != std::cend(internal::get_shader_program_map());
+        }
+
+        u32 add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source)
         {
             auto it = internal::get_shader_program_map().find(tag);
             if(it == std::cend(internal::get_shader_program_map()))
             {
-                internal::get_shader_program_map().emplace(tag, shader_prog);
+                u32 shader_program_id = render::shaders::create_shader_program(vs_source, fs_source);
+                internal::get_shader_program_map().emplace(tag, shader_program_id);
+                return shader_program_id;
             }
             else
             {
                 log::warn("shader tag {} already exists", tag);
             }
+
+            return -1;
         }
 
-        void add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source)
+        u32 add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source, const char* gs_source)
         {
             auto it = internal::get_shader_program_map().find(tag);
-            if(it == std::cend(internal::get_shader_program_map()))
+            if (it == std::cend(internal::get_shader_program_map()))
             {
-                internal::get_shader_program_map().emplace(tag, render::shaders::create_shader_program(vs_source, fs_source));
+                u32 shader_program_id = render::shaders::create_shader_program(vs_source, fs_source, gs_source);
+                internal::get_shader_program_map().emplace(tag, shader_program_id);
+                return shader_program_id;
             }
             else
             {
                 log::warn("shader tag {} already exists", tag);
             }
+
+            return -1;
         }
 
-        shader_program get_shader_program(std::string_view tag)
+        u32 get_shader_program(std::string_view tag)
         {
             auto it = internal::get_shader_program_map().find(tag.data());
             return it != std::cend(internal::get_shader_program_map())

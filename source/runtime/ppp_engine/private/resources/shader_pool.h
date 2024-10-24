@@ -6,8 +6,6 @@
 
 namespace ppp
 {
-    using shader_program = u32;
-
     namespace shader_pool
     {
         namespace tags
@@ -20,9 +18,11 @@ namespace ppp
         bool initialize();
         void terminate();
 
-        void add_shader_program(const std::string& tag, shader_program shader);
-        void add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source);
+        bool has_shader(const std::string& tag);
 
-        shader_program get_shader_program(std::string_view tag);
+        u32 add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source);
+        u32 add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source, const char* gs_source);
+
+        u32 get_shader_program(std::string_view tag);
     }
 }
