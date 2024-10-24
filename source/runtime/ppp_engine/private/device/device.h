@@ -92,5 +92,6 @@ namespace ppp
 
         f32 max_frame_time();
         f32 delta_time();
+        f32 total_time();
     }
 }

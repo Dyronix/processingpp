@@ -595,8 +595,13 @@ namespace ppp
                 return std::chrono::duration<float>(internal::_delta_frame_time).count();
             }
             
-            log::info("We specified that the game should not be looping, calling delta_time could result in weird results. returning 0");
+            log::info("We specified that the app should not be looping, calling delta_time could result in weird results. returning 0");
             return 0.0f;
+        }
+
+        f32 total_time()
+        {
+            return glfwGetTime();
         }
     }
 }
