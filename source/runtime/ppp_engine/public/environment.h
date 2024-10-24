@@ -15,6 +15,7 @@ namespace ppp
         unsigned int frame_count();
 
         float delta_time();
+        float total_time();
 
         float window_width();
         float window_height();

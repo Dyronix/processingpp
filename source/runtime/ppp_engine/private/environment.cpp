@@ -38,6 +38,11 @@ namespace ppp
             return device::delta_time();
         }
 
+        float total_time()
+        {
+            return device::total_time();
+        }
+
         float window_width()
         {
             s32 width = 0;
