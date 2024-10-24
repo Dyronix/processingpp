@@ -33,6 +33,10 @@ namespace ppp
         void render();
         void end();
 
+        // Geometry Builder
+        void begin_geometry_builder(const std::string& tag);
+        void end_geometry_builder();
+
         // Camera
         void push_active_camera(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj);
 
@@ -41,36 +45,6 @@ namespace ppp
         void push_wireframe_rendering(bool enable);
         void push_wireframe_linewidth(f32 line_width);
         void push_wireframe_color(const glm::vec4& color);
-
-        // Fill
-        void push_fill_color(const glm::vec4& color);
-        void push_fill_enable(bool enable);
-
-        bool fill_enabled();
-        glm::vec4 fill();
-
-        // Stroke
-        void push_stroke_width(f32 w);
-        void push_stroke_color(const glm::vec4& color);
-        void push_stroke_enable(bool enable);
-        void push_inner_stroke_width(f32 w);
-        void push_inner_stroke_color(const glm::vec4& color);
-        void push_inner_stroke_enable(bool enable);
-
-        bool stroke_enabled();
-        f32 stroke_width();
-        glm::vec4 stroke();
-
-        bool inner_stroke_enabled();
-        f32 inner_stroke_width();
-        glm::vec4 inner_stroke();
-
-        // Tint
-        void push_tint_color(const glm::vec4& color);
-        void push_tint_enable(bool enable);
-
-        bool tint_enabled();
-        glm::vec4 tint();
 
         // Scissor
         void push_scissor(s32 x, s32 y, s32 width, s32 height);

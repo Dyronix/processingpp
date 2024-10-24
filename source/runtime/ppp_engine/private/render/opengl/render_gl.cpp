@@ -2,6 +2,10 @@
 #include "render/render_transform.h"
 #include "render/render_batch.h"
 #include "render/render_batch_renderer.h"
+#include "render/render_brush.h"
+
+#include "render/opengl/render_gl_error.h"
+
 #include "resources/shader_pool.h"
 
 #include "util/log.h"
@@ -43,20 +47,6 @@ namespace ppp
             s32 _scissor_width = -1;
             s32 _scissor_height = -1;
             bool _scissor_enable = false;
-
-            //-------------------------------------------------------------------------
-            s32 _fill_color = 0xFFFFFFFF;
-            bool _fill_enable = true;
-            f32 _stroke_width = 1.0f;
-            s32 _stroke_color = 0xFF000000;
-            bool _stroke_enable = false;
-            f32 _inner_stroke_width = 1.0f;
-            s32 _inner_stroke_color = 0xFF000000;
-            bool _inner_stroke_enable = false;
-            s32 _tint_color = 0xFFFFFFFF;
-            bool _tint_enable = false;
-
-            s32 _bg_color = 0xFF000000;
 
             //-------------------------------------------------------------------------
             struct pos_col_format
@@ -158,24 +148,24 @@ namespace ppp
             //-------------------------------------------------------------------------
             void create_frame_buffer()
             {
-                glGenFramebuffers(1, &_render_fbo);
-                glBindFramebuffer(GL_FRAMEBUFFER, _render_fbo);
+                GL_CALL(glGenFramebuffers(1, &_render_fbo));
+                GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _render_fbo));
 
-                glGenTextures(1, &_render_texture);
-                glBindTexture(GL_TEXTURE_2D, _render_texture);
+                GL_CALL(glGenTextures(1, &_render_texture));
+                GL_CALL(glBindTexture(GL_TEXTURE_2D, _render_texture));
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _frame_buffer_width, _frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _render_texture, 0);
+                GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _frame_buffer_width, _frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL));
+                GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+                GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+                GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _render_texture, 0));
 
-                glGenRenderbuffers(1, &_render_depth_rbo);
-                glBindRenderbuffer(GL_RENDERBUFFER, _render_depth_rbo);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, _frame_buffer_width, _frame_buffer_height);
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _render_depth_rbo);
+                GL_CALL(glGenRenderbuffers(1, &_render_depth_rbo));
+                GL_CALL(glBindRenderbuffer(GL_RENDERBUFFER, _render_depth_rbo));
+                GL_CALL(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, _frame_buffer_width, _frame_buffer_height));
+                GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _render_depth_rbo));
 
                 u32 attachments[1] = { GL_COLOR_ATTACHMENT0 };
-                glDrawBuffers(1, attachments);
+                GL_CALL(glDrawBuffers(1, attachments));
 
                 if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
                 {
@@ -183,7 +173,7 @@ namespace ppp
                     return;
                 }
 
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
             }
 
             //-------------------------------------------------------------------------
@@ -192,6 +182,76 @@ namespace ppp
             std::unique_ptr<batch_renderer> _image_batch_renderer;
             std::unique_ptr<batch_renderer> _image_stroke_batch_renderer;
             std::unique_ptr<batch_renderer> _font_batch_renderer;
+
+            std::unordered_map<std::string, std::unique_ptr<batch_renderer>> _custom_geometry_batch_renderers;
+
+            //-------------------------------------------------------------------------
+            class geometry_builder
+            {
+            public:
+                void activate(const std::string& tag)
+                {
+                    m_is_active = true;
+                    m_shader_tag = tag;
+                }
+
+                void deactivate()
+                {
+                    m_is_active = false;
+                    m_shader_tag.clear();
+                }
+
+                bool is_active() const
+                {
+                    return m_is_active;
+                }
+
+                const std::string& shader_tag() const
+                {
+                    return m_shader_tag;
+                }
+
+            private:
+                bool m_is_active = false;
+                std::string m_shader_tag;
+            };
+
+            geometry_builder _geometry_builder;
+
+            //-------------------------------------------------------------------------
+            void submit_render_item(topology_type topology, const render_item& item)
+            {
+                if (brush::stroke_enabled() == false && brush::fill_enabled() == false)
+                {
+                    // When there is no "stroke" and there is no "fill" the object would be invisible.
+                    // So we don't add anything to the drawing list.
+                    return;
+                }
+
+                if (internal::_custom_geometry_batch_renderers.find(_geometry_builder.shader_tag()) == std::cend(internal::_custom_geometry_batch_renderers))
+                {
+                    auto renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), _geometry_builder.shader_tag());
+                    renderer->buffer_policy(batch_buffer_policy::STATIC);
+                    renderer->render_policy(batch_render_policy::CUSTOM);
+                    internal::_custom_geometry_batch_renderers.emplace(_geometry_builder.shader_tag(), std::move(renderer));
+                }
+
+                internal::_custom_geometry_batch_renderers.at(_geometry_builder.shader_tag())->append_drawing_data(topology, item, brush::fill(), transform::active_world());
+            }
+
+            //-------------------------------------------------------------------------
+            void submit_image_item(const render_item& item)
+            {
+                if (internal::_custom_geometry_batch_renderers.find(_geometry_builder.shader_tag()) == std::cend(internal::_custom_geometry_batch_renderers))
+                {
+                    auto renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), _geometry_builder.shader_tag());
+                    renderer->buffer_policy(batch_buffer_policy::STATIC);
+                    renderer->render_policy(batch_render_policy::CUSTOM);
+                    internal::_custom_geometry_batch_renderers.emplace(_geometry_builder.shader_tag(), std::move(renderer));
+                }
+
+                internal::_custom_geometry_batch_renderers.at(_geometry_builder.shader_tag())->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -248,6 +308,11 @@ namespace ppp
             internal::_image_stroke_batch_renderer->terminate();
             internal::_primitive_batch_renderer->terminate();
             internal::_primitive_stroke_batch_renderer->terminate();
+
+            for (auto& pair : internal::_custom_geometry_batch_renderers)
+            {
+                pair.second->terminate();
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -259,34 +324,39 @@ namespace ppp
             internal::_image_stroke_batch_renderer->begin();
             internal::_font_batch_renderer->begin();
 
-            glBindFramebuffer(GL_FRAMEBUFFER, internal::_render_fbo);
+            for (auto& pair : internal::_custom_geometry_batch_renderers)
+            {
+                pair.second->begin();
+            }
+
+            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, internal::_render_fbo));
 
             // Clear the background to black
-            glViewport(0, 0, internal::_frame_buffer_width, internal::_frame_buffer_height);
+            GL_CALL(glViewport(0, 0, internal::_frame_buffer_width, internal::_frame_buffer_height));
 
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClearDepth(1.0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
+            GL_CALL(glClearDepth(1.0));
+            GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
             // Reset to the user clear color
-            glm::vec4 bg_color = color::convert_color(internal::_bg_color);
-            glClearColor(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+            glm::vec4 bg_color = brush::background();
+            GL_CALL(glClearColor(bg_color.r, bg_color.g, bg_color.b, bg_color.a));
 
             if (internal::_scissor_enable)
             {
-                glEnable(GL_SCISSOR_TEST);
-                glScissor(
+                GL_CALL(glEnable(GL_SCISSOR_TEST));
+                GL_CALL(glScissor(
                     std::clamp(internal::_scissor_x, 0, internal::_frame_buffer_width),
                     std::clamp(internal::_scissor_y, 0, internal::_frame_buffer_height),
                     std::clamp(internal::_scissor_width, internal::_min_frame_buffer_width, internal::_frame_buffer_width),
-                    std::clamp(internal::_scissor_height, internal::_min_frame_buffer_height, internal::_frame_buffer_height));
+                    std::clamp(internal::_scissor_height, internal::_min_frame_buffer_height, internal::_frame_buffer_height)));
             }
             else
             {
-                glDisable(GL_SCISSOR_TEST);
+                GL_CALL(glDisable(GL_SCISSOR_TEST));
             }
 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
         }
 
         //-------------------------------------------------------------------------
@@ -295,44 +365,63 @@ namespace ppp
             f32 w = static_cast<f32>(internal::_frame_buffer_width);
             f32 h = static_cast<f32>(internal::_frame_buffer_height);
 
-            glm::mat4 p = internal::_active_camera.proj;
-            glm::mat4 v = glm::lookAt(internal::_active_camera.eye, internal::_active_camera.center, internal::_active_camera.up);
-            glm::mat4 vp = p * v;
+            glm::mat4 active_p = internal::_active_camera.proj;
+            glm::mat4 active_v = glm::lookAt(internal::_active_camera.eye, internal::_active_camera.center, internal::_active_camera.up);
+            glm::mat4 active_vp = active_p * active_v;
 
-            glEnable(GL_BLEND);
-            glEnable(GL_CULL_FACE);
-            glEnable(GL_DEPTH_TEST);
+            GL_CALL(glEnable(GL_BLEND));
+            GL_CALL(glEnable(GL_CULL_FACE));
+            GL_CALL(glEnable(GL_DEPTH_TEST));
             
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glCullFace(GL_BACK);
-            glDepthFunc(GL_LESS);
+            GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+            GL_CALL(glCullFace(GL_BACK));
+            GL_CALL(glDepthFunc(GL_LESS));
 
-            internal::_primitive_batch_renderer->render(vp);
-            internal::_primitive_stroke_batch_renderer->render(vp);
+            internal::_primitive_batch_renderer->render(active_vp);
+            internal::_primitive_stroke_batch_renderer->render(active_vp);
 
-            p = internal::_image_camera.proj;
-            v = glm::lookAt(internal::_image_camera.eye, internal::_image_camera.center, internal::_image_camera.up);
-            vp = p * v;
+            glm::mat4 image_p = internal::_image_camera.proj;
+            glm::mat4 image_v = glm::lookAt(internal::_image_camera.eye, internal::_image_camera.center, internal::_image_camera.up);
+            glm::mat4 image_vp = image_p * image_v;
 
-            internal::_image_batch_renderer->render(vp);
-            internal::_image_stroke_batch_renderer->render(vp);
+            internal::_image_batch_renderer->render(image_vp);
+            internal::_image_stroke_batch_renderer->render(image_vp);
 
-            p = internal::_font_camera.proj;
-            v = glm::lookAt(internal::_font_camera.eye, internal::_font_camera.center, internal::_font_camera.up);
-            vp = p * v;
+            glm::mat4 font_p = internal::_font_camera.proj;
+            glm::mat4 font_v = glm::lookAt(internal::_font_camera.eye, internal::_font_camera.center, internal::_font_camera.up);
+            glm::mat4 font_vp = font_p * font_v;
 
-            internal::_font_batch_renderer->render(vp);
+            internal::_font_batch_renderer->render(font_vp);
 
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, internal::_render_fbo);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-            glBlitFramebuffer(0, 0, internal::_frame_buffer_width, internal::_frame_buffer_height, 0, 0, internal::_frame_buffer_width, internal::_frame_buffer_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            for (auto& pair : internal::_custom_geometry_batch_renderers)
+            {
+                pair.second->render(active_vp);
+            }
+
+            GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, internal::_render_fbo));
+            GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
+            GL_CALL(glBlitFramebuffer(0, 0, internal::_frame_buffer_width, internal::_frame_buffer_height, 0, 0, internal::_frame_buffer_width, internal::_frame_buffer_height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
+            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         }
 
         //-------------------------------------------------------------------------
         void end()
         {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        }
+
+        //-------------------------------------------------------------------------
+        void begin_geometry_builder(const std::string& tag)
+        {
+            assert(!internal::_geometry_builder.is_active() && "Construction of previous shape has not been finished, call end_geometry_builder first");
+
+            internal::_geometry_builder.activate(tag);
+        }
+
+        //-------------------------------------------------------------------------
+        void end_geometry_builder()
+        {
+            internal::_geometry_builder.deactivate();
         }
 
         //-------------------------------------------------------------------------
@@ -355,6 +444,11 @@ namespace ppp
             internal::_image_stroke_batch_renderer->enable_solid_rendering(enable);
 
             internal::_font_batch_renderer->enable_solid_rendering(enable);
+
+            for (auto& pair : internal::_custom_geometry_batch_renderers)
+            {
+                pair.second->enable_solid_rendering(enable);
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -367,6 +461,11 @@ namespace ppp
             internal::_image_stroke_batch_renderer->enable_wireframe_rendering(enable);
 
             internal::_font_batch_renderer->enable_wireframe_rendering(enable);
+
+            for (auto& pair : internal::_custom_geometry_batch_renderers)
+            {
+                pair.second->enable_wireframe_rendering(enable);
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -379,66 +478,6 @@ namespace ppp
         void push_wireframe_color(const glm::vec4& color)
         {
             batch_renderer::set_wireframe_linecolor(color::convert_color(color));
-        }
-
-        //-------------------------------------------------------------------------
-        void push_fill_color(const glm::vec4& color)
-        {
-            internal::_fill_color = color::convert_color(color);
-        }
-
-        //-------------------------------------------------------------------------
-        void push_fill_enable(bool enable)
-        {
-            internal::_fill_enable = enable;
-        }
-
-        //-------------------------------------------------------------------------
-        void push_stroke_width(f32 w)
-        {
-            internal::_stroke_width = w;
-        }
-
-        //-------------------------------------------------------------------------
-        void push_stroke_color(const glm::vec4& color)
-        {
-            internal::_stroke_color = color::convert_color(color);
-        }
-
-        //-------------------------------------------------------------------------
-        void push_stroke_enable(bool enable)
-        {
-            internal::_stroke_enable = enable;
-        }
-
-        //-------------------------------------------------------------------------
-        void push_inner_stroke_width(f32 w)
-        {
-            internal::_inner_stroke_width = w;
-        }
-
-        //-------------------------------------------------------------------------
-        void push_inner_stroke_color(const glm::vec4& color)
-        {
-            internal::_inner_stroke_color = color::convert_color(color);
-        }
-
-        //-------------------------------------------------------------------------
-        void push_inner_stroke_enable(bool enable)
-        {
-            internal::_inner_stroke_enable = enable;
-        }
-
-        //-------------------------------------------------------------------------
-        void push_tint_color(const glm::vec4& color)
-        {
-            internal::_tint_color = color::convert_color(color);
-        }
-
-        //-------------------------------------------------------------------------
-        void push_tint_enable(bool enable)
-        {
-            internal::_tint_enable = enable;
         }
 
         //-------------------------------------------------------------------------
@@ -512,14 +551,14 @@ namespace ppp
 
             u32 texture_id;
 
-            glGenTextures(1, &texture_id);
-            glBindTexture(GL_TEXTURE_2D, texture_id);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+            GL_CALL(glGenTextures(1, &texture_id));
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, texture_id));
+            GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter));
+            GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter));
+            GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap));
+            GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap));
 
-            glTexImage2D(
+            GL_CALL(glTexImage2D(
                 GL_TEXTURE_2D,						// What (target)
                 0,									// Mip-map level
                 format,								// Internal format
@@ -528,9 +567,9 @@ namespace ppp
                 0,									// Border
                 usage,								// Format (how to use)
                 GL_UNSIGNED_BYTE,					// Type   (how to interpret)
-                data);								// Data
+                data));								// Data
 
-            glBindTexture(GL_TEXTURE_2D, 0);
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 
             return texture_id;
         }
@@ -558,8 +597,8 @@ namespace ppp
                 assert(false);
             }
 
-            glBindTexture(GL_TEXTURE_2D, id);
-            glTexSubImage2D(
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, id));
+            GL_CALL(glTexSubImage2D(
                 GL_TEXTURE_2D,
                 0,
                 static_cast<GLint>(x),
@@ -568,37 +607,48 @@ namespace ppp
                 static_cast<GLsizei>(height),
                 format,
                 GL_UNSIGNED_BYTE,
-                data);
+                data));
 
-            glBindTexture(GL_TEXTURE_2D, 0);
+            GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
         }
 
         //-------------------------------------------------------------------------
         void submit_render_item(topology_type topology, const render_item& item)
         {
-            if (internal::_stroke_enable == false && internal::_fill_enable == false)
+            if (internal::_geometry_builder.is_active())
             {
-                // When there is no "stroke" and there is no "fill" the object would be invisible.
-                // So we don't add anything to the drawing list.
-                return;
+                internal::submit_render_item(topology, item);
             }
+            else
+            {
+                if (brush::stroke_enabled() == false && brush::fill_enabled() == false)
+                {
+                    // When there is no "stroke" and there is no "fill" the object would be invisible.
+                    // So we don't add anything to the drawing list.
+                    return;
+                }
 
-            glm::vec4 fill_color = color::convert_color(internal::_fill_enable ? internal::_fill_color : internal::_bg_color);
-
-            internal::_primitive_batch_renderer->append_drawing_data(topology, item, fill_color, transform::active_world());
+                internal::_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform::active_world());
+            }
         }
 
         //-------------------------------------------------------------------------
         void submit_stroke_render_item(topology_type topology, const render_item& item, bool outer)
         {
-            if (internal::_stroke_enable == false && internal::_fill_enable == false)
+            if (internal::_geometry_builder.is_active())
+            {
+                log::warn("Stroking custom geometry is currently not supported");
+                return;
+            }
+
+            if (brush::stroke_enabled() == false && brush::fill_enabled() == false)
             {
                 // When there is no "stroke" and there is no "fill" the object would be invisible.
                 // So we don't add anything to the drawing list.
                 return;
             }
 
-            glm::vec4 stroke_color = outer ? color::convert_color(internal::_stroke_color) : color::convert_color(internal::_inner_stroke_color);
+            glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
 
             internal::_primitive_stroke_batch_renderer->append_drawing_data(topology, item, stroke_color, transform::active_world());
         }
@@ -606,23 +656,32 @@ namespace ppp
         //-------------------------------------------------------------------------
         void submit_font_item(const render_item& item)
         {
-            glm::vec4 fill_color = color::convert_color(internal::_fill_color);
-
-            internal::_font_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, fill_color, transform::active_world());
+            internal::_font_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform::active_world());
         }
 
         //-------------------------------------------------------------------------
         void submit_image_item(const render_item& item)
         {
-            glm::vec4 tint_color = color::convert_color(internal::_tint_color);
-
-            internal::_image_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, tint_color, transform::active_world());
+            if (internal::_geometry_builder.is_active())
+            {
+                internal::submit_image_item(item);
+            }
+            else
+            {
+                internal::_image_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
+            }
         }
 
         //-------------------------------------------------------------------------
         void submit_stroke_image_item(const render_item& item, bool outer)
         {
-            glm::vec4 stroke_color = outer ? color::convert_color(internal::_stroke_color) : color::convert_color(internal::_inner_stroke_color);
+            if (internal::_geometry_builder.is_active())
+            {
+                log::warn("Stroking custom image geometry is currently not supported");
+                return;
+            }
+
+            glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
 
             internal::_image_stroke_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, stroke_color, transform::active_world());
         }
@@ -630,80 +689,21 @@ namespace ppp
         //-------------------------------------------------------------------------
         void clear_color(f32 r, f32 g, f32 b, f32 a)
         {
-            internal::_bg_color = color::convert_color(glm::vec4(r, g, b, a));
-            glClearColor(r, g, b, a);
+            brush::push_background_color(glm::vec4(r, g, b, a));
+
+            GL_CALL(glClearColor(r, g, b, a));
         }
 
         //-------------------------------------------------------------------------
         void clear(u32 flags)
         {           
-            glClear(flags);
-        }
-
-        //-------------------------------------------------------------------------
-        bool fill_enabled()
-        {
-            return internal::_fill_enable;
-        }
-        
-        //-------------------------------------------------------------------------
-        bool stroke_enabled()
-        {
-            return internal::_stroke_enable;
-        }
-
-        //-------------------------------------------------------------------------
-        bool inner_stroke_enabled()
-        {
-            return internal::_inner_stroke_enable;
-        }
-
-        //-------------------------------------------------------------------------
-        f32 stroke_width()
-        {
-            return internal::_stroke_width;
-        }
-
-        //-------------------------------------------------------------------------
-        f32 inner_stroke_width()
-        {
-            return internal::_inner_stroke_width;
-        }
-        
-        //-------------------------------------------------------------------------
-        bool tint_enabled()
-        {
-            return internal::_tint_enable;
+            GL_CALL(glClear(flags));
         }
 
         //-------------------------------------------------------------------------
         bool scissor_enabled()
         {
             return internal::_scissor_enable;
-        }
-
-        //-------------------------------------------------------------------------
-        glm::vec4 fill()
-        {
-            return color::convert_color(internal::_fill_color);
-        }
-        
-        //-------------------------------------------------------------------------
-        glm::vec4 stroke()
-        {
-            return color::convert_color(internal::_stroke_color);
-        }
-
-        //-------------------------------------------------------------------------
-        glm::vec4 inner_stroke()
-        {
-            return color::convert_color(internal::_inner_stroke_color);
-        }
-        
-        //-------------------------------------------------------------------------
-        glm::vec4 tint()
-        {
-            return color::convert_color(internal::_tint_color);
         }
         
         //-------------------------------------------------------------------------
