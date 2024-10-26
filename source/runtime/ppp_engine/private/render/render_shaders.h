@@ -18,6 +18,12 @@ namespace ppp
 
             const char* const unlit_font_vertex_shader_code();
             const char* const unlit_font_pixel_shader_code();
+
+            const char* const unlit_normal_vertex_shader_code();
+            const char* const unlit_normal_pixel_shader_code();
+
+            const char* const unlit_specular_vertex_shader_code();
+            const char* const unlit_specular_pixel_shader_code();
         
             u32 create_shader_program(const char* vs_source, const char* fs_source);
             u32 create_shader_program(const char* vs_source, const char* fs_source, const char* geometry_source);
