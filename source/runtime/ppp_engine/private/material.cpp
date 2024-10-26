@@ -2,6 +2,7 @@
 #include "fileio/fileio.h"
 #include "render/render_shaders.h"
 #include "resources/shader_pool.h"
+#include "util/log.h"
 
 namespace ppp
 {
@@ -59,17 +60,22 @@ namespace ppp
 
         void texture(unsigned int image_id)
         {
+            texture(image_id, 0);
+        }
+
+        void texture(unsigned int image_id, unsigned int texture_channel)
+        {
 
         }
 
-        void shader(unsigned int shader_program_id)
+        void shader(const std::string& tag)
         {
 
         }
         
         void reset()
         {
-
+            
         }
 
         void normal_material()

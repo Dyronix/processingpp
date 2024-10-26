@@ -30,7 +30,8 @@ namespace ppp
 
         void ambient_color(float r, float g, float b);
         void texture(unsigned int image_id);
-        void shader(unsigned int shader_program_id);
+        void texture(unsigned int image_id, unsigned int texture_channel);
+        void shader(const std::string& tag);
         void reset();
 
         void normal_material();
