@@ -32,6 +32,10 @@ namespace ppp
         void begin();
         void render();
         void end();
+        
+        // Shader
+        void push_active_shader(const std::string& tag, vertex_type vertex_type);
+        void push_reset_shader();
 
         // Geometry Builder
         void begin_geometry_builder(const std::string& tag);

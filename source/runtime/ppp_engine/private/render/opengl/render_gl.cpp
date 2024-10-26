@@ -65,6 +65,16 @@ namespace ppp
             };
 
             //-------------------------------------------------------------------------
+            struct pos_tex_col_norm_format
+            {
+                glm::vec3 position;
+                glm::vec2 texcoord;
+                glm::vec3 normal;
+                glm::vec4 color;
+                f32       texture_idx;
+            };
+
+            //-------------------------------------------------------------------------
             std::array<vertex_attribute_layout, 2> _pos_col_layout =
             {
                 vertex_attribute_layout{
@@ -131,6 +141,59 @@ namespace ppp
                     3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
                 }
             };
+            std::array<vertex_attribute_layout, 5> _pos_tex_col_norm_layout
+            {
+                vertex_attribute_layout{
+                    vertex_attribute_type::POSITION,
+                    vertex_attribute_data_type::FLOAT,
+
+                    0,
+                    3,
+                    false,
+                    sizeof(pos_tex_col_format),
+                    0
+                },
+                vertex_attribute_layout{
+                    vertex_attribute_type::TEXCOORD,
+                    vertex_attribute_data_type::FLOAT,
+
+                    1,
+                    2,
+                    false,
+                    sizeof(pos_tex_col_format),
+                    3 * sizeof(float)
+                },
+                vertex_attribute_layout{
+                    vertex_attribute_type::NORMAL,
+                    vertex_attribute_data_type::FLOAT,
+
+                    2,
+                    3,
+                    false,
+                    sizeof(pos_tex_col_format),
+                    3 * sizeof(float) + 2 * sizeof(float)
+                },
+                vertex_attribute_layout{
+                    vertex_attribute_type::COLOR,
+                    vertex_attribute_data_type::FLOAT,
+
+                    3,
+                    4,
+                    false,
+                    sizeof(pos_tex_col_format),
+                    3 * sizeof(float) + 3 * sizeof(float) + 2 * sizeof(float)
+                },
+                vertex_attribute_layout{
+                    vertex_attribute_type::DIFFUSE_TEXTURE_INDEX,
+                    vertex_attribute_data_type::FLOAT,
+
+                    4,
+                    1,
+                    false,
+                    sizeof(pos_tex_col_format),
+                    3 * sizeof(float) + 3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
+                }
+            };
 
             //-------------------------------------------------------------------------
             constexpr s32 _min_frame_buffer_width = 32;
@@ -144,6 +207,38 @@ namespace ppp
             u32 _render_fbo;
             u32 _render_depth_rbo;
             u32 _render_texture;
+
+            //-------------------------------------------------------------------------
+            std::string _fill_user_shader = {};
+            std::string _stroke_user_shader = {};
+
+            vertex_type _fill_user_vertex_type = vertex_type::POSITION_TEXCOORD_NORMAL_COLOR;
+
+            vertex_attribute_layout* fill_user_layout(vertex_type type)
+            {
+                switch (type)
+                {
+                case vertex_type::POSITION_COLOR: return _pos_col_layout.data();
+                case vertex_type::POSITION_TEXCOORD_COLOR: return _pos_tex_col_layout.data();
+                case vertex_type::POSITION_TEXCOORD_NORMAL_COLOR: return _pos_tex_col_norm_layout.data();
+                }
+
+                log::error("Unsupported vertex type");
+                return nullptr;
+            }
+
+            u64 fill_user_layout_count(vertex_type type)
+            {
+                switch (type)
+                {
+                case vertex_type::POSITION_COLOR: return _pos_col_layout.size();
+                case vertex_type::POSITION_TEXCOORD_COLOR: return _pos_tex_col_layout.size();
+                case vertex_type::POSITION_TEXCOORD_NORMAL_COLOR: return _pos_tex_col_norm_layout.size();
+                }
+
+                log::error("Unsupported vertex type");
+                return 0;
+            }
 
             //-------------------------------------------------------------------------
             void create_frame_buffer()
@@ -219,7 +314,7 @@ namespace ppp
             geometry_builder _geometry_builder;
 
             //-------------------------------------------------------------------------
-            void submit_render_item(topology_type topology, const render_item& item)
+            void submit_custom_render_item(topology_type topology, const render_item& item)
             {
                 if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false && brush::fill_enabled() == false)
                 {
@@ -228,29 +323,48 @@ namespace ppp
                     return;
                 }
 
-                if (internal::_custom_geometry_batch_renderers.find(_geometry_builder.shader_tag()) == std::cend(internal::_custom_geometry_batch_renderers))
+                const std::string& shader_tag = _fill_user_shader.empty() ? _geometry_builder.shader_tag() : _fill_user_shader;
+
+                if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
                 {
-                    auto renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), _geometry_builder.shader_tag());
-                    renderer->buffer_policy(batch_buffer_policy::STATIC);
+                    auto renderer = std::make_unique<primitive_batch_renderer>(
+                        _fill_user_shader.empty() ? internal::_pos_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
+                        _fill_user_shader.empty() ? internal::_pos_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                        shader_tag);
+
+                    if (_geometry_builder.is_active())
+                    {
+                        renderer->buffer_policy(batch_buffer_policy::STATIC);
+                    }
+                    
                     renderer->render_policy(batch_render_policy::CUSTOM);
-                    internal::_custom_geometry_batch_renderers.emplace(_geometry_builder.shader_tag(), std::move(renderer));
+                    internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
-                internal::_custom_geometry_batch_renderers.at(_geometry_builder.shader_tag())->append_drawing_data(topology, item, brush::fill(), transform::active_world());
+                internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology, item, brush::fill(), transform::active_world());
             }
-
             //-------------------------------------------------------------------------
-            void submit_image_item(const render_item& item)
+            void submit_custom_image_item(const render_item& item)
             {
-                if (internal::_custom_geometry_batch_renderers.find(_geometry_builder.shader_tag()) == std::cend(internal::_custom_geometry_batch_renderers))
+                const std::string& shader_tag = _fill_user_shader.empty() ? _geometry_builder.shader_tag() : _fill_user_shader;
+
+                if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
                 {
-                    auto renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), _geometry_builder.shader_tag());
-                    renderer->buffer_policy(batch_buffer_policy::STATIC);
+                    auto renderer = std::make_unique<texture_batch_renderer>(
+                        _fill_user_shader.empty() ? internal::_pos_tex_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
+                        _fill_user_shader.empty() ? internal::_pos_tex_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                        shader_tag);
+
+                    if (_geometry_builder.is_active())
+                    {
+                        renderer->buffer_policy(batch_buffer_policy::STATIC);
+                    }
+
                     renderer->render_policy(batch_render_policy::CUSTOM);
-                    internal::_custom_geometry_batch_renderers.emplace(_geometry_builder.shader_tag(), std::move(renderer));
+                    internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
-                internal::_custom_geometry_batch_renderers.at(_geometry_builder.shader_tag())->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
+                internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
             }
         }
 
@@ -408,6 +522,20 @@ namespace ppp
         void end()
         {
             GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        }
+
+        //-------------------------------------------------------------------------
+        void push_active_shader(const std::string& tag, vertex_type vertex_type)
+        {
+            internal::_fill_user_shader = tag;
+            internal::_fill_user_vertex_type = vertex_type;
+        }
+
+        //-------------------------------------------------------------------------
+        void push_reset_shader()
+        {
+            internal::_fill_user_shader = {};
+            internal::_fill_user_vertex_type = (vertex_type)-1; // invalid type
         }
 
         //-------------------------------------------------------------------------
@@ -615,9 +743,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         void submit_render_item(topology_type topology, const render_item& item)
         {
-            if (internal::_geometry_builder.is_active())
+            if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
             {
-                internal::submit_render_item(topology, item);
+                internal::submit_custom_render_item(topology, item);
             }
             else
             {
@@ -662,9 +790,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         void submit_image_item(const render_item& item)
         {
-            if (internal::_geometry_builder.is_active())
+            if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
             {
-                internal::submit_image_item(item);
+                internal::submit_custom_image_item(item);
             }
             else
             {
