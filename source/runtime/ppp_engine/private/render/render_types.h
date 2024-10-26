@@ -11,6 +11,13 @@ namespace ppp
             TRIANGLES
         };
 
+        enum class vertex_type
+        {
+            POSITION_COLOR,
+            POSITION_TEXCOORD_COLOR,
+            POSITION_TEXCOORD_NORMAL_COLOR
+        };
+
         enum class image_filter_type
         {
             NEAREST,
