@@ -601,11 +601,11 @@ namespace ppp
 
             const char* const unlit_specular_vertex_shader_code()
             {
-
+                return nullptr;
             }
             const char* const unlit_specular_pixel_shader_code()
             {
-
+                return nullptr;
             }
 
             u32 create_shader_program(const char* vs_source, const char* fs_source)
