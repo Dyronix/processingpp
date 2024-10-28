@@ -83,6 +83,10 @@ namespace ppp
                 copy_vertex_data(vertex_comp, color);
 
                 transform_vertex_positions(start_index, end_index, world);
+                if (m_vertex_buffer.has_layout(vertex_attribute_type::NORMAL))
+                {
+                    transform_vertex_normals(start_index, end_index, world);
+                }
             }
 
             //-------------------------------------------------------------------------
@@ -138,7 +142,10 @@ namespace ppp
 
                 for (const auto& pair : vertex_comp->get_attribute_data())
                 {
-                    m_vertex_buffer.set_attribute_data(pair.first, pair.second.blob.data());
+                    if (m_vertex_buffer.has_layout(pair.second.layout.type))
+                    {
+                        m_vertex_buffer.set_attribute_data(pair.first, pair.second.blob.data());
+                    }
                 }
 
                 map_new_vertex_data(vertex_attribute_type::COLOR, (void*)&color[0]);
@@ -173,6 +180,21 @@ namespace ppp
                     position.z = transformed_pos.z;
                 });
             }
+
+            //-------------------------------------------------------------------------
+            void transform_vertex_normals(s32 start_index, s32 end_index, const glm::mat4& world)
+            {
+                glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(world)));
+
+                m_vertex_buffer.transform_attribute_data<glm::vec3>(vertex_attribute_type::NORMAL, start_index, end_index, [&](glm::vec3& normal)
+                {
+                    glm::vec3 transformed_normal = normal_matrix * normal;
+
+                    normal = glm::normalize(transformed_normal);
+                });
+            }
+
+
             //-------------------------------------------------------------------------
             void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 sampler_id)
             {

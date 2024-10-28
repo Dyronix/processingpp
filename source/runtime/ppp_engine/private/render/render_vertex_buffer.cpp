@@ -40,6 +40,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        bool vertex_buffer::has_layout(vertex_attribute_type type) const
+        {
+            return find_layout(type) != nullptr;
+        }
+
+        //-------------------------------------------------------------------------
         void vertex_buffer::open_attribute_addition(u64 data_count)
         {
             internal::_vb_addition[this].is_open = true;

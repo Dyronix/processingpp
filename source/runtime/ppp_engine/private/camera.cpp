@@ -171,7 +171,7 @@ namespace ppp
 
             internal::_active_projection_is_ortho = false;
             internal::_active_projection = glm::perspective(
-                fovy,   
+                glm::radians(fovy),   
                 aspect, 
                 near,   
                 far);   

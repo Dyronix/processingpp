@@ -150,7 +150,7 @@ namespace ppp
                     0,
                     3,
                     false,
-                    sizeof(pos_tex_col_format),
+                    sizeof(pos_tex_col_norm_format),
                     0
                 },
                 vertex_attribute_layout{
@@ -160,7 +160,7 @@ namespace ppp
                     1,
                     2,
                     false,
-                    sizeof(pos_tex_col_format),
+                    sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float)
                 },
                 vertex_attribute_layout{
@@ -170,7 +170,7 @@ namespace ppp
                     2,
                     3,
                     false,
-                    sizeof(pos_tex_col_format),
+                    sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float) + 2 * sizeof(float)
                 },
                 vertex_attribute_layout{
@@ -180,7 +180,7 @@ namespace ppp
                     3,
                     4,
                     false,
-                    sizeof(pos_tex_col_format),
+                    sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float) + 3 * sizeof(float) + 2 * sizeof(float)
                 },
                 vertex_attribute_layout{
@@ -190,7 +190,7 @@ namespace ppp
                     4,
                     1,
                     false,
-                    sizeof(pos_tex_col_format),
+                    sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float) + 3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
                 }
             };

@@ -159,7 +159,9 @@ namespace ppp
             , m_texture_support(enable_texture_support)
             , m_batch_buffer_policy(batch_buffer_policy::IMMEDIATE)
             , m_batch_render_policy(batch_render_policy::BUILD_IN)
-        {}
+        {
+            render_policy(m_batch_render_policy);
+        }
 
         //-------------------------------------------------------------------------
         batch_renderer::~batch_renderer() = default;
@@ -194,35 +196,11 @@ namespace ppp
                     return;
                 }
 
-                // Build in render policy
-                if (m_batch_render_policy == batch_render_policy::BUILD_IN)
+                for (auto& render_fn : m_render_fns)
                 {
-                    if (solid_rendering_supported())
-                    {
-                        GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+                    render_fn(pair.first, pair.second);
 
-                        shaders::push_uniform(shader_program(), "u_wireframe", GL_FALSE);
-
-                        on_render(pair.first, pair.second);
-                    }
-
-                    if (wireframe_rendering_supported())
-                    {
-                        pair.second.load_first_batch();
-
-                        GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
-                        GL_CALL(glLineWidth(internal::_wireframe_linewidth));
-                        
-                        shaders::push_uniform(shader_program(), "u_wireframe", GL_TRUE);
-                        shaders::push_uniform(shader_program(), "u_wireframe_color", color::convert_color(internal::_wireframe_linecolor));
-
-                        on_render(pair.first, pair.second);
-                    }
-                }
-                // User defined render policy
-                else
-                {
-                    on_render(pair.first, pair.second);
+                    pair.second.load_first_batch();
                 }
             }
 
@@ -244,6 +222,7 @@ namespace ppp
             }
         }
 
+        //-------------------------------------------------------------------------
         void batch_renderer::append_drawing_data(topology_type topology, const render_item& item, const glm::vec4& color, const glm::mat4& world)
         {
             if (m_drawing_data_map.find(topology) == std::cend(m_drawing_data_map))
@@ -269,6 +248,9 @@ namespace ppp
             {
                 m_rasterization_mode &= ~internal::_solid;
             }
+
+            // Make sure the solid_render function is either excluded or included in the render policy
+            render_policy(m_batch_render_policy);
         }
 
         //-------------------------------------------------------------------------
@@ -282,6 +264,9 @@ namespace ppp
             {
                 m_rasterization_mode &= ~internal::_wireframe;
             }
+
+            // Make sure the wireframe_render function is either excluded or included in the render policy
+            render_policy(m_batch_render_policy);
         }
 
         //-------------------------------------------------------------------------
@@ -294,6 +279,45 @@ namespace ppp
         void batch_renderer::render_policy(batch_render_policy render_policy)
         {
             m_batch_render_policy = render_policy;
+            m_render_fns.clear();
+
+            switch (render_policy)
+            {
+            case batch_render_policy::BUILD_IN:
+                if (solid_rendering_supported())
+                {
+                    m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
+                        solid_render(topology, drawing_data);
+                    });
+                }
+                if (wireframe_rendering_supported())
+                {
+                    m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
+                        wireframe_render(topology, drawing_data);
+                    });
+                }
+                break;
+            case batch_render_policy::CUSTOM:
+                m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
+                    on_render(topology, drawing_data);
+                });
+                break;
+            }
+        }
+
+        //-------------------------------------------------------------------------
+        void batch_renderer::user_shader_program(const std::string& tag)
+        {
+            if (shader_pool::has_shader(tag))
+            {
+                m_user_shader_tag = tag;
+            }
+        }
+
+        //-------------------------------------------------------------------------
+        void batch_renderer::reset_user_shader_program()
+        {
+            m_user_shader_tag = {};
         }
 
         //-------------------------------------------------------------------------
@@ -321,7 +345,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         u32 batch_renderer::shader_program() const 
         {
-            return shader_pool::get_shader_program(m_shader_tag); 
+            return shader_pool::get_shader_program(m_user_shader_tag.empty() ? m_shader_tag : m_user_shader_tag);
         }
 
         //-------------------------------------------------------------------------
@@ -334,6 +358,26 @@ namespace ppp
         batch_render_policy batch_renderer::render_policy() const
         {
             return m_batch_render_policy;
+        }
+
+        void batch_renderer::solid_render(topology_type topology, batch_drawing_data& drawing_data)
+        {
+            GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+
+            shaders::push_uniform(shader_program(), "u_wireframe", GL_FALSE);
+
+            on_render(topology, drawing_data);
+        }
+
+        void batch_renderer::wireframe_render(topology_type topology, batch_drawing_data& drawing_data)
+        {
+            GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+            GL_CALL(glLineWidth(internal::_wireframe_linewidth));
+
+            shaders::push_uniform(shader_program(), "u_wireframe", GL_TRUE);
+            shaders::push_uniform(shader_program(), "u_wireframe_color", color::convert_color(internal::_wireframe_linecolor));
+
+            on_render(topology, drawing_data);
         }
 
         // Primitive Batch Renderer

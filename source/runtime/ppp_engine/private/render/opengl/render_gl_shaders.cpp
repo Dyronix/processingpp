@@ -556,12 +556,11 @@ namespace ppp
                                                                                                 \n\
                     layout (location = 0) in vec3 a_position;                                   \n\
                     layout (location = 1) in vec2 a_texture;                                    \n\
-                    layout (location = 2) in vec2 a_normal;                                     \n\
+                    layout (location = 2) in vec3 a_normal;                                     \n\
                     layout (location = 3) in vec4 a_tint_color;                                 \n\
                     layout (location = 4) in float a_texture_idx;                               \n\
                                                                                                 \n\
                     uniform mat4 u_worldviewproj;                                               \n\
-                    uniform mat4 u_normalmatrix;                                                \n\
                                                                                                 \n\
                     out vec4 v_tint_color;                                                      \n\
                     out vec2 v_texture;                                                         \n\
@@ -570,7 +569,7 @@ namespace ppp
                                                                                                 \n\
                     void main()                                                                 \n\
                     {						                                                    \n\
-                        v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;	        \n\
+                        v_tint_color = a_tint_color;	                                        \n\
                         v_texture = a_texture;                                                  \n\
                         v_normal = a_normal;                                                    \n\
                         v_texture_idx = a_texture_idx;                                          \n\
@@ -591,9 +590,13 @@ namespace ppp
                                                                                                 \n\
                     out vec4 frag_color;                                                        \n\
                                                                                                 \n\
+                    uniform float u_brightness;                                                 \n\
+                                                                                                \n\
                     void main()                                                                 \n\
                     {                                                                           \n\
-                        frag_color = vec4(v_normal, 1.0);                                       \n\
+                        float brightness = u_brightness > 0.0 ? u_brightness : 0.8;             \n\
+                        vec3 color = ((v_normal * 0.5) + 0.5) * brightness;                     \n\
+                        frag_color = vec4(color, 1.0);                                          \n\
                     }";
 
                 return unlit_normal_fs_source;

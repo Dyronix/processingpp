@@ -17,6 +17,7 @@ namespace ppp
             vertex_buffer(const vertex_attribute_layout* layouts, u64 layout_count, u64 vertex_count);
 
             bool can_add_vertices(u64 count) const;
+            bool has_layout(vertex_attribute_type type) const;
 
             void open_attribute_addition(u64 data_count);
             void close_attribute_addition();

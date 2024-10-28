@@ -13,6 +13,8 @@ namespace ppp
             static const std::string unlit_color = "unlit_color";
             static const std::string unlit_texture = "unlit_texture";
             static const std::string unlit_font = "unlit_font";
+            static const std::string unlit_normal = "unlit_normal";
+            static const std::string unlit_specular = "unlit_specular";
         }
 
         bool initialize();

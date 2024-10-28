@@ -10,7 +10,45 @@ namespace ppp
     {
         namespace internal
         {
-            const std::string box_geomtry_tag = "box";
+            std::vector<glm::vec3> compute_normals(const glm::vec3* vertices, size_t vertex_count, const u32* indices, size_t index_count)
+            {
+                std::vector<glm::vec3> vertex_normals;
+                
+                // Resize and initialize the vertex_normals to zero
+                vertex_normals.assign(vertex_count, glm::vec3(0.0f));
+
+                // Iterate over each triangle in the mesh by stepping through indices in groups of three
+                for (u64 i = 0; i < index_count; i += 3)
+                {
+                    u32 idx0 = indices[i];
+                    u32 idx1 = indices[i + 1];
+                    u32 idx2 = indices[i + 2];
+
+                    // Get the vertices for the current triangle
+                    const glm::vec3& v0 = vertices[idx0];
+                    const glm::vec3& v1 = vertices[idx1];
+                    const glm::vec3& v2 = vertices[idx2];
+
+                    // Calculate the face normal
+                    glm::vec3 face_normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+
+                    // Accumulate the face normal into each vertex normal
+                    vertex_normals[idx0] += face_normal;
+                    vertex_normals[idx1] += face_normal;
+                    vertex_normals[idx2] += face_normal;
+                }
+
+                // Normalize each vertex normal to ensure they are unit vectors
+                for (auto& normal : vertex_normals) 
+                {
+                    if (glm::length(normal) > 0.0f) 
+                    {
+                        normal = glm::normalize(normal);
+                    }
+                }
+
+                return vertex_normals;
+            }
 
             struct point_3d_data
             {
@@ -21,6 +59,21 @@ namespace ppp
             struct box_data
             {
                 std::array<glm::vec3, 24> vertices;
+                std::array<glm::vec2, 24> texcoords = 
+                {
+                    // Front face (matches vertices 0, 1, 2, 3)
+                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f},
+                    // Back face (matches vertices 4, 5, 6, 7)
+                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f},
+                    // Left face (matches vertices 8, 9, 10, 11)
+                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f},
+                    // Right face (matches vertices 12, 13, 14, 15)
+                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f},
+                    // Bottom face (matches vertices 16, 17, 18, 19)
+                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f},
+                    // Top face (matches vertices 20, 21, 22, 23)
+                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f}
+                };
                 std::array<render::index, 36> indices = 
                 {
                     // Front face
@@ -36,6 +89,7 @@ namespace ppp
                     // Top face
                     20, 21, 22, 20, 22, 23
                 };
+                std::vector<glm::vec3> normals;
 
             } _box_data;
 
@@ -86,7 +140,7 @@ namespace ppp
 
             std::array<glm::vec3, 24>& make_box_vertices(f32 width, f32 height, f32 depth)
             {    
-                size_t index = 0;
+                u64 index = 0;
 
                 // Front face
                 _box_data.vertices[index++] = { glm::vec3(-width / 2, -height / 2, depth / 2) }; // Bottom Left
@@ -125,6 +179,11 @@ namespace ppp
                 _box_data.vertices[index++] = { glm::vec3(-width / 2, -height / 2, depth / 2) };  // Front Left
 
                 return _box_data.vertices;
+            }
+
+            std::array<glm::vec2, 24>& make_box_texture_coordinates()
+            {
+                return _box_data.texcoords;
             }
 
             std::vector<glm::vec3>& make_cylinder_vertices(f32 r, f32 h, s32 detail)
@@ -214,7 +273,7 @@ namespace ppp
             std::vector<glm::vec3>& make_cone_vertices(f32 r, f32 h, s32 detail, bool cap)
             {
                 // Total vertices: apex (1) + base vertices (detail) + center vertex (1 if cap)
-                int total_nr_vertices = detail + 1 + (cap ? 1 : 0);
+                s32 total_nr_vertices = detail + 1 + (cap ? 1 : 0);
 
                 _cone_data.vertices.clear();
                 _cone_data.vertices.resize(total_nr_vertices);
@@ -223,7 +282,7 @@ namespace ppp
                 _cone_data.vertices[0] = glm::vec3{ 0.0f, -h, 0.0f }; // Apex
 
                 // Base vertices
-                for (int t = 1; t <= detail; ++t)
+                for (s32 t = 1; t <= detail; ++t)
                 {
                     float angle = (t - 1) / static_cast<float>(detail) * constants::two_pi(); // Angle for the current vertex
 
@@ -478,13 +537,17 @@ namespace ppp
 
         render::render_item make_box(f32 width, f32 height, f32 depth)
         {
-            auto& vertices = internal::make_box_vertices(width, height, depth);
             auto& indices = internal::make_box_indices();
+            auto& vertices = internal::make_box_vertices(width, height, depth);
+            auto& texcoords = internal::make_box_texture_coordinates();
+            auto normals = internal::compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size());
 
             render::render_item item;
 
             auto vert_comp = render::make_vertex_component(vertices.size());
             vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
+            vert_comp->add_attribute(render::vertex_attribute_type::TEXCOORD, texcoords.data());
+            vert_comp->add_attribute(render::vertex_attribute_type::NORMAL, normals.data());
 
             auto idx_comp = render::make_index_component(indices.data(), indices.size());
 

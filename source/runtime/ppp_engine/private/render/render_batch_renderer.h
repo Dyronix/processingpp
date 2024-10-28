@@ -6,6 +6,7 @@
 #include "util/types.h"
 
 #include <string>
+#include <functional>
 
 namespace ppp
 {
@@ -36,6 +37,8 @@ namespace ppp
 
             void buffer_policy(batch_buffer_policy policy);
             void render_policy(batch_render_policy policy);
+            void user_shader_program(const std::string& tag);
+            void reset_user_shader_program();
 
             bool solid_rendering_supported() const;
             bool wireframe_rendering_supported() const;
@@ -50,8 +53,13 @@ namespace ppp
             virtual void on_render(topology_type type, batch_drawing_data& drawing_data) = 0;
 
         private:
+            void solid_render(topology_type topology, batch_drawing_data& drawing_data);
+            void wireframe_render(topology_type topology, batch_drawing_data& drawing_data);
+
+        private:
             using drawing_data_map = std::unordered_map<topology_type, batch_drawing_data>;
 
+            std::string m_user_shader_tag;
             std::string m_shader_tag;
             drawing_data_map m_drawing_data_map;
             s32 m_rasterization_mode;
@@ -60,6 +68,7 @@ namespace ppp
             bool m_texture_support;
             batch_buffer_policy m_batch_buffer_policy;
             batch_render_policy m_batch_render_policy;
+            std::vector<std::function<void(topology_type, batch_drawing_data&)>> m_render_fns;
         };
 
         class primitive_batch_renderer : public batch_renderer

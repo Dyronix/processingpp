@@ -1,6 +1,7 @@
 #include "material.h"
 #include "fileio/fileio.h"
 #include "render/render_shaders.h"
+#include "render/render.h"
 #include "resources/shader_pool.h"
 #include "util/log.h"
 
@@ -70,22 +71,24 @@ namespace ppp
 
         void shader(const std::string& tag)
         {
-
+            render::push_active_shader(tag, render::vertex_type::POSITION_TEXCOORD_NORMAL_COLOR);
         }
         
         void reset()
         {
-            
+            render::push_reset_shader();
         }
 
         void normal_material()
         {
-
+            shader(shader_pool::tags::unlit_normal);
         }
 
         void specular_material()
         {
-
+            // Shader has not been implemented yet ...
+            // 
+            // shader(shader_pool::tags::unlit_specular);
         }
 
         shader_program create_shader(const std::string& tag, const std::string& vertex_source, const std::string& fragment_source)
