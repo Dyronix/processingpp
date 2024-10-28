@@ -23,7 +23,7 @@ namespace ppp
     int _shape_vis = 0;
     int _show_all = 1;
 
-    int _interpolation = 4;
+    int _interpolation = 8;
 
     typography::font_id _font;
 
@@ -130,7 +130,7 @@ namespace ppp
             transform::translate(-3 * x_spacing, y_spacing);
 
             // Row 2
-            shapes::torus(25.0f, 10.0f);
+            shapes::torus(25.0f, 10.0f, _interpolation, _interpolation);
             transform::translate(x_spacing, 0.0f);
             shapes::cone(25.0f, 50.0f, _interpolation, true);
             transform::translate(x_spacing, 0.0f);
@@ -163,7 +163,7 @@ namespace ppp
             transform::translate(-3 * x_spacing, y_spacing);
 
             // Row 2
-            if (_shape_vis == 4) { shapes::torus(25.0f, 10.0f); }
+            if (_shape_vis == 4) { shapes::torus(25.0f, 10.0f, _interpolation, _interpolation); }
             transform::translate(x_spacing, 0.0f);
             if (_shape_vis == 5) { shapes::cone(25.0f, 50.0f, _interpolation, true); }
             transform::translate(x_spacing, 0.0f);

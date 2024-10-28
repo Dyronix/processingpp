@@ -157,6 +157,8 @@ namespace ppp
             {
                 std::vector<glm::vec3> vertices;
                 std::vector<render::index> indices;
+                std::vector<glm::vec2> texcoords;
+                std::vector<glm::vec3> normals;
             } _sphere_data;
 
             struct torus_data
@@ -331,104 +333,74 @@ namespace ppp
                 return _plane_data.normals;
             }
 
-            //std::vector<glm::vec3>& make_sphere_vertices(f32 r, s32 detail)
-            //{
-            //    //_sphere_data.vertices.clear();
-
-            //    //// Iterate through the latitudes and longitudes to create the sphere vertices
-            //    //for (s32 lat = 0; lat <= detail; ++lat)
-            //    //{
-            //    //    f32 theta = lat * constants::pi() / detail; // Latitude angle
-            //    //    for (s32 lon = 0; lon <= detail; ++lon)
-            //    //    {
-            //    //        f32 phi = lon * constants::two_pi() / detail; // Longitude angle
-
-            //    //        // Calculate the x, y, z coordinates
-            //    //        f32 x = r * sin(theta) * cos(phi);
-            //    //        f32 y = r * cos(theta);
-            //    //        f32 z = r * sin(theta) * sin(phi);
-
-            //    //        // Store the vertex
-            //    //        _sphere_data.vertices.push_back({ glm::vec3(x, y, z) });
-            //    //    }
-            //    //}
-
-            //    //return _sphere_data.vertices;
-
-            //    _sphere_data.vertices.clear();
-
-            //    // North pole
-            //    _sphere_data.vertices.push_back(glm::vec3(0, r, 0));
-
-            //    for (s32 lat = 1; lat < detail; ++lat) // Start from 1 to avoid the north pole
-            //    {
-            //        f32 theta = lat * constants::pi() / detail;
-
-            //        for (s32 lon = 0; lon <= detail; ++lon)
-            //        {
-            //            f32 phi = lon * constants::two_pi() / detail;
-
-            //            f32 x = r * sin(theta) * cos(phi);
-            //            f32 y = r * cos(theta);
-            //            f32 z = r * sin(theta) * sin(phi);
-
-            //            _sphere_data.vertices.push_back(glm::vec3(x, y, z));
-            //        }
-            //    }
-
-            //    // South pole
-            //    _sphere_data.vertices.push_back(glm::vec3(0, -r, 0));
-
-            //    return _sphere_data.vertices;
-            //}
-
-            std::vector<glm::vec3>& make_sphere_vertices(float r, int detail) {
+            std::vector<glm::vec3>& make_sphere_vertices(f32 radiusX, f32 radiusY, f32 radiusZ, s32 detailX, s32 detailY) {
                 _sphere_data.vertices.clear();
+                std::vector<glm::vec3>& vertices = _sphere_data.vertices;
 
-                // North pole
-                _sphere_data.vertices.push_back(glm::vec3(0, r, 0));
+                for (s32 i = 0; i <= detailY; i++) {
+                    f32 v = static_cast<f32>(i) / detailY;
+                    f32 phi = constants::pi() * v - constants::pi() / 2;
+                    f32 cosPhi = std::cos(phi);
+                    f32 sinPhi = std::sin(phi);
 
-                // Create the vertices for the sphere
-                for (int lat = 0; lat < detail; ++lat) {
-                    float theta = lat * constants::pi() / detail; // Latitude angle
+                    for (s32 j = 0; j <= detailX; j++) {
+                        f32 u = static_cast<f32>(j) / detailX;
+                        f32 theta = 2 * constants::pi() * u;
+                        f32 cosTheta = std::cos(theta);
+                        f32 sinTheta = std::sin(theta);
 
-                    for (int lon = 0; lon <= detail; ++lon) {
-                        float phi = lon * constants::two_pi() / detail; // Longitude angle
-
-                        // Calculate the x, y, z coordinates
-                        float x = r * sin(theta) * cos(phi);
-                        float y = r * cos(theta);
-                        float z = r * sin(theta) * sin(phi);
-
-                        // Store the vertex
-                        _sphere_data.vertices.push_back(glm::vec3(x, y, z));
+                        // Scale the sphere's vertex to form an ellipsoid
+                        glm::vec3 p(radiusX * cosPhi * sinTheta, radiusY * sinPhi, radiusZ * cosPhi * cosTheta);
+                        vertices.push_back(p);
                     }
                 }
-
-                // South pole
-                _sphere_data.vertices.push_back(glm::vec3(0, -r, 0));
-
-                return _sphere_data.vertices;
+                return vertices;
             }
 
-            std::vector<glm::vec2> make_sphere_texcoords(s32 detail)
-            {
-                std::vector<glm::vec2> texcoords;
+            std::vector<glm::vec2>& make_sphere_texcoords(s32 detailX, s32 detailY) {
+                std::vector<glm::vec2>& uvs = _sphere_data.texcoords;
 
-                s32 rings = detail;
-                s32 sectors = detail * 2;
+                for (s32 i = 0; i <= detailY; i++) {
+                    f32 v = static_cast<f32>(i) / detailY;
 
-                for (s32 r = 0; r < rings; ++r)
-                {
-                    for (s32 s = 0; s < sectors; ++s)
-                    {
-                        f32 u = (f32)s / (f32)(sectors - 1);
-                        f32 v = (f32)r / (f32)(rings - 1);
-                        texcoords.emplace_back(u, v);
+                    for (s32 j = 0; j <= detailX; j++) {
+                        f32 u = static_cast<f32>(j) / detailX;
+                        uvs.emplace_back(u, v);
                     }
                 }
+                return uvs;
+            }
 
-                return texcoords;
+            std::vector<glm::vec3>& make_sphere_normals(f32 radiusX, f32 radiusY, f32 radiusZ, s32 detailX, s32 detailY) {
+                _sphere_data.normals.clear();
+                std::vector<glm::vec3>& normals = _sphere_data.normals;
+
+                for (s32 i = 0; i <= detailY; i++) {
+                    f32 v = static_cast<f32>(i) / detailY;
+                    f32 phi = constants::pi() * v - constants::pi() / 2;
+                    f32 cosPhi = std::cos(phi);
+                    f32 sinPhi = std::sin(phi);
+
+                    for (s32 j = 0; j <= detailX; j++) {
+                        f32 u = static_cast<f32>(j) / detailX;
+                        f32 theta = 2 * constants::pi() * u;
+                        f32 cosTheta = std::cos(theta);
+                        f32 sinTheta = std::sin(theta);
+
+                        // Calculate the normal by creating a unit vector
+                        glm::vec3 normal(cosPhi * sinTheta, sinPhi, cosPhi * cosTheta);
+                        normals.push_back(glm::normalize(normal));
+                    }
+                }
+                // Normalize each accumulated vertex normal
+                for (auto& normal : normals)
+                {
+                    if (glm::length(normal) > 0.0f)
+                    {
+                        normal = glm::normalize(normal);
+                    }
+                }
+                return normals;
             }
 
             std::vector<glm::vec3>& make_torus_vertices(f32 r, f32 tr, s32 detailx, s32 detaily)
@@ -633,35 +605,41 @@ namespace ppp
                 return _plane_data.indices;
             }
 
-            std::vector<render::index>& make_sphere_indices(int detail) {
+            std::vector<unsigned int>& make_sphere_indices(s32 detailX, s32 detailY) {
                 _sphere_data.indices.clear();
+                std::vector<unsigned int>& indices = _sphere_data.indices;
 
-                // The number of vertices generated (1 for north pole + detail * (detail + 1) + 1 for south pole)
-                int vertexCount = (detail + 1) * detail + 2; // 2 poles + detail rows of (detail + 1) vertices
+                for (s32 i = 0; i < detailY; ++i) {
+                    for (s32 j = 0; j < detailX; ++j) {
+                        // Calculate the four corners of each quad
+                        unsigned int topLeft = i * (detailX + 1) + j;
+                        unsigned int topRight = topLeft + 1;
+                        unsigned int bottomLeft = (i + 1) * (detailX + 1) + j;
+                        unsigned int bottomRight = bottomLeft + 1;
 
-                // Create the indices for the sphere in CCW order
-                for (int lat = 0; lat < detail; ++lat) {
-                    for (int lon = 0; lon < detail; ++lon) {
-                        unsigned int first = lat * (detail + 1) + lon;          // Current vertex
-                        unsigned int second = first + detail + 1;               // Vertex below (next latitude)
-                        unsigned int third = first + 1;                         // Next vertex on the same latitude
-                        unsigned int fourth = second + 1;                       // Next vertex on the next latitude
+                        //// First triangle of the quad
+                        //indices.push_back(topLeft);
+                        //indices.push_back(bottomLeft);
+                        //indices.push_back(topRight);
 
-                        // Ensure the indices do not exceed bounds
-                        if (lat < detail - 1) {
-                            // Create two triangles for each quad in CCW order
-                            _sphere_data.indices.push_back(first);  // First triangle
-                            _sphere_data.indices.push_back(third);  // Next vertex on the same latitude
-                            _sphere_data.indices.push_back(second);  // Vertex below
+                        //// Second triangle of the quad
+                        //indices.push_back(topRight);
+                        //indices.push_back(bottomLeft);
+                        //indices.push_back(bottomRight);
+                        // First Triangle: (bottomLeft, topLeft, topRight)
+                        indices.push_back(bottomLeft);
+                        indices.push_back(topLeft);
+                        indices.push_back(topRight);
 
-                            _sphere_data.indices.push_back(second);  // Second triangle
-                            _sphere_data.indices.push_back(third);   // Next vertex on the same latitude
-                            _sphere_data.indices.push_back(fourth);  // Next vertex on the next latitude
-                        }
+                        // Second Triangle: (bottomRight, bottomLeft, topRight)
+                        indices.push_back(bottomRight);
+                        indices.push_back(bottomLeft);
+                        indices.push_back(topRight);
+
                     }
                 }
 
-                return _sphere_data.indices;
+                return indices;
             }
 
             std::vector<render::index>& make_torus_indices(s32 detailx, s32 detaily)
@@ -836,10 +814,10 @@ namespace ppp
 
         render::render_item make_sphere(f32 radius, bool smooth_normals, s32 detail)
         {
-            auto& vertices = internal::make_sphere_vertices(radius, detail);
-            auto& indices = internal::make_sphere_indices(detail);
-            auto& texcoords = internal::make_sphere_texcoords(detail);
-            auto normals = internal::compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
+            auto& vertices = internal::make_sphere_vertices(radius, radius, radius, detail, detail);
+            auto& indices = internal::make_sphere_indices(detail, detail);
+            auto& texcoords = internal::make_sphere_texcoords(detail, detail);
+            auto& normals = internal::make_sphere_normals(radius, radius, radius, detail, detail);
 
             render::render_item item;
 
