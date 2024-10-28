@@ -19,6 +19,8 @@ namespace ppp
             shape_mode_type _rect_mode = shape_mode_type::CORNER;
             shape_mode_type _ellipse_mode = shape_mode_type::CENTER;
             shape_mode_type _triangle_mode = shape_mode_type::CENTER;
+
+            normal_mode_type _normal_mode = normal_mode_type::SMOOTH;
         }
 
         //-------------------------------------------------------------------------
@@ -39,11 +41,19 @@ namespace ppp
             internal::_triangle_mode = mode;
         }
 
+        //-------------------------------------------------------------------------
+        void normal_mode(normal_mode_type mode)
+        {
+            internal::_normal_mode = mode;
+        }
+
+        //-------------------------------------------------------------------------
         void enable_wireframe_mode(bool enable)
         {
             render::push_wireframe_rendering(enable);
         }
 
+        //-------------------------------------------------------------------------
         void enable_solid_mode(bool enable)
         {
             render::push_solid_rendering(enable);
@@ -253,7 +263,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void box(float width, float height, float depth)
         {
-            render::render_item& item = geometry::make_box(width, height, depth);
+            render::render_item& item = geometry::make_box(width, height, depth, internal::_normal_mode == normal_mode_type::SMOOTH);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
         }
@@ -261,7 +271,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void cylinder(float radius, float height, float detail, bool bottom_cap, bool top_cap)
         {
-            render::render_item item = geometry::make_cylinder(radius, height, detail, bottom_cap, top_cap);
+            render::render_item item = geometry::make_cylinder(radius, height, internal::_normal_mode == normal_mode_type::SMOOTH, detail, bottom_cap, top_cap);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
         }
@@ -277,7 +287,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void sphere(float radius, float detail)
         {
-            render::render_item item = geometry::make_sphere(radius, detail);
+            render::render_item item = geometry::make_sphere(radius, internal::_normal_mode == normal_mode_type::SMOOTH, detail);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
         }
@@ -285,7 +295,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void torus(float radius, float tube_radius, float detailx, float detaily)
         {
-            render::render_item item = geometry::make_torus(radius, tube_radius, detailx, detaily);
+            render::render_item item = geometry::make_torus(radius, tube_radius, internal::_normal_mode == normal_mode_type::SMOOTH, detailx, detaily);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
         }
@@ -293,7 +303,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void cone(float radius, float height, float detail, bool cap)
         {
-            render::render_item item = geometry::make_cone(radius, height, detail, cap);
+            render::render_item item = geometry::make_cone(radius, height, internal::_normal_mode == normal_mode_type::SMOOTH, detail, cap);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
         }
@@ -301,7 +311,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void tetrahedron(float width, float height)
         {
-            render::render_item item = geometry::make_tetrahedron(width, height);
+            render::render_item item = geometry::make_tetrahedron(width, height, internal::_normal_mode == normal_mode_type::SMOOTH);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
         }
@@ -309,7 +319,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void octahedron(float width, float height)
         {
-            render::render_item item = geometry::make_octahedron(width, height);
+            render::render_item item = geometry::make_octahedron(width, height, internal::_normal_mode == normal_mode_type::SMOOTH);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
         }
