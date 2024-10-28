@@ -25,16 +25,16 @@ namespace ppp
                 case KeyCode::KEY_MINUS: return GLFW_KEY_MINUS;                     /* - */
                 case KeyCode::KEY_PERIOD: return GLFW_KEY_PERIOD;                   /* . */
                 case KeyCode::KEY_SLASH: return GLFW_KEY_SLASH;                     /* / */
-                case KeyCode::KEY_0: return GLFW_KEY_1;
-                case KeyCode::KEY_1: return GLFW_KEY_2;
-                case KeyCode::KEY_2: return GLFW_KEY_3;
-                case KeyCode::KEY_3: return GLFW_KEY_4;
-                case KeyCode::KEY_4: return GLFW_KEY_5;
-                case KeyCode::KEY_5: return GLFW_KEY_6;
-                case KeyCode::KEY_6: return GLFW_KEY_7;
-                case KeyCode::KEY_7: return GLFW_KEY_8;
-                case KeyCode::KEY_8: return GLFW_KEY_9;
-                case KeyCode::KEY_9: return GLFW_KEY_0;
+                case KeyCode::KEY_0: return GLFW_KEY_0;
+                case KeyCode::KEY_1: return GLFW_KEY_1;
+                case KeyCode::KEY_2: return GLFW_KEY_2;
+                case KeyCode::KEY_3: return GLFW_KEY_3;
+                case KeyCode::KEY_4: return GLFW_KEY_4;
+                case KeyCode::KEY_5: return GLFW_KEY_5;
+                case KeyCode::KEY_6: return GLFW_KEY_6;
+                case KeyCode::KEY_7: return GLFW_KEY_7;
+                case KeyCode::KEY_8: return GLFW_KEY_8;
+                case KeyCode::KEY_9: return GLFW_KEY_9;
                 case KeyCode::KEY_SEMICOLON: return GLFW_KEY_SEMICOLON;             /* ; */
                 case KeyCode::KEY_EQUAL: return GLFW_KEY_EQUAL;                     /* = */
                 case KeyCode::KEY_A: return GLFW_KEY_A;
@@ -155,16 +155,16 @@ namespace ppp
                 case GLFW_KEY_MINUS: return KeyCode::KEY_MINUS;                     /* - */
                 case GLFW_KEY_PERIOD: return KeyCode::KEY_PERIOD;                   /* . */
                 case GLFW_KEY_SLASH: return KeyCode::KEY_SLASH;                     /* / */
-                case GLFW_KEY_1: return KeyCode::KEY_0;
-                case GLFW_KEY_2: return KeyCode::KEY_1;
-                case GLFW_KEY_3: return KeyCode::KEY_2;
-                case GLFW_KEY_4: return KeyCode::KEY_3;
-                case GLFW_KEY_5: return KeyCode::KEY_4;
-                case GLFW_KEY_6: return KeyCode::KEY_5;
-                case GLFW_KEY_7: return KeyCode::KEY_6;
-                case GLFW_KEY_8: return KeyCode::KEY_7;
-                case GLFW_KEY_9: return KeyCode::KEY_8;
-                case GLFW_KEY_0: return KeyCode::KEY_9;
+                case GLFW_KEY_0: return KeyCode::KEY_0;
+                case GLFW_KEY_1: return KeyCode::KEY_1;
+                case GLFW_KEY_2: return KeyCode::KEY_2;
+                case GLFW_KEY_3: return KeyCode::KEY_3;
+                case GLFW_KEY_4: return KeyCode::KEY_4;
+                case GLFW_KEY_5: return KeyCode::KEY_5;
+                case GLFW_KEY_6: return KeyCode::KEY_6;
+                case GLFW_KEY_7: return KeyCode::KEY_7;
+                case GLFW_KEY_8: return KeyCode::KEY_8;
+                case GLFW_KEY_9: return KeyCode::KEY_9;
                 case GLFW_KEY_SEMICOLON: return KeyCode::KEY_SEMICOLON;             /* ; */
                 case GLFW_KEY_EQUAL: return KeyCode::KEY_EQUAL;                     /* = */
                 case GLFW_KEY_A: return KeyCode::KEY_A;
