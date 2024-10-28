@@ -18,11 +18,55 @@ namespace ppp
     constexpr int _canvas_width = 600;
     constexpr int _canvas_height = 600;
 
+    constexpr int _total_shape_count = 8;
+
+    int _shape_vis = 0;
+    int _show_all = 1;
+
+    int _interpolation = 4;
+
     typography::font_id _font;
 
     void setup_input_events()
     {
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
+
+        keyboard::add_key_pressed_callback(
+            [](keyboard::KeyCode key)
+        {
+            if (key == keyboard::KeyCode::KEY_SPACE)
+            {
+                bool show_all_shapes = _show_all > 0;
+                show_all_shapes = !show_all_shapes;
+                _show_all = show_all_shapes ? 1 : 0;
+            }
+
+            else if (key == keyboard::KeyCode::KEY_UP && _show_all == 0)
+            {
+                _shape_vis = (_shape_vis + 1) % _total_shape_count;
+            }
+            else if (key == keyboard::KeyCode::KEY_DOWN && _show_all == 0)
+            {
+                _shape_vis = (_shape_vis - 1) < 0 ? _total_shape_count - 1 : _shape_vis - 1;
+            }
+
+            else if (key == keyboard::KeyCode::KEY_1)
+            {
+                _interpolation = 4;
+            }
+            else if (key == keyboard::KeyCode::KEY_2)
+            {
+                _interpolation = 8;
+            }
+            else if (key == keyboard::KeyCode::KEY_3)
+            {
+                _interpolation = 12;
+            }
+            else if (key == keyboard::KeyCode::KEY_4)
+            {
+                _interpolation = 24;
+            }
+        });
     }
 
     void load_font()
@@ -56,10 +100,81 @@ namespace ppp
         shapes::enable_solid_mode(true);
 
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
-        camera::camera(20, -40, 300);
+        camera::camera(20, -40, 400);
 
         material::normal_material();
     }
+
+    void draw_shapes_grid()
+    {
+        if (_show_all)
+        {
+            float start_x = -120.0f; // Initial x position to start grid from
+            float start_y = 40.0f;    // Initial y position for the grid row
+            float x_spacing = 80.0f; // Horizontal spacing between shapes
+            float y_spacing = -80.0f; // Vertical spacing between rows
+
+            transform::push();
+
+            // Row 1
+            transform::translate(start_x, start_y);
+            shapes::box(50.0f, 50.0f, 50.0f);
+            transform::translate(x_spacing, 0.0f);
+            shapes::plane(50.0f, 50.0f);
+            transform::translate(x_spacing, 0.0f);
+            shapes::cylinder(25.0f, 50.0f, _interpolation);
+            transform::translate(x_spacing, 0.0f);
+            shapes::sphere(25.0f, _interpolation);
+
+            // Move to next row and reset x position
+            transform::translate(-3 * x_spacing, y_spacing);
+
+            // Row 2
+            shapes::torus(25.0f, 10.0f);
+            transform::translate(x_spacing, 0.0f);
+            shapes::cone(25.0f, 50.0f, _interpolation, true);
+            transform::translate(x_spacing, 0.0f);
+            shapes::tetrahedron(25.0f, 25.0f);
+            transform::translate(x_spacing, 0.0f);
+            shapes::octahedron(25.0f, 25.0f);
+
+            transform::pop();
+        }
+        else
+        {
+            float start_x = -120.0f; // Initial x position to start grid from
+            float start_y = 40.0f;    // Initial y position for the grid row
+            float x_spacing = 80.0f; // Horizontal spacing between shapes
+            float y_spacing = -80.0f; // Vertical spacing between rows
+
+            transform::push();
+
+            // Row 1
+            transform::translate(start_x, start_y);
+            if (_shape_vis == 0) { shapes::box(50.0f, 50.0f, 50.0f); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 1) { shapes::plane(50.0f, 50.0f); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 2) { shapes::cylinder(25.0f, 50.0f, _interpolation); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 3) { shapes::sphere(25.0f, _interpolation); }
+
+            // Move to next row and reset x position
+            transform::translate(-3 * x_spacing, y_spacing);
+
+            // Row 2
+            if (_shape_vis == 4) { shapes::torus(25.0f, 10.0f); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 5) { shapes::cone(25.0f, 50.0f, _interpolation, true); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 6) { shapes::tetrahedron(25.0f, 25.0f); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 7) { shapes::octahedron(25.0f, 25.0f); }
+
+            transform::pop();
+        }
+    }
+
 
     void draw()
     {
@@ -77,15 +192,15 @@ namespace ppp
 
         color::fill({ 255,0,0,255 });
 
-        shapes::box(50.0f, 50.0f, 50.0f);
+        draw_shapes_grid();
 
-        //color::fill({0,0,0,255});
+        color::fill({0,0,0,255});
 
-        //std::string str_frame_rate = "fps " + std::to_string(environment::average_frame_rate());
-        //std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
+        std::string str_frame_rate = "fps " + std::to_string(environment::average_frame_rate());
+        std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
 
-        //typography::text(str_frame_rate, 10, _window_height - 30);
-        //typography::text("-", 135, _window_height - 30);
-        //typography::text(str_delta_time, 170, _window_height - 30);
+        typography::text(str_frame_rate, 10, _window_height - 30);
+        typography::text("-", 135, _window_height - 30);
+        typography::text(str_delta_time, 170, _window_height - 30);
     }
 }

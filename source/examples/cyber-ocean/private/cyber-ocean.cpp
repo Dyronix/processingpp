@@ -19,8 +19,8 @@ namespace ppp
 
     typography::font_id _font;
 
-    constexpr int _cols = 20; // number of columns in the grid (x-direction)
-    constexpr int _rows = 20; // number of rows in the grid (z-direction)
+    int _cols = 11; // number of columns in the grid (x-direction)
+    int _rows = 9; // number of rows in the grid (z-direction)
 
     // Separate amplitudes for X and Z directions
     constexpr int _amplitude_x = 50; // height of the wave in the x-direction
@@ -41,6 +41,28 @@ namespace ppp
     void setup_input_events()
     {
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
+
+        keyboard::add_key_pressed_callback(
+            [](keyboard::KeyCode key)
+        {
+            if (key == keyboard::KeyCode::KEY_UP)
+            {
+                _rows += 1;
+            }
+            else if (key == keyboard::KeyCode::KEY_DOWN)
+            {
+                _rows -= 1;
+            }
+
+            if (key == keyboard::KeyCode::KEY_RIGHT)
+            {
+                _cols += 1;
+            }
+            else if (key == keyboard::KeyCode::KEY_LEFT)
+            {
+                _cols -= 1;
+            }
+        });
     }
 
     void load_font()

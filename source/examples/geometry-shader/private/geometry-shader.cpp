@@ -142,14 +142,7 @@ namespace ppp
 
         camera::orbit_control(options);
 
-        //_material_cyber_ocean.set_uniform("u_amplitude_x", _amplitude_x);
-        //_material_cyber_ocean.set_uniform("u_amplitude_z", _amplitude_z);
-        //_material_cyber_ocean.set_uniform("u_movement_speed_x", _movement_speed_x);
-        //_material_cyber_ocean.set_uniform("u_movement_speed_z", _movement_speed_z);
-        //_material_cyber_ocean.set_uniform("u_periodic_scale_x", _periodic_scale_x);
-        //_material_cyber_ocean.set_uniform("u_periodic_scale_z", _periodic_scale_z);
         _material_cyber_ocean.set_uniform("u_total_time", environment::total_time());
-        //_material_cyber_ocean.set_uniform("u_cube_size", 20.0f);
 
         color::fill({0,0,0,255});
 
