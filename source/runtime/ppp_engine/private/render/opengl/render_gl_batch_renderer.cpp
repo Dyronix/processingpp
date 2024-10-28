@@ -360,6 +360,7 @@ namespace ppp
             return m_batch_render_policy;
         }
 
+        //-------------------------------------------------------------------------
         void batch_renderer::solid_render(topology_type topology, batch_drawing_data& drawing_data)
         {
             GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
@@ -369,6 +370,7 @@ namespace ppp
             on_render(topology, drawing_data);
         }
 
+        //-------------------------------------------------------------------------
         void batch_renderer::wireframe_render(topology_type topology, batch_drawing_data& drawing_data)
         {
             GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
