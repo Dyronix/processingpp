@@ -13,9 +13,17 @@ namespace ppp
             CORNER
         };
 
+        enum class normal_mode_type
+        {
+            FLAT,
+            SMOOTH
+        };
+
         void ellipse_mode(shape_mode_type mode);
         void rect_mode(shape_mode_type mode);
         void triangle_mode(shape_mode_type mode);
+        
+        void normal_mode(normal_mode_type mode);
 
         void enable_wireframe_mode(bool enable);
         void enable_solid_mode(bool enable);
