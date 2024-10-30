@@ -10,7 +10,6 @@ namespace ppp
     {
         render::render_item make_point(f32 x, f32 y, f32 z);
 
-        render::render_item make_box(f32 width, f32 height, f32 depth, bool smooth_normals);
         render::render_item make_cylinder(f32 radius, f32 height, bool smooth_normals, s32 detail = 24, bool bottom_cap = true, bool top_cap = true);
         render::render_item make_plane(f32 width, f32 height);
         render::render_item make_sphere(f32 radius, bool smooth_normals, s32 detail = 24);

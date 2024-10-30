@@ -11,9 +11,11 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_pool.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/shader_pool.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/shader_pool.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/shader_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/geometry_pool.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/geometry_pool.cpp
     # device
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/glfw/device_glfw.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/glfw/device_glfw_input.cpp
@@ -41,12 +43,19 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.h
+    # geometry
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/geometry_3d.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/geometry_3d.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/geometry_2d.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/geometry_2d.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.cpp
     # util
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/hash.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_2d.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_3d.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_2d.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/geometry_3d.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/log.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/color_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/color_ops.cpp

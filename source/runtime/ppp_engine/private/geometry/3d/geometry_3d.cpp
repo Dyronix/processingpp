@@ -1,4 +1,6 @@
-#include "util/geometry_3d.h"
+#include "geometry/3d/geometry_3d.h"
+#include "geometry/geometry_helpers.h"
+
 #include "constants.h"
 
 #include <array>
@@ -10,122 +12,11 @@ namespace ppp
     {
         namespace internal
         {
-            std::vector<glm::vec3> compute_smooth_normals(const glm::vec3* vertices, size_t vertex_count, const u32* indices, size_t index_count)
-            {
-                std::vector<glm::vec3> vertex_normals(vertex_count, glm::vec3(0.0f));
-
-                for (u64 i = 0; i < index_count; i += 3)
-                {
-                    u32 idx0 = indices[i];
-                    u32 idx1 = indices[i + 1];
-                    u32 idx2 = indices[i + 2];
-
-                    // Get the vertices for the current triangle
-                    const glm::vec3& v0 = vertices[idx0];
-                    const glm::vec3& v1 = vertices[idx1];
-                    const glm::vec3& v2 = vertices[idx2];
-
-                    // Calculate the face normal
-                    glm::vec3 face_normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
-
-                    // Accumulate the face normal into each vertex normal
-                    vertex_normals[idx0] += face_normal;
-                    vertex_normals[idx1] += face_normal;
-                    vertex_normals[idx2] += face_normal;
-                }
-
-                // Normalize each accumulated vertex normal
-                for (auto& normal : vertex_normals)
-                {
-                    if (glm::length(normal) > 0.0f)
-                    {
-                        normal = glm::normalize(normal);
-                    }
-                }
-
-                return vertex_normals;
-            }
-
-            std::vector<glm::vec3> compute_flat_normals(const glm::vec3* vertices, size_t vertex_count, const u32* indices, size_t index_count)
-            {
-                std::vector<glm::vec3> flat_normals;
-                flat_normals.reserve(index_count); // 1 unique normal per index
-
-                for (u64 i = 0; i < index_count; i += 3)
-                {
-                    u32 idx0 = indices[i];
-                    u32 idx1 = indices[i + 1];
-                    u32 idx2 = indices[i + 2];
-
-                    // Get the vertices for the current triangle
-                    const glm::vec3& v0 = vertices[idx0];
-                    const glm::vec3& v1 = vertices[idx1];
-                    const glm::vec3& v2 = vertices[idx2];
-
-                    // Calculate the face normal
-                    glm::vec3 face_normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
-
-                    // Assign this face normal to each vertex of the triangle
-                    flat_normals.push_back(face_normal);
-                    flat_normals.push_back(face_normal);
-                    flat_normals.push_back(face_normal);
-                }
-
-                return flat_normals;
-            }
-
-            std::vector<glm::vec3> compute_normals(const glm::vec3* vertices, size_t vertex_count, const u32* indices, size_t index_count, bool smooth_normals)
-            {
-                if (smooth_normals)
-                {
-                    return compute_smooth_normals(vertices, vertex_count, indices, index_count);
-                }
-
-                return compute_flat_normals(vertices, vertex_count, indices, index_count);
-            }
-
             struct point_3d_data
             {
                 glm::vec3 vertex;
                 render::index index = { 0 };
             } _point_data;
-
-            struct box_data
-            {
-                std::array<glm::vec3, 24> vertices;
-                std::array<glm::vec2, 24> texcoords = 
-                {
-                    // Front face (matches vertices 0, 1, 2, 3)
-                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f},
-                    // Back face (matches vertices 4, 5, 6, 7)
-                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f},
-                    // Left face (matches vertices 8, 9, 10, 11)
-                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f},
-                    // Right face (matches vertices 12, 13, 14, 15)
-                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f},
-                    // Bottom face (matches vertices 16, 17, 18, 19)
-                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f},
-                    // Top face (matches vertices 20, 21, 22, 23)
-                    glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f}, glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f}
-                };
-                std::array<render::index, 36> indices = 
-                {
-                    // Front face
-                    0, 1, 2, 0, 2, 3,
-                    // Back face
-                    4, 6, 5, 4, 7, 6,
-                    // Left face
-                    8, 9, 10, 8, 10, 11,
-                    // Right face
-                    12, 14, 13, 12, 15, 14,
-                    // Bottom face
-                    16, 18, 17, 16, 19, 18,
-                    // Top face
-                    20, 21, 22, 20, 22, 23
-                };
-                std::vector<glm::vec3> normals;
-
-            } _box_data;
 
             struct cylinder_data
             {
@@ -214,53 +105,7 @@ namespace ppp
                 };
             } _octahedron_data;
 
-            std::array<glm::vec3, 24>& make_box_vertices(f32 width, f32 height, f32 depth)
-            {    
-                u64 index = 0;
 
-                // Front face
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, -height / 2, depth / 2) }; // Bottom Left
-                _box_data.vertices[index++] = { glm::vec3(width / 2, -height / 2, depth / 2) };  // Bottom Right
-                _box_data.vertices[index++] = { glm::vec3(width / 2, height / 2, depth / 2) };   // Top Right
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, height / 2, depth / 2) };  // Top Left
-
-                // Back face
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, -height / 2, -depth / 2) }; // Bottom Left
-                _box_data.vertices[index++] = { glm::vec3(width / 2, -height / 2, -depth / 2) };  // Bottom Right
-                _box_data.vertices[index++] = { glm::vec3(width / 2, height / 2, -depth / 2) };   // Top Right
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, height / 2, -depth / 2) };  // Top Left
-
-                // Left face
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, -height / 2, -depth / 2) }; // Bottom Back
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, -height / 2, depth / 2) };  // Bottom Front
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, height / 2, depth / 2) };   // Top Front
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, height / 2, -depth / 2) };  // Top Back
-
-                // Right face
-                _box_data.vertices[index++] = { glm::vec3(width / 2, -height / 2, -depth / 2) };  // Bottom Back
-                _box_data.vertices[index++] = { glm::vec3(width / 2, -height / 2, depth / 2) };   // Bottom Front
-                _box_data.vertices[index++] = { glm::vec3(width / 2, height / 2, depth / 2) };    // Top Front
-                _box_data.vertices[index++] = { glm::vec3(width / 2, height / 2, -depth / 2) };   // Top Back
-
-                // Top face
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, height / 2, -depth / 2) };  // Back Left
-                _box_data.vertices[index++] = { glm::vec3(width / 2, height / 2, -depth / 2) };   // Back Right
-                _box_data.vertices[index++] = { glm::vec3(width / 2, height / 2, depth / 2) };    // Front Right
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, height / 2, depth / 2) };   // Front Left
-
-                // Bottom face
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, -height / 2, -depth / 2) }; // Back Left
-                _box_data.vertices[index++] = { glm::vec3(width / 2, -height / 2, -depth / 2) };  // Back Right
-                _box_data.vertices[index++] = { glm::vec3(width / 2, -height / 2, depth / 2) };   // Front Right
-                _box_data.vertices[index++] = { glm::vec3(-width / 2, -height / 2, depth / 2) };  // Front Left
-
-                return _box_data.vertices;
-            }
-
-            std::array<glm::vec2, 24>& make_box_texture_coordinates()
-            {
-                return _box_data.texcoords;
-            }
 
             std::vector<glm::vec3>& make_cylinder_vertices(f32 r, f32 h, s32 detail)
             {
@@ -523,10 +368,7 @@ namespace ppp
                 return _octahedron_data.texcoords;
             }
 
-            std::array<render::index, 36>& make_box_indices()
-            {
-                return _box_data.indices;
-            }
+
 
             std::vector<render::index>& make_cylinder_indices(f32 h, s32 detail, bool bottom_cap, bool top_cap)
             {
@@ -617,15 +459,6 @@ namespace ppp
                         unsigned int bottomLeft = (i + 1) * (detailX + 1) + j;
                         unsigned int bottomRight = bottomLeft + 1;
 
-                        //// First triangle of the quad
-                        //indices.push_back(topLeft);
-                        //indices.push_back(bottomLeft);
-                        //indices.push_back(topRight);
-
-                        //// Second triangle of the quad
-                        //indices.push_back(topRight);
-                        //indices.push_back(bottomLeft);
-                        //indices.push_back(bottomRight);
                         // First Triangle: (bottomLeft, topLeft, topRight)
                         indices.push_back(bottomLeft);
                         indices.push_back(topLeft);
@@ -746,34 +579,12 @@ namespace ppp
             return item;
         }
 
-        render::render_item make_box(f32 width, f32 height, f32 depth, bool smooth_normals)
-        {
-            auto& indices = internal::make_box_indices();
-            auto& vertices = internal::make_box_vertices(width, height, depth);
-            auto& texcoords = internal::make_box_texture_coordinates();
-            auto normals = internal::compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
-
-            render::render_item item;
-
-            auto vert_comp = render::make_vertex_component(vertices.size());
-            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
-            vert_comp->add_attribute(render::vertex_attribute_type::TEXCOORD, texcoords.data());
-            vert_comp->add_attribute(render::vertex_attribute_type::NORMAL, normals.data());
-
-            auto idx_comp = render::make_index_component(indices.data(), indices.size());
-
-            item.add_component(std::move(vert_comp));
-            item.add_component(std::move(idx_comp));
-
-            return item;
-        }
-
         render::render_item make_cylinder(f32 radius, f32 height, bool smooth_normals, s32 detail, bool bottom_cap, bool top_cap)
         {
             auto& vertices = internal::make_cylinder_vertices(radius, height, detail);
             auto& indices = internal::make_cylinder_indices(height, detail, bottom_cap, top_cap);
             auto& texcoords = internal::make_cylinder_texcoords(detail, bottom_cap, top_cap);
-            auto normals = internal::compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
+            auto normals = compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
 
             render::render_item item;
 
@@ -839,7 +650,7 @@ namespace ppp
             auto& vertices = internal::make_torus_vertices(radius, tube_radius, detailx, detaily);
             auto& indices = internal::make_torus_indices(detailx, detaily);
             auto& texcoords = internal::make_torus_texcoords(detailx, detaily);
-            auto normals = internal::compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
+            auto normals = compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
 
             render::render_item item;
 
@@ -861,7 +672,7 @@ namespace ppp
             auto& vertices = internal::make_cone_vertices(radius, height, detail, cap);
             auto& indices = internal::make_cone_indices(detail, cap);
             auto& texcoords = internal::make_cone_texcoords(detail);
-            auto normals = internal::compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
+            auto normals = compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
 
             render::render_item item;
 
@@ -883,7 +694,7 @@ namespace ppp
             auto& vertices = internal::make_tetrahedron_vertices(width, height);
             auto& indices = internal::make_tetrahedron_indices();
             auto& texcoords = internal::make_tetrahedron_texcoords();
-            auto normals = internal::compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
+            auto normals = compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
 
             render::render_item item;
 
@@ -905,7 +716,7 @@ namespace ppp
             auto& vertices = internal::make_octa_hedron_vertices(width, height);
             auto& indices = internal::make_octa_hedron_indices();
             auto& texcoords = internal::make_octa_hedron_texcoords();
-            auto normals = internal::compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
+            auto normals = compute_normals(vertices.data(), vertices.size(), indices.data(), indices.size(), smooth_normals);
 
             render::render_item item;
 

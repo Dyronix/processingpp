@@ -39,8 +39,8 @@ namespace ppp
     color::Color _color_bottom; 
 
     // Grid properties
-    constexpr int _grid_rows = 25; // Number of rows (Z direction)
-    constexpr int _grid_cols = 25; // Number of columns (X direction)
+    constexpr int _grid_rows = 100; // Number of rows (Z direction)
+    constexpr int _grid_cols = 100; // Number of columns (X direction)
     constexpr float _grid_spacing = 60.0f; // Distance between points
 
     void generate_cyber_ocean_grid()

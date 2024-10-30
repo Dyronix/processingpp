@@ -3,8 +3,9 @@
 #include "render/render_brush.h"
 #include "render/render_types.h"
 #include "resources/shader_pool.h"
-#include "util/geometry_2d.h"
-#include "util/geometry_3d.h"
+#include "geometry/2d/geometry_2d.h"
+#include "geometry/3d/geometry_3d.h"
+#include "geometry/3d/box.h"
 
 #include <glm/glm.hpp>
 
@@ -263,7 +264,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void box(float width, float height, float depth)
         {
-            render::render_item& item = geometry::make_box(width, height, depth, internal::_normal_mode == normal_mode_type::SMOOTH);
+            geometry::geometry* geom = geometry::make_box(internal::_normal_mode == normal_mode_type::SMOOTH);
 
             render::submit_render_item(render::topology_type::TRIANGLES, item);
         }
