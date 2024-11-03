@@ -70,6 +70,7 @@ namespace ppp
         void submit_font_item(const render_item& item);
 
         // Render Item
+        void submit_render_item(topology_type topology, const irender_item* item);
         void submit_render_item(topology_type topology, const render_item& item);
         void submit_stroke_render_item(topology_type topology, const render_item& item, bool outer);
 

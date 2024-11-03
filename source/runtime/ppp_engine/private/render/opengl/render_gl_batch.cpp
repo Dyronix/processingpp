@@ -73,6 +73,32 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            void add_vertices(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
+            {
+                s32 start_index = m_vertex_buffer.active_vertex_count();
+                s32 end_index = start_index + item->vertex_count();
+
+                copy_vertex_data(item, color);
+
+                transform_vertex_positions(start_index, end_index, world);
+                if (m_vertex_buffer.has_layout(vertex_attribute_type::NORMAL))
+                {
+                    transform_vertex_normals(start_index, end_index, world);
+                }
+            }
+
+            //-------------------------------------------------------------------------
+            void add_vertices(const irender_item* item, s32 sampler_id, const glm::vec4& color, const glm::mat4& world)
+            {
+                s32 start_index = m_vertex_buffer.active_vertex_count();
+                s32 end_index = start_index + item->vertex_count();
+
+                add_vertices(item, color, world);
+
+                transform_vertex_diffuse_texture_ids(start_index, end_index, sampler_id);
+            }
+
+            //-------------------------------------------------------------------------
             void add_vertices(const vertex_component* vertex_comp, const glm::vec4& color, const glm::mat4& world)
             {
                 assert(vertex_comp != nullptr);
@@ -110,6 +136,18 @@ namespace ppp
                 s32 start_index = m_index_buffer.active_index_count();
                 s32 end_index = start_index + index_comp->index_count();
                 copy_index_data(index_comp);
+                transform_index_locations(start_index, end_index, m_vertex_buffer.active_vertex_count());
+            }
+
+            //-------------------------------------------------------------------------
+            void add_indices(const irender_item* item)
+            {
+                assert(!item->faces().empty());
+
+                s32 start_index = m_index_buffer.active_index_count();
+                s32 end_index = start_index + item->index_count();
+
+                copy_index_data(item);
                 transform_index_locations(start_index, end_index, m_vertex_buffer.active_vertex_count());
             }
 
@@ -153,6 +191,20 @@ namespace ppp
                 m_vertex_buffer.close_attribute_addition();
             }
             //-------------------------------------------------------------------------
+            void copy_vertex_data(const irender_item* item, const glm::vec4& color)
+            {
+                m_vertex_buffer.open_attribute_addition(item->vertex_count());
+
+                if (m_vertex_buffer.has_layout(vertex_attribute_type::POSITION)) m_vertex_buffer.set_attribute_data(vertex_attribute_type::POSITION, item->vertex_positions().data());
+                if (m_vertex_buffer.has_layout(vertex_attribute_type::NORMAL)) m_vertex_buffer.set_attribute_data(vertex_attribute_type::NORMAL, item->vertex_normals().data());
+                if (m_vertex_buffer.has_layout(vertex_attribute_type::TEXCOORD)) m_vertex_buffer.set_attribute_data(vertex_attribute_type::TEXCOORD, item->vertex_uvs().data());
+
+                map_new_vertex_data(vertex_attribute_type::COLOR, (void*)&color[0]);
+
+                m_vertex_buffer.close_attribute_addition();
+            }
+
+            //-------------------------------------------------------------------------
             void copy_index_data(const index_component* index_comp)
             {
                 u64 idx_count = index_comp->index_count();
@@ -160,6 +212,15 @@ namespace ppp
                 assert(sizeof(index_comp->indices()[0]) == sizeof(index) && "different index size was used");
 
                 m_index_buffer.set_index_data(index_comp->indices(), idx_count);
+            }
+            //-------------------------------------------------------------------------
+            void copy_index_data(const irender_item* item)
+            {
+                u64 idx_count = item->index_count();
+
+                assert(sizeof(item->faces()[0].fvs[0]) == sizeof(index) && "different index size was used");
+
+                m_index_buffer.set_index_data(reinterpret_cast<const u32*>(item->faces().data()), idx_count);
             }
 
             //-------------------------------------------------------------------------
@@ -357,6 +418,30 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void batch::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
+        {
+            m_buffer_manager->add_indices(item);    
+
+            if (m_texture_manager->has_reserved_texture_space())
+            {
+                //s32 sampler_id = m_texture_manager->add_texture(texture_comp->texture_id());
+                //if (sampler_id != -1)
+                //{
+                //    m_buffer_manager->add_vertices(item, sampler_id, color, world);
+                //}
+                //else
+                //{
+                //    log::error("Unable to generate sampler id for texture.");
+                //    exit(EXIT_FAILURE);
+                //}
+            }
+            else
+            {
+                m_buffer_manager->add_vertices(item, color, world);
+            }
+        }
+
+        //-------------------------------------------------------------------------
         void batch::reset()
         {
             m_buffer_manager->reset();
@@ -492,6 +577,40 @@ namespace ppp
 
                 ++m_push_batch;
 
+                append(item, color, world);
+            }
+        }
+
+        //-------------------------------------------------------------------------
+        void batch_drawing_data::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
+        {           
+            if (item->vertex_count() == 0 || item->index_count() == 0)
+            {
+                log::error("render item does not have vertex or index component");
+                exit(EXIT_FAILURE);
+            }
+            
+            if (m_batches[m_push_batch].can_add(item->vertex_count(), item->index_count()))
+            {
+                m_batches[m_push_batch].append(item, color, world);
+            }
+            else
+            {
+                if (m_batches.size() <= m_push_batch + 1)
+                {
+                    u32 max_vertex_count = m_batches[m_push_batch].max_vertex_count();
+                    u32 max_index_count = m_batches[m_push_batch].max_index_count();
+            
+                    // it might be that this batch does not support textures
+                    s32 max_images = m_batches[m_push_batch].has_reserved_texture_space()
+                        ? m_batches[m_push_batch].max_texture_count()
+                        : -1;
+            
+                    m_batches.emplace_back(max_vertex_count, max_index_count, m_layouts, m_layout_count, max_images);
+                }
+            
+                ++m_push_batch;
+            
                 append(item, color, world);
             }
         }

@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 
+#include <array>
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -185,6 +186,18 @@ namespace ppp
 
         private:
             std::unordered_map<object_type_tag, std::unique_ptr<render_item_component>> m_components;
+        };
+
+        class irender_item
+        {
+        public:
+            virtual u64 vertex_count() const = 0;
+            virtual u64 index_count() const = 0;
+
+            virtual const std::vector<glm::vec3>& vertex_positions() const = 0;
+            virtual const std::vector<glm::vec3>& vertex_normals() const = 0;
+            virtual const std::vector<glm::vec2>& vertex_uvs() const = 0;
+            virtual const std::vector<face>& faces() const = 0;
         };
     }
 }

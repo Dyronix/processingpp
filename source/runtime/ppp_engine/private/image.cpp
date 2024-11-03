@@ -4,7 +4,7 @@
 #include "fileio/fileio.h"
 #include "resources/texture_pool.h"
 #include "util/log.h"
-#include "util/geometry_2d.h"
+#include "geometry/2d/geometry_2d.h"
 
 #include <stb/stb_image.h>
 

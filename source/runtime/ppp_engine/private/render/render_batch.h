@@ -29,6 +29,7 @@ namespace ppp
             batch& operator=(batch&& other);                // has to be defined, due to auto compiler generated function and forward delclaration
 
             void append(const render_item& item, const glm::vec4& color, const glm::mat4& world);
+            void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world);
             void reset();
 
             bool can_add(s32 nr_vertices, s32 nr_indices) const;
@@ -65,6 +66,7 @@ namespace ppp
             batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count, batch_buffer_policy buffer_policy);
 
             void append(const render_item& item, const glm::vec4& color, const glm::mat4& world);
+            void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world);
             void reset();
             void release();
             void load_first_batch();

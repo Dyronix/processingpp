@@ -266,7 +266,7 @@ namespace ppp
         {
             geometry::geometry* geom = geometry::make_box(internal::_normal_mode == normal_mode_type::SMOOTH);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
         }
         
         //-------------------------------------------------------------------------

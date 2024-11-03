@@ -741,6 +741,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void submit_render_item(topology_type topology, const irender_item* item)
+        {
+            internal::_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform::active_world());
+        }
+
+        //-------------------------------------------------------------------------
         void submit_render_item(topology_type topology, const render_item& item)
         {
             if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())

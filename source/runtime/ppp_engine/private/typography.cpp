@@ -5,7 +5,7 @@
 
 #include "util/log.h"
 #include "util/types.h"
-#include "util/geometry_2d.h"
+#include "geometry/2d/geometry_2d.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

@@ -10,7 +10,7 @@ namespace ppp
 {
     namespace geometry
     {
-        static glm::vec3 get_face_normal(const std::vector<glm::vec3>& vertices, const std::vector<face>& faces, s32 face_id) 
+        static glm::vec3 get_face_normal(const std::vector<glm::vec3>& vertices, const std::vector<render::face>& faces, s32 face_id) 
         {
             if (faces.size() != 3) 
             {
@@ -91,7 +91,7 @@ namespace ppp
                     std::string key = get_key(v);
                     if (vertex_indices.find(key) == std::cend(vertex_indices))
                     {
-                        vertex_indices.emplace(key, unique_vertices.size());
+                        vertex_indices.emplace(key, (s32)unique_vertices.size());
                         unique_vertices.push_back(v);
                     }
                 }

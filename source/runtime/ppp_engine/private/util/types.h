@@ -4,6 +4,7 @@
 
 #include <atomic>
 #include <vector>
+#include <array>
 
 using s8 = signed char;
 using s16 = signed short;
@@ -80,6 +81,11 @@ namespace ppp
     namespace render
     {
         using index = u32;
+
+        struct face
+        {
+            std::array<render::index, 3> fvs;
+        };
     }
 
     namespace conversions

@@ -31,6 +31,7 @@ namespace ppp
             void terminate();
 
             void append_drawing_data(topology_type topology, const render_item& item, const glm::vec4& color, const glm::mat4& world);
+            void append_drawing_data(topology_type topology, const irender_item* item, const glm::vec4& color, const glm::mat4& world);
 
             void enable_solid_rendering(bool enable);
             void enable_wireframe_rendering(bool enable);
