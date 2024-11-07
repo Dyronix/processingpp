@@ -6,6 +6,7 @@
 #include "geometry/2d/geometry_2d.h"
 #include "geometry/3d/geometry_3d.h"
 #include "geometry/3d/box.h"
+#include "transform.h"
 
 #include <glm/glm.hpp>
 
@@ -266,7 +267,10 @@ namespace ppp
         {
             geometry::geometry* geom = geometry::make_box(internal::_normal_mode == normal_mode_type::SMOOTH);
 
+            transform::push();
+            transform::scale(width, height, depth);
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            transform::pop();
         }
         
         //-------------------------------------------------------------------------

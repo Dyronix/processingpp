@@ -314,7 +314,7 @@ namespace ppp
                 break;
             case batch_render_policy::CUSTOM:
                 m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
-                    on_render(topology, drawing_data);
+                    drawing_data.vao() == 0 ? on_render_ssbo(topology, drawing_data) : on_render(topology, drawing_data);
                 });
                 break;
             }
@@ -382,7 +382,7 @@ namespace ppp
 
             shaders::push_uniform(shader_program(), "u_wireframe", GL_FALSE);
 
-            on_render(topology, drawing_data);
+            drawing_data.vao() == 0 ? on_render_ssbo(topology, drawing_data) : on_render(topology, drawing_data);
         }
 
         //-------------------------------------------------------------------------
@@ -394,7 +394,7 @@ namespace ppp
             shaders::push_uniform(shader_program(), "u_wireframe", GL_TRUE);
             shaders::push_uniform(shader_program(), "u_wireframe_color", color::convert_color(internal::_wireframe_linecolor));
 
-            on_render(topology, drawing_data);
+            drawing_data.vao() == 0 ? on_render_ssbo(topology, drawing_data) : on_render(topology, drawing_data);
         }
 
         // Primitive Batch Renderer
@@ -436,6 +436,37 @@ namespace ppp
 
                 GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
                 GL_CALL(glBindVertexArray(0));
+            }
+        }
+
+        //-------------------------------------------------------------------------
+        void primitive_batch_renderer::on_render_ssbo(topology_type topology, batch_drawing_data& drawing_data)
+        {
+            GLenum gl_topology = internal::topology(topology);
+
+            auto batch = drawing_data.next_batch();
+            if (batch != nullptr)
+            {
+                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, drawing_data.sbo());
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawing_data.ebo());
+
+                while (batch != nullptr)
+                {
+                    #ifndef NDEBUG
+                    internal::check_drawing_type(batch, gl_topology);
+                    #endif
+
+                    GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, batch->vertex_buffer_byte_size(), batch->vertices()));
+                    GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
+
+                    shaders::apply_uniforms(shader_program());
+                    GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
+
+                    batch = drawing_data.next_batch();
+                }
+
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             }
         }
 

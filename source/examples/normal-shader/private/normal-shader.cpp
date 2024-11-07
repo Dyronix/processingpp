@@ -21,7 +21,7 @@ namespace ppp
     constexpr int _total_shape_count = 8;
 
     int _shape_vis = 0;
-    int _show_all = 1;
+    int _show_all = 0;
 
     int _interpolation = 8;
 

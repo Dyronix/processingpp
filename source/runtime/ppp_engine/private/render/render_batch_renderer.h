@@ -52,6 +52,7 @@ namespace ppp
 
         protected:
             virtual void on_render(topology_type type, batch_drawing_data& drawing_data) = 0;
+            virtual void on_render_ssbo(topology_type type, batch_drawing_data& drawing_data) {};
 
         private:
             void solid_render(topology_type topology, batch_drawing_data& drawing_data);
@@ -79,6 +80,7 @@ namespace ppp
             ~primitive_batch_renderer() override;
 
             void on_render(topology_type topology, batch_drawing_data& drawing_data) override;
+            void on_render_ssbo(topology_type topology, batch_drawing_data& drawing_data) override;
         };
 
         class texture_batch_renderer : public batch_renderer

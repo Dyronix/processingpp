@@ -20,6 +20,7 @@ namespace ppp
         {
         public:
             batch(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, s32 size_textures = -1);
+            batch(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures = -1);
             ~batch();                                       // has to be defined, due to auto compiler generated function and forward delclaration
 
             batch(const batch& other) = delete;             // unique ptr, so we can delete
@@ -64,6 +65,7 @@ namespace ppp
         public:
             batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, batch_buffer_policy buffer_policy);
             batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count, batch_buffer_policy buffer_policy);
+            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, batch_buffer_policy buffer_policy);
 
             void append(const render_item& item, const glm::vec4& color, const glm::mat4& world);
             void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world);
@@ -79,6 +81,7 @@ namespace ppp
             u32 vao() const;
             u32 vbo() const;
             u32 ebo() const;
+            u32 sbo() const;
 
         private:
             using batch_arr = std::vector<batch>;
@@ -86,6 +89,7 @@ namespace ppp
             u32	m_vao = 0;
             u32	m_vbo = 0;
             u32 m_ebo = 0;
+            u32 m_sbo = 0;
 
             s32 m_draw_batch = 0;
             s32 m_push_batch = 0;

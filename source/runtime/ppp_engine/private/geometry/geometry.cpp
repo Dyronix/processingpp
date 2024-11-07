@@ -12,13 +12,13 @@ namespace ppp
     {
         static glm::vec3 get_face_normal(const std::vector<glm::vec3>& vertices, const std::vector<render::face>& faces, s32 face_id) 
         {
-            if (faces.size() != 3) 
-            {
-                log::error("error: face {} does not have exactly 3 vertices", face_id); 
-                return glm::vec3(0.0f); 
-            }
-
             auto& face = faces[face_id];
+
+            if (face.fvs.size() != 3)
+            {
+                log::error("error: face {} does not have exactly 3 vertices", face_id);
+                return glm::vec3(0.0f);
+            }
 
             const glm::vec3& v_a = vertices[face.fvs[0]];
             const glm::vec3& v_b = vertices[face.fvs[1]];
@@ -54,6 +54,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         u64 geometry::vertex_count() const
         {
+            return m_vertex_positions.size();
+        }
+
+        //-------------------------------------------------------------------------
+        u64 geometry::index_count() const
+        {
             if (m_faces.empty())
             {
                 return m_vertex_positions.size();
@@ -62,12 +68,6 @@ namespace ppp
             constexpr s32 nr_vertices_in_triangle = 3;
 
             return m_faces.size() * nr_vertices_in_triangle;
-        }
-
-        //-------------------------------------------------------------------------
-        u64 geometry::index_count() const
-        {
-            return m_faces.size();
         }
 
         //-------------------------------------------------------------------------
@@ -86,6 +86,7 @@ namespace ppp
                     return std::to_string(rounded(vert.x)) + "," + std::to_string(rounded(vert.y)) + "," + std::to_string(rounded(vert.z));
                 };
 
+                // loop through each vertex and add unique_vertices
                 for (const auto& v : m_vertex_positions)
                 {
                     std::string key = get_key(v);
@@ -96,6 +97,7 @@ namespace ppp
                     }
                 }
 
+                // update face indices to use the deduplicated vertex indices
                 for (auto& face : m_faces)
                 {
                     for (render::index& fv : face.fvs)
@@ -108,6 +110,9 @@ namespace ppp
                 m_vertex_positions = unique_vertices;
             }
 
+            m_vertex_normals.resize(m_vertex_positions.size());
+            m_vertex_normals.assign(m_vertex_positions.size(), glm::vec3(0.0f, 0.0f, 0.0f));
+
             for (u64 f = 0; f < m_faces.size(); ++f)
             {
                 glm::vec3 face_normal = get_face_normal(m_vertex_positions, m_faces, f);
@@ -117,8 +122,6 @@ namespace ppp
                     m_vertex_normals[fv] += face_normal;
                 }
             }
-
-            m_vertex_normals.assign(m_vertex_positions.size(), glm::vec3(0.0f, 0.0f, 0.0f));
 
             for (auto& normal : m_vertex_normals)
             {
