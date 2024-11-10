@@ -14,7 +14,6 @@ namespace ppp
         class vertex_buffer
         {
         public:
-            vertex_buffer(u64 vertex_count);
             vertex_buffer(const vertex_attribute_layout* layouts, u64 layout_count, u64 vertex_count);
 
             bool can_add_vertices(u64 count) const;

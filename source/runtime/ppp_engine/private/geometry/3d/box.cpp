@@ -110,7 +110,7 @@ namespace ppp
 
             if (!geometry_pool::has_geometry(gid))
             {
-                auto create_box_fn = [](geometry* self)
+                auto create_geom_fn = [](geometry* self)
                 {
                     make_faces(self);
 
@@ -119,7 +119,7 @@ namespace ppp
                     make_normals(self);
                 };
 
-                return geometry_pool::add_new_geometry(gid, geometry(smooth_normals, create_box_fn));
+                return geometry_pool::add_new_geometry(gid, geometry(smooth_normals, create_geom_fn));
             }
             else
             {

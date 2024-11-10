@@ -17,16 +17,6 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        vertex_buffer::vertex_buffer(u64 vertex_count)
-            : m_vertex_count(vertex_count)
-            , m_current_vertex_count(0)
-            , m_vertex_size(64) // pos + tex + nor + tan + col
-            , m_layouts(nullptr)
-            , m_layout_count(0)
-        {
-            m_buffer.resize(m_vertex_size * vertex_count);
-        }
-        //-------------------------------------------------------------------------
         vertex_buffer::vertex_buffer(const vertex_attribute_layout* layouts, u64 layout_count, u64 vertex_count)
             : m_layouts(layouts)
             , m_layout_count(layout_count)

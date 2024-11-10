@@ -61,17 +61,6 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            batch_buffer_manager(s32 size_vertex_buffer, s32 size_index_buffer)
-                : m_max_vertex_count(size_vertex_buffer)
-                , m_max_index_count(size_index_buffer)
-                , m_vertex_buffer(size_vertex_buffer)
-                , m_index_buffer(size_index_buffer)
-            {
-                assert(size_vertex_buffer > 0);
-                assert(size_index_buffer > 0);
-            }
-
-            //-------------------------------------------------------------------------
             bool can_add(s32 nr_vertices, s32 nr_indices) const
             {
                 return m_vertex_buffer.active_vertex_count() + nr_vertices < m_max_vertex_count && m_index_buffer.active_index_count() + nr_indices < m_max_index_count;
@@ -380,14 +369,6 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures)
-            : m_buffer_manager(std::make_unique<batch_buffer_manager>(size_vertex_buffer, size_index_buffer))
-            , m_texture_manager(std::make_unique<batch_texture_manager>(size_textures))
-        {
-
-        }
-
-        //-------------------------------------------------------------------------
         batch::~batch() = default;
 
         //-------------------------------------------------------------------------
@@ -533,37 +514,31 @@ namespace ppp
             // Already start with one batch
             m_batches.emplace_back(size_vertex_buffer, size_index_buffer, layouts, layout_count, size_textures);
 
-            // Generate and bind the SSBO for vertex data
-            glGenBuffers(1, &m_sbo);
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_sbo);
+            // Allocate VAO
+            GL_CALL(glGenVertexArrays(1, &m_vao));
+            GL_CALL(glBindVertexArray(m_vao));
 
-            // Allocate space for vertices in the SSBO
-            const size_t vertex_data_size = 1 << 13; // 2 ^ 13
-            glBufferData(GL_SHADER_STORAGE_BUFFER, vertex_data_size, nullptr, GL_DYNAMIC_DRAW);
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_sbo); // Binding it to index 0
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind the SSBO
+            // Allocate VBO
+            GL_CALL(glGenBuffers(1, &m_vbo));
+            GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, m_vbo));
+            const size_t size_vbo = internal::calculate_total_size_vertex_type(layouts, layout_count) * size_vertex_buffer;
+            GL_CALL(glBufferData(GL_ARRAY_BUFFER, size_vbo, nullptr, GL_DYNAMIC_DRAW));
+
+            for (u64 i = 0; i < layout_count; ++i)
+            {
+                const vertex_attribute_layout& layout = layouts[i];
+
+                GL_CALL(glEnableVertexAttribArray(i));
+                GL_CALL(glVertexAttribPointer(i, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset));
+            }
 
             // Allocate EBO
             GL_CALL(glGenBuffers(1, &m_ebo));
             GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo));
             const size_t size_ebo = sizeof(index) * size_index_buffer;
             GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW));
-            GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
             GL_CALL(glBindVertexArray(0));
-        }
-
-        //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, batch_buffer_policy buffer_policy)
-            :m_layouts(nullptr)
-            ,m_layout_count(0)
-            ,m_batch_buffer_policy(buffer_policy)
-        {
-            assert(size_vertex_buffer > 0);
-            assert(size_index_buffer > 0);
-
-            // Already start with one batch
-            m_batches.emplace_back(size_vertex_buffer, size_index_buffer, size_textures);
         }
 
         //-------------------------------------------------------------------------
@@ -659,7 +634,6 @@ namespace ppp
         {
             reset();
 
-            GL_CALL(glDeleteBuffers(1, &m_sbo));
             GL_CALL(glDeleteBuffers(1, &m_vbo));
             GL_CALL(glDeleteBuffers(1, &m_ebo));
             GL_CALL(glDeleteVertexArrays(1, &m_vao));
@@ -704,7 +678,5 @@ namespace ppp
         u32 batch_drawing_data::vbo() const { return m_vbo; }
         //-------------------------------------------------------------------------
         u32 batch_drawing_data::ebo() const { return m_ebo; }
-        //-------------------------------------------------------------------------
-        u32 batch_drawing_data::sbo() const { return m_sbo; }
     }
 }

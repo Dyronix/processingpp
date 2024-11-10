@@ -46,8 +46,26 @@ target_sources(processing_engine PRIVATE
     # geometry
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/geometry_3d.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/geometry_3d.cpp
+    
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.cpp   
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/plane.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/plane.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/sphere.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/sphere.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/cone.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/cone.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/torus.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/torus.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/octahedron.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/octahedron.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/tetrahedron.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/tetrahedron.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/cylinder.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/cylinder.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/point.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/point.cpp
+
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/geometry_2d.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/geometry_2d.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.h
