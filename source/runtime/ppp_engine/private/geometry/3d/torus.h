@@ -8,6 +8,6 @@ namespace ppp
 {
     namespace geometry
     {
-        geometry* make_torus(bool smooth_normals);
+        geometry* make_torus(bool smooth_normals, f32 radius, f32 tube_radius, s32 detail_x, s32 detail_y);
     }
 }

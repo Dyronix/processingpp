@@ -44,9 +44,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.h
     # geometry
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/geometry_3d.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/geometry_3d.cpp
-    
+    # 3d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.cpp   
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/plane.h

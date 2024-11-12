@@ -32,18 +32,18 @@ namespace ppp
         void circle(float x, float y, float r, int detail = 25);
         void line(float x1, float y1, float x2, float y2);
         void point(float x, float y);
-        void point(float x, float y, float z);
         void polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
         void rect(float x, float y, float w, float h);
         void square(float x, float y, float s);
         void triangle(float x1, float y1, float x2, float y2, float x3, float y3);
 
+        void point(float x, float y, float z);
         void box(float width, float height, float depth);
-        void cylinder(float radius, float height, float detail = 24, bool bottom_cap = true, bool top_cap = true);
+        void cylinder(float radius, float height, int detail = 24, bool bottom_cap = true, bool top_cap = true);
         void plane(float width, float height);
-        void sphere(float radius, float detail = 24);
-        void torus(float radius, float tube_radius, float detailx = 24, float detaily = 16);
-        void cone(float radius, float height, float detail = 24, bool cap = true);
+        void sphere(float radius, int detail = 24);
+        void torus(float radius, float tube_radius, int detailx = 24, int detaily = 16);
+        void cone(float radius, float height, int detail = 24, bool cap = true);
         void tetrahedron(float width, float height);
         void octahedron(float width, float height);
 

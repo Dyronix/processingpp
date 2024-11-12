@@ -14,15 +14,15 @@ namespace ppp
         {
             auto& face = faces[face_id];
 
-            if (face.fvs.size() != 3)
+            if (face.size() != 3)
             {
                 log::error("error: face {} does not have exactly 3 vertices", face_id);
                 return glm::vec3(0.0f);
             }
 
-            const glm::vec3& v_a = vertices[face.fvs[0]];
-            const glm::vec3& v_b = vertices[face.fvs[1]];
-            const glm::vec3& v_c = vertices[face.fvs[2]];
+            const glm::vec3& v_a = vertices[face[0]];
+            const glm::vec3& v_b = vertices[face[1]];
+            const glm::vec3& v_c = vertices[face[2]];
 
             glm::vec3 ab = v_b - v_a;
             glm::vec3 ac = v_c - v_a;
@@ -100,7 +100,7 @@ namespace ppp
                 // update face indices to use the deduplicated vertex indices
                 for (auto& face : m_faces)
                 {
-                    for (render::index& fv : face.fvs)
+                    for (render::index& fv : face)
                     {
                         std::string key = get_key(m_vertex_positions[fv]);
                         fv = vertex_indices[key];
@@ -117,7 +117,7 @@ namespace ppp
             {
                 glm::vec3 face_normal = get_face_normal(m_vertex_positions, m_faces, f);
 
-                for (s32 fv : m_faces[f].fvs)
+                for (render::index& fv : m_faces[f])
                 {
                     m_vertex_normals[fv] += face_normal;
                 }

@@ -218,7 +218,7 @@ namespace ppp
             {
                 u64 idx_count = item->index_count();
 
-                assert(sizeof(item->faces()[0].fvs[0]) == sizeof(index) && "different index size was used");
+                assert(sizeof(item->faces()[0][0]) == sizeof(index) && "different index size was used");
 
                 m_index_buffer.set_index_data(reinterpret_cast<const u32*>(item->faces().data()), idx_count);
             }

@@ -4,8 +4,17 @@
 #include "render/render_types.h"
 #include "resources/shader_pool.h"
 #include "geometry/2d/geometry_2d.h"
-#include "geometry/3d/geometry_3d.h"
+
 #include "geometry/3d/box.h"
+#include "geometry/3d/cone.h"
+#include "geometry/3d/cylinder.h"
+#include "geometry/3d/octahedron.h"
+#include "geometry/3d/plane.h"
+#include "geometry/3d/point.h"
+#include "geometry/3d/sphere.h"
+#include "geometry/3d/tetrahedron.h"
+#include "geometry/3d/torus.h"
+
 #include "transform.h"
 
 #include <glm/glm.hpp>
@@ -152,29 +161,6 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void point(float x, float y, float z)
-        {
-            render::render_item item = geometry::make_point(x, y, z);
-
-            render::submit_render_item(render::topology_type::POINTS, item);
-
-            if (render::brush::stroke_enabled())
-            {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
-                constexpr bool outer_stroke = true;
-
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
-
-                render::render_item stroke_item = geometry::extrude_point(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
-
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
-            }
-        }
-
-        //-------------------------------------------------------------------------
         void polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
         {
             render::render_item item = geometry::make_polygon(internal::_rect_mode == shape_mode_type::CORNER, x1, y1, x2, y2, x3, y3, x4, y4);
@@ -263,6 +249,14 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void point(float x, float y, float z)
+        {
+            geometry::geometry* geom = geometry::make_point(x, y, z);
+
+            render::submit_render_item(render::topology_type::POINTS, geom);
+        }
+
+        //-------------------------------------------------------------------------
         void box(float width, float height, float depth)
         {
             geometry::geometry* geom = geometry::make_box(internal::_normal_mode == normal_mode_type::SMOOTH);
@@ -274,59 +268,80 @@ namespace ppp
         }
         
         //-------------------------------------------------------------------------
-        void cylinder(float radius, float height, float detail, bool bottom_cap, bool top_cap)
+        void cylinder(float radius, float height, int detail, bool bottom_cap, bool top_cap)
         {
-            render::render_item item = geometry::make_cylinder(radius, height, internal::_normal_mode == normal_mode_type::SMOOTH, detail, bottom_cap, top_cap);
+            geometry::geometry* geom = geometry::make_cylinder(internal::_normal_mode == normal_mode_type::SMOOTH, top_cap, bottom_cap, detail);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            transform::push();
+            transform::scale(radius, height, radius);
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            transform::pop();
         }
         
         //-------------------------------------------------------------------------
         void plane(float width, float height)
         {
-            render::render_item item = geometry::make_plane(width, height);
+            geometry::geometry* geom = geometry::make_plane(internal::_normal_mode == normal_mode_type::SMOOTH);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            transform::push();
+            transform::scale(width, height, 1.0f);
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            transform::pop();
         }
         
         //-------------------------------------------------------------------------
-        void sphere(float radius, float detail)
+        void sphere(float radius, int detail)
         {
-            render::render_item item = geometry::make_sphere(radius, internal::_normal_mode == normal_mode_type::SMOOTH, detail);
+            geometry::geometry* geom = geometry::make_sphere(internal::_normal_mode == normal_mode_type::SMOOTH, detail, detail);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            transform::push();
+            transform::scale(radius, radius, radius);
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            transform::pop();
         }
         
         //-------------------------------------------------------------------------
-        void torus(float radius, float tube_radius, float detailx, float detaily)
+        void torus(float radius, float tube_radius, int detailx, int detaily)
         {
-            render::render_item item = geometry::make_torus(radius, tube_radius, internal::_normal_mode == normal_mode_type::SMOOTH, detailx, detaily);
+            geometry::geometry* geom = geometry::make_torus(internal::_normal_mode == normal_mode_type::SMOOTH, radius, tube_radius, detailx, detaily);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            transform::push();
+            transform::scale(radius, radius, radius);
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            transform::pop();
         }
 
         //-------------------------------------------------------------------------
-        void cone(float radius, float height, float detail, bool cap)
+        void cone(float radius, float height, int detail, bool cap)
         {
-            render::render_item item = geometry::make_cone(radius, height, internal::_normal_mode == normal_mode_type::SMOOTH, detail, cap);
+            geometry::geometry* geom = geometry::make_cone(internal::_normal_mode == normal_mode_type::SMOOTH, cap, detail);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            transform::push();
+            transform::scale(radius, height, radius);
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            transform::pop();
         }
 
         //-------------------------------------------------------------------------
         void tetrahedron(float width, float height)
         {
-            render::render_item item = geometry::make_tetrahedron(width, height, internal::_normal_mode == normal_mode_type::SMOOTH);
+            geometry::geometry* geom = geometry::make_tetrahedron(internal::_normal_mode == normal_mode_type::SMOOTH);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            transform::push();
+            transform::scale(width, height, width);
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            transform::pop();
         }
 
         //-------------------------------------------------------------------------
         void octahedron(float width, float height)
         {
-            render::render_item item = geometry::make_octahedron(width, height, internal::_normal_mode == normal_mode_type::SMOOTH);
+            geometry::geometry* geom = geometry::make_octahedron(internal::_normal_mode == normal_mode_type::SMOOTH);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            transform::push();
+            transform::scale(width, height, width);
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            transform::pop();
         }
 
         //-------------------------------------------------------------------------

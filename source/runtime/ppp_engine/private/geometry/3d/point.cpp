@@ -3,51 +3,40 @@
 #include "resources/geometry_pool.h"
 
 #include <array>
+#include <sstream>
 
 namespace ppp
 {
     namespace geometry
     {
         //-------------------------------------------------------------------------
-        static void make_faces(geometry* self)
+        static void make_vertices(geometry* self, f32 x, f32 y, f32 z)
         {
-
-        }
-        //-------------------------------------------------------------------------
-        static void make_vertices(geometry* self)
-        {
-
-        }
-        //-------------------------------------------------------------------------
-        static void make_uvs(geometry* self)
-        {
-
-        }
-        //-------------------------------------------------------------------------
-        static void make_normals(geometry* self)
-        {
-
+            self->vertex_positions().assign(1, glm::vec3(x, y, z));
         }
 
         //-------------------------------------------------------------------------
-        geometry* make_point(bool smooth_normals)
+        geometry* make_point(f32 x, f32 y, f32 z)
         {
-            const std::string gid = "point|" + std::to_string(smooth_normals);
+            std::stringstream stream;
+
+            stream << "point_3d|";
+            stream << x << "|";
+            stream << y << "|";
+            stream << z;
+
+            const std::string gid = stream.str();
 
             const geometry* geom = nullptr;
 
             if (!geometry_pool::has_geometry(gid))
             {
-                auto create_geom_fn = [](geometry* self)
+                auto create_geom_fn = [x, y, z](geometry* self)
                 {
-                    make_faces(self);
-
-                    make_vertices(self);
-                    make_uvs(self);
-                    make_normals(self);
+                    make_vertices(self, x, y, z);
                 };
 
-                return geometry_pool::add_new_geometry(gid, geometry(smooth_normals, create_geom_fn));
+                return geometry_pool::add_new_geometry(gid, geometry(false, create_geom_fn));
             }
             else
             {

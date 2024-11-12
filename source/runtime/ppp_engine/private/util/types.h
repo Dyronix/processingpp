@@ -6,6 +6,8 @@
 #include <vector>
 #include <array>
 
+#include <assert.h>
+
 using s8 = signed char;
 using s16 = signed short;
 using s32 = signed int;
@@ -53,12 +55,12 @@ static_assert(sizeof(f64) == 8, "float64 must be 8 bytes big"); // NOLINT
 
 // allow single threaded platforms to avoid use of atomic
 #if PPP_WEB || PPP_WINDOWS
-#define REX_SINGLE_THREADED 1
+#define PPP_SINGLE_THREADED 1
 #else
-#define REX_SINGLE_THREADED 0
+#define PPP_SINGLE_THREADED 0
 #endif
 
-#if REX_SINGLE_THREADED
+#if PPP_SINGLE_THREADED
 using a_u8 = u8;
 using a_u32 = u32;
 using a_u64 = u64;
@@ -85,6 +87,40 @@ namespace ppp
         struct face
         {
             std::array<render::index, 3> fvs;
+
+            //-------------------------------------------------------------------------
+            render::index& operator[](size_t i) 
+            {
+#ifdef _DEBUG  // Use appropriate macro for your build system
+                assert(i < fvs.size() && "Index out of bounds");
+#endif
+                return fvs[i];
+            }
+
+            //-------------------------------------------------------------------------
+            const render::index& operator[](size_t i) const 
+            {
+#ifdef _DEBUG
+                assert(i < fvs.size() && "Index out of bounds");
+#endif
+                return fvs[i];
+            }
+
+            //-------------------------------------------------------------------------
+            constexpr size_t size() const noexcept 
+            {
+                return fvs.size();
+            }
+
+            //-------------------------------------------------------------------------
+            // Iterator support for range-based for loops (non-const version)
+            auto begin() noexcept { return fvs.begin(); }
+            auto end() noexcept { return fvs.end(); }
+
+            //-------------------------------------------------------------------------
+            // Iterator support for range-based for loops (const version)
+            auto begin() const noexcept { return fvs.begin(); }
+            auto end() const noexcept { return fvs.end(); }
         };
     }
 
