@@ -52,7 +52,9 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/sphere.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/sphere.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/cone.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/truncated_cone.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/cone.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/truncated_cone.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/torus.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/torus.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/octahedron.h
@@ -63,6 +65,17 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/cylinder.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/point.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/point.cpp
+    # 2d
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/point.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/point.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/line.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/line.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/ellipse.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/ellipse.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/polygon.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/polygon.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/triangle.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/triangle.cpp
 
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/geometry_2d.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/geometry_2d.cpp
