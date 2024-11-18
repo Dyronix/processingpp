@@ -251,9 +251,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         void point(float x, float y, float z)
         {
-            geometry::geometry* geom = geometry::make_point(x, y, z);
+            geometry::geometry* geom = geometry::make_point();
 
+            transform::push();
+            transform::translate(x, y, z);
             render::submit_render_item(render::topology_type::POINTS, geom);
+            transform::pop();
         }
 
         //-------------------------------------------------------------------------

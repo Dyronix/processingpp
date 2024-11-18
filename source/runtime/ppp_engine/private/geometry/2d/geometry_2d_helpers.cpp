@@ -1,4 +1,4 @@
-#include "geometry/2d/geometry_2d.h"
+#include "geometry/2d/geometry_2d_helpers.h"
 
 #include "constants.h"
 
@@ -12,222 +12,7 @@ namespace ppp
     namespace geometry
     {
         namespace internal
-        {
-            struct point_2d_data
-            {
-                glm::vec3 vertex;
-                render::index index = { 0 };
-            } _point_data;
-
-            struct line_data
-            {
-                std::array<glm::vec3, 2> vertices;
-                std::array<render::index, 2> indices = { 0, 1 };
-            } _line_data;
-
-            struct triangle_data
-            {
-                std::array<glm::vec3, 3> vertices;
-                std::array<render::index, 3> indices = { 0, 1, 2 };
-
-                std::vector<glm::vec3> extrude_vertices;
-                std::vector<render::index> extrude_indices;
-            } _triangle_data;
-
-            struct polygon_data
-            {
-                std::array<glm::vec3, 4> vertices;
-                std::array<render::index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
-
-                std::vector<glm::vec3> extrude_vertices;
-                std::vector<render::index> extrude_indices;
-            } _polygon_data;
-
-            struct ellipse_data
-            {
-                std::vector<glm::vec3> vertices;
-                std::vector<render::index> indices;
-
-                std::vector<glm::vec3> extrude_vertices;
-                std::vector<render::index> extrude_indices;
-
-            } _ellipse_data;
-
-            struct image_data
-            {
-                std::array<glm::vec3, 4> vertex_position;
-                std::array<glm::vec2, 4> vertex_texcoords;
-                std::array<render::index, 6> indices = { 0, 1 ,2, 0, 2, 3 };
-
-                std::vector<glm::vec3> extrude_vertices;
-                std::vector<render::index> extrude_indices;
-            } _image_data;
-
-            template<typename TVertexType>
-            void extrude_vertices(std::vector<glm::vec3>& new_vertices, const TVertexType& center, const TVertexType* vertices, s32 vertex_count, f32 extrusion_width)
-            {
-                for (s32 i = 0; i < vertex_count; ++i)
-                {
-                    glm::vec3 dir = glm::normalize(vertices[i] - center);
-
-                    glm::vec3 p1 = vertices[i];
-                    glm::vec3 p2 = p1 + (dir * extrusion_width);
-
-                    // We need to switch winding order if the inner stroke is enabled
-                    if (extrusion_width < 0.0f)
-                    {
-                        // We will always render 2d geometry with an orthographic projection matrix
-                        // Putting the z to 1.0f makes sure the depth buffer does not cull the inner stroke
-                        p1.z = 1.0f;
-                        p2.z = 1.0f;
-
-                        new_vertices.push_back({ p2 });
-                        new_vertices.push_back({ p1 });
-                    }
-                    else
-                    {
-                        new_vertices.push_back({ p1 });
-                        new_vertices.push_back({ p2 });
-                    }
-
-                }
-            }
-
-            void extrude_indices(std::vector<render::index>& indices, s32 original_vertex_count)
-            {
-                constexpr s32 vertices_per_extrusion_segment = 2;
-
-                const s32 new_vertex_count = original_vertex_count * vertices_per_extrusion_segment;
-
-                for (s32 i = 0; i < new_vertex_count; i += vertices_per_extrusion_segment)
-                {
-                    indices.push_back((i + 0) % (new_vertex_count));
-                    indices.push_back((i + 1) % (new_vertex_count));
-                    indices.push_back((i + 2) % (new_vertex_count));
-
-                    indices.push_back((i + 2) % (new_vertex_count));
-                    indices.push_back((i + 1) % (new_vertex_count));
-                    indices.push_back((i + 3) % (new_vertex_count));
-                }
-            }
-
-            std::vector<glm::vec3>& make_ellipse_vertices(bool from_corner, f32 x, f32 y, f32 w, f32 h, s32 detail = 25)
-            {
-                s32 total_nr_vertices = detail + 1; // take center point into account
-
-                _ellipse_data.vertices.clear();
-                _ellipse_data.vertices.resize(total_nr_vertices);
-
-                _ellipse_data.vertices[0] = glm::vec3{ x, y, 0.0f };
-
-                for (s32 t = 1; t < total_nr_vertices; ++t)
-                {
-                    f32 angle = (t / static_cast<f32>(detail)) * constants::two_pi();
-
-                    f32 v_x = cos(angle) * w;
-                    f32 v_y = sin(angle) * h;
-
-                    _ellipse_data.vertices[t] = glm::vec3(x + v_x, y + v_y, 0.0f);
-                }
-
-                if (from_corner == true)
-                {
-                    for (s32 t = 0; t < total_nr_vertices; ++t)
-                    {
-                        _ellipse_data.vertices[t] += glm::vec3(w, h, 0.0f);
-                    }
-                }
-
-                return _ellipse_data.vertices;
-            }
-
-            std::array<glm::vec3, 4>& make_polygon_vertices(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3, f32 x4, f32 y4)
-            {
-                _polygon_data.vertices[0] = glm::vec3(x1, y1, 0);
-                _polygon_data.vertices[1] = glm::vec3(x2, y2, 0);
-                _polygon_data.vertices[2] = glm::vec3(x3, y3, 0);
-                _polygon_data.vertices[3] = glm::vec3(x4, y4, 0);
-
-                if (from_corner == false)
-                {
-                    // Find the minimum and maximum coordinates
-                    glm::vec3 min_coord = glm::vec3(std::min({ x1, x2, x3, x4 }), std::min({ y1, y2, y3, y4 }), 0.0f);
-                    glm::vec3 max_coord = glm::vec3(std::max({ x1, x2, x3, x4 }), std::max({ y1, y2, y3, y4 }), 0.0f);
-
-                    f32 width = max_coord.x - min_coord.x;
-                    f32 height = max_coord.y - min_coord.y;
-
-                    // Center the shape
-                    for (glm::vec3& vertex : _polygon_data.vertices)
-                    {
-                        vertex.x = vertex.x - (width / 2.0f);
-                        vertex.y = vertex.y - (height / 2.0f);
-                    }
-                }
-
-                return _polygon_data.vertices;
-            }
-
-            std::array<glm::vec3, 3>& make_triangle_vertices(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3)
-            {
-                // Calculate vertices
-                _triangle_data.vertices[0] = glm::vec3(x1, y1, 0);
-                _triangle_data.vertices[1] = glm::vec3(x2, y2, 0);
-                _triangle_data.vertices[2] = glm::vec3(x3, y3, 0);
-
-                if (from_corner == false)
-                {
-                    // Find the minimum and maximum coordinates
-                    glm::vec3 min_coord = glm::vec3(std::min({ x1, x2, x3 }), std::min({ y1, y2, y3 }), 0.0f);
-                    glm::vec3 max_coord = glm::vec3(std::max({ x1, x2, x3 }), std::max({ y1, y2, y3 }), 0.0f);
-
-                    f32 width = max_coord.x - min_coord.x;
-                    f32 height = max_coord.y - min_coord.y;
-
-                    // Center the shape
-                    for (glm::vec3& vertex : internal::_triangle_data.vertices)
-                    {
-                        vertex.x = vertex.x - (width / 2.0f);
-                        vertex.y = vertex.y - (height / 2.0f);
-                    }
-                }
-
-                return _triangle_data.vertices;
-            }
-
-            std::vector<render::index>& make_ellipse_indices(f32 x, f32 y, f32 w, f32 h, s32 detail = 25)
-            {
-                s32 total_nr_indices = detail * 3;
-
-                _ellipse_data.indices.clear();
-                _ellipse_data.indices.resize(total_nr_indices);
-
-                s32 i = 0;
-                for (s32 t = 0; t < total_nr_indices; t += 3)
-                {
-                    _ellipse_data.indices[t + 0] = 0;
-                    _ellipse_data.indices[t + 1] = i + 1;
-                    _ellipse_data.indices[t + 2] = i + 2;
-
-                    ++i;
-                }
-
-                // Loop back to the first triangle
-                _ellipse_data.indices[total_nr_indices - 1] = 1;
-
-                return _ellipse_data.indices;
-            }
-
-            std::array<render::index, 6>& make_polygon_indices()
-            {
-                return _polygon_data.indices;
-            }
-
-            std::array<render::index, 3>& make_triangle_indices()
-            {
-                return _triangle_data.indices;
-            }
-            
+        {           
             namespace image
             {
                 std::tuple<std::array<glm::vec3, 4>, std::array<glm::vec2, 4>> make_quad_vertices(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3, f32 x4, f32 y4, f32 uvsx, f32 uvsy, f32 uvex, f32 uvey)
@@ -483,95 +268,52 @@ namespace ppp
             return new_render_item;
         }
 
-        render::render_item make_point(f32 x, f32 y)
+        template<typename TVertexType>
+        void extrude_vertices(std::vector<glm::vec3>& new_vertices, const TVertexType& center, const TVertexType* vertices, s32 vertex_count, f32 extrusion_width)
         {
-            internal::_point_data.vertex.x = x;
-            internal::_point_data.vertex.y = y;
-            internal::_point_data.vertex.z = 0.0f;
+            for (s32 i = 0; i < vertex_count; ++i)
+            {
+                glm::vec3 dir = glm::normalize(vertices[i] - center);
 
-            render::render_item item;
+                glm::vec3 p1 = vertices[i];
+                glm::vec3 p2 = p1 + (dir * extrusion_width);
 
-            auto vert_comp = render::make_vertex_component(1);
-            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, &internal::_point_data.vertex);
-            
-            auto idx_comp = render::make_index_component(&internal::_point_data.index, 1);
+                // We need to switch winding order if the inner stroke is enabled
+                if (extrusion_width < 0.0f)
+                {
+                    // We will always render 2d geometry with an orthographic projection matrix
+                    // Putting the z to 1.0f makes sure the depth buffer does not cull the inner stroke
+                    p1.z = 1.0f;
+                    p2.z = 1.0f;
 
-            item.add_component(std::move(vert_comp));
-            item.add_component(std::move(idx_comp));
+                    new_vertices.push_back({ p2 });
+                    new_vertices.push_back({ p1 });
+                }
+                else
+                {
+                    new_vertices.push_back({ p1 });
+                    new_vertices.push_back({ p2 });
+                }
 
-            return item;
+            }
         }
 
-        render::render_item make_line(f32 x1, f32 y1, f32 x2, f32 y2)
+        void extrude_indices(std::vector<render::index>& indices, s32 original_vertex_count)
         {
-            internal::_line_data.vertices[0] = glm::vec3(x1, y1, 0.0f);
-            internal::_line_data.vertices[1] = glm::vec3(x2, y2, 0.0f);
+            constexpr s32 vertices_per_extrusion_segment = 2;
 
-            render::render_item item;
+            const s32 new_vertex_count = original_vertex_count * vertices_per_extrusion_segment;
 
-            auto vert_comp = render::make_vertex_component(internal::_line_data.vertices.size());
-            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, internal::_line_data.vertices.data());
+            for (s32 i = 0; i < new_vertex_count; i += vertices_per_extrusion_segment)
+            {
+                indices.push_back((i + 0) % (new_vertex_count));
+                indices.push_back((i + 1) % (new_vertex_count));
+                indices.push_back((i + 2) % (new_vertex_count));
 
-            auto idx_comp = render::make_index_component(internal::_line_data.indices.data(), internal::_line_data.indices.size());
-
-            item.add_component(std::move(vert_comp));
-            item.add_component(std::move(idx_comp));
-
-            return item;
-        }
-
-        render::render_item make_ellipse(bool from_corner, f32 x, f32 y, f32 w, f32 h, s32 detail)
-        {
-            auto& vertices = internal::make_ellipse_vertices(from_corner, x, y, w, h, detail);
-            auto& indices = internal::make_ellipse_indices(x, y, w, h, detail);
-
-            render::render_item item;
-
-            auto vert_comp = render::make_vertex_component(vertices.size());
-            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
-            
-            auto idx_comp = render::make_index_component(indices.data(), indices.size());
-
-            item.add_component(std::move(vert_comp));
-            item.add_component(std::move(idx_comp));
-
-            return item;
-        }
-
-        render::render_item make_polygon(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3, f32 x4, f32 y4)
-        {
-            auto& vertices = internal::make_polygon_vertices(from_corner, x1, y1, x2, y2, x3, y3, x4, y4);
-            auto& indices = internal::make_polygon_indices();
-
-            render::render_item item;
-
-            auto vert_comp = render::make_vertex_component(vertices.size());
-            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
-            
-            auto idx_comp = render::make_index_component(indices.data(), indices.size());
-
-            item.add_component(std::move(vert_comp));
-            item.add_component(std::move(idx_comp));
-
-            return item;
-        }
-
-        render::render_item make_triangle(bool from_corner, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3)
-        {
-            auto& vertices = internal::make_triangle_vertices(from_corner, x1, y1, x2, y2, x3, y3);
-            auto& indices = internal::make_triangle_indices();
-
-            render::render_item item;
-
-            auto vert_comp = render::make_vertex_component(vertices.size());
-            vert_comp->add_attribute(render::vertex_attribute_type::POSITION, vertices.data());
-            
-            auto idx_comp = render::make_index_component(indices.data(), indices.size());
-
-            item.add_component(std::move(vert_comp));
-            item.add_component(std::move(idx_comp));
-
-            return item;
+                indices.push_back((i + 2) % (new_vertex_count));
+                indices.push_back((i + 1) % (new_vertex_count));
+                indices.push_back((i + 3) % (new_vertex_count));
+            }
         }
     }
 }

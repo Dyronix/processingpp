@@ -1,4 +1,4 @@
-#include "geometry/3d/box.h"
+#include "geometry/2d/polygon.h"
 #include "geometry/geometry_helpers.h"
 
 #include "resources/geometry_pool.h"
@@ -10,9 +10,15 @@ namespace ppp
     namespace geometry
     {
         //-------------------------------------------------------------------------
-        geometry* make_plane(bool smooth_normals)
+        geometry* extrude_rectangle(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width)
         {
-            const std::string gid = "plane|" + std::to_string(smooth_normals);
+
+        }
+
+        //-------------------------------------------------------------------------
+        geometry* make_rectangle()
+        {
+            const std::string gid = "rect";
 
             const geometry* geom = nullptr;
 
@@ -27,7 +33,7 @@ namespace ppp
                     compute_quad_vertex_normals(geom);
                 };
 
-                return geometry_pool::add_new_geometry(gid, geometry(smooth_normals, create_geom_fn));
+                return geometry_pool::add_new_geometry(gid, geometry(false, create_geom_fn));
             }
             else
             {

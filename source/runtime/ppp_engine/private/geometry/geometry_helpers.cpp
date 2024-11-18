@@ -1,4 +1,5 @@
 #include "geometry/geometry_helpers.h"
+#include "geometry/geometry.h"
 
 namespace ppp
 {
@@ -79,6 +80,59 @@ namespace ppp
             }
 
             return compute_flat_normals(vertices, vertex_count, indices, index_count);
+        }
+
+        //-------------------------------------------------------------------------
+        void compute_quad_faces(geometry* geom)
+        {
+            geom->faces().assign(2, { 0, 0, 0 });
+
+            u64 index = 0;
+
+            geom->faces()[index++] = { 0, 1, 2 };
+            geom->faces()[index++] = { 0, 2, 3 };
+        }
+
+        //-------------------------------------------------------------------------
+        void compute_quad_vertex_positions(geometry* geom)
+        {
+            geom->vertex_positions().assign(4, glm::vec3());
+
+            f32 width = 1.0f;
+            f32 height = 1.0f;
+
+            u64 index = 0;
+
+            geom->vertex_positions()[index++] = { glm::vec3(-width / 2, -height / 2, 0.0f) };
+            geom->vertex_positions()[index++] = { glm::vec3(width / 2, -height / 2, 0.0f) };
+            geom->vertex_positions()[index++] = { glm::vec3(width / 2, height / 2, 0.0f) };
+            geom->vertex_positions()[index++] = { glm::vec3(-width / 2, height / 2, 0.0f) };
+        }
+
+        //-------------------------------------------------------------------------
+        void compute_quad_vertex_uvs(geometry* geom)
+        {
+            geom->vertex_uvs().assign(4, glm::vec2());
+
+            u64 index = 0;
+
+            geom->vertex_uvs()[index++] = glm::vec2{ 0.0f, 0.0f };
+            geom->vertex_uvs()[index++] = glm::vec2{ 1.0f, 0.0f };
+            geom->vertex_uvs()[index++] = glm::vec2{ 1.0f, 1.0f };
+            geom->vertex_uvs()[index++] = glm::vec2{ 0.0f, 1.0f };
+        }
+
+        //-------------------------------------------------------------------------
+        void compute_quad_vertex_normals(geometry* geom)
+        {
+            geom->vertex_normals().assign(4, glm::vec3());
+
+            u64 index = 0;
+
+            geom->vertex_normals()[index++] = glm::vec3{ 0.0f, 0.0f, 1.0f };
+            geom->vertex_normals()[index++] = glm::vec3{ 0.0f, 0.0f, 1.0f };
+            geom->vertex_normals()[index++] = glm::vec3{ 0.0f, 0.0f, 1.0f };
+            geom->vertex_normals()[index++] = glm::vec3{ 0.0f, 0.0f, 1.0f };
         }
     }
 }

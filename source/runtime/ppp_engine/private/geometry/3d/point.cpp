@@ -3,37 +3,29 @@
 #include "resources/geometry_pool.h"
 
 #include <array>
-#include <sstream>
 
 namespace ppp
 {
     namespace geometry
     {
         //-------------------------------------------------------------------------
-        static void make_vertices(geometry* self, f32 x, f32 y, f32 z)
+        static void make_vertices(geometry* geom)
         {
-            self->vertex_positions().assign(1, glm::vec3(x, y, z));
+            geom->vertex_positions().assign(1, glm::vec3(0, 0, 0));
         }
 
         //-------------------------------------------------------------------------
-        geometry* make_point(f32 x, f32 y, f32 z)
+        geometry* make_point()
         {
-            std::stringstream stream;
-
-            stream << "point_3d|";
-            stream << x << "|";
-            stream << y << "|";
-            stream << z;
-
-            const std::string gid = stream.str();
+            const std::string gid = "point_3d";
 
             const geometry* geom = nullptr;
 
             if (!geometry_pool::has_geometry(gid))
             {
-                auto create_geom_fn = [x, y, z](geometry* self)
+                auto create_geom_fn = [](geometry* geom)
                 {
-                    make_vertices(self, x, y, z);
+                    make_vertices(geom);
                 };
 
                 return geometry_pool::add_new_geometry(gid, geometry(false, create_geom_fn));
