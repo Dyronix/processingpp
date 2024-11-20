@@ -8,6 +8,6 @@ namespace ppp
 {
     namespace geometry
     {
-        geometry* make_point();
+        geometry* make_3d_point();
     }
 }

@@ -420,20 +420,25 @@ namespace ppp
         //-------------------------------------------------------------------------
         void batch::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
         {
-            m_buffer_manager->add_indices(item);    
-
+            if (item->index_count() != 0)
+            {
+                m_buffer_manager->add_indices(item);
+            }
+            
             if (m_texture_manager->has_reserved_texture_space())
             {
-                //s32 sampler_id = m_texture_manager->add_texture(texture_comp->texture_id());
-                //if (sampler_id != -1)
-                //{
-                //    m_buffer_manager->add_vertices(item, sampler_id, color, world);
-                //}
-                //else
-                //{
-                //    log::error("Unable to generate sampler id for texture.");
-                //    exit(EXIT_FAILURE);
-                //}
+                assert(item->texture_ids().size() == 1);
+
+                s32 sampler_id = m_texture_manager->add_texture(item->texture_ids()[0]);
+                if (sampler_id != -1)
+                {
+                    m_buffer_manager->add_vertices(item, sampler_id, color, world);
+                }
+                else
+                {
+                    log::error("Unable to generate sampler id for texture.");
+                    exit(EXIT_FAILURE);
+                }
             }
             else
             {
@@ -581,9 +586,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         void batch_drawing_data::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
         {           
-            if (item->vertex_count() == 0 || item->index_count() == 0)
+            if (item->vertex_count() == 0)
             {
-                log::error("render item does not have vertex or index component");
+                log::error("render item does not have vertices");
                 exit(EXIT_FAILURE);
             }
             

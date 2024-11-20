@@ -117,8 +117,6 @@ namespace ppp
 
             const std::string gid = stream.str();
 
-            const geometry* geom = nullptr;
-
             if (!geometry_pool::has_geometry(gid))
             {
                 auto create_geom_fn = [detail_x, detail_y](geometry* self)

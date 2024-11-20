@@ -6,6 +6,10 @@
 #include "constants.h"
 
 #include <array>
+#include <sstream>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 namespace ppp
 {
@@ -48,7 +52,7 @@ namespace ppp
                 f32 v_x = cos(angle) * r;
                 f32 v_y = sin(angle) * r;
 
-                geom->vertex_positions()[t] = glm::vec3(x + v_x, y + v_y, 0.0f);
+                geom->vertex_positions()[t] = glm::vec3(v_x, v_y, 0.0f);
             }
         }
 
@@ -82,21 +86,26 @@ namespace ppp
             geom->compute_normals();
         }
 
-        //-------------------------------------------------------------------------
-        geometry* extrude_ellipse(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width)
+        //-------------------O------------------------------------------------------
+        geometry* extrude_ellipse(const glm::mat4& world, const geometry* in_geom, f32 extrusion_width)
         {
-            const std::string gid = (extrusion_width > 0 ? "ellipse_out_stroke|" : "ellipse_in_stroke") + std::to_string(extrusion_width);
+            std::stringstream stream;
 
-            const geometry* geom = nullptr;
+            stream << (extrusion_width > 0 ? "elli_out_stroke|" : "elli_in_stroke|");
+            stream << extrusion_width << "|";
+            stream << glm::to_string(world) << "|";
+            stream << in_geom;
+
+            const std::string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {
-                auto create_geom_fn = [vertices, vertex_count, extrusion_width](geometry* geom)
+                auto create_geom_fn = [&world, in_geom, extrusion_width](geometry* geom)
                 {
-                    const glm::vec3& center = geom->vertex_positions()[0];
+                    const glm::vec3& center = in_geom->vertex_positions()[0];
 
-                    extrude_vertices<glm::vec3>(geom->vertex_positions(), center, &vertices[1], vertex_count - 1, extrusion_width);
-                    extrude_indices(geom->faces(), vertex_count - 1);
+                    extrude_vertices(geom->vertex_positions(), world, center, &in_geom->vertex_positions()[1], in_geom->vertex_count() - 1, extrusion_width);
+                    extrude_indices(geom->faces(), in_geom->vertex_count() - 1);
                 };
 
                 return geometry_pool::add_new_geometry(gid, geometry(false, create_geom_fn));
@@ -111,8 +120,6 @@ namespace ppp
         geometry* make_ellipse(s32 detail)
         {
             const std::string gid = "ellipse|" + std::to_string(detail);
-
-            const geometry* geom = nullptr;
 
             if (!geometry_pool::has_geometry(gid))
             {

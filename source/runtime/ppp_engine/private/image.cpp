@@ -1,12 +1,23 @@
 #include "image.h"
+
 #include "render/render.h"
 #include "render/render_brush.h"
+#include "render/render_transform.h"
+
 #include "fileio/fileio.h"
+
 #include "resources/texture_pool.h"
+#include "resources/geometry_pool.h"
+
+#include "geometry/geometry.h"
+#include "geometry/geometry_helpers.h"
+#include "geometry/2d/rectangle.h"
+#include "geometry/2d/geometry_2d_helpers.h"
+
 #include "util/log.h"
-#include "geometry/2d/geometry_2d.h"
 
 #include <stb/stb_image.h>
+#include <glm/glm.hpp>
 
 #include <unordered_map>
 #include <algorithm>
@@ -19,6 +30,38 @@ namespace ppp
         namespace internal
         {
             auto _image_mode = image_mode_type::CENTER;
+
+            geometry::geometry* extrude_image(const glm::mat4& world, const geometry::geometry* in_geom, f32 extrusion_width)
+            {
+                return geometry::extrude_rectangle(world, in_geom, extrusion_width);
+            }
+
+            geometry::geometry* make_image(u32 image_id)
+            {
+                const std::string& gid = "image|" + std::to_string(image_id);
+
+                if (!geometry_pool::has_geometry(gid))
+                {
+                    auto create_geom_fn = [](geometry::geometry* geom)
+                    {
+                        geometry::compute_quad_faces(geom);
+
+                        geometry::compute_quad_vertex_positions(geom);
+                        geometry::compute_quad_vertex_uvs(geom);
+                        geometry::compute_quad_vertex_normals(geom);
+                    };
+
+                    geometry::geometry* geom = geometry_pool::add_new_geometry(gid, geometry::geometry(false, create_geom_fn));
+
+                    geom->texture_ids().push_back(image_id);
+
+                    return geom;
+                }
+                else
+                {
+                    return geometry_pool::get_geometry(gid);
+                }
+            }
         }
 
         void image_mode(image_mode_type mode)
@@ -107,38 +150,42 @@ namespace ppp
 
         void draw(image_id image_id, float x, float y, float width, float height)
         {
-            render::render_item item = geometry::image::make_image(internal::_image_mode == image_mode_type::CORNER, x, y, width, height, image_id);
+            geometry::geometry* geom = internal::make_image(image_id);
 
-            render::submit_image_item(item);
+            render::transform::push();
+            render::transform::translate(glm::vec2(x, y));
+            
+            if (internal::_image_mode == image_mode_type::CORNER)
+            {
+                glm::vec2 center = geometry::rectanglular_center_translation(x, y, width, height);
+
+                render::transform::translate(glm::vec2(center.x, center.y));
+            }
+
+            render::transform::scale(glm::vec2(width, height));
+
+            render::submit_image_item(geom);
+
+            glm::mat4& world = render::transform::active_world();
+
+            render::transform::pop();
 
             if (render::brush::stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
                 constexpr bool outer_stroke = true;
 
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
+                geometry::geometry* stroke_geom = internal::extrude_image(world, geom, render::brush::stroke_width());
 
-                render::render_item stroke_item = geometry::image::extrude_image(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
-
-                render::submit_stroke_image_item(stroke_item, outer_stroke);
+                render::submit_stroke_image_item(stroke_geom, outer_stroke);
             }
 
             if (render::brush::inner_stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
                 constexpr bool outer_stroke = false;
 
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
+                geometry::geometry* stroke_geom = internal::extrude_image(world, geom, -render::brush::stroke_width());
 
-                render::render_item stroke_item = geometry::image::extrude_image(vertex_positions, vert_comp->vertex_count(), -render::brush::inner_stroke_width());
-
-                render::submit_stroke_image_item(stroke_item, outer_stroke);
+                render::submit_stroke_image_item(stroke_geom, outer_stroke);
             }
         }
 

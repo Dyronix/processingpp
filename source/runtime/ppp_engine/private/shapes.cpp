@@ -1,9 +1,22 @@
 #include "shapes.h"
+#include "transform.h"
+
 #include "render/render.h"
 #include "render/render_brush.h"
 #include "render/render_types.h"
+#include "render/render_transform.h"
+
 #include "resources/shader_pool.h"
-#include "geometry/2d/geometry_2d.h"
+
+#include "geometry/geometry.h"
+
+#include "geometry/2d/ellipse.h"
+#include "geometry/2d/line.h"
+#include "geometry/2d/point.h"
+#include "geometry/2d/polygon.h"
+#include "geometry/2d/rectangle.h"
+#include "geometry/2d/triangle.h"
+#include "geometry/2d/geometry_2d_helpers.h"
 
 #include "geometry/3d/box.h"
 #include "geometry/3d/cone.h"
@@ -14,8 +27,6 @@
 #include "geometry/3d/sphere.h"
 #include "geometry/3d/tetrahedron.h"
 #include "geometry/3d/torus.h"
-
-#include "transform.h"
 
 #include <glm/glm.hpp>
 
@@ -73,36 +84,40 @@ namespace ppp
         //-------------------------------------------------------------------------
         void ellipse(float x, float y, float w, float h, int detail)
         {
-            render::render_item item = geometry::make_ellipse(internal::_ellipse_mode == shape_mode_type::CORNER, x, y, w, h, detail);
+            geometry::geometry* geom = geometry::make_ellipse(detail);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            transform::push();
+            transform::translate(x, y);
+            
+            if (internal::_ellipse_mode == shape_mode_type::CORNER)
+            {
+                glm::vec2 center = geometry::circular_center_translation(w, h);
+
+                transform::translate(-center.x, -center.y);
+            }
+
+            transform::scale(w, h);
+           
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+
+            glm::mat4 world = render::transform::active_world();
+
+            transform::pop();
 
             if (render::brush::stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
                 constexpr bool outer_stroke = true;
 
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
-
-                auto stroke_item = geometry::extrude_ellipse(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
+                auto stroke_item = geometry::extrude_ellipse(world, geom, render::brush::stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
 
             if (render::brush::inner_stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
                 constexpr bool outer_stroke = false;
 
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
-
-                auto stroke_item = geometry::extrude_ellipse(vertex_positions, vert_comp->vertex_count(), -render::brush::inner_stroke_width());
+                auto stroke_item = geometry::extrude_ellipse(world, geom, -render::brush::inner_stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -117,21 +132,15 @@ namespace ppp
         //-------------------------------------------------------------------------
         void line(float x1, float y1, float x2, float y2)
         {
-            render::render_item item = geometry::make_line(x1, y1, x2, y2);
+            geometry::geometry* geom = geometry::make_line(x1, y1, x2, y2);
 
-            render::submit_render_item(render::topology_type::LINES, item);
+            render::submit_render_item(render::topology_type::LINES, geom);
 
             if (render::brush::stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
                 constexpr bool outer_stroke = true;
 
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
-
-                render::render_item stroke_item = geometry::extrude_line(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
+                auto stroke_item = geometry::extrude_line(geom->vertex_positions().data(), geom->vertex_count(), render::brush::stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -140,59 +149,61 @@ namespace ppp
         //-------------------------------------------------------------------------
         void point(float x, float y)
         {
-            render::render_item item = geometry::make_point(x, y);
+            geometry::geometry* geom = geometry::make_2d_point();
 
-            render::submit_render_item(render::topology_type::POINTS, item);
+            transform::push();
+            transform::translate(x, y);
+            render::submit_render_item(render::topology_type::POINTS, geom);
+            transform::pop();
 
             if (render::brush::stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
                 constexpr bool outer_stroke = true;
 
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
+                auto stroke_item = geometry::extrude_point(geom->vertex_positions().data(), geom->vertex_count(), render::brush::stroke_width());
 
-                render::render_item stroke_item = geometry::extrude_point(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
-
+                transform::push();
+                transform::translate(x, y);
+                transform::scale(render::brush::stroke_width(), render::brush::stroke_width());
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                transform::pop();
             }
         }
 
         //-------------------------------------------------------------------------
         void polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
         {
-            render::render_item item = geometry::make_polygon(internal::_rect_mode == shape_mode_type::CORNER, x1, y1, x2, y2, x3, y3, x4, y4);
+            geometry::geometry* geom = geometry::make_polygon(x1, y1, x2, y2, x3, y3, x4, y4);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            transform::push();
+
+            if (internal::_rect_mode == shape_mode_type::CORNER)
+            {
+                glm::vec2 center = geometry::rectanglular_center_translation(x1, y1, x2, y2, x3, y3, x4, y4);
+
+                transform::translate(-center.x, -center.y);
+            }
+
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+
+            glm::mat4 world = render::transform::active_world();
+
+            transform::pop();
 
             if (render::brush::stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
                 constexpr bool outer_stroke = true;
 
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
-
-                auto stroke_item = geometry::extrude_polygon(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
+                auto stroke_item = geometry::extrude_polygon(world, geom, render::brush::stroke_width());
                 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
 
             if (render::brush::inner_stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
                 constexpr bool outer_stroke = false;
 
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
-
-                render::render_item stroke_item = geometry::extrude_polygon(vertex_positions, vert_comp->vertex_count(), -render::brush::inner_stroke_width());
+                auto stroke_item = geometry::extrude_polygon(world, geom, -render::brush::inner_stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -201,7 +212,43 @@ namespace ppp
         //-------------------------------------------------------------------------
         void rect(float x, float y, float w, float h)
         {
-            polygon(x, y, x + w, y, x + w, y + h, x, y + h);
+            geometry::geometry* geom = geometry::make_rectangle();
+
+            transform::push();
+            transform::translate(x, y);
+
+            if (internal::_rect_mode == shape_mode_type::CORNER)
+            {
+                glm::vec2 center = geometry::rectanglular_center_translation(x, y, w, h);
+
+                transform::translate(-center.x, -center.y);
+            }
+
+            transform::scale(w, h);
+
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+
+            glm::mat4 world = render::transform::active_world();
+
+            transform::pop();
+
+            if (render::brush::stroke_enabled())
+            {
+                constexpr bool outer_stroke = true;
+
+                auto stroke_item = geometry::extrude_polygon(world, geom, render::brush::stroke_width());
+
+                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+            }
+
+            if (render::brush::inner_stroke_enabled())
+            {
+                constexpr bool outer_stroke = false;
+
+                auto stroke_item = geometry::extrude_polygon(world, geom, -render::brush::inner_stroke_width());
+
+                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+            }
         }
         
         //-------------------------------------------------------------------------
@@ -213,36 +260,37 @@ namespace ppp
         //-------------------------------------------------------------------------
         void triangle(float x1, float y1, float x2, float y2, float x3, float y3)
         {
-            render::render_item item = geometry::make_triangle(internal::_triangle_mode == shape_mode_type::CORNER, x1, y1, x2, y2, x3, y3);
+            geometry::geometry* geom = geometry::make_triangle(x1, y1, x2, y2, x3, y3);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, item);
+            transform::push();
+
+            if (internal::_triangle_mode == shape_mode_type::CORNER)
+            {
+                glm::vec2 center = geometry::triangular_center_translation(x1, y1, x2, y2, x3, y3);
+
+                transform::translate(-center.x, -center.y);
+            }
+
+            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+
+            glm::mat4 world = render::transform::active_world();
+
+            transform::pop();
 
             if (render::brush::stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
                 constexpr bool outer_stroke = true;
 
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
-
-                auto stroke_item = geometry::extrude_triangle(vertex_positions, vert_comp->vertex_count(), render::brush::stroke_width());
+                auto stroke_item = geometry::extrude_triangle(world, geom, render::brush::stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
 
             if (render::brush::inner_stroke_enabled())
             {
-                auto vert_comp = item.get_component<render::vertex_component>();
-
-                assert(vert_comp != nullptr);
-
                 constexpr bool outer_stroke = false;
 
-                auto vertex_positions = vert_comp->get_attribute_data<glm::vec3>(render::vertex_attribute_type::POSITION);
-
-                render::render_item stroke_item = geometry::extrude_triangle(vertex_positions, vert_comp->vertex_count(), -render::brush::inner_stroke_width());
+                auto stroke_item = geometry::extrude_triangle(world, geom, -render::brush::inner_stroke_width());
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
@@ -251,7 +299,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void point(float x, float y, float z)
         {
-            geometry::geometry* geom = geometry::make_point();
+            geometry::geometry* geom = geometry::make_3d_point();
 
             transform::push();
             transform::translate(x, y, z);

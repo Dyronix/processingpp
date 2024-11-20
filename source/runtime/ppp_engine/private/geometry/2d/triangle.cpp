@@ -1,9 +1,13 @@
 #include "geometry/2d/triangle.h"
+#include "geometry/2d/geometry_2d_helpers.h"
 
 #include "resources/geometry_pool.h"
 
 #include <array>
 #include <sstream>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 namespace ppp
 {
@@ -18,6 +22,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         static void make_vertices(geometry* geom, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3)
         {
+            geom->vertex_positions().assign(3, { 0.0f, 0.0f, 0.0f });
+
             s32 index = 0;
 
             geom->vertex_positions()[index++] = glm::vec3(x1, y1, 0);
@@ -28,6 +34,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         static void make_uvs(geometry* geom)
         {
+            geom->vertex_uvs().assign(3, { 0.0f, 0.0f });
+
             s32 index = 0;
 
             geom->vertex_uvs()[index++] = glm::vec2(0.0f, 0.0f);
@@ -42,9 +50,40 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        geometry* extrude_triangle(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width)
+        geometry* extrude_triangle(const glm::mat4& world, const geometry* in_geom, f32 extrusion_width)
         {
+            std::stringstream stream;
 
+            stream << (extrusion_width > 0 ? "tri_out_stroke|" : "tri_in_stroke|");
+            stream << extrusion_width << "|";
+            stream << glm::to_string(world) << "|";
+            stream << in_geom;
+
+            const std::string gid = stream.str();
+
+            if (!geometry_pool::has_geometry(gid))
+            {
+                auto create_geom_fn = [&world, in_geom, extrusion_width](geometry* geom)
+                {
+                    glm::vec3 center = glm::vec3(0.0f, 0.0f, 0.0f);
+
+                    for (s32 i = 0; i < in_geom->vertex_count(); ++i)
+                    {
+                        center += in_geom->vertex_positions()[i];
+                    }
+
+                    center /= in_geom->vertex_count();
+
+                    extrude_vertices(geom->vertex_positions(), world, center, in_geom->vertex_positions().data(), in_geom->vertex_count(), extrusion_width);
+                    extrude_indices(geom->faces(), in_geom->vertex_count());
+                };
+
+                return geometry_pool::add_new_geometry(gid, geometry(false, create_geom_fn));
+            }
+            else
+            {
+                return geometry_pool::get_geometry(gid);
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -61,8 +100,6 @@ namespace ppp
             stream << y3;
 
             const std::string gid = stream.str();
-
-            const geometry* geom = nullptr;
 
             if (!geometry_pool::has_geometry(gid))
             {

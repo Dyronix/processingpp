@@ -426,10 +426,19 @@ namespace ppp
                     #endif
 
                     GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, batch->vertex_buffer_byte_size(), batch->vertices()));
-                    GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
 
-                    shaders::apply_uniforms(shader_program());
-                    GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
+                    if (batch->active_index_count() != 0)
+                    {
+                        GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
+
+                        shaders::apply_uniforms(shader_program());
+                        GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
+                    }
+                    else
+                    {
+                        shaders::apply_uniforms(shader_program());
+                        GL_CALL(glDrawArrays(gl_topology, 0, batch->active_vertex_count()));
+                    }
 
                     batch = drawing_data.next_batch();
                 }
@@ -481,10 +490,19 @@ namespace ppp
                     }
 
                     GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, batch->vertex_buffer_byte_size(), batch->vertices()));
-                    GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
 
-                    shaders::apply_uniforms(shader_program());
-                    GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
+                    if (batch->active_index_count() != 0)
+                    {
+                        GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
+
+                        shaders::apply_uniforms(shader_program());
+                        GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
+                    }
+                    else
+                    {
+                        shaders::apply_uniforms(shader_program());
+                        GL_CALL(glDrawArrays(gl_topology, 0, batch->active_vertex_count()));
+                    }
 
                     batch = drawing_data.next_batch();
                 }

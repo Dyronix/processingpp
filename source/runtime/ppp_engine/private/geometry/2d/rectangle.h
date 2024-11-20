@@ -8,7 +8,7 @@ namespace ppp
 {
     namespace geometry
     {
-        geometry* extrude_rectangle(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width);
+        geometry* extrude_rectangle(const glm::mat4& world, const geometry* in_geom, f32 extrusion_width);
 
         geometry* make_rectangle();
     }

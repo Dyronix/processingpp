@@ -62,12 +62,18 @@ namespace ppp
         {
             if (m_faces.empty())
             {
-                return m_vertex_positions.size();
+                return 0;
             }
 
             constexpr s32 nr_vertices_in_triangle = 3;
 
             return m_faces.size() * nr_vertices_in_triangle;
+        }
+
+        //-------------------------------------------------------------------------
+        u64 geometry::texture_count() const
+        {
+            return m_texture_ids.size();
         }
 
         //-------------------------------------------------------------------------

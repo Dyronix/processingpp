@@ -15,11 +15,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        geometry* make_point()
+        geometry* make_3d_point()
         {
             const std::string gid = "point_3d";
-
-            const geometry* geom = nullptr;
 
             if (!geometry_pool::has_geometry(gid))
             {

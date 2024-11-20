@@ -83,6 +83,7 @@ namespace ppp
     namespace render
     {
         using index = u32;
+        using texture_id = u32;
 
         struct face
         {

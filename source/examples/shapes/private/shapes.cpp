@@ -102,7 +102,7 @@ namespace ppp
         shapes::ellipse(x, y, shape_size * 0.5f, shape_size * 0.5f);
         
         x += shape_size * 2;
-
+        
         shapes::circle(x, y, shape_size * 0.5f, 4);
         
         // circles are drawn from the center so we subtract have the radius here
@@ -116,7 +116,7 @@ namespace ppp
         
         x += shape_size * 2;
         
-        shapes::polygon(x, y, x + shape_size, y, x + shape_size, y + shape_size, x, y + shape_size);
+        shapes::polygon(x - (shape_size * 0.5f), y - (shape_size * 0.5f), x + (shape_size * 0.5f), y - (shape_size * 0.5f), x + (shape_size * 0.5f), y + (shape_size * 0.5f), x - (shape_size * 0.5f), y + (shape_size * 0.5f));
         
         x += shape_size * 2;
         
@@ -128,8 +128,8 @@ namespace ppp
         
         x += shape_size * 2;
         
-        shapes::triangle(x + shape_size, y, x + (shape_size * 0.5f), y + (shape_size * 0.5f), x, y);
-
+        shapes::triangle(x + shape_size, y - (shape_size * 0.5f), x + (shape_size * 0.5f), y + (shape_size * 0.5f), x, y - (shape_size * 0.5f));
+        
         x = 96;
         for (int i = 0; i < 9; ++i)
         {
@@ -143,7 +143,7 @@ namespace ppp
             }
             x += 128;
         }
-
+        
         std::string str_frame_rate = "fps " + std::to_string(environment::frame_rate());
         std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
         

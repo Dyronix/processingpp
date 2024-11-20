@@ -1,19 +1,72 @@
 #include "typography.h"
 #include "render/render.h"
+#include "render/render_transform.h"
 #include "resources/font_pool.h"
+#include "resources/geometry_pool.h"
 #include "fileio/fileio.h"
+#include "geometry/geometry.h"
+#include "geometry/geometry_helpers.h"
+#include "geometry/2d/rectangle.h"
+#include "geometry/2d/geometry_2d_helpers.h"
 
 #include "util/log.h"
 #include "util/types.h"
-#include "geometry/2d/geometry_2d.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+#include <sstream>
 
 namespace ppp
 {
     namespace typography
     {
+        namespace internal
+        {
+            auto _text_mode = text_mode_type::CENTER;
+
+            geometry::geometry* make_font(s32 character, render::texture_id texture_id, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y)
+            {
+                std::stringstream stream;
+
+                stream << "font_character|";
+                stream << character << "|";
+                stream << texture_id;
+
+                const std::string gid = stream.str();
+
+                if (!geometry_pool::has_geometry(gid))
+                {
+                    auto create_geom_fn = [uv_start_x, uv_start_y, uv_end_x, uv_end_y](geometry::geometry* geom)
+                    {
+                        compute_quad_faces(geom);
+
+                        compute_quad_vertex_positions(geom);
+                        compute_quad_vertex_normals(geom);
+
+                        geom->vertex_uvs().assign(4, glm::vec2(0.0f, 0.0f));
+
+                        s32 index = 0;
+
+                        geom->vertex_uvs()[index++] = glm::vec2(uv_start_x, uv_end_y);
+                        geom->vertex_uvs()[index++] = glm::vec2(uv_end_x, uv_end_y);
+                        geom->vertex_uvs()[index++] = glm::vec2(uv_end_x, uv_start_y);
+                        geom->vertex_uvs()[index++] = glm::vec2(uv_start_x, uv_start_y);
+                    };
+
+                    geometry::geometry* geom = geometry_pool::add_new_geometry(gid, geometry::geometry(false, create_geom_fn));
+
+                    geom->texture_ids().push_back(texture_id);
+
+                    return geom;
+                }
+                else
+                {
+                    return geometry_pool::get_geometry(gid);
+                }
+            }
+        }
+
         void text_size(unsigned int size)
         {
             const font_pool::Font* active_font = font_pool::active_font();
@@ -50,9 +103,21 @@ namespace ppp
                 f32 w = ch.size.x * scale;
                 f32 h = ch.size.y * scale;
 
-                render::render_item item = geometry::font::make_font(true, xpos, ypos, w, h, ch.uv_start.x, ch.uv_start.y, ch.uv_end.x, ch.uv_end.y, active_font->atlas.texture_id);
+                geometry::geometry* geom = internal::make_font((s32)*it, active_font->atlas.texture_id, ch.uv_start.x, ch.uv_start.y, ch.uv_end.x, ch.uv_end.y);
 
-                render::submit_font_item(item);
+                glm::vec2 center = geometry::rectanglular_center_translation(xpos, ypos, w, h);
+
+                render::transform::push();
+                render::transform::translate(glm::vec2(xpos, ypos));
+                if (internal::_text_mode == text_mode_type::CORNER)
+                {
+                    render::transform::translate(glm::vec2(center.x, center.y));
+                }
+                render::transform::scale(glm::vec2(w, h));
+
+                render::submit_font_item(geom);
+
+                render::transform::pop();
 
                 // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
                 x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
@@ -62,6 +127,11 @@ namespace ppp
         void text_font(const font_id& font)
         {
             font_pool::load_active_font(font);
+        }
+
+        void text_mode(text_mode_type mode)
+        {
+            internal::_text_mode = mode;
         }
 
         font_id load_font(const std::string& path, unsigned int size, unsigned int characters_to_load)

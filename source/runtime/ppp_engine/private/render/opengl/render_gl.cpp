@@ -834,6 +834,27 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void submit_stroke_render_item(topology_type topology, const irender_item* item, bool outer)
+        {
+            if (internal::_geometry_builder.is_active())
+            {
+                log::warn("Stroking custom geometry is currently not supported");
+                return;
+            }
+
+            if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false)
+            {
+                // When there is no "stroke" and there is no "fill" the object would be invisible.
+                // So we don't add anything to the drawing list.
+                return;
+            }
+
+            glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
+
+            internal::_primitive_stroke_batch_renderer->append_drawing_data(topology, item, stroke_color, transform::active_world());
+        }
+
+        //-------------------------------------------------------------------------
         void submit_stroke_render_item(topology_type topology, const render_item& item, bool outer)
         {
             if (internal::_geometry_builder.is_active())
@@ -861,6 +882,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void submit_font_item(const irender_item* item)
+        {
+            internal::_font_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform::active_world());
+        }
+
+        //-------------------------------------------------------------------------
         void submit_image_item(const render_item& item)
         {
             if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
@@ -874,7 +901,34 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void submit_image_item(const irender_item* item)
+        {
+            if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
+            {
+                internal::submit_custom_image_item(item);
+            }
+            else
+            {
+                internal::_image_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
+            }
+        }
+
+        //-------------------------------------------------------------------------
         void submit_stroke_image_item(const render_item& item, bool outer)
+        {
+            if (internal::_geometry_builder.is_active())
+            {
+                log::warn("Stroking custom image geometry is currently not supported");
+                return;
+            }
+
+            glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
+
+            internal::_image_stroke_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, stroke_color, transform::active_world());
+        }
+
+        //-------------------------------------------------------------------------
+        void submit_stroke_image_item(const irender_item* item, bool outer)
         {
             if (internal::_geometry_builder.is_active())
             {

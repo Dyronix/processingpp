@@ -67,8 +67,6 @@ namespace ppp
         {
             const std::string gid = "octahedron|" + std::to_string(smooth_normals);
 
-            const geometry* geom = nullptr;
-
             if (!geometry_pool::has_geometry(gid))
             {
                 auto create_geom_fn = [](geometry* self)

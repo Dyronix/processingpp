@@ -26,8 +26,6 @@ namespace ppp
         {
             const std::string gid = (extrusion_width > 0 ? "line_out_stroke|" : "line_in_stroke") + std::to_string(extrusion_width);
 
-            const geometry* geom = nullptr;
-
             if (!geometry_pool::has_geometry(gid))
             {
                 const f32 stroke_x1 = vertices[0].x - extrusion_width;
@@ -62,8 +60,6 @@ namespace ppp
             stream << y2;
 
             const std::string gid = stream.str();
-
-            const geometry* geom = nullptr;
 
             if (!geometry_pool::has_geometry(gid))
             {

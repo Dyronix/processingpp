@@ -3,6 +3,8 @@
 
 #include "resources/geometry_pool.h"
 
+#include "render/render_transform.h"
+
 #include <array>
 
 namespace ppp
@@ -20,24 +22,24 @@ namespace ppp
         {
             const std::string gid = (extrusion_width > 0 ? "point_out_stroke|" : "point_in_stroke") + std::to_string(extrusion_width);
 
-            const geometry* geom = nullptr;
+            geometry* geom = nullptr;
 
             if (!geometry_pool::has_geometry(gid))
             {
-                return make_ellipse(vertices[0].x, vertices[0].y, extrusion_width, extrusion_width);
+                geom = make_ellipse();
             }
             else
             {
-                return geometry_pool::get_geometry(gid);
+                geom = geometry_pool::get_geometry(gid);
             }
+
+            return geom;
         }
 
         //-------------------------------------------------------------------------
-        geometry* make_point()
+        geometry* make_2d_point()
         {
             const std::string gid = "point_2d";
-
-            const geometry* geom = nullptr;
 
             if (!geometry_pool::has_geometry(gid))
             {

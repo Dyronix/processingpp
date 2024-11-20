@@ -193,11 +193,14 @@ namespace ppp
         public:
             virtual u64 vertex_count() const = 0;
             virtual u64 index_count() const = 0;
+            virtual u64 texture_count() const = 0;
 
             virtual const std::vector<glm::vec3>& vertex_positions() const = 0;
             virtual const std::vector<glm::vec3>& vertex_normals() const = 0;
             virtual const std::vector<glm::vec2>& vertex_uvs() const = 0;
+
             virtual const std::vector<face>& faces() const = 0;
+            virtual const std::vector<texture_id>& texture_ids() const = 0;
         };
     }
 }
