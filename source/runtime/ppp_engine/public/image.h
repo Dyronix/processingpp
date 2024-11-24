@@ -33,8 +33,14 @@ namespace ppp
 
         void image_mode(image_mode_type mode);
 
-        void load_pixels(image_id id);
+        unsigned char* load_pixels(int x, int y, int width, int height);
+        unsigned char* load_pixels(image_id id);
+
         void update_pixels(image_id id);
+
+        void save_pixels(const std::string& output_name, unsigned char* data, int width, int height, int channels);
+        void save_pixels(const std::string& output_name, int width, int height);
+        void save_pixels(const std::string& output_name, image_id id);
 
         pixels_u8_ptr pixels_as_u8();
         pixels_s32_ptr pixels_as_u32();

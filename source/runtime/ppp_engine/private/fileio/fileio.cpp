@@ -89,6 +89,11 @@ namespace ppp
 			internal::_wildcards[wildcard] = value;
 		}
 
+		std::string resolve_path(const std::string& filename)
+		{
+			return internal::get_path(filename);
+		}
+
 		bool exists(const std::string& filename)
 		{
 			const std::string path = internal::get_path(filename);
@@ -109,6 +114,10 @@ namespace ppp
 			{
 				log::error("File {} with full path {} was not found!", filename, path);
 				return {};
+			}
+			else
+			{
+				log::info("Binary file read at path: {}", path);
 			}
 
 			// Read file

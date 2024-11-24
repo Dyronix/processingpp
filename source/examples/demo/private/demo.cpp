@@ -55,8 +55,8 @@ namespace ppp
         setup_canvas();
         setup_input_events();
 
-        _image_container = image::load("local:content/container.jpg");
-        _image_wall = image::load("local:content/wall.jpg");
+        _image_container = image::load("local:/content/container.jpg");
+        _image_wall = image::load("local:/content/wall.jpg");
 
         shapes::rect_mode(shapes::shape_mode_type::CORNER);
         image::image_mode(image::image_mode_type::CORNER);

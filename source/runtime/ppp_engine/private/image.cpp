@@ -16,8 +16,10 @@
 
 #include "util/log.h"
 
+#include <stb/stb_image_write.h>
 #include <stb/stb_image.h>
 #include <glm/glm.hpp>
+#include <glad/glad.h>
 
 #include <unordered_map>
 #include <algorithm>
@@ -69,14 +71,55 @@ namespace ppp
             internal::_image_mode = mode;
         }
 
-        void load_pixels(image_id id)
+        unsigned char* load_pixels(int x, int y, int width, int height)
         {
-            texture_pool::load_active_pixels(id);
+            auto active_pixels = texture_pool::load_active_pixels(x, y, width, height, 4);
+
+            glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, texture_pool::active_pixels());
+
+            return active_pixels;
+        }
+
+        unsigned char* load_pixels(image_id id)
+        {
+            return texture_pool::load_active_pixels(id);
         }
 
         void update_pixels(image_id id)
         {
             texture_pool::update_active_pixels(id);
+        }
+
+        void save_pixels(const std::string& output_name, unsigned char* data, int width, int height, int channels)
+        {
+            std::string path = fileio::resolve_path(output_name).c_str();
+
+            if (stbi_write_png(path.c_str(), width, height, channels, data, width * channels) == 0)
+            {
+                log::warn("failed to write image to path: {}", output_name);
+            }
+        }
+
+        void save_pixels(const std::string& output_name, int width, int height)
+        {
+            std::string path = fileio::resolve_path(output_name).c_str();
+
+            if (stbi_write_png(path.c_str(), width, height, 4, texture_pool::active_pixels(), width * 4) == 0)
+            {
+                log::warn("failed to write image to path: {}", output_name);
+            }
+        }
+
+        void save_pixels(const std::string& output_name, image_id id)
+        {
+            std::string path = fileio::resolve_path(output_name).c_str();
+
+            const texture_pool::Image* img = texture_pool::image_at_id(id);
+
+            if (stbi_write_png(path.c_str(), img->width, img->height, img->channels, img->data, img->width * img->channels) == 0)
+            {
+                log::warn("failed to write image to path: {}", output_name);
+            }
         }
 
         pixels_u8_ptr pixels_as_u8()

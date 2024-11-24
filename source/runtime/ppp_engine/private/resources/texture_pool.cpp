@@ -78,7 +78,7 @@ namespace ppp
             internal::_images.insert(std::make_pair(image.file_path, image));
         }
 
-        void load_active_pixels(s32 id)
+        u8* load_active_pixels(s32 id)
         {
             const Image* img = image_at_id(id);
 
@@ -93,6 +93,20 @@ namespace ppp
 
                 memcpy(internal::_active_pixels, img->data, img->width * img->height * img->channels);
             }
+
+            return internal::_active_pixels;
+        }
+
+        u8* load_active_pixels(s32 x, s32 y, s32 width, s32 height, s32 channels)
+        {
+            if (internal::_active_pixels != nullptr)
+            {
+                free(internal::_active_pixels);
+            }
+
+            internal::_active_pixels = (u8*)malloc((width - x) * (height - y) * channels);
+
+            return internal::_active_pixels;
         }
 
         void update_active_pixels(s32 id)

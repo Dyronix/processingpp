@@ -10,6 +10,12 @@
 #include "camera.h"
 #include "mathematics.h"
 #include "material.h"
+#include "image.h"
+
+#define PPP_CHECK_TEST_FRAME 1
+#define PPP_SAVE_TEST_FRAME 0
+#define PPP_CLOSE_AFTER_X_FRAMES 1
+#define PPP_ANIMATE_SCENE 0
 
 namespace ppp
 {
@@ -64,21 +70,11 @@ namespace ppp
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
     }
 
-    void load_font()
-    {
-        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 18);
-    }
-
-    void activate_font(typography::font_id font)
-    {
-        typography::text_font(font);
-    }
-
     void load_cyber_ocean_shader()
     {
-        std::string vs_path = "local:content/shaders/cyber_ocean.vs";
-        std::string ps_path = "local:content/shaders/cyber_ocean.fs";
-        std::string gs_path = "local:content/shaders/cyber_ocean.gs";
+        std::string vs_path = "local:/content/shaders/cyber_ocean.vs";
+        std::string ps_path = "local:/content/shaders/cyber_ocean.fs";
+        std::string gs_path = "local:/content/shaders/cyber_ocean.gs";
 
         _material_cyber_ocean = material::load_shader("cyber_ocean", vs_path, ps_path, gs_path);
 
@@ -97,6 +93,53 @@ namespace ppp
         shapes::build_custom_geometry("cyber_ocean", &generate_cyber_ocean_grid);
     }
 
+    void end_draw()
+    {
+        if (environment::frame_count() == 5)
+        {
+#if PPP_SAVE_TEST_FRAME
+            image::load_pixels(0, 0, _window_width, _window_height);
+            image::save_pixels("local:/test-geometry-gpu.png", _window_width, _window_height);
+#endif
+
+#if PPP_CHECK_TEST_FRAME
+            auto test_frame = image::load("local:/test-geometry-gpu.png");
+            auto test_frame_pixels = image::load_pixels(test_frame.id);
+            
+            size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
+
+            std::vector<unsigned char> active_test_frame_pixels(total_size);
+            memcpy_s(
+                active_test_frame_pixels.data(),
+                total_size,
+                test_frame_pixels,
+                total_size);
+
+            auto frame_pixels = image::load_pixels(0, 0, _window_width, _window_height);
+
+            std::vector<unsigned char> active_frame_pixels(total_size);
+            memcpy_s(
+                active_frame_pixels.data(),
+                total_size,
+                frame_pixels,
+                total_size);
+
+            if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
+            {
+                environment::print("[TEST FAILED][GGPU] image buffers are not identical!");
+            }
+            else
+            {
+                environment::print("[TEST SUCCESS][GGPU] image buffers are identical.");
+            }
+#endif
+
+#if PPP_CLOSE_AFTER_X_FRAMES
+            structure::quit();
+#endif
+        }
+    }
+
     AppParams entry()
     {
         AppParams app_params;
@@ -111,9 +154,6 @@ namespace ppp
     {
         setup_input_events();
 
-        load_font();
-        activate_font(_font);
-
         shapes::enable_wireframe_mode(false);
         shapes::enable_solid_mode(true);
 
@@ -126,6 +166,8 @@ namespace ppp
 
         _color_top = { 255, 0, 0, 255 };     // Red for top
         _color_bottom = { 0, 0, 255, 255 };  // Blue for bottom
+
+        structure::on_draw_end(end_draw);
     }
 
     void draw()
@@ -142,15 +184,12 @@ namespace ppp
 
         camera::orbit_control(options);
 
+#if PPP_ANIMATE_SCENE
         _material_cyber_ocean.set_uniform("u_total_time", environment::total_time());
+#else
+        _material_cyber_ocean.set_uniform("u_total_time", 0);
+#endif
 
         color::fill({0,0,0,255});
-
-        std::string str_frame_rate = "fps " + std::to_string(environment::average_frame_rate());
-        std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
-
-        typography::text(str_frame_rate, 10, _window_height - 30);
-        typography::text("-", 135, _window_height - 30);
-        typography::text(str_delta_time, 170, _window_height - 30);
     }
 }

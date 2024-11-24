@@ -32,7 +32,9 @@ namespace ppp
 
         void add_new_image(const Image& image);
 
-        void load_active_pixels(s32 id);
+        u8* load_active_pixels(s32 id);
+        u8* load_active_pixels(s32 x, s32 y, s32 width, s32 height, s32 channels);
+
         void update_active_pixels(s32 id);
 
         unsigned char* active_pixels();

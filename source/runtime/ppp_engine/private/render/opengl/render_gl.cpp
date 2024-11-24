@@ -28,6 +28,10 @@ namespace ppp
         namespace internal
         {
             //-------------------------------------------------------------------------
+            std::vector<std::function<void()>> _draw_begin_subs;
+            std::vector<std::function<void()>> _draw_end_subs;
+
+            //-------------------------------------------------------------------------
             struct camera
             {
                 glm::vec3 eye;
@@ -336,7 +340,7 @@ namespace ppp
                     {
                         renderer->buffer_policy(batch_buffer_policy::STATIC);
                     }
-                    
+
                     renderer->render_policy(batch_render_policy::CUSTOM);
                     internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
@@ -524,6 +528,14 @@ namespace ppp
             }
 
             GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+            if (internal::_draw_begin_subs.empty() == false)
+            {
+                for (auto& fn : internal::_draw_begin_subs)
+                {
+                    fn();
+                }
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -539,7 +551,7 @@ namespace ppp
             GL_CALL(glEnable(GL_BLEND));
             GL_CALL(glEnable(GL_CULL_FACE));
             GL_CALL(glEnable(GL_DEPTH_TEST));
-            
+
             GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
             GL_CALL(glCullFace(GL_BACK));
             GL_CALL(glDepthFunc(GL_LESS));
@@ -574,6 +586,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         void end()
         {
+            if (internal::_draw_end_subs.empty() == false)
+            {
+                for (auto& fn : internal::_draw_end_subs)
+                {
+                    fn();
+                }
+            }
+
             GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         }
 
@@ -637,7 +657,7 @@ namespace ppp
         {
             internal::_primitive_batch_renderer->enable_wireframe_rendering(enable);
             internal::_primitive_stroke_batch_renderer->enable_wireframe_rendering(enable);
-            
+
             internal::_image_batch_renderer->enable_wireframe_rendering(enable);
             internal::_image_stroke_batch_renderer->enable_wireframe_rendering(enable);
 
@@ -712,22 +732,22 @@ namespace ppp
 
             GLint filter = GL_INVALID_VALUE;
 
-            switch(filter_type)
+            switch (filter_type)
             {
-                case image_filter_type::NEAREST: filter = GL_NEAREST; break;
-                case image_filter_type::LINEAR: filter = GL_LINEAR; break;
-                default:
-                    assert(false);
+            case image_filter_type::NEAREST: filter = GL_NEAREST; break;
+            case image_filter_type::LINEAR: filter = GL_LINEAR; break;
+            default:
+                assert(false);
             }
 
             GLint wrap = GL_INVALID_VALUE;
 
-            switch(wrap_type)
+            switch (wrap_type)
             {
-                case image_wrap_type::CLAMP_TO_EDGE: wrap = GL_CLAMP_TO_EDGE; break;
-                case image_wrap_type::REPEAT: wrap = GL_REPEAT; break;
-                default:
-                    assert(false);
+            case image_wrap_type::CLAMP_TO_EDGE: wrap = GL_CLAMP_TO_EDGE; break;
+            case image_wrap_type::REPEAT: wrap = GL_REPEAT; break;
+            default:
+                assert(false);
             }
 
             u32 texture_id;
@@ -951,8 +971,20 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         void clear(u32 flags)
-        {           
+        {
             GL_CALL(glClear(flags));
+        }
+
+        //-------------------------------------------------------------------------
+        void register_on_draw_begin(std::function<void()> draw_begin)
+        {
+            internal::_draw_begin_subs.push_back(draw_begin);
+        }
+
+        //-------------------------------------------------------------------------
+        void register_on_draw_end(std::function<void()> draw_end)
+        {
+            internal::_draw_end_subs.push_back(draw_end);
         }
 
         //-------------------------------------------------------------------------

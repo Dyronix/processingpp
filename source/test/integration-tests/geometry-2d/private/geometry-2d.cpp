@@ -11,6 +11,10 @@
 #include "typography.h"
 #include "camera.h"
 
+#define PPP_CHECK_TEST_FRAME 1
+#define PPP_SAVE_TEST_FRAME 0
+#define PPP_CLOSE_AFTER_X_FRAMES 1
+
 // Demo of shapes and images with stroke and inner stroke
 namespace ppp
 {
@@ -19,20 +23,8 @@ namespace ppp
     constexpr int _canvas_width = 600;
     constexpr int _canvas_height = 600;
 
-    typography::font_id _font;
-
     image::image _image_container;
     image::image _image_wall;
-
-    void load_font()
-    {
-        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 18);
-    }
-
-    void activate_font()
-    {
-        typography::text_font(_font);
-    }
 
     void setup_canvas()
     {
@@ -53,6 +45,53 @@ namespace ppp
         });
     }
 
+    void end_draw()
+    {
+        if (environment::frame_count() == 5)
+        {
+#if PPP_SAVE_TEST_FRAME
+            image::load_pixels(0, 0, _window_width, _window_height);
+            image::save_pixels("local:/test-geometry-2d.png", _window_width, _window_height);
+#endif
+
+#if PPP_CHECK_TEST_FRAME
+            auto test_frame = image::load("local:/test-geometry-2d.png");
+            auto test_frame_pixels = image::load_pixels(test_frame.id);
+
+            size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
+
+            std::vector<unsigned char> active_test_frame_pixels(total_size);
+            memcpy_s(
+                active_test_frame_pixels.data(),
+                total_size,
+                test_frame_pixels,
+                total_size);
+
+            auto frame_pixels = image::load_pixels(0, 0, _window_width, _window_height);
+
+            std::vector<unsigned char> active_frame_pixels(total_size);
+            memcpy_s(
+                active_frame_pixels.data(),
+                total_size,
+                frame_pixels,
+                total_size);
+
+            if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
+            {
+                environment::print("[TEST FAILED][G2D] image buffers are not identical!");
+            }
+            else
+            {
+                environment::print("[TEST SUCCESS][G2D] image buffers are identical.");
+            }
+#endif
+
+#if PPP_CLOSE_AFTER_X_FRAMES
+            structure::quit();
+#endif
+        }
+    }
+
     AppParams entry()
     {
         AppParams app_params;
@@ -68,9 +107,6 @@ namespace ppp
         setup_canvas();
         setup_input_events();
 
-        load_font();
-        activate_font();
-
         shapes::rect_mode(shapes::shape_mode_type::CENTER);
         shapes::ellipse_mode(shapes::shape_mode_type::CENTER);
 
@@ -81,12 +117,13 @@ namespace ppp
 
         _image_container = image::load("local:content/container.jpg");
         _image_wall = image::load("local:content/wall.jpg");
+
+        structure::on_draw_end(end_draw);
     }
 
     void draw()
     {
         color::fill({ 255,0,0,255 });
-        //color::no_fill();
 
         color::stroke({ 255, 255 , 255, 255 });
         color::stroke_weight(5.0f);
@@ -142,13 +179,6 @@ namespace ppp
                 image::draw(_image_wall.id, x, 64.0f, 64, 64);
             }
             x += 128;
-        }
-        
-        std::string str_frame_rate = "fps " + std::to_string(environment::frame_rate());
-        std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
-        
-        typography::text(str_frame_rate, 10, _window_height - 30);
-        typography::text("-", 135, _window_height - 30);
-        typography::text(str_delta_time, 170, _window_height - 30);
+        }     
     }
 }

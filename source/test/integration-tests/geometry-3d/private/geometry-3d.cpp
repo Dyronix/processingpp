@@ -10,6 +10,11 @@
 #include "camera.h"
 #include "mathematics.h"
 #include "material.h"
+#include "image.h"
+
+#define PPP_CHECK_TEST_FRAME 1
+#define PPP_SAVE_TEST_FRAME 0
+#define PPP_CLOSE_AFTER_X_FRAMES 1
 
 namespace ppp
 {
@@ -21,11 +26,9 @@ namespace ppp
     constexpr int _total_shape_count = 8;
 
     int _shape_vis = 0;
-    int _show_all = 0;
+    int _show_all = 1;
 
     int _interpolation = 8;
-
-    typography::font_id _font;
 
     void setup_input_events()
     {
@@ -69,14 +72,51 @@ namespace ppp
         });
     }
 
-    void load_font()
+    void end_draw()
     {
-        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 18);
-    }
+        if (environment::frame_count() == 5)
+        {
+#if PPP_SAVE_TEST_FRAME
+            image::load_pixels(0, 0, _window_width, _window_height);
+            image::save_pixels("local:/test-geometry-3d.png", _window_width, _window_height);
+#endif
 
-    void activate_font(typography::font_id font)
-    {
-        typography::text_font(font);
+#if PPP_CHECK_TEST_FRAME
+            auto test_frame = image::load("local:/test-geometry-3d.png");
+            auto test_frame_pixels = image::load_pixels(test_frame.id);
+
+            size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
+
+            std::vector<unsigned char> active_test_frame_pixels(total_size);
+            memcpy_s(
+                active_test_frame_pixels.data(),
+                total_size,
+                test_frame_pixels,
+                total_size);
+
+            auto frame_pixels = image::load_pixels(0, 0, _window_width, _window_height);
+
+            std::vector<unsigned char> active_frame_pixels(total_size);
+            memcpy_s(
+                active_frame_pixels.data(),
+                total_size,
+                frame_pixels,
+                total_size);
+
+            if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
+            {
+                environment::print("[TEST FAILED][G3D] image buffers are not identical!");
+            }
+            else
+            {
+                environment::print("[TEST SUCCESS][G3D] image buffers are identical.");
+            }
+#endif
+
+#if PPP_CLOSE_AFTER_X_FRAMES
+            structure::quit();
+#endif
+        }
     }
 
     AppParams entry()
@@ -93,9 +133,6 @@ namespace ppp
     {
         setup_input_events();
 
-        load_font();
-        activate_font(_font);
-
         shapes::enable_wireframe_mode(false);
         shapes::enable_solid_mode(true);
 
@@ -103,6 +140,8 @@ namespace ppp
         camera::camera(20, -40, 400);
 
         material::normal_material();
+
+        structure::on_draw_end(end_draw);
     }
 
     void draw_shapes_grid()
@@ -195,12 +234,5 @@ namespace ppp
         draw_shapes_grid();
 
         color::fill({0,0,0,255});
-
-        std::string str_frame_rate = "fps " + std::to_string(environment::average_frame_rate());
-        std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
-
-        typography::text(str_frame_rate, 10, _window_height - 30);
-        typography::text("-", 135, _window_height - 30);
-        typography::text(str_delta_time, 170, _window_height - 30);
     }
 }

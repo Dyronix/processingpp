@@ -59,7 +59,7 @@ namespace ppp
 
         environment::frame_rate(60);
 
-        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 16);
+        _font = typography::load_font("local:/content/fonts/PokemonGb-RAeo.ttf", 16);
         if (_font == -1)
         {
             exit(EXIT_FAILURE);

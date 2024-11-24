@@ -67,7 +67,7 @@ namespace ppp
 
     void load_font()
     {
-        _font = typography::load_font("local:content/fonts/PokemonGb-RAeo.ttf", 18);
+        _font = typography::load_font("local:/content/fonts/PokemonGb-RAeo.ttf", 18);
     }
 
     void activate_font()

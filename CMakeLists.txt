@@ -32,14 +32,17 @@ SET (CMAKE_DEBUG_POSTFIX _d)
 SET(SOURCE_RUNTIME_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/runtime)
 SET(SOURCE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/third-party)
 SET(SOURCE_EXAMPLES_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/examples)
+SET(SOURCE_TEST_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/test)
 
 MESSAGE(STATUS ${SOURCE_RUNTIME_DIRECTORY})
 MESSAGE(STATUS ${SOURCE_THIRDPARTY_DIRECTORY})
 MESSAGE(STATUS ${SOURCE_EXAMPLES_DIRECTORY})
+MESSAGE(STATUS ${SOURCE_TEST_DIRECTORY})
 
 add_subdirectory(${SOURCE_THIRDPARTY_DIRECTORY})
 add_subdirectory(${SOURCE_RUNTIME_DIRECTORY})
 add_subdirectory(${SOURCE_EXAMPLES_DIRECTORY})
+add_subdirectory(${SOURCE_TEST_DIRECTORY})
 
 # Add a custom target that always builds and runs the copy command
 add_custom_target(copy-content ALL
@@ -49,3 +52,11 @@ add_custom_target(copy-content ALL
 )
 
 set_property(TARGET copy-content PROPERTY FOLDER "programs")
+
+add_custom_target(run-all_tests ALL
+    COMMAND python "${CMAKE_SOURCE_DIR}/run_integration_tests.py" --arg1 "Hello" --arg2 42
+    COMMENT "Running Python script with arguments"
+    VERBATIM
+)
+
+set_property(TARGET run_all_tests PROPERTY FOLDER "test")
