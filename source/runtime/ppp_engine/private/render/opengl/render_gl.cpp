@@ -1,7 +1,9 @@
 #include "render/render.h"
 #include "render/render_transform.h"
 #include "render/render_batch.h"
+#include "render/render_instance.h"
 #include "render/render_batch_renderer.h"
+#include "render/render_instance_renderer.h"
 #include "render/render_brush.h"
 
 #include "render/opengl/render_gl_error.h"
@@ -27,6 +29,9 @@ namespace ppp
     {
         namespace internal
         {
+            //-------------------------------------------------------------------------
+            render_draw_mode _draw_mode = render_draw_mode::BATCHED;
+
             //-------------------------------------------------------------------------
             std::vector<std::function<void()>> _draw_begin_subs;
             std::vector<std::function<void()>> _draw_end_subs;
@@ -276,6 +281,9 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            std::unique_ptr<instance_renderer> _primitive_instance_renderer;
+
+            //-------------------------------------------------------------------------
             std::unique_ptr<batch_renderer> _primitive_batch_renderer;
             std::unique_ptr<batch_renderer> _primitive_stroke_batch_renderer;
             std::unique_ptr<batch_renderer> _image_batch_renderer;
@@ -338,10 +346,10 @@ namespace ppp
 
                     if (_geometry_builder.is_active())
                     {
-                        renderer->render_buffer_policy(render_buffer_policy::RETAINED);
+                        renderer->buffer_policy(render_buffer_policy::RETAINED);
                     }
 
-                    renderer->render_draw_policy(render_draw_policy::CUSTOM);
+                    renderer->draw_policy(render_draw_policy::CUSTOM);
                     internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
@@ -368,10 +376,10 @@ namespace ppp
 
                     if (_geometry_builder.is_active())
                     {
-                        renderer->render_buffer_policy(render_buffer_policy::RETAINED);
+                        renderer->buffer_policy(render_buffer_policy::RETAINED);
                     }
 
-                    renderer->render_draw_policy(render_draw_policy::CUSTOM);
+                    renderer->draw_policy(render_draw_policy::CUSTOM);
                     internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
@@ -391,10 +399,10 @@ namespace ppp
 
                     if (_geometry_builder.is_active())
                     {
-                        renderer->render_buffer_policy(render_buffer_policy::RETAINED);
+                        renderer->buffer_policy(render_buffer_policy::RETAINED);
                     }
 
-                    renderer->render_draw_policy(render_draw_policy::CUSTOM);
+                    renderer->draw_policy(render_draw_policy::CUSTOM);
                     internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
@@ -414,15 +422,21 @@ namespace ppp
 
                     if (_geometry_builder.is_active())
                     {
-                        renderer->render_buffer_policy(render_buffer_policy::RETAINED);
+                        renderer->buffer_policy(render_buffer_policy::RETAINED);
                     }
 
-                    renderer->render_draw_policy(render_draw_policy::CUSTOM);
+                    renderer->draw_policy(render_draw_policy::CUSTOM);
                     internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
                 internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
             }
+        }
+
+        //-------------------------------------------------------------------------
+        void draw_mode(render_draw_mode mode)
+        {
+            internal::_draw_mode = mode;
         }
 
         //-------------------------------------------------------------------------
@@ -462,6 +476,8 @@ namespace ppp
 
             internal::create_frame_buffer();
 
+            internal::_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
+
             internal::_primitive_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
             internal::_primitive_stroke_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
             internal::_image_batch_renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_texture);
@@ -474,6 +490,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         void terminate()
         {
+            internal::_primitive_instance_renderer->terminate();
+
             internal::_font_batch_renderer->terminate();
             internal::_image_batch_renderer->terminate();
             internal::_image_stroke_batch_renderer->terminate();
@@ -489,6 +507,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         void begin()
         {
+            internal::_primitive_instance_renderer->begin();
+
             internal::_primitive_batch_renderer->begin();
             internal::_primitive_stroke_batch_renderer->begin();
             internal::_image_batch_renderer->begin();
@@ -555,6 +575,8 @@ namespace ppp
             GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
             GL_CALL(glCullFace(GL_BACK));
             GL_CALL(glDepthFunc(GL_LESS));
+
+            internal::_primitive_instance_renderer->render(active_vp);
 
             internal::_primitive_batch_renderer->render(active_vp);
             internal::_primitive_stroke_batch_renderer->render(active_vp);
@@ -638,6 +660,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         void push_solid_rendering(bool enable)
         {
+            internal::_primitive_instance_renderer->enable_solid_rendering(enable);
+
             internal::_primitive_batch_renderer->enable_solid_rendering(enable);
             internal::_primitive_stroke_batch_renderer->enable_solid_rendering(enable);
 
@@ -655,6 +679,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         void push_wireframe_rendering(bool enable)
         {
+            internal::_primitive_instance_renderer->enable_wireframe_rendering(enable);
+
             internal::_primitive_batch_renderer->enable_wireframe_rendering(enable);
             internal::_primitive_stroke_batch_renderer->enable_wireframe_rendering(enable);
 
@@ -816,20 +842,42 @@ namespace ppp
         //-------------------------------------------------------------------------
         void submit_render_item(topology_type topology, const irender_item* item)
         {
-            if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
+            if (internal::_draw_mode == render_draw_mode::BATCHED)
             {
-                internal::submit_custom_render_item(topology, item);
+                if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
+                {
+                    internal::submit_custom_render_item(topology, item);
+                }
+                else
+                {
+                    if (brush::fill_enabled() == false)
+                    {
+                        // When there is no "stroke" and there is no "fill" the object would be invisible.
+                        // So we don't add anything to the drawing list.
+                        return;
+                    }
+
+                    internal::_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform::active_world());
+                }
             }
             else
             {
-                if (brush::fill_enabled() == false)
+                if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
                 {
-                    // When there is no "stroke" and there is no "fill" the object would be invisible.
-                    // So we don't add anything to the drawing list.
                     return;
                 }
+                else
+                {
+                    if (brush::fill_enabled() == false)
+                    {
+                        // When there is no "stroke" and there is no "fill" the object would be invisible.
+                        // So we don't add anything to the drawing list.
+                        return;
+                    }
 
-                internal::_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform::active_world());
+                    internal::_primitive_instance_renderer->append_instance(topology, item);
+                    internal::_primitive_instance_renderer->append_drawing_data(item->id(), brush::fill(), transform::active_world());
+                }
             }
         }
 

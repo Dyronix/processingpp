@@ -9,5 +9,7 @@ namespace ppp
         void no_canvas();
         void wireframe_linewidth(float line_width);
         void wireframe_color(float r, float g, float b);
+        void enable_instance_draw_mode();
+        void enable_batched_draw_mode();
     }
 }

@@ -80,13 +80,13 @@ namespace ppp
             void on_render(instance_drawing_data& drawing_data) override;
         };
 
-        class texture_instance_renderer : public instance_renderer
-        {
-        public:
-            texture_instance_renderer(vertex_attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag);
-            ~texture_instance_renderer() override;
+        //class texture_instance_renderer : public instance_renderer
+        //{
+        //public:
+        //    texture_instance_renderer(vertex_attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag);
+        //    ~texture_instance_renderer() override;
 
-            void on_render(instance_drawing_data& drawing_data) override;
-        };
+        //    void on_render(instance_drawing_data& drawing_data) override;
+        //};
     }
 }

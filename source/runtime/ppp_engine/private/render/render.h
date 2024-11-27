@@ -26,6 +26,8 @@ namespace ppp
             s32 h;
         };
 
+        void draw_mode(render_draw_mode mode);
+
         bool initialize(s32 w, s32 h, void* user_data);
         void terminate();
 

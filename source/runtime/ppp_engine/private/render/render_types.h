@@ -41,5 +41,11 @@ namespace ppp
             BUILD_IN,
             CUSTOM
         };
+
+        enum class render_draw_mode
+        {
+            INSTANCED,
+            BATCHED
+        };
     }
 }

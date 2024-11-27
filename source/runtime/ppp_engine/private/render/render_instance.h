@@ -1,6 +1,8 @@
 #pragma once
 
 #include "render/render_item_components.h"
+#include "render/render_vertex_buffer.h"
+#include "render/render_index_buffer.h"
 #include "render/render_types.h"
 
 #include <glm/glm.hpp>
@@ -13,12 +15,19 @@ namespace ppp
 {
     namespace render
     {
+        struct instance_data
+        {
+            glm::mat4 world;
+            glm::vec4 color;
+        };
+
         class instance_drawing_data
         {
         public:
             instance_drawing_data(topology_type topology, const irender_item* instance, const vertex_attribute_layout* layouts, u64 layout_count);
 
             void increment_instance_count();
+            void set(s32 instance_id, const glm::vec4& color, const glm::mat4& world);
             void append(const glm::vec4& color, const glm::mat4& world);
             void release();
 
@@ -48,6 +57,8 @@ namespace ppp
             
             std::unique_ptr<class vertex_buffer> m_vertex_buffer;
             std::unique_ptr<class index_buffer> m_index_buffer;
+
+            std::vector<instance_data> m_instance_buffer;
 
             const vertex_attribute_layout* m_layouts;
             const u64 m_layout_count;

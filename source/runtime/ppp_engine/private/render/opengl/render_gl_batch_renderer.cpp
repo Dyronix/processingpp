@@ -37,7 +37,7 @@ namespace ppp
             static s32 _wireframe_linecolor = 0x000000FF;
 
             //-------------------------------------------------------------------------
-            void check_drawing_type(const batch* batch, GLenum type)
+            static void check_drawing_type(const batch* batch, GLenum type)
             {
                 auto index_count = batch->active_index_count();
                 switch (type)
@@ -60,7 +60,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            u32 topology(topology_type type)
+            static u32 topology(topology_type type)
             {
                 switch (type)
                 {
@@ -73,7 +73,7 @@ namespace ppp
                 return GL_TRIANGLES;
             }
             //-------------------------------------------------------------------------
-            u32 index_type()
+            static u32 index_type()
             {
                 if (sizeof(index) == sizeof(u32)) return GL_UNSIGNED_INT;
                 if (sizeof(index) == sizeof(u16)) return GL_UNSIGNED_SHORT;
@@ -160,7 +160,7 @@ namespace ppp
             , m_buffer_policy(render_buffer_policy::IMMEDIATE)
             , m_render_policy(render_draw_policy::BUILD_IN)
         {
-            render_draw_policy(m_render_policy);
+            draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------
@@ -265,7 +265,7 @@ namespace ppp
             }
 
             // Make sure the solid_render function is either excluded or included in the render policy
-            render_draw_policy(m_render_policy);
+            draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------
@@ -281,17 +281,17 @@ namespace ppp
             }
 
             // Make sure the wireframe_render function is either excluded or included in the render policy
-            render_draw_policy(m_render_policy);
+            draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------
-        void batch_renderer::render_buffer_policy(render_buffer_policy render_buffer_policy)
+        void batch_renderer::buffer_policy(render_buffer_policy render_buffer_policy)
         {
             m_buffer_policy = render_buffer_policy;
         }
 
         //-------------------------------------------------------------------------
-        void batch_renderer::render_draw_policy(render_draw_policy render_draw_policy)
+        void batch_renderer::draw_policy(render_draw_policy render_draw_policy)
         {
             m_render_policy = render_draw_policy;
             m_render_fns.clear();
@@ -364,13 +364,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        render_buffer_policy batch_renderer::render_buffer_policy() const
+        render_buffer_policy batch_renderer::buffer_policy() const
         {
             return m_buffer_policy;
         }
 
         //-------------------------------------------------------------------------
-        render_draw_policy batch_renderer::render_draw_policy() const
+        render_draw_policy batch_renderer::draw_policy() const
         {
             return m_render_policy;
         }

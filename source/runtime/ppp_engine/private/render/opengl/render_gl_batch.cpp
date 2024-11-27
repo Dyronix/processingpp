@@ -16,7 +16,7 @@ namespace ppp
         namespace internal
         {
             //-------------------------------------------------------------------------
-            GLenum convert_to_gl_data_type(vertex_attribute_data_type type)
+            static GLenum convert_to_gl_data_type(vertex_attribute_data_type type)
             {
                 switch (type)
                 {
@@ -27,7 +27,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            u64 calculate_total_size_vertex_type(const vertex_attribute_layout* layouts, u64 layout_count)
+            static u64 calculate_total_size_vertex_type(const vertex_attribute_layout* layouts, u64 layout_count)
             {
                 u64 total = 0;
                 for (u64 i = 0; i < layout_count; ++i)

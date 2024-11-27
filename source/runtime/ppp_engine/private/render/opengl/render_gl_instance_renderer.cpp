@@ -30,7 +30,7 @@ namespace ppp
             static s32 _wireframe_linecolor = 0x000000FF;
 
             //-------------------------------------------------------------------------
-            void check_drawing_type(const irender_item* inst, GLenum type)
+            static void check_drawing_type(const irender_item* inst, GLenum type)
             {
                 auto index_count = inst->index_count();
                 switch (type)
@@ -53,7 +53,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            u32 topology(topology_type type)
+            static u32 topology(topology_type type)
             {
                 switch (type)
                 {
@@ -67,7 +67,7 @@ namespace ppp
             }
             
             //-------------------------------------------------------------------------
-            u32 index_type()
+            static u32 index_type()
             {
                 if (sizeof(index) == sizeof(u32)) return GL_UNSIGNED_INT;
                 if (sizeof(index) == sizeof(u16)) return GL_UNSIGNED_SHORT;
@@ -101,7 +101,7 @@ namespace ppp
             , m_buffer_policy(render_buffer_policy::IMMEDIATE)
             , m_render_policy(render_draw_policy::BUILD_IN)
         {
-            render_draw_policy(m_render_policy);
+            draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------
@@ -163,7 +163,10 @@ namespace ppp
         {
             if (m_instance_data_map.find(instance->id()) == std::cend(m_instance_data_map))
             {
-                m_instance_data_map.emplace(instance->id(), instance_drawing_data(topology, instance, m_layouts, m_layout_count));
+                u64                     instance_id = instance->id();
+                instance_drawing_data   instance_draw_data = instance_drawing_data(topology, instance, m_layouts, m_layout_count);
+
+                m_instance_data_map.emplace(instance_id, std::move(instance_draw_data));
             }
 
             m_instance_data_map.at(instance->id()).increment_instance_count();
@@ -190,7 +193,7 @@ namespace ppp
             }
 
             // Make sure the solid_render function is either excluded or included in the render policy
-            render_draw_policy(m_render_policy);
+            draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------
@@ -206,7 +209,7 @@ namespace ppp
             }
 
             // Make sure the wireframe_render function is either excluded or included in the render policy
-            render_draw_policy(m_render_policy);
+            draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------
@@ -332,7 +335,7 @@ namespace ppp
             on_render(drawing_data);
         }
 
-        // Primitive Batch Renderer
+        // Primitive Instance Renderer
         //-------------------------------------------------------------------------
         primitive_instance_renderer::primitive_instance_renderer(vertex_attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
             :instance_renderer(layouts, layout_cout, shader_tag, false)
@@ -372,57 +375,57 @@ namespace ppp
             }
         }
 
-        // Texture Batch Renderer
-        //-------------------------------------------------------------------------
-        texture_instance_renderer::texture_instance_renderer(vertex_attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
-            :instance_renderer(layouts, layout_cout, shader_tag, true)
-        {
+        //// Texture Instance Renderer
+        ////-------------------------------------------------------------------------
+        //texture_instance_renderer::texture_instance_renderer(vertex_attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
+        //    :instance_renderer(layouts, layout_cout, shader_tag, true)
+        //{
 
-        }
+        //}
 
-        //-------------------------------------------------------------------------
-        texture_instance_renderer::~texture_instance_renderer() = default;
+        ////-------------------------------------------------------------------------
+        //texture_instance_renderer::~texture_instance_renderer() = default;
 
-        //-------------------------------------------------------------------------
-        void texture_instance_renderer::on_render(instance_drawing_data& drawing_data)
-        {
-            auto inst = drawing_data.instance();
-            if (inst != nullptr)
-            {
-                GLenum gl_topology = internal::topology(drawing_data.topology());
+        ////-------------------------------------------------------------------------
+        //void texture_instance_renderer::on_render(instance_drawing_data& drawing_data)
+        //{
+        //    auto inst = drawing_data.instance();
+        //    if (inst != nullptr)
+        //    {
+        //        GLenum gl_topology = internal::topology(drawing_data.topology());
 
-                GL_CALL(glBindVertexArray(drawing_data.vao()));
+        //        GL_CALL(glBindVertexArray(drawing_data.vao()));
 
-                assert(inst->samplers());
-                assert(inst->textures());
+        //        assert(inst->samplers());
+        //        assert(inst->textures());
 
-                shaders::push_uniform_array(shader_program(), "s_image", inst->sampler_count(), inst->samplers());
+        //        shaders::push_uniform_array(shader_program(), "s_image", inst->sampler_count(), inst->samplers());
 
-                #ifndef NDEBUG
-                internal::check_drawing_type(inst, gl_topology);
-                #endif
+        //        #ifndef NDEBUG
+        //        internal::check_drawing_type(inst, gl_topology);
+        //        #endif
 
-                s32 i = 0;
-                s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                for (int i = 0; i < inst->texture_count(); ++i)
-                {
-                    GL_CALL(glActiveTexture(GL_TEXTURE0 + (offset * i)));
-                    GL_CALL(glBindTexture(GL_TEXTURE_2D, inst->textures()[i]));
-                }
+        //        s32 i = 0;
+        //        s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
+        //        for (int i = 0; i < inst->texture_count(); ++i)
+        //        {
+        //            GL_CALL(glActiveTexture(GL_TEXTURE0 + (offset * i)));
+        //            GL_CALL(glBindTexture(GL_TEXTURE_2D, inst->textures()[i]));
+        //        }
 
-                if (inst->index_count() != 0)
-                {
-                    shaders::apply_uniforms(shader_program());
-                    GL_CALL(glDrawElementsInstanced(gl_topology, inst->index_count(), internal::index_type(), nullptr, drawing_data.instance_count()));
-                }
-                else
-                {
-                    shaders::apply_uniforms(shader_program());
-                    GL_CALL(glDrawArraysInstanced(gl_topology, 0, inst->vertex_count(), drawing_data.instance_count()));
-                }
+        //        if (inst->index_count() != 0)
+        //        {
+        //            shaders::apply_uniforms(shader_program());
+        //            GL_CALL(glDrawElementsInstanced(gl_topology, inst->index_count(), internal::index_type(), nullptr, drawing_data.instance_count()));
+        //        }
+        //        else
+        //        {
+        //            shaders::apply_uniforms(shader_program());
+        //            GL_CALL(glDrawArraysInstanced(gl_topology, 0, inst->vertex_count(), drawing_data.instance_count()));
+        //        }
 
-                GL_CALL(glBindVertexArray(0));
-            }
-        }
+        //        GL_CALL(glBindVertexArray(0));
+        //    }
+        //}
     }
 }

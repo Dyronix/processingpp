@@ -44,5 +44,15 @@ namespace ppp
         {
             render::push_wireframe_color({r, g, b, 1.0f});
         }
+
+        void enable_instance_draw_mode()
+        {
+            render::draw_mode(render::render_draw_mode::INSTANCED);
+        }
+
+        void enable_batched_draw_mode()
+        {
+            render::draw_mode(render::render_draw_mode::BATCHED);
+        }
     }
 }

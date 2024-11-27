@@ -36,8 +36,8 @@ namespace ppp
             void enable_solid_rendering(bool enable);
             void enable_wireframe_rendering(bool enable);
 
-            void render_buffer_policy(render_buffer_policy policy);
-            void render_draw_policy(render_draw_policy policy);
+            void buffer_policy(render_buffer_policy policy);
+            void draw_policy(render_draw_policy policy);
             void user_shader_program(const std::string& tag);
             void reset_user_shader_program();
 
@@ -47,8 +47,8 @@ namespace ppp
 
             u32 shader_program() const;
 
-            render_buffer_policy render_buffer_policy() const;
-            render_draw_policy render_draw_policy() const;
+            render_buffer_policy buffer_policy() const;
+            render_draw_policy draw_policy() const;
 
         protected:
             virtual void on_render(topology_type type, batch_drawing_data& drawing_data) = 0;

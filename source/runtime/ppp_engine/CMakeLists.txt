@@ -1,4 +1,4 @@
-add_library(processing_engine RETAINED)
+add_library(processing_engine STATIC)
 
 # Sources
 target_sources(processing_engine PRIVATE 

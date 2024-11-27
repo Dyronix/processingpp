@@ -10,6 +10,7 @@
 #include "image.h"
 #include "typography.h"
 #include "camera.h"
+#include "material.h"
 
 namespace ppp
 {
@@ -18,13 +19,7 @@ namespace ppp
     constexpr int _canvas_width = 600;
     constexpr int _canvas_height = 600;
     
-    image::image _image_container;
-    image::image _image_wall;
-
-    void setup_canvas()
-    {
-        color::background(15);
-    }
+    int _interpolation = 8;
 
     void setup_input_events()
     {
@@ -44,72 +39,72 @@ namespace ppp
     {
         AppParams app_params;
 
-        app_params.window_width = 1280;
-        app_params.window_height = 720;
+        app_params.window_width = _window_width;
+        app_params.window_height = _window_height;
 
         return app_params;
     }
 
     void setup()
     {
-        setup_canvas();
         setup_input_events();
 
-        _image_container = image::load("local:/content/container.jpg");
-        _image_wall = image::load("local:/content/wall.jpg");
-
-        shapes::rect_mode(shapes::shape_mode_type::CORNER);
-        image::image_mode(image::image_mode_type::CORNER);
-
-        shapes::enable_wireframe_mode(true);
+        shapes::enable_wireframe_mode(false);
         shapes::enable_solid_mode(true);
 
-        camera::perspective(55.0f, _window_width/_window_height, 0.1f, 1000.0f);
-        camera::camera(20, -40, 80);
+        camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
+        camera::camera(20, -40, 400);
+
+        rendering::enable_instance_draw_mode();
     }
 
     void draw()
     {
-        color::fill({ 255,0,0,255 });
+        color::background(200);
 
         camera::OrbitCameraOptions options;
 
         options.zoom_sensitivity = 200.0f;
         options.panning_sensitivity = 0.5f;
         options.rotation_sensitivity = 0.5f;
+        options.min_zoom = 1.0f;
+        options.max_zoom = 600.0f;
 
         camera::orbit_control(options);
 
-        int x = 0;
-        
-        for (int i = -5; i <= 5; ++i)
-        {
-            transform::push();
-            transform::translate(x, 0.0f);
-            if (i % 2)
-            {
-                shapes::box(10.0f, 10.0f, 10.0f);
-                //shapes::cylinder(5.0f, 10.0f, 12.0f);
-                //shapes::plane(5.0f, 5.0f);
-                //shapes::torus(6.0f, 2.0f, 8.0f, 8.0f);
-                //shapes::sphere(6.0f, 12.0f);
-                //shapes::cone(6.0f, 8.0f);
-                //shapes::tetrahedron(6.0f, 6.0f);
-                //shapes::octahedron(6.0f, 6.0f);
-            }
-            else
-            {
-                //shapes::box(10.0f, 10.0f, 10.0f);
-                //shapes::cylinder(5.0f, 10.0f, 12.0f);
-                //shapes::plane(5.0f, 5.0f);
-                shapes::torus(6.0f, 2.0f, 8.0f, 8.0f);
-                //shapes::sphere(6.0f, 12.0f);
-                //shapes::cone(6.0f, 8.0f);
-                //shapes::tetrahedron(6.0f, 6.0f);
-                //shapes::octahedron(6.0f, 6.0f);
-            }
-            transform::pop();
-            x = (i * 15);
-        }
+        color::fill({ 255,0,0,255 });
+
+        float start_x = -120.0f; // Initial x position to start grid from
+        float start_y = 40.0f;    // Initial y position for the grid row
+        float x_spacing = 80.0f; // Horizontal spacing between shapes
+        float y_spacing = -80.0f; // Vertical spacing between rows
+
+        transform::push();
+
+        // Row 1
+        transform::translate(start_x, start_y);
+        shapes::box(50.0f, 50.0f, 50.0f);
+        //transform::translate(x_spacing, 0.0f);
+        //shapes::plane(50.0f, 50.0f);
+        //transform::translate(x_spacing, 0.0f);
+        //shapes::cylinder(25.0f, 50.0f, _interpolation);
+        //transform::translate(x_spacing, 0.0f);
+        //shapes::sphere(25.0f, _interpolation);
+
+        //// Move to next row and reset x position
+        //transform::translate(-3 * x_spacing, y_spacing);
+
+        //// Row 2
+        //shapes::torus(25.0f, 10.0f, _interpolation, _interpolation);
+        //transform::translate(x_spacing, 0.0f);
+        //shapes::cone(25.0f, 50.0f, _interpolation, true);
+        //transform::translate(x_spacing, 0.0f);
+        //shapes::tetrahedron(25.0f, 25.0f);
+        //transform::translate(x_spacing, 0.0f);
+        //shapes::octahedron(25.0f, 25.0f);
+
+        transform::pop();
+
+        color::fill({ 0,0,0,255 });
     }
 }

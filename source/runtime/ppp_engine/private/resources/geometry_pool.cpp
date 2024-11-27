@@ -10,7 +10,7 @@ namespace ppp
         {
             struct geometry_id_hasher
             {
-                u64 operator()(u64 key)
+                u64 operator()(u64 key) const
                 {
                     // No hashing required for the geometry id as it is already hashed by the geometry itself
                     return key; 
