@@ -157,10 +157,10 @@ namespace ppp
             , m_layouts(layouts)
             , m_layout_count(layout_count)
             , m_texture_support(enable_texture_support)
-            , m_batch_buffer_policy(batch_buffer_policy::IMMEDIATE)
-            , m_batch_render_policy(batch_render_policy::BUILD_IN)
+            , m_buffer_policy(render_buffer_policy::IMMEDIATE)
+            , m_render_policy(render_draw_policy::BUILD_IN)
         {
-            render_policy(m_batch_render_policy);
+            render_draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------
@@ -231,7 +231,7 @@ namespace ppp
                 s32 max_indices = internal::max_indices(topology);
                 s32 max_textures = m_texture_support ? internal::max_textures() : -1;
 
-                m_drawing_data_map.emplace(topology, batch_drawing_data(max_vertices, max_indices, max_textures, m_layouts, m_layout_count, m_batch_buffer_policy));
+                m_drawing_data_map.emplace(topology, batch_drawing_data(max_vertices, max_indices, max_textures, m_layouts, m_layout_count, m_buffer_policy));
             }
 
             m_drawing_data_map.at(topology).append(item, color, world);
@@ -246,7 +246,7 @@ namespace ppp
                 s32 max_indices = internal::max_indices(topology);
                 s32 max_textures = m_texture_support ? internal::max_textures() : -1;
 
-                m_drawing_data_map.emplace(topology, batch_drawing_data(max_vertices, max_indices, max_textures, m_layouts, m_layout_count, m_batch_buffer_policy));
+                m_drawing_data_map.emplace(topology, batch_drawing_data(max_vertices, max_indices, max_textures, m_layouts, m_layout_count, m_buffer_policy));
             }
 
             m_drawing_data_map.at(topology).append(item, color, world);
@@ -265,7 +265,7 @@ namespace ppp
             }
 
             // Make sure the solid_render function is either excluded or included in the render policy
-            render_policy(m_batch_render_policy);
+            render_draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------
@@ -281,24 +281,24 @@ namespace ppp
             }
 
             // Make sure the wireframe_render function is either excluded or included in the render policy
-            render_policy(m_batch_render_policy);
+            render_draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------
-        void batch_renderer::buffer_policy(batch_buffer_policy buffer_policy)
+        void batch_renderer::render_buffer_policy(render_buffer_policy render_buffer_policy)
         {
-            m_batch_buffer_policy = buffer_policy;
+            m_buffer_policy = render_buffer_policy;
         }
 
         //-------------------------------------------------------------------------
-        void batch_renderer::render_policy(batch_render_policy render_policy)
+        void batch_renderer::render_draw_policy(render_draw_policy render_draw_policy)
         {
-            m_batch_render_policy = render_policy;
+            m_render_policy = render_draw_policy;
             m_render_fns.clear();
 
-            switch (render_policy)
+            switch (render_draw_policy)
             {
-            case batch_render_policy::BUILD_IN:
+            case render_draw_policy::BUILD_IN:
                 if (solid_rendering_supported())
                 {
                     m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
@@ -312,7 +312,7 @@ namespace ppp
                     });
                 }
                 break;
-            case batch_render_policy::CUSTOM:
+            case render_draw_policy::CUSTOM:
                 m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
                     on_render(topology, drawing_data);
                 });
@@ -364,15 +364,15 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        batch_buffer_policy batch_renderer::buffer_policy() const
+        render_buffer_policy batch_renderer::render_buffer_policy() const
         {
-            return m_batch_buffer_policy;
+            return m_buffer_policy;
         }
 
         //-------------------------------------------------------------------------
-        batch_render_policy batch_renderer::render_policy() const
+        render_draw_policy batch_renderer::render_draw_policy() const
         {
-            return m_batch_render_policy;
+            return m_render_policy;
         }
 
         //-------------------------------------------------------------------------

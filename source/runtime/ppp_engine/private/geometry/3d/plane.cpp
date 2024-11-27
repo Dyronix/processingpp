@@ -25,7 +25,7 @@ namespace ppp
                     compute_quad_vertex_normals(geom);
                 };
 
-                return geometry_pool::add_new_geometry(gid, geometry(smooth_normals, create_geom_fn));
+                return geometry_pool::add_new_geometry(geometry(gid, smooth_normals, create_geom_fn));
             }
             else
             {

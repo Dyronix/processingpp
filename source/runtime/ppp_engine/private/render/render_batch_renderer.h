@@ -36,8 +36,8 @@ namespace ppp
             void enable_solid_rendering(bool enable);
             void enable_wireframe_rendering(bool enable);
 
-            void buffer_policy(batch_buffer_policy policy);
-            void render_policy(batch_render_policy policy);
+            void render_buffer_policy(render_buffer_policy policy);
+            void render_draw_policy(render_draw_policy policy);
             void user_shader_program(const std::string& tag);
             void reset_user_shader_program();
 
@@ -47,8 +47,8 @@ namespace ppp
 
             u32 shader_program() const;
 
-            batch_buffer_policy buffer_policy() const;
-            batch_render_policy render_policy() const;
+            render_buffer_policy render_buffer_policy() const;
+            render_draw_policy render_draw_policy() const;
 
         protected:
             virtual void on_render(topology_type type, batch_drawing_data& drawing_data) = 0;
@@ -67,8 +67,8 @@ namespace ppp
             vertex_attribute_layout* m_layouts;
             u64 m_layout_count;
             bool m_texture_support;
-            batch_buffer_policy m_batch_buffer_policy;
-            batch_render_policy m_batch_render_policy;
+            render_buffer_policy m_buffer_policy;
+            render_draw_policy m_render_policy;
             std::vector<std::function<void(topology_type, batch_drawing_data&)>> m_render_fns;
         };
 

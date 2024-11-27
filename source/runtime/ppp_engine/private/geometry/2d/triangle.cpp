@@ -78,7 +78,7 @@ namespace ppp
                     extrude_indices(geom->faces(), in_geom->vertex_count());
                 };
 
-                return geometry_pool::add_new_geometry(gid, geometry(false, create_geom_fn));
+                return geometry_pool::add_new_geometry(geometry(gid, false, create_geom_fn));
             }
             else
             {
@@ -112,7 +112,7 @@ namespace ppp
                     make_normals(geom);
                 };
 
-                return geometry_pool::add_new_geometry(gid, geometry(false, create_geom_fn));
+                return geometry_pool::add_new_geometry(geometry(gid, false, create_geom_fn));
             }
             else
             {

@@ -30,13 +30,13 @@ namespace ppp
             REPEAT,
         };
 
-        enum class batch_buffer_policy
+        enum class render_buffer_policy
         {
             IMMEDIATE,
-            STATIC
+            RETAINED
         };
 
-        enum class batch_render_policy
+        enum class render_draw_policy
         {
             BUILD_IN,
             CUSTOM

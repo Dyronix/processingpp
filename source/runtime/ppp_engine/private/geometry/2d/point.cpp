@@ -48,7 +48,7 @@ namespace ppp
                     make_vertices(geom);
                 };
 
-                return geometry_pool::add_new_geometry(gid, geometry(false, create_geom_fn));
+                return geometry_pool::add_new_geometry(geometry(gid, false, create_geom_fn));
             }
             else
             {

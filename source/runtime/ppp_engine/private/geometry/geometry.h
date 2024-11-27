@@ -19,7 +19,7 @@ namespace ppp
         class geometry : public render::irender_item
         {
         public:
-            geometry(bool smooth_normals, const geometry_creation_fn& creation_fn);
+            geometry(const std::string& id, bool smooth_normals, const geometry_creation_fn& creation_fn);
 
             u64 vertex_count() const override;
             u64 index_count() const override;
@@ -33,6 +33,8 @@ namespace ppp
 
             const std::vector<render::face>& faces() const override { return m_faces; }
             const std::vector<render::texture_id>& texture_ids() const override { return m_texture_ids; }
+
+            const u64 id() const override { return m_id; }
             
             std::vector<glm::vec3>& vertex_positions() { return m_vertex_positions; }
             std::vector<glm::vec3>& vertex_normals() { return m_vertex_normals; }
@@ -50,7 +52,9 @@ namespace ppp
             std::vector<render::face> m_faces;
             std::vector<render::texture_id> m_texture_ids;
 
-            bool m_smooth_normals;
+            bool m_smooth_normals; 
+
+            u64 m_id;
         };
     }
 }

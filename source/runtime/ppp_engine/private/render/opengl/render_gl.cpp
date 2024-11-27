@@ -338,10 +338,10 @@ namespace ppp
 
                     if (_geometry_builder.is_active())
                     {
-                        renderer->buffer_policy(batch_buffer_policy::STATIC);
+                        renderer->render_buffer_policy(render_buffer_policy::RETAINED);
                     }
 
-                    renderer->render_policy(batch_render_policy::CUSTOM);
+                    renderer->render_draw_policy(render_draw_policy::CUSTOM);
                     internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
@@ -368,10 +368,10 @@ namespace ppp
 
                     if (_geometry_builder.is_active())
                     {
-                        renderer->buffer_policy(batch_buffer_policy::STATIC);
+                        renderer->render_buffer_policy(render_buffer_policy::RETAINED);
                     }
 
-                    renderer->render_policy(batch_render_policy::CUSTOM);
+                    renderer->render_draw_policy(render_draw_policy::CUSTOM);
                     internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
@@ -391,10 +391,10 @@ namespace ppp
 
                     if (_geometry_builder.is_active())
                     {
-                        renderer->buffer_policy(batch_buffer_policy::STATIC);
+                        renderer->render_buffer_policy(render_buffer_policy::RETAINED);
                     }
 
-                    renderer->render_policy(batch_render_policy::CUSTOM);
+                    renderer->render_draw_policy(render_draw_policy::CUSTOM);
                     internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
@@ -414,10 +414,10 @@ namespace ppp
 
                     if (_geometry_builder.is_active())
                     {
-                        renderer->buffer_policy(batch_buffer_policy::STATIC);
+                        renderer->render_buffer_policy(render_buffer_policy::RETAINED);
                     }
 
-                    renderer->render_policy(batch_render_policy::CUSTOM);
+                    renderer->render_draw_policy(render_draw_policy::CUSTOM);
                     internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 

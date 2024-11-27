@@ -54,7 +54,7 @@ namespace ppp
                         geom->vertex_uvs()[index++] = glm::vec2(uv_start_x, uv_start_y);
                     };
 
-                    geometry::geometry* geom = geometry_pool::add_new_geometry(gid, geometry::geometry(false, create_geom_fn));
+                    geometry::geometry* geom = geometry_pool::add_new_geometry(geometry::geometry(gid, false, create_geom_fn));
 
                     geom->texture_ids().push_back(texture_id);
 

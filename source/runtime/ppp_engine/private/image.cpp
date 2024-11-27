@@ -53,7 +53,7 @@ namespace ppp
                         geometry::compute_quad_vertex_normals(geom);
                     };
 
-                    geometry::geometry* geom = geometry_pool::add_new_geometry(gid, geometry::geometry(false, create_geom_fn));
+                    geometry::geometry* geom = geometry_pool::add_new_geometry(geometry::geometry(gid, false, create_geom_fn));
 
                     geom->texture_ids().push_back(image_id);
 

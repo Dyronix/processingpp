@@ -238,7 +238,7 @@ namespace ppp
                     make_normals(self, in_bottom_radius, in_top_radius, in_height, in_detail_x, in_detail_y, in_top_cap, in_bottom_cap);
                 };
 
-                return geometry_pool::add_new_geometry(gid, geometry(smooth_normals, create_geom_fn));
+                return geometry_pool::add_new_geometry(geometry(gid, smooth_normals, create_geom_fn));
             }
             else
             {

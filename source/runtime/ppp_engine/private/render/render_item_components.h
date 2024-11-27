@@ -201,6 +201,8 @@ namespace ppp
 
             virtual const std::vector<face>& faces() const = 0;
             virtual const std::vector<texture_id>& texture_ids() const = 0;
+
+            virtual const u64 id() const = 0;
         };
     }
 }

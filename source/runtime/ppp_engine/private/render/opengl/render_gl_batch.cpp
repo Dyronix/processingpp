@@ -499,16 +499,16 @@ namespace ppp
         u32 batch::max_texture_count() const { return m_texture_manager->max_texture_count(); }
 
         //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, batch_buffer_policy buffer_policy)
-            : batch_drawing_data(size_vertex_buffer, size_index_buffer, -1, layouts, layout_count, buffer_policy)
+        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
+            : batch_drawing_data(size_vertex_buffer, size_index_buffer, -1, layouts, layout_count, render_buffer_policy)
         {
         }
 
         //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count, batch_buffer_policy buffer_policy)
+        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
             : m_layouts(layouts)
             , m_layout_count(layout_count)
-            , m_batch_buffer_policy(buffer_policy)
+            , m_buffer_policy(render_buffer_policy)
         {
             assert(size_vertex_buffer > 0);
             assert(size_index_buffer > 0);
@@ -621,7 +621,7 @@ namespace ppp
         void batch_drawing_data::reset()
         {
             // We clear everything if we are in immediate mode
-            if (m_batch_buffer_policy == batch_buffer_policy::IMMEDIATE)
+            if (m_buffer_policy == render_buffer_policy::IMMEDIATE)
             {
                 for (batch& b : m_batches)
                 {

@@ -69,7 +69,7 @@ namespace ppp
                     make_normals(self);
                 };
 
-                return geometry_pool::add_new_geometry(gid, geometry(smooth_normals, create_geom_fn));
+                return geometry_pool::add_new_geometry(geometry(gid, smooth_normals, create_geom_fn));
             }
             else
             {

@@ -52,11 +52,3 @@ add_custom_target(copy-content ALL
 )
 
 set_property(TARGET copy-content PROPERTY FOLDER "programs")
-
-add_custom_target(run-all_tests ALL
-    COMMAND python "${CMAKE_SOURCE_DIR}/run_integration_tests.py" --arg1 "Hello" --arg2 42
-    COMMENT "Running Python script with arguments"
-    VERBATIM
-)
-
-set_property(TARGET run_all_tests PROPERTY FOLDER "test")

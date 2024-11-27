@@ -5,7 +5,7 @@ project(glad)
 SET(GLAD_INCLUDE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include)
 SET(GLAD_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/src)
 
-add_library(glad STATIC)
+add_library(glad RETAINED)
 
 target_sources(glad PRIVATE ${GLAD_SOURCE_DIRECTORY}/glad.c)
 target_sources(glad PUBLIC ${GLAD_INCLUDE_DIRECTORY}/glad/glad.h ${GLAD_INCLUDE_DIRECTORY}/KHR/khrplatform.h)
