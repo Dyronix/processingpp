@@ -55,6 +55,7 @@ namespace ppp
             const topology_type m_topology_type;
 
             s32 m_instance_count = 0;
+            u64 m_instance_data_offset = 0;
             
             std::unique_ptr<class vertex_buffer> m_vertex_buffer;
             std::unique_ptr<class index_buffer> m_index_buffer;

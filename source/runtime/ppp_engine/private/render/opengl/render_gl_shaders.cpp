@@ -414,20 +414,20 @@ namespace ppp
             const char* const unlit_color_vertex_shader_code()
             {
                 const char* const unlit_vs_source =
-                    "#version 460 core												            \n\
-                    layout (location = 0) in vec3 a_position;						            \n\
-                    layout (location = 1) in vec4 a_color;							            \n\
-                                                                                                \n\
-                    uniform mat4 u_worldviewproj;                                               \n\
-                    uniform bool u_wireframe;                                                   \n\
-                    uniform vec4 u_wireframe_color;                                             \n\
-                                                                                                \n\
-                    out vec4 v_color;												            \n\
-                                                                                                \n\
-                    void main()														            \n\
-                    {																            \n\
-                        v_color = u_wireframe ? u_wireframe_color : a_color;	                \n\
-                        gl_Position = u_worldviewproj * vec4(a_position, 1.0);  	            \n\
+                    "#version 460 core												                \n\
+                    layout (location = 0) in vec3 a_position;						                \n\
+                    layout (location = 1) in vec4 a_color;							                \n\
+                                                                                                    \n\
+                    uniform mat4 u_worldviewproj;                                                   \n\
+                    uniform bool u_wireframe;                                                       \n\
+                    uniform vec4 u_wireframe_color;                                                 \n\
+                                                                                                    \n\
+                    out vec4 v_color;												                \n\
+                                                                                                    \n\
+                    void main()														                \n\
+                    {																                \n\
+                        v_color = u_wireframe ? u_wireframe_color : a_color;	                    \n\
+                        gl_Position = u_worldviewproj * vec4(a_position, 1.0);  	                \n\
                     }";
 
                 return unlit_vs_source;
@@ -435,13 +435,13 @@ namespace ppp
             const char* const unlit_color_pixel_shader_code()
             {
                 const char* const unlit_fs_source =
-                    "#version 460 core												            \n\
-                    in vec4 v_color;												            \n\
-                    out vec4 frag_color;											            \n\
-                                                                                                \n\
-                    void main()														            \n\
-                    {																            \n\
-                        frag_color = v_color;										            \n\
+                    "#version 460 core												                \n\
+                    in vec4 v_color;												                \n\
+                    out vec4 frag_color;											                \n\
+                                                                                                    \n\
+                    void main()														                \n\
+                    {																                \n\
+                        frag_color = v_color;										                \n\
                     }";
 
                 return unlit_fs_source;
@@ -450,24 +450,24 @@ namespace ppp
             const char* const instance_unlit_color_vertex_shader_code()
             {
                 const char* const unlit_vs_source =
-                    "#version 460 core												            \n\
-                    layout (location = 0) in vec3 a_position;						            \n\
-                    layout (location = 1) in vec4 a_color;							            \n\
-                                                                                                \n\
-                    // per instance data                                                        \n\
-                    layout (location = 2) in mat4 a_model;							            \n\
-                    layout (location = 6) in vec4 a_inst_color;							        \n\
-                                                                                                \n\
-                    uniform mat4 u_worldviewproj;                                               \n\
-                    uniform bool u_wireframe;                                                   \n\
-                    uniform vec4 u_wireframe_color;                                             \n\
-                                                                                                \n\
-                    out vec4 v_color;												            \n\
-                                                                                                \n\
-                    void main()														            \n\
-                    {																            \n\
-                        v_color = u_wireframe ? u_wireframe_color : a_inst_color;               \n\
-                        gl_Position = u_worldviewproj * a_model * vec4(a_position, 1.0);  	    \n\
+                    "#version 460 core												                \n\
+                    layout (location = 0) in vec3 a_position;						                \n\
+                    layout (location = 1) in vec4 a_color;							                \n\
+                                                                                                    \n\
+                    // per instance data                                                            \n\
+                    layout (location = 2) in mat4 a_inst_mat_model;							        \n\
+                    layout (location = 6) in vec4 a_inst_color;							            \n\
+                                                                                                    \n\
+                    uniform mat4 u_worldviewproj;                                                   \n\
+                    uniform bool u_wireframe;                                                       \n\
+                    uniform vec4 u_wireframe_color;                                                 \n\
+                                                                                                    \n\
+                    out vec4 v_color;												                \n\
+                                                                                                    \n\
+                    void main()														                \n\
+                    {																                \n\
+                        v_color = u_wireframe ? u_wireframe_color : a_inst_color * a_color;         \n\
+                        gl_Position = u_worldviewproj * a_inst_mat_model * vec4(a_position, 1.0);   \n\
                     }";
 
                 return unlit_vs_source;
@@ -476,27 +476,27 @@ namespace ppp
             const char* const unlit_texture_vertex_shader_code()
             {
                 const char* const unlit_texture_vs_source =
-                    "#version 460 core                                                          \n\
-                                                                                                \n\
-                    layout (location = 0) in vec3 a_position;                                   \n\
-                    layout (location = 1) in vec2 a_texture;                                    \n\
-                    layout (location = 2) in vec4 a_tint_color;                                 \n\
-                    layout (location = 3) in float a_texture_idx;                               \n\
-                                                                                                \n\
-                    uniform mat4 u_worldviewproj;                                               \n\
-                    uniform bool u_wireframe;                                                   \n\
-                    uniform vec4 u_wireframe_color;                                             \n\
-                                                                                                \n\
-                    out vec4 v_tint_color;                                                      \n\
-                    out vec2 v_texture;                                                         \n\
-                    out float v_texture_idx;                                                    \n\
-                                                                                                \n\
-                    void main()                                                                 \n\
-                    {						                                                    \n\
-                        v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;	        \n\
-                        v_texture = a_texture;                                                  \n\
-                        v_texture_idx = a_texture_idx;                                          \n\
-                        gl_Position = u_worldviewproj * vec4(a_position, 1.0);                  \n\
+                    "#version 460 core                                                              \n\
+                                                                                                    \n\
+                    layout (location = 0) in vec3 a_position;                                       \n\
+                    layout (location = 1) in vec2 a_texture;                                        \n\
+                    layout (location = 2) in vec4 a_tint_color;                                     \n\
+                    layout (location = 3) in float a_texture_idx;                                   \n\
+                                                                                                    \n\
+                    uniform mat4 u_worldviewproj;                                                   \n\
+                    uniform bool u_wireframe;                                                       \n\
+                    uniform vec4 u_wireframe_color;                                                 \n\
+                                                                                                    \n\
+                    out vec4 v_tint_color;                                                          \n\
+                    out vec2 v_texture;                                                             \n\
+                    out float v_texture_idx;                                                        \n\
+                                                                                                    \n\
+                    void main()                                                                     \n\
+                    {						                                                        \n\
+                        v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;	            \n\
+                        v_texture = a_texture;                                                      \n\
+                        v_texture_idx = a_texture_idx;                                              \n\
+                        gl_Position = u_worldviewproj * vec4(a_position, 1.0);                      \n\
                     }";
 
                 return unlit_texture_vs_source;
@@ -504,21 +504,21 @@ namespace ppp
             const char* const unlit_texture_pixel_shader_code()
             {
                 const char* const unlit_texture_fs_source =
-                    "#version 460 core                                                          \n\
-                                                                                                \n\
-                    layout (binding = 0) uniform sampler2D s_image[8];                          \n\
-                                                                                                \n\
-                    in vec4 v_tint_color;                                                       \n\
-                    in vec2 v_texture;                                                          \n\
-                    in float v_texture_idx;                                                     \n\
-                                                                                                \n\
-                    out vec4 frag_color;                                                        \n\
-                                                                                                \n\
-                    void main()                                                                 \n\
-                    {                                                                           \n\
-                        int idx = int(v_texture_idx);                                           \n\
-                        vec4 color = texture(s_image[idx], v_texture) * v_tint_color;           \n\
-                        frag_color = color;                                                     \n\
+                    "#version 460 core                                                              \n\
+                                                                                                    \n\
+                    layout (binding = 0) uniform sampler2D s_image[8];                              \n\
+                                                                                                    \n\
+                    in vec4 v_tint_color;                                                           \n\
+                    in vec2 v_texture;                                                              \n\
+                    in float v_texture_idx;                                                         \n\
+                                                                                                    \n\
+                    out vec4 frag_color;                                                            \n\
+                                                                                                    \n\
+                    void main()                                                                     \n\
+                    {                                                                               \n\
+                        int idx = int(v_texture_idx);                                               \n\
+                        vec4 color = texture(s_image[idx], v_texture) * v_tint_color;               \n\
+                        frag_color = color;                                                         \n\
                     }";
 
                 return unlit_texture_fs_source;

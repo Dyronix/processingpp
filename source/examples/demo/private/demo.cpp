@@ -55,7 +55,7 @@ namespace ppp
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
         camera::camera(20, -40, 400);
 
-        rendering::enable_instance_draw_mode();
+        //rendering::enable_instance_draw_mode();
     }
 
     void draw()

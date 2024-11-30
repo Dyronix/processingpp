@@ -64,6 +64,9 @@ namespace ppp
             if (m_vertex_buffer->has_layout(vertex_attribute_type::NORMAL)) m_vertex_buffer->set_attribute_data(vertex_attribute_type::NORMAL, instance->vertex_normals().data());
             if (m_vertex_buffer->has_layout(vertex_attribute_type::TEXCOORD)) m_vertex_buffer->set_attribute_data(vertex_attribute_type::TEXCOORD, instance->vertex_uvs().data());
 
+            glm::vec4 color_white = { 1.0f, 1.0f, 1.0f, 1.0f };
+            m_vertex_buffer->map_attribute_data(vertex_attribute_type::COLOR, &color_white);
+
             m_vertex_buffer->close_attribute_addition();
 
             // Index Buffer
@@ -112,12 +115,12 @@ namespace ppp
             for (int i = 0; i < 4; ++i) 
             {
                 GL_CALL(glEnableVertexAttribArray(layout_count + i));   // Attributes for mat4 (4 vec4s)
-                GL_CALL(glVertexAttribPointer(layout_count + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)(i * sizeof(glm::vec4))));
+                GL_CALL(glVertexAttribPointer(layout_count + i, 4, GL_FLOAT, GL_FALSE, sizeof(instance_data), (void*)(i * sizeof(glm::vec4))));
                 GL_CALL(glVertexAttribDivisor(layout_count + i, 1));    // Instanced attribute
             }
 
             GL_CALL(glEnableVertexAttribArray(layout_count + 4));       // Attribute for color
-            GL_CALL(glVertexAttribPointer(layout_count + 4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)offsetof(instance_data, color)));
+            GL_CALL(glVertexAttribPointer(layout_count + 4, 4, GL_FLOAT, GL_FALSE, sizeof(instance_data), (void*)offsetof(instance_data, color)));
             GL_CALL(glVertexAttribDivisor(layout_count + 4, 1));        // Instanced attribute
 
             GL_CALL(glBindVertexArray(0));
@@ -169,10 +172,13 @@ namespace ppp
                 glBufferData(GL_ARRAY_BUFFER, new_cap * sizeof(instance_data), nullptr, GL_DYNAMIC_DRAW); // Allocate new GPU memory
             }
 
-            m_instance_buffer.push_back({ world, color });
-
-            glBufferSubData(GL_ARRAY_BUFFER, 0, m_instance_count * sizeof(instance_data), m_instance_buffer.data());
+            instance_data inst_data = { world, color };
+            
+            glBufferSubData(GL_ARRAY_BUFFER, m_instance_data_offset, sizeof(instance_data), (void*)&inst_data);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            m_instance_buffer.push_back(inst_data);
+            m_instance_data_offset += sizeof(instance_data);
         }
 
         //-------------------------------------------------------------------------
@@ -196,6 +202,7 @@ namespace ppp
             m_instance_buffer.clear();
 
             m_instance_count = 0;
+            m_instance_data_offset = 0;
         }
 
         //-------------------------------------------------------------------------
