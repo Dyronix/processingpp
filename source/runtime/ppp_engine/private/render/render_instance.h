@@ -30,6 +30,7 @@ namespace ppp
             void set(s32 instance_id, const glm::vec4& color, const glm::mat4& world);
             void append(const glm::vec4& color, const glm::mat4& world);
             void release();
+            void reset();
 
             const irender_item* instance() const;
             const topology_type topology() const;

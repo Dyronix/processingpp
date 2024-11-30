@@ -24,6 +24,8 @@ namespace ppp
         bool initialize()
         {
             internal::get_shader_program_map()[tags::unlit_color] = render::shaders::create_shader_program(render::shaders::unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code());
+            internal::get_shader_program_map()[tags::instance_unlit_color] = render::shaders::create_shader_program(render::shaders::instance_unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code());
+            
             internal::get_shader_program_map()[tags::unlit_texture] = render::shaders::create_shader_program(render::shaders::unlit_texture_vertex_shader_code(), render::shaders::unlit_texture_pixel_shader_code());
             internal::get_shader_program_map()[tags::unlit_font] = render::shaders::create_shader_program(render::shaders::unlit_font_vertex_shader_code(), render::shaders::unlit_font_pixel_shader_code());
             internal::get_shader_program_map()[tags::unlit_normal] = render::shaders::create_shader_program(render::shaders::unlit_normal_vertex_shader_code(), render::shaders::unlit_normal_pixel_shader_code());

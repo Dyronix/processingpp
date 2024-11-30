@@ -476,7 +476,7 @@ namespace ppp
 
             internal::create_frame_buffer();
 
-            internal::_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
+            internal::_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::instance_unlit_color);
 
             internal::_primitive_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
             internal::_primitive_stroke_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);

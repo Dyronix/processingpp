@@ -84,12 +84,12 @@ namespace ppp
         // Row 1
         transform::translate(start_x, start_y);
         shapes::box(50.0f, 50.0f, 50.0f);
-        //transform::translate(x_spacing, 0.0f);
-        //shapes::plane(50.0f, 50.0f);
-        //transform::translate(x_spacing, 0.0f);
-        //shapes::cylinder(25.0f, 50.0f, _interpolation);
-        //transform::translate(x_spacing, 0.0f);
-        //shapes::sphere(25.0f, _interpolation);
+        transform::translate(x_spacing, 0.0f);
+        shapes::box(50.0f, 50.0f, 50.0f);
+        transform::translate(x_spacing, 0.0f);
+        shapes::box(50.0f, 50.0f, 50.0f);
+        transform::translate(x_spacing, 0.0f);
+        shapes::box(50.0f, 50.0f, 50.0f);
 
         //// Move to next row and reset x position
         //transform::translate(-3 * x_spacing, y_spacing);

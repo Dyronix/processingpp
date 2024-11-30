@@ -12,6 +12,7 @@ namespace ppp
         {
             const char* const unlit_color_vertex_shader_code();
             const char* const unlit_color_pixel_shader_code();
+            const char* const instance_unlit_color_vertex_shader_code();
 
             const char* const unlit_texture_vertex_shader_code();
             const char* const unlit_texture_pixel_shader_code();

@@ -447,6 +447,32 @@ namespace ppp
                 return unlit_fs_source;
             }
 
+            const char* const instance_unlit_color_vertex_shader_code()
+            {
+                const char* const unlit_vs_source =
+                    "#version 460 core												            \n\
+                    layout (location = 0) in vec3 a_position;						            \n\
+                    layout (location = 1) in vec4 a_color;							            \n\
+                                                                                                \n\
+                    // per instance data                                                        \n\
+                    layout (location = 2) in mat4 a_model;							            \n\
+                    layout (location = 6) in vec4 a_inst_color;							        \n\
+                                                                                                \n\
+                    uniform mat4 u_worldviewproj;                                               \n\
+                    uniform bool u_wireframe;                                                   \n\
+                    uniform vec4 u_wireframe_color;                                             \n\
+                                                                                                \n\
+                    out vec4 v_color;												            \n\
+                                                                                                \n\
+                    void main()														            \n\
+                    {																            \n\
+                        v_color = u_wireframe ? u_wireframe_color : a_inst_color;               \n\
+                        gl_Position = u_worldviewproj * a_model * vec4(a_position, 1.0);  	    \n\
+                    }";
+
+                return unlit_vs_source;
+            }
+
             const char* const unlit_texture_vertex_shader_code()
             {
                 const char* const unlit_texture_vs_source =

@@ -110,7 +110,10 @@ namespace ppp
         //-------------------------------------------------------------------------
         void instance_renderer::begin()
         {
-            // Nothing to implement
+            for (auto& pair : m_instance_data_map)
+            {
+                pair.second.reset();
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -165,7 +168,7 @@ namespace ppp
             {
                 u64                     instance_id = instance->id();
                 instance_drawing_data   instance_draw_data = instance_drawing_data(topology, instance, m_layouts, m_layout_count);
-
+                
                 m_instance_data_map.emplace(instance_id, std::move(instance_draw_data));
             }
 

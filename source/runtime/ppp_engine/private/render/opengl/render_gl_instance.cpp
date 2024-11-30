@@ -112,12 +112,12 @@ namespace ppp
             for (int i = 0; i < 4; ++i) 
             {
                 GL_CALL(glEnableVertexAttribArray(layout_count + i));   // Attributes for mat4 (4 vec4s)
-                GL_CALL(glVertexAttribPointer(layout_count + i, 4, GL_FLOAT, GL_FALSE, sizeof(instance_data), (void*)(i * sizeof(glm::vec4))));
+                GL_CALL(glVertexAttribPointer(layout_count + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)(i * sizeof(glm::vec4))));
                 GL_CALL(glVertexAttribDivisor(layout_count + i, 1));    // Instanced attribute
             }
 
             GL_CALL(glEnableVertexAttribArray(layout_count + 4));       // Attribute for color
-            GL_CALL(glVertexAttribPointer(layout_count + 4, 4, GL_FLOAT, GL_FALSE, sizeof(instance_data), (void*)offsetof(instance_data, color)));
+            GL_CALL(glVertexAttribPointer(layout_count + 4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)offsetof(instance_data, color)));
             GL_CALL(glVertexAttribDivisor(layout_count + 4, 1));        // Instanced attribute
 
             GL_CALL(glBindVertexArray(0));
@@ -186,6 +186,16 @@ namespace ppp
             GL_CALL(glDeleteBuffers(1, &m_ebo));
             GL_CALL(glDeleteBuffers(1, &m_ibo));
             GL_CALL(glDeleteVertexArrays(1, &m_vao));
+        }
+
+        //-------------------------------------------------------------------------
+        void instance_drawing_data::reset()
+        {
+            m_vertex_buffer->free();
+            m_index_buffer->free();
+            m_instance_buffer.clear();
+
+            m_instance_count = 0;
         }
 
         //-------------------------------------------------------------------------
