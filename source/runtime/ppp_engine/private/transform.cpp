@@ -21,8 +21,8 @@ namespace ppp
         {
             switch (trigonometry::angle_mode())
             {
-            case trigonometry::AngleMode::DEGREES: render::transform::rotate(trigonometry::radians(angle));
-            case trigonometry::AngleMode::RADIANS: render::transform::rotate(angle);
+            case trigonometry::AngleMode::DEGREES: render::transform::rotate(trigonometry::radians(angle)); break;
+            case trigonometry::AngleMode::RADIANS: render::transform::rotate(angle); break;
             }
         }
         
