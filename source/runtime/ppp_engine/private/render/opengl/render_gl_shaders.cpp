@@ -524,6 +524,11 @@ namespace ppp
                 return unlit_texture_fs_source;
             }
 
+            const char* const instance_unlit_texture_vertex_shader_code()
+            {
+                return nullptr;
+            }
+
             const char* const unlit_font_vertex_shader_code()
             {
                 const char* const unlit_font_vs_source =
@@ -628,11 +633,89 @@ namespace ppp
                 return unlit_normal_fs_source;
             }
 
-            const char* const unlit_specular_vertex_shader_code()
+            const char* const instance_unlit_normal_vertex_shader_code()
             {
                 return nullptr;
             }
-            const char* const unlit_specular_pixel_shader_code()
+
+            const char* const specular_vertex_shader_code()
+            {
+                const char* const unlit_specular_vs_source =
+                    "#version 460 core                                                          \n\
+                                                                                                \n\
+                    layout (location = 0) in vec3 a_position;                                   \n\
+                    layout (location = 1) in vec2 a_texture;                                    \n\
+                    layout (location = 2) in vec3 a_normal;                                     \n\
+                    layout (location = 3) in vec4 a_tint_color;                                 \n\
+                    layout (location = 4) in float a_texture_idx;                               \n\
+                                                                                                \n\
+                    uniform mat4 u_worldviewproj;                                               \n\
+                                                                                                \n\
+                    out vec4 v_tint_color;                                                      \n\
+                    out vec2 v_texture;                                                         \n\
+                    out vec3 v_position;                                                        \n\
+                    out vec3 v_normal;                                                          \n\
+                    out float v_texture_idx;                                                    \n\
+                                                                                                \n\
+                    void main()                                                                 \n\
+                    {						                                                    \n\
+                        v_tint_color = a_tint_color;	                                        \n\
+                        v_texture = a_texture;                                                  \n\
+                        v_position = a_position;                                                \n\
+                        v_normal = a_normal;                                                    \n\
+                        v_texture_idx = a_texture_idx;                                          \n\
+                                                                                                \n\
+                        gl_Position = u_worldviewproj * vec4(a_position, 1.0);                  \n\
+                    }";
+
+                return unlit_specular_vs_source;
+            }
+            const char* const specular_pixel_shader_code()
+            {
+                const char* const unlit_normal_fs_source =
+                    "#version 460 core                                                                          \n\
+                                                                                                                \n\
+                    in vec4 v_tint_color;                                                                       \n\
+                    in vec2 v_texture;                                                                          \n\
+                    in vec3 v_position;                                                                         \n\
+                    in vec3 v_normal;                                                                           \n\
+                    in float v_texture_idx;                                                                     \n\
+                                                                                                                \n\
+                    out vec4 frag_color;                                                                        \n\
+                                                                                                                \n\
+                    uniform float u_ambient_strength;                                                           \n\
+                    uniform vec3 u_light_position;                                                              \n\
+                    uniform vec3 u_light_color;                                                                 \n\
+                    uniform vec3 u_specular_color;                                                              \n\
+                    uniform float u_specular_strength;                                                          \n\
+                    uniform int u_specular_power;                                                               \n\
+                    uniform vec3 u_view_position;                                                               \n\
+                                                                                                                \n\
+                    void main()                                                                                 \n\
+                    {                                                                                           \n\
+                        // ambient                                                                              \n\
+                        vec3 ambient = u_ambient_strength * u_light_color;                                      \n\
+                                                                                                                \n\
+                        // diffuse                                                                              \n\
+                        vec3 norm = normalize(v_normal);                                                        \n\
+                        vec3 light_direction = normalize(u_light_position - v_position);                        \n\
+                        float diff = max(dot(norm, light_direction), 0.0);                                      \n\
+                        vec3 diffuse = diff * u_light_color;                                                    \n\
+                                                                                                                \n\
+                        // specular                                                                             \n\
+                        vec3 view_direction = normalize(u_view_position - v_position);                          \n\
+                        vec3 reflect_dir = reflect(-light_direction, norm);                                     \n\
+                        float spec = pow(max(dot(view_direction, reflect_dir), 0.0), u_specular_power);         \n\
+                        vec3 specular = u_specular_strength * spec * u_specular_color;                          \n\
+                                                                                                                \n\
+                        vec4 result = vec4((ambient + diffuse + specular), 1.0) * v_tint_color;                 \n\
+                        frag_color = result;                                                                    \n\
+                    }";
+
+                return unlit_normal_fs_source;
+            }
+
+            const char* const instance_specular_vertex_shader_code()
             {
                 return nullptr;
             }

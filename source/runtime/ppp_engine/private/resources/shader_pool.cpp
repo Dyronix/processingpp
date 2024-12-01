@@ -28,7 +28,9 @@ namespace ppp
             
             internal::get_shader_program_map()[tags::unlit_texture] = render::shaders::create_shader_program(render::shaders::unlit_texture_vertex_shader_code(), render::shaders::unlit_texture_pixel_shader_code());
             internal::get_shader_program_map()[tags::unlit_font] = render::shaders::create_shader_program(render::shaders::unlit_font_vertex_shader_code(), render::shaders::unlit_font_pixel_shader_code());
+
             internal::get_shader_program_map()[tags::unlit_normal] = render::shaders::create_shader_program(render::shaders::unlit_normal_vertex_shader_code(), render::shaders::unlit_normal_pixel_shader_code());
+            internal::get_shader_program_map()[tags::lit_specular] = render::shaders::create_shader_program(render::shaders::specular_vertex_shader_code(), render::shaders::specular_pixel_shader_code());
 
             return true;
         }

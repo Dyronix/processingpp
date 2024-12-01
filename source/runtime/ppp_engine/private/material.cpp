@@ -79,16 +79,18 @@ namespace ppp
             render::push_reset_shader();
         }
 
-        void normal_material()
+        shader_program normal_material()
         {
             shader(shader_pool::tags::unlit_normal);
+
+            return get_shader(shader_pool::tags::unlit_normal);
         }
 
-        void specular_material()
+        shader_program specular_material()
         {
-            // Shader has not been implemented yet ...
-            // 
-            // shader(shader_pool::tags::unlit_specular);
+            shader(shader_pool::tags::lit_specular);
+            
+            return get_shader(shader_pool::tags::lit_specular);
         }
 
         shader_program create_shader(const std::string& tag, const std::string& vertex_source, const std::string& fragment_source)
@@ -130,6 +132,16 @@ namespace ppp
 
             u32 shader_program_id = shader_pool::add_shader_program(tag, vs_buffer.c_str(), fs_buffer.c_str(), gs_buffer.c_str());
             return { shader_program_id };
+        }
+
+        shader_program get_shader(const std::string& tag)
+        {
+            if (shader_pool::has_shader(tag))
+            {
+                return { shader_pool::get_shader_program(tag) };
+            }
+
+            return { -1u };
         }
     }
 }

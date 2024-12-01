@@ -92,6 +92,21 @@ namespace ppp
             radius = glm::length(glm::vec3(eyex, eyey, eyez) - glm::vec3(centerx, centery, centerz));
         }
 
+        glm::vec3 active_camera_position()
+        {
+            return { internal::_active_camera.eyex, internal::_active_camera.eyey, internal::_active_camera.eyez };
+        }
+
+        glm::vec3 active_camera_target()
+        {
+            return { internal::_active_camera.centerx, internal::_active_camera.centery, internal::_active_camera.centerz };
+        }
+
+        glm::vec3 active_camera_up()
+        {
+            return { internal::_active_camera.upx, internal::_active_camera.upy, internal::_active_camera.upz };
+        }
+
         Camera create_camera()
         {
             Camera c = Camera();

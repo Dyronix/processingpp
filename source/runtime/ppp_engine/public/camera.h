@@ -1,3 +1,7 @@
+#pragma once
+
+#include <glm/glm.hpp>
+
 namespace ppp
 {
     namespace camera
@@ -28,6 +32,10 @@ namespace ppp
             float min_zoom = 1.0f;
             float max_zoom = 100.0f;
         };
+
+        glm::vec3 active_camera_position();
+        glm::vec3 active_camera_target();
+        glm::vec3 active_camera_up();
 
         Camera create_camera();
 

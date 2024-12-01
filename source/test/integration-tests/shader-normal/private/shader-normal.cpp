@@ -78,11 +78,11 @@ namespace ppp
         {
 #if PPP_SAVE_TEST_FRAME
             image::load_pixels(0, 0, _window_width, _window_height);
-            image::save_pixels("local:/test-geometry-3d.png", _window_width, _window_height);
+            image::save_pixels("local:/test-shader-normal.png", _window_width, _window_height);
 #endif
 
 #if PPP_CHECK_TEST_FRAME
-            auto test_frame = image::load("local:/test-geometry-3d.png");
+            auto test_frame = image::load("local:/test-shader-normal.png");
             auto test_frame_pixels = image::load_pixels(test_frame.id);
 
             size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
@@ -105,11 +105,11 @@ namespace ppp
 
             if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
             {
-                environment::print("[TEST FAILED][G3D] image buffers are not identical!");
+                environment::print("[TEST FAILED][SNORMAL] image buffers are not identical!");
             }
             else
             {
-                environment::print("[TEST SUCCESS][G3D] image buffers are identical.");
+                environment::print("[TEST SUCCESS][SNORMAL] image buffers are identical.");
             }
 #endif
 
@@ -138,6 +138,8 @@ namespace ppp
 
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
         camera::camera(20, -40, 400);
+
+        material::normal_material();
 
         structure::on_draw_end(end_draw);
     }

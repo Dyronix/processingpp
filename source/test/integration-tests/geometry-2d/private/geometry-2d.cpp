@@ -12,7 +12,7 @@
 #include "camera.h"
 
 #define PPP_CHECK_TEST_FRAME 1
-#define PPP_SAVE_TEST_FRAME 0
+#define PPP_SAVE_TEST_FRAME 1
 #define PPP_CLOSE_AFTER_X_FRAMES 1
 
 // Demo of shapes and images with stroke and inner stroke
@@ -34,15 +34,6 @@ namespace ppp
     void setup_input_events()
     {
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
-
-        mouse::add_mouse_pressed_callback(
-            [](mouse::mouse_code code)
-        {
-            if (code == mouse::mouse_code::BUTTON_LEFT)
-            {
-                structure::redraw();
-            }
-        });
     }
 
     void end_draw()

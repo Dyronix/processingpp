@@ -9,6 +9,13 @@
 #include "environment.h"
 #include "camera.h"
 #include "mathematics.h"
+#include "image.h"
+#include "rendering.h"
+
+#define PPP_CHECK_TEST_FRAME 1
+#define PPP_SAVE_TEST_FRAME 1
+#define PPP_CLOSE_AFTER_X_FRAMES 1
+#define PPP_ANIMATE_SCENE 0
 
 namespace ppp
 {
@@ -16,8 +23,6 @@ namespace ppp
     constexpr int _window_height = 720;
     constexpr int _canvas_width = 600;
     constexpr int _canvas_height = 600;
-
-    typography::font_id _font;
 
     int _cols = 11; // number of columns in the grid (x-direction)
     int _rows = 9; // number of rows in the grid (z-direction)
@@ -36,7 +41,7 @@ namespace ppp
 
     // colors for the top and bottom cubes
     color::Color _color_top;
-    color::Color _color_bottom; 
+    color::Color _color_bottom;
 
     void setup_input_events()
     {
@@ -65,14 +70,51 @@ namespace ppp
         });
     }
 
-    void load_font()
+    void end_draw()
     {
-        _font = typography::load_font("local:/content/fonts/PokemonGb-RAeo.ttf", 18);
-    }
+        if (environment::frame_count() == 5)
+        {
+            #if PPP_SAVE_TEST_FRAME
+            image::load_pixels(0, 0, _window_width, _window_height);
+            image::save_pixels("local:/test-rendering-batched.png", _window_width, _window_height);
+            #endif
 
-    void activate_font()
-    {
-        typography::text_font(_font);
+            #if PPP_CHECK_TEST_FRAME
+            auto test_frame = image::load("local:/test-rendering-batched.png");
+            auto test_frame_pixels = image::load_pixels(test_frame.id);
+
+            size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
+
+            std::vector<unsigned char> active_test_frame_pixels(total_size);
+            memcpy_s(
+                active_test_frame_pixels.data(),
+                total_size,
+                test_frame_pixels,
+                total_size);
+
+            auto frame_pixels = image::load_pixels(0, 0, _window_width, _window_height);
+
+            std::vector<unsigned char> active_frame_pixels(total_size);
+            memcpy_s(
+                active_frame_pixels.data(),
+                total_size,
+                frame_pixels,
+                total_size);
+
+            if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
+            {
+                environment::print("[TEST FAILED][RBATCH] image buffers are not identical!");
+            }
+            else
+            {
+                environment::print("[TEST SUCCESS][RBATCH] image buffers are identical.");
+            }
+            #endif
+
+            #if PPP_CLOSE_AFTER_X_FRAMES
+            structure::quit();
+            #endif
+        }
     }
 
     AppParams entry()
@@ -89,9 +131,6 @@ namespace ppp
     {
         setup_input_events();
 
-        load_font();
-        activate_font();
-
         shapes::enable_wireframe_mode(false);
         shapes::enable_solid_mode(true);
 
@@ -100,6 +139,10 @@ namespace ppp
 
         _color_top = { 255, 0, 0, 255 };     // Red for top
         _color_bottom = { 0, 0, 255, 255 };  // Blue for bottom
+
+        structure::on_draw_end(end_draw);
+
+        rendering::enable_batched_draw_mode();
     }
 
     void draw()
@@ -117,13 +160,18 @@ namespace ppp
         camera::orbit_control(options);
 
         // Calculate wave offsets based on frame count
+        #if PPP_ANIMATE_SCENE
         float wave_offset_x = environment::frame_count() * _movement_speed_x;
         float wave_offset_z = environment::frame_count() * _movement_speed_z;
+        #else
+        float wave_offset_x = 0.0f;
+        float wave_offset_z = 0.0f;
+        #endif
 
         // Loop over grid of cubes (XZ plane)
-        for (int x = 0; x < _cols; x++) 
+        for (int x = 0; x < _cols; x++)
         {
-            for (int z = 0; z < _rows; z++) 
+            for (int z = 0; z < _rows; z++)
             {
 
                 // Calculate the y position as a wave based on x and z positions
@@ -148,18 +196,18 @@ namespace ppp
                     y,                     // Y position (height based on wave)
                     (z - _rows / 2) * 35   // Z position (centered)
                 );
-                shapes::box(30, 30, 30); // Draw the cube with size 30
+
+                if ((x * z) % 2)
+                {
+                    shapes::box(30, 30, 30); // Draw the cube with size 30
+                }
+                else
+                {
+                    shapes::sphere(15);
+                }
+
                 transform::pop();
             }
         }
-
-        color::fill({0,0,0,255});
-
-        std::string str_frame_rate = "fps " + std::to_string(environment::average_frame_rate());
-        std::string str_delta_time = "ms " + std::to_string(environment::delta_time());
-
-        typography::text(str_frame_rate, 10, _window_height - 30);
-        typography::text("-", 135, _window_height - 30);
-        typography::text(str_delta_time, 170, _window_height - 30);
     }
 }

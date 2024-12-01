@@ -1,3 +1,7 @@
 add_subdirectory(geometry-gpu)
 add_subdirectory(geometry-3d)
 add_subdirectory(geometry-2d)
+add_subdirectory(rendering-batched)
+add_subdirectory(rendering-instanced)
+add_subdirectory(shader-normal)
+add_subdirectory(shader-specular)

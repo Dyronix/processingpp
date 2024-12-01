@@ -30,6 +30,9 @@ namespace ppp
 
     int _interpolation = 8;
 
+    float _specular_strength = 0.5f;
+    int _specular_shininess = 32;
+
     void setup_input_events()
     {
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
@@ -56,18 +59,59 @@ namespace ppp
             else if (key == keyboard::KeyCode::KEY_1)
             {
                 _interpolation = 4;
+                environment::print("_interpolation: " + std::to_string(_interpolation));
             }
             else if (key == keyboard::KeyCode::KEY_2)
             {
                 _interpolation = 8;
+                environment::print("_interpolation: " + std::to_string(_interpolation));
             }
             else if (key == keyboard::KeyCode::KEY_3)
             {
                 _interpolation = 12;
+                environment::print("_interpolation: " + std::to_string(_interpolation));
             }
             else if (key == keyboard::KeyCode::KEY_4)
             {
                 _interpolation = 24;
+                environment::print("_interpolation: " + std::to_string(_interpolation));
+            }
+
+            else if (key == keyboard::KeyCode::KEY_W)
+            {
+                _specular_shininess = _specular_shininess >> 1;
+                if (_specular_shininess < 2)
+                {
+                    _specular_shininess = 2;
+                }
+                environment::print("_specular_shininess: " + std::to_string(_specular_shininess));
+            }
+            else if (key == keyboard::KeyCode::KEY_A)
+            {
+                _specular_strength = _specular_strength += 0.1f;
+                if (_specular_strength > 1.0f)
+                {
+                    _specular_strength = 1.0f;
+                }
+                environment::print("_specular_strength: " + std::to_string(_specular_strength));
+            }
+            else if (key == keyboard::KeyCode::KEY_S)
+            {
+                _specular_shininess = _specular_shininess << 1;
+                if (_specular_shininess > 256)
+                {
+                    _specular_shininess = 256;
+                }
+                environment::print("_specular_shininess: " + std::to_string(_specular_shininess));
+            }
+            else if (key == keyboard::KeyCode::KEY_D)
+            {
+                _specular_strength = _specular_strength -= 0.1f;
+                if (_specular_strength < 0.0f)
+                {
+                    _specular_strength = 0.0f;
+                }
+                environment::print("_specular_strength: " + std::to_string(_specular_strength));
             }
         });
     }
@@ -78,11 +122,11 @@ namespace ppp
         {
 #if PPP_SAVE_TEST_FRAME
             image::load_pixels(0, 0, _window_width, _window_height);
-            image::save_pixels("local:/test-geometry-3d.png", _window_width, _window_height);
+            image::save_pixels("local:/test-shader-specular.png", _window_width, _window_height);
 #endif
 
 #if PPP_CHECK_TEST_FRAME
-            auto test_frame = image::load("local:/test-geometry-3d.png");
+            auto test_frame = image::load("local:/test-shader-specular.png");
             auto test_frame_pixels = image::load_pixels(test_frame.id);
 
             size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
@@ -105,11 +149,11 @@ namespace ppp
 
             if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
             {
-                environment::print("[TEST FAILED][G3D] image buffers are not identical!");
+                environment::print("[TEST FAILED][SSPEC] image buffers are not identical!");
             }
             else
             {
-                environment::print("[TEST SUCCESS][G3D] image buffers are identical.");
+                environment::print("[TEST SUCCESS][SSPEC] image buffers are identical.");
             }
 #endif
 
@@ -138,6 +182,8 @@ namespace ppp
 
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
         camera::camera(20, -40, 400);
+
+        material::specular_material();
 
         structure::on_draw_end(end_draw);
     }
@@ -226,6 +272,16 @@ namespace ppp
         options.max_zoom = 600.0f;
 
         camera::orbit_control(options);
+
+        auto specular_program = material::get_shader("lit_specular");
+
+        specular_program.set_uniform("u_ambient_strength", 0.1f);
+        specular_program.set_uniform("u_light_position", glm::vec3{ 0.0f, 0.0f, 200.0f });
+        specular_program.set_uniform("u_light_color", glm::vec3{ 1.0f, 1.0f, 1.0f });
+        specular_program.set_uniform("u_specular_color", glm::vec3{ 1.0f, 1.0f, 1.0f });
+        specular_program.set_uniform("u_specular_strength", _specular_strength);
+        specular_program.set_uniform("u_specular_power", _specular_shininess);
+        specular_program.set_uniform("u_view_position", camera::active_camera_position());
 
         color::fill({ 255,0,0,255 });
 

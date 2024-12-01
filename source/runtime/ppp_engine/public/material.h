@@ -34,12 +34,14 @@ namespace ppp
         void shader(const std::string& tag);
         void reset();
 
-        void normal_material();
-        void specular_material();
+        shader_program normal_material();
+        shader_program specular_material();
 
         shader_program create_shader(const std::string& tag, const std::string& vertex_source, const std::string& fragment_source);
         shader_program create_shader(const std::string& tag, const std::string& vertex_source, const std::string& fragment_source, const std::string& geometry_source);
         shader_program load_shader(const std::string& tag, const std::string& vertex_path, const std::string& fragment_path);
         shader_program load_shader(const std::string& tag, const std::string& vertex_path, const std::string& fragment_path, const std::string& geometry_path);
+        
+        shader_program get_shader(const std::string& tag);
     }
 }
