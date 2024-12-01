@@ -1,6 +1,7 @@
 #include "render/render_batch.h"
 #include "render/render_vertex_buffer.h"
 #include "render/render_index_buffer.h"
+#include "render/render_texture_manager.h"
 
 #include "render/opengl/render_gl_error.h"
 
@@ -43,11 +44,11 @@ namespace ppp
             }
         }
 
-        class batch_buffer_manager
+        class buffer_manager
         {
         public:
             //-------------------------------------------------------------------------
-            batch_buffer_manager(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count)
+            buffer_manager(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count)
                 : m_max_vertex_count(size_vertex_buffer)
                 , m_max_index_count(size_index_buffer)
                 , m_vertex_buffer(layouts, layout_count, size_vertex_buffer)
@@ -279,92 +280,11 @@ namespace ppp
             vertex_buffer m_vertex_buffer;
             index_buffer m_index_buffer;
         };
-        class batch_texture_manager
-        {
-        public:
-            //-------------------------------------------------------------------------
-            batch_texture_manager(s32 size_textures)
-                :m_max_texture_count(size_textures)
-            {
-                if (size_textures != -1)
-                {
-                    m_image_to_sampler_map.reserve(size_textures);
-
-                    m_images.reserve(size_textures);
-                    m_samplers.reserve(size_textures);
-                }
-            }
-
-            //-------------------------------------------------------------------------
-            bool can_add(s32 nr_textures)
-            {
-                return has_reserved_texture_space() && m_image_to_sampler_map.size() + nr_textures < m_max_texture_count;
-            }
-
-            //-------------------------------------------------------------------------
-            bool has_data() const
-            {
-                return m_images.size() > 0;
-            }
-
-            //-------------------------------------------------------------------------
-            bool has_reserved_texture_space() const
-            {
-                return m_max_texture_count > 0;
-            }
-
-            //-------------------------------------------------------------------------
-            s32 add_texture(u32 image_id)
-            {
-                if (has_reserved_texture_space())
-                {
-                    if (m_image_to_sampler_map.find(image_id) == m_image_to_sampler_map.cend())
-                    {
-                        m_image_to_sampler_map[image_id] = m_samplers.size();
-
-                        m_images.push_back(image_id);
-                        m_samplers.push_back(m_samplers.size());
-                    }
-
-                    return m_image_to_sampler_map.at(image_id);
-                }
-
-                return -1;
-            }
-
-            //-------------------------------------------------------------------------
-            void reset()
-            {
-                m_image_to_sampler_map.clear();
-
-                m_images.clear();
-                m_samplers.clear();
-            }
-
-            //-------------------------------------------------------------------------
-            const std::vector<s32>& samplers() const { return m_samplers; }
-            const std::vector<u32>& textures() const { return m_images; }
-
-            //-------------------------------------------------------------------------
-            u64 active_sampler_count() const { return has_reserved_texture_space() ? m_samplers.size() : 0; }
-            u64 active_texture_count() const { return has_reserved_texture_space() ? m_images.size() : 0; }
-
-            //-------------------------------------------------------------------------
-            u32 max_texture_count() const { return has_reserved_texture_space() ? m_max_texture_count : 0; }
-
-        private:
-            std::unordered_map<u32, s32> m_image_to_sampler_map;
-
-            std::vector<u32> m_images;
-            std::vector<s32> m_samplers;
-
-            const s32 m_max_texture_count;
-        };
 
         //-------------------------------------------------------------------------
         batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, s32 size_textures)
-            : m_buffer_manager(std::make_unique<batch_buffer_manager>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
-            , m_texture_manager(std::make_unique<batch_texture_manager>(size_textures))
+            : m_buffer_manager(std::make_unique<buffer_manager>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
+            , m_texture_manager(std::make_unique<texture_manager>(size_textures))
         {
         }
 
