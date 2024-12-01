@@ -13,8 +13,8 @@ namespace ppp
 {
     namespace render
     {
-        class batch_buffer_manager;
-        class batch_texture_manager;
+        class buffer_manager;
+        class texture_manager;
 
         class batch
         {
@@ -55,8 +55,8 @@ namespace ppp
             u32 max_texture_count() const;
 
         private:
-            std::unique_ptr<batch_buffer_manager> m_buffer_manager;
-            std::unique_ptr<batch_texture_manager> m_texture_manager;
+            std::unique_ptr<buffer_manager> m_buffer_manager;
+            std::unique_ptr<texture_manager> m_texture_manager;
         };
 
         class batch_drawing_data

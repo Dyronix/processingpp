@@ -22,6 +22,9 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.h
     # render
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_vertex_buffer.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_index_buffer.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch_renderer.cpp
@@ -47,6 +50,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_texture_manager.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_texture_manager.h
     # geometry
     # 3d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h

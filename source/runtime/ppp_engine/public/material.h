@@ -28,7 +28,6 @@ namespace ppp
             void set_uniform(const std::string& uniform_name, const glm::mat4& value);
         };
 
-        void ambient_color(float r, float g, float b);
         void texture(unsigned int image_id);
         void texture(unsigned int image_id, unsigned int texture_channel);
         void shader(const std::string& tag);
