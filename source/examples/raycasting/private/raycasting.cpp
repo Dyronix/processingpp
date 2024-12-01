@@ -22,7 +22,7 @@ namespace ppp
 
     typography::font_id _font;
 
-    AppParams entry()
+    AppParams entry(int argc, char** argv)
     {
         AppParams app_params;
 

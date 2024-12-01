@@ -22,5 +22,7 @@ namespace ppp
 
         float canvas_width();
         float canvas_height();
+
+        std::string cwd();
     }
 }

@@ -3,6 +3,7 @@
 #include "render/render.h"
 #include "util/log.h"
 #include "util/types.h"
+#include <filesystem>
 
 namespace ppp
 {
@@ -75,6 +76,11 @@ namespace ppp
             }
 
             return window_height();
+        }
+
+        std::string cwd()
+        {
+            return std::filesystem::current_path().string();
         }
     }
 }

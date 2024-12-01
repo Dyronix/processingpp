@@ -50,7 +50,7 @@ namespace ppp
     std::vector<flow_field::Particle> _particles;
     std::vector<glm::vec2> _flow_field;
 
-    AppParams entry()
+    AppParams entry(int argc, char** argv)
     {
         AppParams app_params;
 

@@ -35,7 +35,7 @@ namespace ppp
         });
     }
 
-    AppParams entry()
+    AppParams entry(int argc, char** argv)
     {
         AppParams app_params;
 

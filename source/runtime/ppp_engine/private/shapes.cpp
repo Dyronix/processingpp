@@ -153,7 +153,9 @@ namespace ppp
 
             transform::push();
             transform::translate(x, y);
+
             render::submit_render_item(render::topology_type::POINTS, geom);
+            
             transform::pop();
 
             if (render::brush::stroke_enabled())
@@ -165,7 +167,9 @@ namespace ppp
                 transform::push();
                 transform::translate(x, y);
                 transform::scale(render::brush::stroke_width(), render::brush::stroke_width());
+
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                
                 transform::pop();
             }
         }

@@ -41,12 +41,12 @@ namespace ppp
             return -1;
         }
 
-        #if PPP_OPENGL
+#if PPP_OPENGL
         if (!render::initialize(app_params.window_width, app_params.window_height, glfwGetProcAddress))
         {
             return -1;
         }
-        #endif
+#endif
 
         if (!texture_pool::initialize())
         {
@@ -125,6 +125,35 @@ namespace ppp
 
         return 0;
     }
+
+    //-------------------------------------------------------------------------
+    int find_argument(int argc, char** argv, const char* target)
+    {
+        for (int i = 1; i < argc; i++) 
+        {
+            if (strcmp(argv[i], target) == 0) 
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    //-------------------------------------------------------------------------
+    int find_argument_with_value(int argc, char** argv, const char* target, const char** value)
+    {
+        for (int i = 1; i < argc; i++) 
+        {
+            if (strcmp(argv[i], target) == 0 && (i + 1) < argc) 
+            {
+                *value = argv[i + 1];
+                return i;
+            }
+        }
+        
+        return -1;
+    }
 }
 
 int main(int argc, char** argv)
@@ -134,7 +163,7 @@ int main(int argc, char** argv)
         ppp::log::info("Application argument: {}", argv[i]);
     }
 
-    ppp::AppParams app_params = ppp::entry();
+    ppp::AppParams app_params = ppp::entry(argc, argv);
 
     s32 result = 0;
 

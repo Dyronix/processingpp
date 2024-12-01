@@ -12,12 +12,13 @@
 #include "camera.h"
 
 #define PPP_CHECK_TEST_FRAME 1
-#define PPP_SAVE_TEST_FRAME 1
 #define PPP_CLOSE_AFTER_X_FRAMES 1
 
 // Demo of shapes and images with stroke and inner stroke
 namespace ppp
 {
+    bool _generate_new_data = false;
+
     constexpr int _window_width = 1280;
     constexpr int _window_height = 720;
     constexpr int _canvas_width = 600;
@@ -40,10 +41,11 @@ namespace ppp
     {
         if (environment::frame_count() == 5)
         {
-#if PPP_SAVE_TEST_FRAME
-            image::load_pixels(0, 0, _window_width, _window_height);
-            image::save_pixels("local:/test-geometry-2d.png", _window_width, _window_height);
-#endif
+            if (_generate_new_data)
+            {
+                image::load_pixels(0, 0, _window_width, _window_height);
+                image::save_pixels("local:/test-geometry-2d.png", _window_width, _window_height);
+            }
 
 #if PPP_CHECK_TEST_FRAME
             auto test_frame = image::load("local:/test-geometry-2d.png");
@@ -83,12 +85,16 @@ namespace ppp
         }
     }
 
-    AppParams entry()
+    AppParams entry(int argc, char** argv)
     {
+        environment::print("current working dir: " + environment::cwd());
+
         AppParams app_params;
 
         app_params.window_width = 1280;
         app_params.window_height = 720;
+
+        _generate_new_data = find_argument(argc, argv, "--generate-new-data");
 
         return app_params;
     }

@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.28)
 
 project(processingpp)
 
+option(PPP_ENABLE_TESTING "Enable testing for the Processing framework" OFF)
+
 # Use C++ 17 as a standard
 set(CMAKE_CXX_STANDARD 17)
 
@@ -42,7 +44,6 @@ MESSAGE(STATUS ${SOURCE_TEST_DIRECTORY})
 add_subdirectory(${SOURCE_THIRDPARTY_DIRECTORY})
 add_subdirectory(${SOURCE_RUNTIME_DIRECTORY})
 add_subdirectory(${SOURCE_EXAMPLES_DIRECTORY})
-add_subdirectory(${SOURCE_TEST_DIRECTORY})
 
 # Add a custom target that always builds and runs the copy command
 add_custom_target(copy-content ALL
@@ -52,3 +53,18 @@ add_custom_target(copy-content ALL
 )
 
 set_property(TARGET copy-content PROPERTY FOLDER "programs")
+
+if(PPP_ENABLE_TESTING)
+
+	add_subdirectory(${SOURCE_TEST_DIRECTORY})
+
+	# Add a custom target that always builds and runs the batch script
+	add_custom_target(run-integration-tests
+		COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --blue "Executing integration-tests-run.bat"
+		COMMAND "${SOURCE_TEST_DIRECTORY}/integration-tests-run.bat" ${SOURCE_TEST_DIRECTORY}
+		VERBATIM
+	)
+
+	set_property(TARGET run-integration-tests PROPERTY FOLDER "test")
+
+endif()

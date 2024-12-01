@@ -54,11 +54,6 @@ namespace ppp
             render::shaders::push_uniform(id, uniform_name, value);
         }
 
-        void ambient_color(float r, float g, float b)
-        {
-            
-        }
-
         void texture(unsigned int image_id)
         {
             texture(image_id, 0);

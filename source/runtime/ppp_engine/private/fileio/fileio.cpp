@@ -86,6 +86,8 @@ namespace ppp
 
 		void add_wildcard(const std::string& wildcard, const std::string& value)
 		{
+			log::info("adding wildcard {} | {}", wildcard, value);
+
 			internal::_wildcards[wildcard] = value;
 		}
 
