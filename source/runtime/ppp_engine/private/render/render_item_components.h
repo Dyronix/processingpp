@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <numeric>
 
 namespace ppp
 {
@@ -25,6 +26,20 @@ namespace ppp
         };
 
         //-------------------------------------------------------------------------
+        inline s32 component_count_for_vertex_attribute(vertex_attribute_type type)
+        {
+            switch (type)
+            {
+            case vertex_attribute_type::POSITION:               return 3;
+            case vertex_attribute_type::NORMAL:                 return 3;
+            case vertex_attribute_type::TEXCOORD:               return 2;
+            case vertex_attribute_type::COLOR:                  return 4;
+            case vertex_attribute_type::DIFFUSE_TEXTURE_INDEX:  return 1;
+            }
+            return 0;  // Fallback to avoid compiler warnings
+        }
+
+        //-------------------------------------------------------------------------
         enum class vertex_attribute_data_type
         {
             FLOAT,
@@ -38,20 +53,6 @@ namespace ppp
             {
             case vertex_attribute_data_type::FLOAT: return 4;
             case vertex_attribute_data_type::UNSIGNED_INT: return 4;
-            }
-            return 0;  // Fallback to avoid compiler warnings
-        }
-
-        //-------------------------------------------------------------------------
-        inline s32 component_count_for_vertex_attribute(vertex_attribute_type type)
-        {
-            switch (type)
-            {
-            case vertex_attribute_type::POSITION:               return 3;
-            case vertex_attribute_type::NORMAL:                 return 3;
-            case vertex_attribute_type::TEXCOORD:               return 2;
-            case vertex_attribute_type::COLOR:                  return 4;
-            case vertex_attribute_type::DIFFUSE_TEXTURE_INDEX:  return 1;
             }
             return 0;  // Fallback to avoid compiler warnings
         }
@@ -73,14 +74,14 @@ namespace ppp
         };
 
         //-------------------------------------------------------------------------
-        using vertex_attribute_blob = std::vector<u8>;
-
-        //-------------------------------------------------------------------------
-        struct vertex_attribute
+        inline u64 calculate_total_size_vertex_type(const vertex_attribute_layout* layouts, u64 layout_count)
         {
-            vertex_attribute_layout layout;
-            vertex_attribute_blob blob;
-        };
+            return std::accumulate(layouts, layouts + layout_count, 0ULL,
+                [](u64 sum, const vertex_attribute_layout& layout)
+            {
+                return sum + layout.total_size_in_bytes();
+            });
+        }
 
         //-------------------------------------------------------------------------
         class irender_item

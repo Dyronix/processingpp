@@ -10,6 +10,8 @@
 
 #include <glad/glad.h>
 
+#include <numeric>
+
 namespace ppp
 {
     namespace render
@@ -25,19 +27,6 @@ namespace ppp
                 case vertex_attribute_data_type::UNSIGNED_INT: return GL_UNSIGNED_INT;
                 }
                 return 0;  // Fallback to avoid compiler warnings
-            }
-
-            //-------------------------------------------------------------------------
-            static u64 calculate_total_size_vertex_type(const vertex_attribute_layout* layouts, u64 layout_count)
-            {
-                u64 total = 0;
-                for (u64 i = 0; i < layout_count; ++i)
-                {
-                    const vertex_attribute_layout& layout = layouts[i];
-
-                    total += layout.total_size_in_bytes();
-                }
-                return total;
             }
         }
 
