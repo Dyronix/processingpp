@@ -223,21 +223,6 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void batch_renderer::append_drawing_data(topology_type topology, const render_item& item, const glm::vec4& color, const glm::mat4& world)
-        {
-            if (m_drawing_data_map.find(topology) == std::cend(m_drawing_data_map))
-            {
-                s32 max_vertices = internal::max_vertices(topology);
-                s32 max_indices = internal::max_indices(topology);
-                s32 max_textures = m_texture_support ? internal::max_textures() : -1;
-
-                m_drawing_data_map.emplace(topology, batch_drawing_data(max_vertices, max_indices, max_textures, m_layouts, m_layout_count, m_buffer_policy));
-            }
-
-            m_drawing_data_map.at(topology).append(item, color, world);
-        }
-
-        //-------------------------------------------------------------------------
         void batch_renderer::append_drawing_data(topology_type topology, const irender_item* item, const glm::vec4& color, const glm::mat4& world)
         {
             if (m_drawing_data_map.find(topology) == std::cend(m_drawing_data_map))

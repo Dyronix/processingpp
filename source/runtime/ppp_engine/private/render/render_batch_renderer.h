@@ -13,7 +13,6 @@ namespace ppp
     namespace render
     {
         class vertex_attribute_layout;
-        class render_item;
         
         class batch_renderer
         {
@@ -30,7 +29,6 @@ namespace ppp
             void end();
             void terminate();
 
-            void append_drawing_data(topology_type topology, const render_item& item, const glm::vec4& color, const glm::mat4& world);
             void append_drawing_data(topology_type topology, const irender_item* item, const glm::vec4& color, const glm::mat4& world);
 
             void enable_solid_rendering(bool enable);

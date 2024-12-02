@@ -326,36 +326,6 @@ namespace ppp
             geometry_builder _geometry_builder;
 
             //-------------------------------------------------------------------------
-            void submit_custom_render_item(topology_type topology, const render_item& item)
-            {
-                if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false && brush::fill_enabled() == false)
-                {
-                    // When there is no "stroke" and there is no "fill" the object would be invisible.
-                    // So we don't add anything to the drawing list.
-                    return;
-                }
-
-                const std::string& shader_tag = _fill_user_shader.empty() ? _geometry_builder.shader_tag() : _fill_user_shader;
-
-                if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
-                {
-                    auto renderer = std::make_unique<primitive_batch_renderer>(
-                        _fill_user_shader.empty() ? internal::_pos_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                        _fill_user_shader.empty() ? internal::_pos_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                        shader_tag);
-
-                    if (_geometry_builder.is_active())
-                    {
-                        renderer->buffer_policy(render_buffer_policy::RETAINED);
-                    }
-
-                    renderer->draw_policy(render_draw_policy::CUSTOM);
-                    internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
-                }
-
-                internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology, item, brush::fill(), transform::active_world());
-            }
-            //-------------------------------------------------------------------------
             void submit_custom_render_item(topology_type topology, const irender_item* item)
             {
                 if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false && brush::fill_enabled() == false)
@@ -384,29 +354,6 @@ namespace ppp
                 }
 
                 internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology, item, brush::fill(), transform::active_world());
-            }
-            //-------------------------------------------------------------------------
-            void submit_custom_image_item(const render_item& item)
-            {
-                const std::string& shader_tag = _fill_user_shader.empty() ? _geometry_builder.shader_tag() : _fill_user_shader;
-
-                if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
-                {
-                    auto renderer = std::make_unique<texture_batch_renderer>(
-                        _fill_user_shader.empty() ? internal::_pos_tex_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                        _fill_user_shader.empty() ? internal::_pos_tex_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                        shader_tag);
-
-                    if (_geometry_builder.is_active())
-                    {
-                        renderer->buffer_policy(render_buffer_policy::RETAINED);
-                    }
-
-                    renderer->draw_policy(render_draw_policy::CUSTOM);
-                    internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
-                }
-
-                internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
             }
             //-------------------------------------------------------------------------
             void submit_custom_image_item(const irender_item* item)
@@ -882,26 +829,6 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void submit_render_item(topology_type topology, const render_item& item)
-        {
-            if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
-            {
-                internal::submit_custom_render_item(topology, item);
-            }
-            else
-            {
-                if (brush::fill_enabled() == false)
-                {
-                    // When there is no "stroke" and there is no "fill" the object would be invisible.
-                    // So we don't add anything to the drawing list.
-                    return;
-                }
-
-                internal::_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform::active_world());
-            }
-        }
-
-        //-------------------------------------------------------------------------
         void submit_stroke_render_item(topology_type topology, const irender_item* item, bool outer)
         {
             if (internal::_geometry_builder.is_active())
@@ -923,49 +850,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void submit_stroke_render_item(topology_type topology, const render_item& item, bool outer)
-        {
-            if (internal::_geometry_builder.is_active())
-            {
-                log::warn("Stroking custom geometry is currently not supported");
-                return;
-            }
-
-            if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false)
-            {
-                // When there is no "stroke" and there is no "fill" the object would be invisible.
-                // So we don't add anything to the drawing list.
-                return;
-            }
-
-            glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
-
-            internal::_primitive_stroke_batch_renderer->append_drawing_data(topology, item, stroke_color, transform::active_world());
-        }
-
-        //-------------------------------------------------------------------------
-        void submit_font_item(const render_item& item)
-        {
-            internal::_font_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform::active_world());
-        }
-
-        //-------------------------------------------------------------------------
         void submit_font_item(const irender_item* item)
         {
             internal::_font_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform::active_world());
-        }
-
-        //-------------------------------------------------------------------------
-        void submit_image_item(const render_item& item)
-        {
-            if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
-            {
-                internal::submit_custom_image_item(item);
-            }
-            else
-            {
-                internal::_image_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
-            }
         }
 
         //-------------------------------------------------------------------------
@@ -979,20 +866,6 @@ namespace ppp
             {
                 internal::_image_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
             }
-        }
-
-        //-------------------------------------------------------------------------
-        void submit_stroke_image_item(const render_item& item, bool outer)
-        {
-            if (internal::_geometry_builder.is_active())
-            {
-                log::warn("Stroking custom image geometry is currently not supported");
-                return;
-            }
-
-            glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
-
-            internal::_image_stroke_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, stroke_color, transform::active_world());
         }
 
         //-------------------------------------------------------------------------
