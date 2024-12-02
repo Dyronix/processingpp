@@ -65,7 +65,7 @@ namespace ppp
             s32 idx;        // attribute index 
             s32 count;      // attribute component count, for instance glm::vec3 component count == 3
             s32 normalized; // attribute values are normalized
-            u64 stride;     // size the full vertex type ( so stride of a vertex with position (vec3) and color (vec4) would be (3 * 4) + (4 * 4) 
+            u64 stride;     // size of the full vertex type ( so stride of a vertex with position (vec3) and color (vec4) would be (3 * 4) + (4 * 4) 
             u64 offset;     // offset in the vertex type ( so offset of color within a vertex with position (vec3) and color (vec4) would be 12
 
             u64 element_size_in_bytes() const { return size_in_bytes_for_data_type(data_type); }

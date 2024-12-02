@@ -32,10 +32,7 @@ namespace ppp
                 {
                     const vertex_attribute_layout& layout = layouts[i];
 
-                    s32 component_count = component_count_for_vertex_attribute(layout.type);
-                    s32 size_in_bytes = size_in_bytes_for_data_type(layout.data_type);
-
-                    total += (size_in_bytes * component_count);
+                    total += layout.total_size_in_bytes();
                 }
                 return total;
             }
