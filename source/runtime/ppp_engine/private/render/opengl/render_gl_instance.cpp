@@ -72,7 +72,7 @@ namespace ppp
             // Allocate VBO
             GL_CALL(glGenBuffers(1, &m_vbo));
             GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, m_vbo));
-            const size_t size_vbo = internal::calculate_total_size_vertex_type(layouts, layout_count) * instance->vertex_count();
+            const size_t size_vbo = calculate_total_size_vertex_type(layouts, layout_count) * instance->vertex_count();
             GL_CALL(glBufferData(GL_ARRAY_BUFFER, size_vbo, m_vertex_buffer->get_data().data(), GL_STATIC_DRAW));
 
             for (u64 i = 0; i < layout_count; ++i)
