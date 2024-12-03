@@ -1,0 +1,1 @@
+cmake -Bbuild -DPPP_ENABLE_TESTING=ON
