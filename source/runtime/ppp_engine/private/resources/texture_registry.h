@@ -9,10 +9,10 @@ namespace ppp
 {
     namespace render
     {
-        class texture_manager
+        class texture_registry
         {
         public:
-            texture_manager(s32 size_textures);
+            texture_registry(s32 size_textures);
 
             bool can_add(s32 nr_textures);
             bool has_data() const;

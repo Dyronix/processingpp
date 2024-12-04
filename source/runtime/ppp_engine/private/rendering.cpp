@@ -1,6 +1,6 @@
 #include "rendering.h"
 #include "render/render.h"
-#include "render/render_transform.h"
+#include "util/transform_stack.h"
 #include "device/device_input.h"
 
 namespace ppp
@@ -12,8 +12,8 @@ namespace ppp
             render::push_scissor_enable(true);
             render::push_scissor(x, y, w, h);
 
-            render::transform::push();
-            render::transform::translate(glm::vec2(x, y));
+            transform::push();
+            transform::translate(glm::vec2(x, y));
         }
 
         void resize_canvas(float x, float y, float w, float h)
@@ -22,15 +22,15 @@ namespace ppp
             render::push_scissor(x, y, w, h);
 
             // Dequeue the previous one
-            render::transform::pop();
+            transform::pop();
             // Enqueue the new one
-            render::transform::push();
-            render::transform::translate(glm::vec2(x, y));
+            transform::push();
+            transform::translate(glm::vec2(x, y));
         }
 
         void no_canvas()
         {
-            render::transform::pop();
+            transform::pop();
 
             render::push_scissor_enable(false);
         }

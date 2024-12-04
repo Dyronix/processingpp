@@ -14,7 +14,7 @@ namespace ppp
     namespace render
     {
         class buffer_manager;
-        class texture_manager;
+        class texture_registry;
 
         class batch
         {
@@ -55,7 +55,7 @@ namespace ppp
 
         private:
             std::unique_ptr<buffer_manager> m_buffer_manager;
-            std::unique_ptr<texture_manager> m_texture_manager;
+            std::unique_ptr<texture_registry> m_texture_registry;
         };
 
         class batch_drawing_data

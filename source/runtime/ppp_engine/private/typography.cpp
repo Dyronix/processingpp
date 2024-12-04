@@ -1,6 +1,5 @@
 #include "typography.h"
 #include "render/render.h"
-#include "render/render_transform.h"
 #include "resources/font_pool.h"
 #include "resources/geometry_pool.h"
 #include "fileio/fileio.h"
@@ -11,6 +10,7 @@
 
 #include "util/log.h"
 #include "util/types.h"
+#include "util/transform_stack.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -107,17 +107,17 @@ namespace ppp
 
                 glm::vec2 center = geometry::rectanglular_center_translation(xpos, ypos, w, h);
 
-                render::transform::push();
-                render::transform::translate(glm::vec2(xpos, ypos));
+                transform::push();
+                transform::translate(glm::vec2(xpos, ypos));
                 if (internal::_text_mode == text_mode_type::CORNER)
                 {
-                    render::transform::translate(glm::vec2(center.x, center.y));
+                    transform::translate(glm::vec2(center.x, center.y));
                 }
-                render::transform::scale(glm::vec2(w, h));
+                transform::scale(glm::vec2(w, h));
 
                 render::submit_font_item(geom);
 
-                render::transform::pop();
+                transform::pop();
 
                 // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
                 x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)

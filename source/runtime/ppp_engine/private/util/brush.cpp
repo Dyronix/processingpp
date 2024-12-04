@@ -1,5 +1,4 @@
-#include "render/render_brush.h"
-
+#include "util/brush.h"
 #include "util/color_ops.h"
 
 namespace ppp

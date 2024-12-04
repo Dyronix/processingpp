@@ -1,7 +1,7 @@
 #include "color.h"
 #include "mathematics.h"
 #include "render/render.h"
-#include "render/render_brush.h"
+#include "util/brush.h"
 #include "util/types.h"
 
 #include <glm/glm.hpp>

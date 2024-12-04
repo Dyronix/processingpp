@@ -2,11 +2,12 @@
 #include "transform.h"
 
 #include "render/render.h"
-#include "render/render_brush.h"
 #include "render/render_types.h"
-#include "render/render_transform.h"
 
 #include "resources/shader_pool.h"
+
+#include "util/transform_stack.h"
+#include "util/brush.h"
 
 #include "geometry/geometry.h"
 
@@ -100,7 +101,7 @@ namespace ppp
            
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
 
-            glm::mat4 world = render::transform::active_world();
+            glm::mat4 world = transform::active_world();
 
             transform::pop();
 
@@ -190,7 +191,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
 
-            glm::mat4 world = render::transform::active_world();
+            glm::mat4 world = transform::active_world();
 
             transform::pop();
 
@@ -232,7 +233,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
 
-            glm::mat4 world = render::transform::active_world();
+            glm::mat4 world = transform::active_world();
 
             transform::pop();
 
@@ -277,7 +278,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
 
-            glm::mat4 world = render::transform::active_world();
+            glm::mat4 world = transform::active_world();
 
             transform::pop();
 

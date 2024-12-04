@@ -1,11 +1,11 @@
-#include "render/render_texture_manager.h"
+#include "resources/texture_registry.h"
 
 namespace ppp
 {
     namespace render
     {
         //-------------------------------------------------------------------------
-        texture_manager::texture_manager(s32 size_textures)
+        texture_registry::texture_registry(s32 size_textures)
             :m_max_texture_count(size_textures)
         {
             if (size_textures != -1)
@@ -18,25 +18,25 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool texture_manager::can_add(s32 nr_textures)
+        bool texture_registry::can_add(s32 nr_textures)
         {
             return has_reserved_texture_space() && m_image_to_sampler_map.size() + nr_textures < m_max_texture_count;
         }
 
         //-------------------------------------------------------------------------
-        bool texture_manager::has_data() const
+        bool texture_registry::has_data() const
         {
             return m_images.size() > 0;
         }
 
         //-------------------------------------------------------------------------
-        bool texture_manager::has_reserved_texture_space() const
+        bool texture_registry::has_reserved_texture_space() const
         {
             return m_max_texture_count > 0;
         }
 
         //-------------------------------------------------------------------------
-        s32 texture_manager::add_texture(u32 image_id)
+        s32 texture_registry::add_texture(u32 image_id)
         {
             if (has_reserved_texture_space())
             {
@@ -55,7 +55,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void texture_manager::reset()
+        void texture_registry::reset()
         {
             m_image_to_sampler_map.clear();
 
@@ -64,14 +64,14 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const std::vector<s32>& texture_manager::samplers() const { return m_samplers; }
-        const std::vector<u32>& texture_manager::textures() const { return m_images; }
+        const std::vector<s32>& texture_registry::samplers() const { return m_samplers; }
+        const std::vector<u32>& texture_registry::textures() const { return m_images; }
 
         //-------------------------------------------------------------------------
-        u64 texture_manager::active_sampler_count() const { return has_reserved_texture_space() ? m_samplers.size() : 0; }
-        u64 texture_manager::active_texture_count() const { return has_reserved_texture_space() ? m_images.size() : 0; }
+        u64 texture_registry::active_sampler_count() const { return has_reserved_texture_space() ? m_samplers.size() : 0; }
+        u64 texture_registry::active_texture_count() const { return has_reserved_texture_space() ? m_images.size() : 0; }
 
         //-------------------------------------------------------------------------
-        u32 texture_manager::max_texture_count() const { return has_reserved_texture_space() ? m_max_texture_count : 0; }
+        u32 texture_registry::max_texture_count() const { return has_reserved_texture_space() ? m_max_texture_count : 0; }
     }
 }

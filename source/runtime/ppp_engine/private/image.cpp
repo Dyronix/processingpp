@@ -1,8 +1,6 @@
 #include "image.h"
 
 #include "render/render.h"
-#include "render/render_brush.h"
-#include "render/render_transform.h"
 
 #include "fileio/fileio.h"
 
@@ -15,6 +13,8 @@
 #include "geometry/2d/geometry_2d_helpers.h"
 
 #include "util/log.h"
+#include "util/transform_stack.h"
+#include "util/brush.h"
 
 #include <stb/stb_image_write.h>
 #include <stb/stb_image.h>
@@ -195,23 +195,23 @@ namespace ppp
         {
             geometry::geometry* geom = internal::make_image(image_id);
 
-            render::transform::push();
-            render::transform::translate(glm::vec2(x, y));
+            transform::push();
+            transform::translate(glm::vec2(x, y));
             
             if (internal::_image_mode == image_mode_type::CORNER)
             {
                 glm::vec2 center = geometry::rectanglular_center_translation(x, y, width, height);
 
-                render::transform::translate(glm::vec2(center.x, center.y));
+                transform::translate(glm::vec2(center.x, center.y));
             }
 
-            render::transform::scale(glm::vec2(width, height));
+            transform::scale(glm::vec2(width, height));
 
             render::submit_image_item(geom);
 
-            glm::mat4& world = render::transform::active_world();
+            glm::mat4& world = transform::active_world();
 
-            render::transform::pop();
+            transform::pop();
 
             if (render::brush::stroke_enabled())
             {

@@ -1,10 +1,8 @@
 #include "render/render.h"
-#include "render/render_transform.h"
 #include "render/render_batch.h"
 #include "render/render_instance.h"
 #include "render/render_batch_renderer.h"
 #include "render/render_instance_renderer.h"
-#include "render/render_brush.h"
 
 #include "render/opengl/render_gl_error.h"
 
@@ -12,6 +10,8 @@
 
 #include "util/log.h"
 #include "util/color_ops.h"
+#include "util/transform_stack.h"
+#include "util/brush.h"
 
 #include <glad/glad.h>
 

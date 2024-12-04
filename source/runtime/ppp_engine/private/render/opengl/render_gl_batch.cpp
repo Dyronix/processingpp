@@ -1,7 +1,7 @@
 #include "render/render_batch.h"
 #include "render/render_vertex_buffer.h"
 #include "render/render_index_buffer.h"
-#include "render/render_texture_manager.h"
+#include "resources/texture_registry.h"
 
 #include "render/opengl/render_gl_error.h"
 
@@ -203,7 +203,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, s32 size_textures)
             : m_buffer_manager(std::make_unique<buffer_manager>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
-            , m_texture_manager(std::make_unique<texture_manager>(size_textures))
+            , m_texture_registry(std::make_unique<texture_registry>(size_textures))
         {
         }
 
@@ -213,7 +213,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         batch::batch(batch&& other)
             : m_buffer_manager(std::exchange(other.m_buffer_manager, nullptr))
-            , m_texture_manager(std::exchange(other.m_texture_manager, nullptr))
+            , m_texture_registry(std::exchange(other.m_texture_registry, nullptr))
         {
         }
 
@@ -221,7 +221,7 @@ namespace ppp
         batch& batch::operator=(batch&& other)
         {
             m_buffer_manager = std::exchange(other.m_buffer_manager, nullptr);
-            m_texture_manager = std::exchange(other.m_texture_manager, nullptr);
+            m_texture_registry = std::exchange(other.m_texture_registry, nullptr);
 
             return *this;
         }
@@ -234,11 +234,11 @@ namespace ppp
                 m_buffer_manager->add_indices(item);
             }
             
-            if (m_texture_manager->has_reserved_texture_space())
+            if (m_texture_registry->has_reserved_texture_space())
             {
                 assert(item->texture_ids().size() == 1);
 
-                s32 sampler_id = m_texture_manager->add_texture(item->texture_ids()[0]);
+                s32 sampler_id = m_texture_registry->add_texture(item->texture_ids()[0]);
                 if (sampler_id != -1)
                 {
                     m_buffer_manager->add_vertices(item, sampler_id, color, world);
@@ -259,7 +259,7 @@ namespace ppp
         void batch::reset()
         {
             m_buffer_manager->reset();
-            m_texture_manager->reset();
+            m_texture_registry->reset();
         }
 
         //-------------------------------------------------------------------------
@@ -271,29 +271,29 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool batch::has_data() const
         {
-            return m_buffer_manager->has_data() || (m_texture_manager->has_reserved_texture_space() && m_texture_manager->has_data());
+            return m_buffer_manager->has_data() || (m_texture_registry->has_reserved_texture_space() && m_texture_registry->has_data());
         }
 
         //-------------------------------------------------------------------------
-        bool batch::has_reserved_texture_space() const { return m_texture_manager->has_reserved_texture_space(); }
+        bool batch::has_reserved_texture_space() const { return m_texture_registry->has_reserved_texture_space(); }
 
         //-------------------------------------------------------------------------
         const void* batch::vertices() const { return m_buffer_manager->vertices(); }
         //-------------------------------------------------------------------------
         const void* batch::indices() const { return m_buffer_manager->indices(); }
         //-------------------------------------------------------------------------
-        const s32* batch::samplers() const { return has_reserved_texture_space() ? m_texture_manager->samplers().data() : nullptr; }
+        const s32* batch::samplers() const { return has_reserved_texture_space() ? m_texture_registry->samplers().data() : nullptr; }
         //-------------------------------------------------------------------------
-        const u32* batch::textures() const { return has_reserved_texture_space() ? m_texture_manager->textures().data() : nullptr; }
+        const u32* batch::textures() const { return has_reserved_texture_space() ? m_texture_registry->textures().data() : nullptr; }
 
         //-------------------------------------------------------------------------
         u32 batch::active_vertex_count() const { return m_buffer_manager->active_vertex_count(); }
         //-------------------------------------------------------------------------
         u32 batch::active_index_count() const { return m_buffer_manager->active_index_count(); }
         //-------------------------------------------------------------------------
-        u32 batch::active_sampler_count() const { return m_texture_manager->active_sampler_count(); }
+        u32 batch::active_sampler_count() const { return m_texture_registry->active_sampler_count(); }
         //-------------------------------------------------------------------------
-        u32 batch::active_texture_count() const { return m_texture_manager->active_texture_count(); }
+        u32 batch::active_texture_count() const { return m_texture_registry->active_texture_count(); }
 
         //-------------------------------------------------------------------------
         u64 batch::vertex_buffer_byte_size() const { return m_buffer_manager->active_vertices_byte_size(); }
@@ -305,7 +305,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         u32 batch::max_index_count() const { return m_buffer_manager->max_index_count(); }
         //-------------------------------------------------------------------------
-        u32 batch::max_texture_count() const { return m_texture_manager->max_texture_count(); }
+        u32 batch::max_texture_count() const { return m_texture_registry->max_texture_count(); }
 
         //-------------------------------------------------------------------------
         batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)

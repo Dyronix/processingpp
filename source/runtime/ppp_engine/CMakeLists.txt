@@ -14,6 +14,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/shader_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_registry.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_registry.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/geometry_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/geometry_pool.cpp
     # device
@@ -49,8 +51,6 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_texture_manager.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_texture_manager.h
     # geometry
     # 3d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h
