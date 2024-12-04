@@ -24,6 +24,18 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.h
     # render
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch_renderer.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_renderer.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_types.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shaders.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_components.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.cpp
+    ## render-opengl
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_vertex_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_index_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance_buffer.cpp
@@ -35,22 +47,9 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_shaders.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_error.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_error.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch_renderer.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_renderer.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_transform.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_types.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shaders.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_components.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_brush.h
+    ## render-helpers
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_vertex_buffer_ops.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_vertex_buffer_ops.cpp
     # geometry
     # 3d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h
@@ -93,6 +92,10 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.cpp
     # util
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/brush.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/brush.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/transform_stack.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/transform_stack.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/hash.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/log.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/color_ops.h

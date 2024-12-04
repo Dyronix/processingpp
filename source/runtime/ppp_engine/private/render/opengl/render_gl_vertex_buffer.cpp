@@ -14,6 +14,8 @@ namespace ppp
                 , layout_count(layout_count)
                 , vertex_count(vertex_count)
                 , current_vertex_count(0)
+                , max_elements_to_set(0)
+                , buffer()
                 , vbo(0)
             {
                 auto vertex_size = calculate_total_size_vertex_type(layouts, layout_count);
@@ -56,6 +58,7 @@ namespace ppp
 
             u64                             vertex_count;
             u64                             current_vertex_count;
+            u64                             max_elements_to_set;
             
             std::vector<u8>                 buffer;
 
@@ -88,15 +91,15 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void vertex_buffer::open()
+        void vertex_buffer::open(u64 max_elements_to_set)
         {
-
+            m_pimpl->max_elements_to_set = max_elements_to_set;
         }
         
         //-------------------------------------------------------------------------
         void vertex_buffer::close()
         {
-
+            m_pimpl->max_elements_to_set = 0;
         }
 
         //-------------------------------------------------------------------------
@@ -138,15 +141,15 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        std::vector<u8>& vertex_buffer::data()
+        u8* vertex_buffer::data()
         {
-            return m_pimpl->buffer;
+            return m_pimpl->buffer.data();
         }
 
         //-------------------------------------------------------------------------
-        const std::vector<u8>& vertex_buffer::data() const
+        const u8* vertex_buffer::data() const
         {
-            return m_pimpl->buffer;
+            return m_pimpl->buffer.data();
         }
 
         //-------------------------------------------------------------------------

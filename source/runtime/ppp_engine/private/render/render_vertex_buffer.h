@@ -23,7 +23,7 @@ namespace ppp
             void                            upload(const void* data, u64 size);     
 
         public:
-            void                            open();
+            void                            open(u64 max_elements_to_set);
             void                            close();
 
         public:
@@ -34,8 +34,8 @@ namespace ppp
             const vertex_attribute_layout*  layouts() const;
             const u64                       layout_count() const;
 
-            std::vector<u8>&                data();
-            const std::vector<u8>&          data() const;
+            u8*                             data();
+            const u8*                       data() const;
 
             u64                             total_size_in_bytes() const;
             u64                             vertex_size_in_bytes() const;
