@@ -14,28 +14,29 @@ namespace ppp
         public:
             index_buffer(u64 index_count);
 
-            bool can_add_indices(u64 count) const;
+        public:
+            void                            bind() const;
+            void                            unbind() const;
+            void                            submit() const;
 
-            void set_index_data(const u32* data_ptr, u64 data_count);
+        public:
+            void                            open(u64 max_elements_to_set);
+            void                            close();
 
-            void free();
+        public:
+            void                            free();
 
-            void transform_index_data(std::function<void(u32&)> transform_func);
-            void transform_index_data(u64 start_index, u64 end_index, std::function<void(u32&)> transform_func);
+            u8*                             data();
+            const u8*                       data() const;
 
-            u32* get_data();
-            const u32* get_data() const;
-
-            u64 size_in_bytes() const;
-            u64 index_size() const;
-            u64 index_count() const;
-            u64 active_index_count() const;
+            u64                             total_size_in_bytes() const;
+            u64                             index_size_in_bytes() const;
+            u64                             index_count() const;
+            u64                             active_index_count() const;
 
         private:
-            u64 m_index_count;
-            u64 m_current_index_count;
-
-            std::unique_ptr<u32[]> m_buffer;
+            class impl;
+            std::unique_ptr<impl>           m_pimpl;
         };
     }
 }

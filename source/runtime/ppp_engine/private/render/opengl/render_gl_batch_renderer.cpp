@@ -199,8 +199,6 @@ namespace ppp
                 for (auto& render_fn : m_render_fns)
                 {
                     render_fn(pair.first, pair.second);
-
-                    pair.second.load_first_batch();
                 }
             }
 
@@ -396,40 +394,32 @@ namespace ppp
         //-------------------------------------------------------------------------
         void primitive_batch_renderer::on_render(topology_type topology, batch_drawing_data& drawing_data)
         {
-            GLenum gl_topology = internal::topology(topology);
-
-            auto batch = drawing_data.next_batch();
+            auto batch = drawing_data.first_batch();
             if (batch != nullptr)
             {
-                GL_CALL(glBindVertexArray(drawing_data.vao()));
-                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, drawing_data.vbo()));
-
                 while (batch != nullptr)
                 {
-                    #ifndef NDEBUG
-                    internal::check_drawing_type(batch, gl_topology);
-                    #endif
-
-                    GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, batch->vertex_buffer_byte_size(), batch->vertices()));
-
-                    if (batch->active_index_count() != 0)
-                    {
-                        GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
-
-                        shaders::apply_uniforms(shader_program());
-                        GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
-                    }
-                    else
-                    {
-                        shaders::apply_uniforms(shader_program());
-                        GL_CALL(glDrawArrays(gl_topology, 0, batch->active_vertex_count()));
-                    }
+                    batch->bind();
+                    batch->submit();
+                    batch->draw(topology, shader_program());
 
                     batch = drawing_data.next_batch();
-                }
 
-                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                GL_CALL(glBindVertexArray(0));
+                    // GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, batch->vertex_buffer_byte_size(), batch->vertices()));
+
+                    // if (batch->active_index_count() != 0)
+                    // {
+                    //     GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
+
+                    //     shaders::apply_uniforms(shader_program());
+                    //     GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
+                    // }
+                    // else
+                    // {
+                    //     shaders::apply_uniforms(shader_program());
+                    //     GL_CALL(glDrawArrays(gl_topology, 0, batch->active_vertex_count()));
+                    // }
+                }
             }
         }
 
@@ -447,24 +437,17 @@ namespace ppp
         //-------------------------------------------------------------------------
         void texture_batch_renderer::on_render(topology_type topology, batch_drawing_data& drawing_data)
         {
-            GLenum gl_topology = internal::topology(topology);
-
-            auto batch = drawing_data.next_batch();
+            auto batch = drawing_data.first_batch();
             if (batch != nullptr)
             {
-                GL_CALL(glBindVertexArray(drawing_data.vao()));
-                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, drawing_data.vbo()));
-
                 while (batch != nullptr)
                 {
                     assert(batch->samplers());
                     assert(batch->textures());
 
-                    shaders::push_uniform_array(shader_program(), "s_image", batch->active_sampler_count(), batch->samplers());
+                    batch->bind();
 
-                    #ifndef NDEBUG
-                    internal::check_drawing_type(batch, gl_topology);
-                    #endif
+                    shaders::push_uniform_array(shader_program(), "s_image", batch->active_sampler_count(), batch->samplers());
 
                     s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
@@ -474,26 +457,28 @@ namespace ppp
                         GL_CALL(glBindTexture(GL_TEXTURE_2D, batch->textures()[i]));
                     }
 
-                    GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, batch->vertex_buffer_byte_size(), batch->vertices()));
-
-                    if (batch->active_index_count() != 0)
-                    {
-                        GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
-
-                        shaders::apply_uniforms(shader_program());
-                        GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
-                    }
-                    else
-                    {
-                        shaders::apply_uniforms(shader_program());
-                        GL_CALL(glDrawArrays(gl_topology, 0, batch->active_vertex_count()));
-                    }
+                    batch->submit();
+                    batch->draw(topology, shader_program());
 
                     batch = drawing_data.next_batch();
+
+                    // GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, batch->vertex_buffer_byte_size(), batch->vertices()));
+
+                    // if (batch->active_index_count() != 0)
+                    // {
+                    //     GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
+
+                    //     shaders::apply_uniforms(shader_program());
+                    //     GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
+                    // }
+                    // else
+                    // {
+                    //     shaders::apply_uniforms(shader_program());
+                    //     GL_CALL(glDrawArrays(gl_topology, 0, batch->active_vertex_count()));
+                    // }
                 }
 
-                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                GL_CALL(glBindVertexArray(0));
+                batch->unbind();
             }
         }
     }

@@ -8,8 +8,6 @@ namespace ppp
 {
     namespace render
     {
-        class vertex_buffer;
-
         namespace vertex_buffer_ops
         {
             struct vertex_attribute_addition_scope
@@ -34,7 +32,7 @@ namespace ppp
                 vertex_buffer&      m_vertex_buffer;
                 u64                 m_max_elements_to_set;
                 bool                m_active;
-            };
+            };  
 
             //-------------------------------------------------------------------------
             void set_attribute_data(vertex_attribute_addition_scope& vaas, vertex_attribute_type type, const void* data_ptr);

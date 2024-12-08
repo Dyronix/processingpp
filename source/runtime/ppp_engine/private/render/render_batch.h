@@ -13,9 +13,6 @@ namespace ppp
 {
     namespace render
     {
-        class buffer_manager;
-        class texture_registry;
-
         class batch
         {
         public:
@@ -28,6 +25,13 @@ namespace ppp
             batch& operator=(const batch& other) = delete;  // unique ptr, so we can delete
             batch& operator=(batch&& other);                // has to be defined, due to auto compiler generated function and forward delclaration
 
+        public:
+            void bind() const;
+            void unbind() const;
+            void submit() const;
+            void draw(topology_type topology, u32 shader_program) const;
+
+        public:
             void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world);
             void reset();
 
@@ -36,6 +40,7 @@ namespace ppp
             bool has_data() const;
             bool has_reserved_texture_space() const;
 
+        public:
             const void* vertices() const;
             const void* indices() const;
             const s32* samplers() const;
@@ -54,8 +59,8 @@ namespace ppp
             u32 max_texture_count() const;
 
         private:
-            std::unique_ptr<buffer_manager> m_buffer_manager;
-            std::unique_ptr<texture_registry> m_texture_registry;
+            class impl;
+            std::unique_ptr<impl> m_pimpl;
         };
 
         class batch_drawing_data
@@ -67,23 +72,14 @@ namespace ppp
             void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world);
             void reset();
             void release();
-            void load_first_batch();
 
+            const batch* first_batch();
             const batch* next_batch();
 
-            s32 batch_count() const;
             bool has_drawing_data() const;
-
-            u32 vao() const;
-            u32 vbo() const;
-            u32 ebo() const;
 
         private:
             using batch_arr = std::vector<batch>;
-
-            u32	m_vao = 0;
-            u32	m_vbo = 0;
-            u32 m_ebo = 0;
 
             s32 m_draw_batch = 0;
             s32 m_push_batch = 0;

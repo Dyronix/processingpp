@@ -1,5 +1,7 @@
 #include "render/render_vertex_buffer.h"
 
+#include "render/opengl/render_gl_error.h"
+
 #include <glad/glad.h>
 
 namespace ppp
@@ -17,6 +19,7 @@ namespace ppp
                 , max_elements_to_set(0)
                 , buffer()
                 , vbo(0)
+                , is_bound(false)
             {
                 auto vertex_size = calculate_total_size_vertex_type(layouts, layout_count);
 
@@ -34,22 +37,27 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void upload(const void* data, size_t size) 
+            void bind() const
             {
                 glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+                is_bound = true;
             }
 
             //-------------------------------------------------------------------------
-            void bind() const 
-            {
-                glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            }
-
-            //-------------------------------------------------------------------------
-            void unbind() const 
+            void unbind() const
             {
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
+                is_bound = false;
+            }
+
+            //-------------------------------------------------------------------------
+            void submit() const
+            {
+                assert(is_bound && "Cannot upload data to an unbound buffer");
+
+                const u64 vertex_buffer_byte_size =  calculate_total_size_vertex_type(layouts, layout_count);
+
+                GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_buffer_byte_size * vertex_count, buffer.data()));
             }
 
             //-------------------------------------------------------------------------
@@ -63,6 +71,8 @@ namespace ppp
             std::vector<u8>                 buffer;
 
             u32                             vbo;
+
+            mutable bool                    is_bound;
         };
 
         //-------------------------------------------------------------------------
@@ -83,13 +93,13 @@ namespace ppp
         {
             m_pimpl->unbind();            
         }
-    
-        //-------------------------------------------------------------------------
-        void vertex_buffer::upload(const void* data, u64 size)
-        {
-            m_pimpl->upload(data, size);
-        }
 
+        //-------------------------------------------------------------------------
+        void vertex_buffer::submit() const
+        {
+            m_pimpl->submit();
+        }
+    
         //-------------------------------------------------------------------------
         void vertex_buffer::open(u64 max_elements_to_set)
         {
@@ -99,6 +109,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void vertex_buffer::close()
         {
+            m_pimpl->current_vertex_count += m_pimpl->max_elements_to_set;
             m_pimpl->max_elements_to_set = 0;
         }
 

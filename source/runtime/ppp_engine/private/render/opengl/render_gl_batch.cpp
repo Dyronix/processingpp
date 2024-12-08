@@ -1,9 +1,14 @@
 #include "render/render_batch.h"
 #include "render/render_vertex_buffer.h"
 #include "render/render_index_buffer.h"
-#include "resources/texture_registry.h"
+#include "render/render_shaders.h"
 
 #include "render/opengl/render_gl_error.h"
+
+#include "render/helpers/render_vertex_buffer_ops.h"
+#include "render/helpers/render_index_buffer_ops.h"
+
+#include "resources/texture_registry.h"
 
 #include "util/types.h"
 #include "util/log.h"
@@ -19,14 +24,49 @@ namespace ppp
         namespace internal
         {
             //-------------------------------------------------------------------------
-            static GLenum convert_to_gl_data_type(vertex_attribute_data_type type)
+            static void check_drawing_type(u32 index_count, GLenum type)
             {
                 switch (type)
                 {
-                case vertex_attribute_data_type::FLOAT: return GL_FLOAT;
-                case vertex_attribute_data_type::UNSIGNED_INT: return GL_UNSIGNED_INT;
+                case GL_LINES:
+                    if (index_count % 2 != 0)
+                    {
+                        log::error("Trying to render invalid number of lines: {}", index_count);
+                        return;
+                    }
+                    break;
+                case GL_TRIANGLES:
+                    if (index_count % 3 != 0)
+                    {
+                        log::error("Trying to render invalid number of triangles: {}", index_count);
+                        return;
+                    }
+                    break;
                 }
-                return 0;  // Fallback to avoid compiler warnings
+            }
+
+            //-------------------------------------------------------------------------
+            static u32 topology(topology_type type)
+            {
+                switch (type)
+                {
+                case topology_type::POINTS: return GL_POINTS;
+                case topology_type::LINES: return GL_LINES;
+                case topology_type::TRIANGLES: return GL_TRIANGLES;
+                }
+
+                log::error("Invalid topology_type type specified, using GL_TRIANGLES");
+                return GL_TRIANGLES;
+            }
+
+            //-------------------------------------------------------------------------
+            static u32 index_type()
+            {
+                if (sizeof(index) == sizeof(u32)) return GL_UNSIGNED_INT;
+                if (sizeof(index) == sizeof(u16)) return GL_UNSIGNED_SHORT;
+
+                log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
+                return GL_UNSIGNED_INT;
             }
         }
 
@@ -98,6 +138,18 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            void submit() const
+            {
+                m_vertex_buffer.submit();
+
+                if (active_index_count() != 0)
+                {
+                    //GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index_buffer_byte_size(), indices()));
+                    m_index_buffer.submit();
+                }
+            }
+
+            //-------------------------------------------------------------------------
             void reset()
             {
                 m_vertex_buffer.free();
@@ -106,53 +158,45 @@ namespace ppp
 
             //-------------------------------------------------------------------------
             u32 active_vertex_count() const { return m_vertex_buffer.active_vertex_count(); }
-            u64 active_vertices_byte_size() const { return m_vertex_buffer.size_in_bytes(); }
+            u64 active_vertices_byte_size() const { return m_vertex_buffer.total_size_in_bytes(); }
             u32 active_index_count() const { return m_index_buffer.active_index_count(); }
-            u64 active_indices_byte_size() const { return m_index_buffer.size_in_bytes(); }
+            u64 active_indices_byte_size() const { return m_index_buffer.total_size_in_bytes(); }
 
             //-------------------------------------------------------------------------
             u32 max_vertex_count() const { return m_max_vertex_count; }
             u32 max_index_count() const { return m_max_index_count; }
 
             //-------------------------------------------------------------------------
-            const void* vertices() const { return m_vertex_buffer.get_data().data(); }
-            const void* indices() const { return m_index_buffer.get_data(); }
+            const void* vertices() const { return m_vertex_buffer.data(); }
+            const void* indices() const { return m_index_buffer.data(); }
 
         private:
             //-------------------------------------------------------------------------
             void copy_vertex_data(const irender_item* item, const glm::vec4& color)
             {
-                m_vertex_buffer.open_attribute_addition(item->vertex_count());
+                vertex_buffer_ops::vertex_attribute_addition_scope vaas(m_vertex_buffer, item->vertex_count());
 
-                if (m_vertex_buffer.has_layout(vertex_attribute_type::POSITION)) m_vertex_buffer.set_attribute_data(vertex_attribute_type::POSITION, item->vertex_positions().data());
-                if (m_vertex_buffer.has_layout(vertex_attribute_type::NORMAL)) m_vertex_buffer.set_attribute_data(vertex_attribute_type::NORMAL, item->vertex_normals().data());
-                if (m_vertex_buffer.has_layout(vertex_attribute_type::TEXCOORD)) m_vertex_buffer.set_attribute_data(vertex_attribute_type::TEXCOORD, item->vertex_uvs().data());
+                if (m_vertex_buffer.has_layout(vertex_attribute_type::POSITION)) vertex_buffer_ops::set_attribute_data(vaas, vertex_attribute_type::POSITION, item->vertex_positions().data());
+                if (m_vertex_buffer.has_layout(vertex_attribute_type::NORMAL)) vertex_buffer_ops::set_attribute_data(vaas, vertex_attribute_type::NORMAL, item->vertex_normals().data());
+                if (m_vertex_buffer.has_layout(vertex_attribute_type::TEXCOORD)) vertex_buffer_ops::set_attribute_data(vaas, vertex_attribute_type::TEXCOORD, item->vertex_uvs().data());
 
-                map_new_vertex_data(vertex_attribute_type::COLOR, (void*)&color[0]);
-
-                m_vertex_buffer.close_attribute_addition();
+                vertex_buffer_ops::map_attribute_data(vaas, vertex_attribute_type::COLOR, (void*)&color[0]);
             }
 
             //-------------------------------------------------------------------------
             void copy_index_data(const irender_item* item)
             {
-                u64 idx_count = item->index_count();
+                index_buffer_ops::index_addition_scope ias(m_index_buffer, item->index_count());
 
                 assert(sizeof(item->faces()[0][0]) == sizeof(index) && "different index size was used");
 
-                m_index_buffer.set_index_data(reinterpret_cast<const u32*>(item->faces().data()), idx_count);
-            }
-
-            //-------------------------------------------------------------------------
-            void map_new_vertex_data(vertex_attribute_type type, void* data)
-            {
-                m_vertex_buffer.map_attribute_data(type, data);
+                index_buffer_ops::set_index_data(ias, item->faces().data());
             }
 
             //-------------------------------------------------------------------------
             void transform_vertex_positions(s32 start_index, s32 end_index, const glm::mat4& world)
             {
-                m_vertex_buffer.transform_attribute_data<glm::vec3>(vertex_attribute_type::POSITION, start_index, end_index, [&](glm::vec3& position)
+                vertex_buffer_ops::transform_attribute_data<glm::vec3>(m_vertex_buffer, vertex_attribute_type::POSITION, start_index, end_index, [&](glm::vec3& position)
                 {
                     glm::vec4 transformed_pos = world * glm::vec4(position, 1.0f);
 
@@ -167,7 +211,7 @@ namespace ppp
             {
                 glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(world)));
 
-                m_vertex_buffer.transform_attribute_data<glm::vec3>(vertex_attribute_type::NORMAL, start_index, end_index, [&](glm::vec3& normal)
+                vertex_buffer_ops::transform_attribute_data<glm::vec3>(m_vertex_buffer, vertex_attribute_type::NORMAL, start_index, end_index, [&](glm::vec3& normal)
                 {
                     glm::vec3 transformed_normal = normal_matrix * normal;
 
@@ -175,19 +219,20 @@ namespace ppp
                 });
             }
 
-
             //-------------------------------------------------------------------------
             void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 sampler_id)
             {
-                m_vertex_buffer.transform_attribute_data<f32>(vertex_attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](float& id)
+                vertex_buffer_ops::transform_attribute_data<f32>(m_vertex_buffer, vertex_attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](float& id)
                 {
                     id = (f32)sampler_id;
                 });
             }
+            
             //-------------------------------------------------------------------------
             void transform_index_locations(s32 start_index, s32 end_index, u64 offset)
             {
-                m_index_buffer.transform_index_data(start_index, end_index, [&](u32& index)
+                index_buffer_ops::transform_index_data(m_index_buffer, start_index, end_index, 
+                    [&](index& index)
                 {
                     index += offset;
                 });
@@ -200,30 +245,112 @@ namespace ppp
             index_buffer m_index_buffer;
         };
 
+        class batch::impl
+        {
+        public:
+            //-------------------------------------------------------------------------
+            impl(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, s32 size_textures)
+            {
+                // Allocate VAO
+                GL_CALL(glGenVertexArrays(1, &m_vao));
+                GL_CALL(glBindVertexArray(m_vao));
+
+                m_buffer_manager = std::make_unique<buffer_manager>(size_vertex_buffer, size_index_buffer, layouts, layout_count);
+                m_texture_registry = std::make_unique<texture_registry>(size_textures);
+
+                GL_CALL(glBindVertexArray(0));
+            }
+
+            //-------------------------------------------------------------------------
+            ~impl()
+            {   
+                GL_CALL(glDeleteVertexArrays(1, &m_vao));
+            }
+
+            
+            //-------------------------------------------------------------------------
+            void bind() const
+            {
+                GL_CALL(glBindVertexArray(m_vao));
+            }
+
+            //-------------------------------------------------------------------------
+            void unbind() const
+            {
+                GL_CALL(glBindVertexArray(0));
+            }
+
+            //-------------------------------------------------------------------------
+            void submit() const
+            {
+                m_buffer_manager->submit();
+            }
+
+            //-------------------------------------------------------------------------
+            void draw(topology_type topology, u32 shader_program) const
+            {
+                GLenum gl_topology = internal::topology(topology);
+
+                #ifndef NDEBUG
+                internal::check_drawing_type(m_buffer_manager->active_index_count(), gl_topology);
+                #endif
+
+                shaders::apply_uniforms(shader_program);
+
+                if (m_buffer_manager->active_index_count() != 0)
+                {
+                    GL_CALL(glDrawElements(gl_topology, m_buffer_manager->active_index_count(), internal::index_type(), nullptr));
+                }
+                else
+                {
+                    GL_CALL(glDrawArrays(gl_topology, 0, m_buffer_manager->active_vertex_count()));
+                }
+            }
+
+            std::unique_ptr<buffer_manager> m_buffer_manager;
+            std::unique_ptr<texture_registry> m_texture_registry;
+
+            u32 m_vao;
+        };
+
         //-------------------------------------------------------------------------
         batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, s32 size_textures)
-            : m_buffer_manager(std::make_unique<buffer_manager>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
-            , m_texture_registry(std::make_unique<texture_registry>(size_textures))
-        {
-        }
-
+            : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count, size_textures))
+        {}
         //-------------------------------------------------------------------------
         batch::~batch() = default;
-
         //-------------------------------------------------------------------------
         batch::batch(batch&& other)
-            : m_buffer_manager(std::exchange(other.m_buffer_manager, nullptr))
-            , m_texture_registry(std::exchange(other.m_texture_registry, nullptr))
+            : m_pimpl(std::exchange(other.m_pimpl, nullptr))
         {
         }
-
         //-------------------------------------------------------------------------
         batch& batch::operator=(batch&& other)
         {
-            m_buffer_manager = std::exchange(other.m_buffer_manager, nullptr);
-            m_texture_registry = std::exchange(other.m_texture_registry, nullptr);
+            m_pimpl = std::exchange(other.m_pimpl, nullptr);
 
             return *this;
+        }
+
+        //-------------------------------------------------------------------------
+        void batch::bind() const
+        {
+            m_pimpl->bind();
+        }
+        //-------------------------------------------------------------------------
+        void batch::unbind() const
+        {
+            m_pimpl->unbind();
+        }
+        //-------------------------------------------------------------------------
+        void batch::submit() const
+        {
+            m_pimpl->submit();
+        }
+        //-------------------------------------------------------------------------
+        void batch::draw(topology_type topology, u32 shader_program) const
+        {
+            m_pimpl->draw(topology, shader_program);
         }
 
         //-------------------------------------------------------------------------
@@ -231,17 +358,17 @@ namespace ppp
         {
             if (item->index_count() != 0)
             {
-                m_buffer_manager->add_indices(item);
+                m_pimpl->m_buffer_manager->add_indices(item);
             }
             
-            if (m_texture_registry->has_reserved_texture_space())
+            if (m_pimpl->m_texture_registry->has_reserved_texture_space())
             {
                 assert(item->texture_ids().size() == 1);
 
-                s32 sampler_id = m_texture_registry->add_texture(item->texture_ids()[0]);
+                s32 sampler_id = m_pimpl->m_texture_registry->add_texture(item->texture_ids()[0]);
                 if (sampler_id != -1)
                 {
-                    m_buffer_manager->add_vertices(item, sampler_id, color, world);
+                    m_pimpl->m_buffer_manager->add_vertices(item, sampler_id, color, world);
                 }
                 else
                 {
@@ -251,68 +378,64 @@ namespace ppp
             }
             else
             {
-                m_buffer_manager->add_vertices(item, color, world);
+                m_pimpl->m_buffer_manager->add_vertices(item, color, world);
             }
         }
-
         //-------------------------------------------------------------------------
         void batch::reset()
         {
-            m_buffer_manager->reset();
-            m_texture_registry->reset();
+            m_pimpl->m_buffer_manager->reset();
+            m_pimpl->m_texture_registry->reset();
         }
 
         //-------------------------------------------------------------------------
         bool batch::can_add(s32 nr_vertices, s32 nr_indices) const
         {
-            return m_buffer_manager->can_add(nr_vertices, nr_indices);
+            return m_pimpl->m_buffer_manager->can_add(nr_vertices, nr_indices);
         }
-
         //-------------------------------------------------------------------------
         bool batch::has_data() const
         {
-            return m_buffer_manager->has_data() || (m_texture_registry->has_reserved_texture_space() && m_texture_registry->has_data());
+            return m_pimpl->m_buffer_manager->has_data() || (m_pimpl->m_texture_registry->has_reserved_texture_space() && m_pimpl->m_texture_registry->has_data());
         }
+        //-------------------------------------------------------------------------
+        bool batch::has_reserved_texture_space() const { return m_pimpl->m_texture_registry->has_reserved_texture_space(); }
 
         //-------------------------------------------------------------------------
-        bool batch::has_reserved_texture_space() const { return m_texture_registry->has_reserved_texture_space(); }
+        const void* batch::vertices() const { return m_pimpl->m_buffer_manager->vertices(); }
+        //-------------------------------------------------------------------------
+        const void* batch::indices() const { return m_pimpl->m_buffer_manager->indices(); }
+        //-------------------------------------------------------------------------
+        const s32* batch::samplers() const { return has_reserved_texture_space() ? m_pimpl->m_texture_registry->samplers().data() : nullptr; }
+        //-------------------------------------------------------------------------
+        const u32* batch::textures() const { return has_reserved_texture_space() ? m_pimpl->m_texture_registry->textures().data() : nullptr; }
 
         //-------------------------------------------------------------------------
-        const void* batch::vertices() const { return m_buffer_manager->vertices(); }
+        u32 batch::active_vertex_count() const { return m_pimpl->m_buffer_manager->active_vertex_count(); }
         //-------------------------------------------------------------------------
-        const void* batch::indices() const { return m_buffer_manager->indices(); }
+        u32 batch::active_index_count() const { return m_pimpl->m_buffer_manager->active_index_count(); }
         //-------------------------------------------------------------------------
-        const s32* batch::samplers() const { return has_reserved_texture_space() ? m_texture_registry->samplers().data() : nullptr; }
+        u32 batch::active_sampler_count() const { return m_pimpl->m_texture_registry->active_sampler_count(); }
         //-------------------------------------------------------------------------
-        const u32* batch::textures() const { return has_reserved_texture_space() ? m_texture_registry->textures().data() : nullptr; }
+        u32 batch::active_texture_count() const { return m_pimpl->m_texture_registry->active_texture_count(); }
 
         //-------------------------------------------------------------------------
-        u32 batch::active_vertex_count() const { return m_buffer_manager->active_vertex_count(); }
+        u64 batch::vertex_buffer_byte_size() const { return m_pimpl->m_buffer_manager->active_vertices_byte_size(); }
         //-------------------------------------------------------------------------
-        u32 batch::active_index_count() const { return m_buffer_manager->active_index_count(); }
-        //-------------------------------------------------------------------------
-        u32 batch::active_sampler_count() const { return m_texture_registry->active_sampler_count(); }
-        //-------------------------------------------------------------------------
-        u32 batch::active_texture_count() const { return m_texture_registry->active_texture_count(); }
+        u64 batch::index_buffer_byte_size() const { return m_pimpl->m_buffer_manager->active_indices_byte_size(); }
 
         //-------------------------------------------------------------------------
-        u64 batch::vertex_buffer_byte_size() const { return m_buffer_manager->active_vertices_byte_size(); }
+        u32 batch::max_vertex_count() const { return m_pimpl->m_buffer_manager->max_vertex_count(); }
         //-------------------------------------------------------------------------
-        u64 batch::index_buffer_byte_size() const { return m_buffer_manager->active_indices_byte_size(); }
-
+        u32 batch::max_index_count() const { return m_pimpl->m_buffer_manager->max_index_count(); }
         //-------------------------------------------------------------------------
-        u32 batch::max_vertex_count() const { return m_buffer_manager->max_vertex_count(); }
-        //-------------------------------------------------------------------------
-        u32 batch::max_index_count() const { return m_buffer_manager->max_index_count(); }
-        //-------------------------------------------------------------------------
-        u32 batch::max_texture_count() const { return m_texture_registry->max_texture_count(); }
+        u32 batch::max_texture_count() const { return m_pimpl->m_texture_registry->max_texture_count(); }
 
         //-------------------------------------------------------------------------
         batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
             : batch_drawing_data(size_vertex_buffer, size_index_buffer, -1, layouts, layout_count, render_buffer_policy)
         {
         }
-
         //-------------------------------------------------------------------------
         batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
             : m_layouts(layouts)
@@ -327,32 +450,6 @@ namespace ppp
 
             // Already start with one batch
             m_batches.emplace_back(size_vertex_buffer, size_index_buffer, layouts, layout_count, size_textures);
-
-            // Allocate VAO
-            GL_CALL(glGenVertexArrays(1, &m_vao));
-            GL_CALL(glBindVertexArray(m_vao));
-
-            // Allocate VBO
-            GL_CALL(glGenBuffers(1, &m_vbo));
-            GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, m_vbo));
-            const size_t size_vbo = calculate_total_size_vertex_type(layouts, layout_count) * size_vertex_buffer;
-            GL_CALL(glBufferData(GL_ARRAY_BUFFER, size_vbo, nullptr, GL_DYNAMIC_DRAW));
-
-            for (u64 i = 0; i < layout_count; ++i)
-            {
-                const vertex_attribute_layout& layout = layouts[i];
-
-                GL_CALL(glEnableVertexAttribArray(i));
-                GL_CALL(glVertexAttribPointer(i, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset));
-            }
-
-            // Allocate EBO
-            GL_CALL(glGenBuffers(1, &m_ebo));
-            GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo));
-            const size_t size_ebo = sizeof(index) * size_index_buffer;
-            GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW));
-
-            GL_CALL(glBindVertexArray(0));
         }
 
         //-------------------------------------------------------------------------
@@ -388,7 +485,6 @@ namespace ppp
                 append(item, color, world);
             }
         }
-
         //-------------------------------------------------------------------------
         void batch_drawing_data::reset()
         {
@@ -405,23 +501,19 @@ namespace ppp
 
             m_draw_batch = 0;
         }
-
         //-------------------------------------------------------------------------
         void batch_drawing_data::release()
         {
             reset();
-
-            GL_CALL(glDeleteBuffers(1, &m_vbo));
-            GL_CALL(glDeleteBuffers(1, &m_ebo));
-            GL_CALL(glDeleteVertexArrays(1, &m_vao));
         }
 
         //-------------------------------------------------------------------------
-        void batch_drawing_data::load_first_batch()
+        const batch* batch_drawing_data::first_batch()
         {
             m_draw_batch = 0;
-        }
 
+            return next_batch();
+        }
         //-------------------------------------------------------------------------
         const batch* batch_drawing_data::next_batch()
         {
@@ -438,22 +530,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        s32 batch_drawing_data::batch_count() const
-        {
-            return static_cast<s32>(m_batches.size());
-        }
-
-        //-------------------------------------------------------------------------
         bool batch_drawing_data::has_drawing_data() const
         {
             return std::any_of(m_batches.cbegin(), m_batches.cend(), [](const batch& b) { return b.has_data(); });
         }
-
-        //-------------------------------------------------------------------------
-        u32 batch_drawing_data::vao() const { return m_vao; }
-        //-------------------------------------------------------------------------
-        u32 batch_drawing_data::vbo() const { return m_vbo; }
-        //-------------------------------------------------------------------------
-        u32 batch_drawing_data::ebo() const { return m_ebo; }
     }
 }

@@ -19,8 +19,7 @@ namespace ppp
         public:
             void                            bind() const;
             void                            unbind() const;
-
-            void                            upload(const void* data, u64 size);     
+            void                            submit() const;
 
         public:
             void                            open(u64 max_elements_to_set);
