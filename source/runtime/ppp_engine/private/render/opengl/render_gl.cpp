@@ -58,6 +58,17 @@ namespace ppp
             bool _scissor_enable = false;
 
             //-------------------------------------------------------------------------
+            struct pos_format
+            {
+                glm::vec3 position;
+            };
+            //-------------------------------------------------------------------------
+            struct pos_tex_format
+            {
+                glm::vec3 position;
+                glm::vec2 texcoord;
+            };
+            //-------------------------------------------------------------------------
             struct pos_col_format
             {
                 glm::vec3 position;
@@ -84,11 +95,25 @@ namespace ppp
             };
 
             //-------------------------------------------------------------------------
-            std::array<vertex_attribute_layout, 2> _pos_col_layout =
+            std::array<attribute_layout, 1> _pos_layout
             {
-                vertex_attribute_layout{
-                    vertex_attribute_type::POSITION,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::POSITION,
+                    attribute_data_type::FLOAT,
+
+                    0,
+                    3,
+                    false,
+                    sizeof(pos_format),
+                    0
+                }
+            };
+            //-------------------------------------------------------------------------
+            std::array<attribute_layout, 2> _pos_col_layout
+            {
+                attribute_layout{
+                    attribute_type::POSITION,
+                    attribute_data_type::FLOAT,
 
                     0,
                     3,
@@ -96,9 +121,9 @@ namespace ppp
                     sizeof(pos_col_format),
                     0
                 },
-                vertex_attribute_layout{
-                    vertex_attribute_type::COLOR,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::COLOR,
+                    attribute_data_type::FLOAT,
 
                     1,
                     4,
@@ -107,11 +132,36 @@ namespace ppp
                     3 * sizeof(float)
                 }
             };
-            std::array<vertex_attribute_layout, 4> _pos_tex_col_layout
+            //-------------------------------------------------------------------------
+            std::array<attribute_layout, 2> _pos_tex_layout
             {
-                vertex_attribute_layout{
-                    vertex_attribute_type::POSITION,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::POSITION,
+                    attribute_data_type::FLOAT,
+
+                    0,
+                    3,
+                    false,
+                    sizeof(pos_tex_format),
+                    0
+                },
+                attribute_layout{
+                    attribute_type::TEXCOORD,
+                    attribute_data_type::FLOAT,
+
+                    1,
+                    2,
+                    false,
+                    sizeof(pos_tex_format),
+                    3 * sizeof(float)
+                }
+            };
+            //-------------------------------------------------------------------------
+            std::array<attribute_layout, 4> _pos_tex_col_layout
+            {
+                attribute_layout{
+                    attribute_type::POSITION,
+                    attribute_data_type::FLOAT,
 
                     0,
                     3,
@@ -119,9 +169,9 @@ namespace ppp
                     sizeof(pos_tex_col_format),
                     0
                 },
-                vertex_attribute_layout{
-                    vertex_attribute_type::TEXCOORD,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::TEXCOORD,
+                    attribute_data_type::FLOAT,
 
                     1,
                     2,
@@ -129,9 +179,9 @@ namespace ppp
                     sizeof(pos_tex_col_format),
                     3 * sizeof(float)
                 },
-                vertex_attribute_layout{
-                    vertex_attribute_type::COLOR,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::COLOR,
+                    attribute_data_type::FLOAT,
 
                     2,
                     4,
@@ -139,9 +189,9 @@ namespace ppp
                     sizeof(pos_tex_col_format),
                     3 * sizeof(float) + 2 * sizeof(float)
                 },
-                vertex_attribute_layout{
-                    vertex_attribute_type::DIFFUSE_TEXTURE_INDEX,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::DIFFUSE_TEXTURE_INDEX,
+                    attribute_data_type::FLOAT,
 
                     3,
                     1,
@@ -150,11 +200,12 @@ namespace ppp
                     3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
                 }
             };
-            std::array<vertex_attribute_layout, 5> _pos_tex_col_norm_layout
+            //-------------------------------------------------------------------------
+            std::array<attribute_layout, 5> _pos_tex_col_norm_layout
             {
-                vertex_attribute_layout{
-                    vertex_attribute_type::POSITION,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::POSITION,
+                    attribute_data_type::FLOAT,
 
                     0,
                     3,
@@ -162,9 +213,9 @@ namespace ppp
                     sizeof(pos_tex_col_norm_format),
                     0
                 },
-                vertex_attribute_layout{
-                    vertex_attribute_type::TEXCOORD,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::TEXCOORD,
+                    attribute_data_type::FLOAT,
 
                     1,
                     2,
@@ -172,9 +223,9 @@ namespace ppp
                     sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float)
                 },
-                vertex_attribute_layout{
-                    vertex_attribute_type::NORMAL,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::NORMAL,
+                    attribute_data_type::FLOAT,
 
                     2,
                     3,
@@ -182,9 +233,9 @@ namespace ppp
                     sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float) + 2 * sizeof(float)
                 },
-                vertex_attribute_layout{
-                    vertex_attribute_type::COLOR,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::COLOR,
+                    attribute_data_type::FLOAT,
 
                     3,
                     4,
@@ -192,9 +243,9 @@ namespace ppp
                     sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float) + 3 * sizeof(float) + 2 * sizeof(float)
                 },
-                vertex_attribute_layout{
-                    vertex_attribute_type::DIFFUSE_TEXTURE_INDEX,
-                    vertex_attribute_data_type::FLOAT,
+                attribute_layout{
+                    attribute_type::DIFFUSE_TEXTURE_INDEX,
+                    attribute_data_type::FLOAT,
 
                     4,
                     1,
@@ -223,10 +274,12 @@ namespace ppp
 
             vertex_type _fill_user_vertex_type = vertex_type::POSITION_TEXCOORD_NORMAL_COLOR;
 
-            vertex_attribute_layout* fill_user_layout(vertex_type type)
+            attribute_layout* fill_user_layout(vertex_type type)
             {
                 switch (type)
                 {
+                case vertex_type::POSITION: return _pos_layout.data();
+                case vertex_type::POSITION_TEXCOORD: return _pos_tex_layout.data();
                 case vertex_type::POSITION_COLOR: return _pos_col_layout.data();
                 case vertex_type::POSITION_TEXCOORD_COLOR: return _pos_tex_col_layout.data();
                 case vertex_type::POSITION_TEXCOORD_NORMAL_COLOR: return _pos_tex_col_norm_layout.data();
@@ -240,6 +293,8 @@ namespace ppp
             {
                 switch (type)
                 {
+                case vertex_type::POSITION: return _pos_layout.size();
+                case vertex_type::POSITION_TEXCOORD: return _pos_tex_layout.size();
                 case vertex_type::POSITION_COLOR: return _pos_col_layout.size();
                 case vertex_type::POSITION_TEXCOORD_COLOR: return _pos_tex_col_layout.size();
                 case vertex_type::POSITION_TEXCOORD_NORMAL_COLOR: return _pos_tex_col_norm_layout.size();
@@ -282,6 +337,9 @@ namespace ppp
 
             //-------------------------------------------------------------------------
             std::unique_ptr<instance_renderer> _primitive_instance_renderer;
+            std::unique_ptr<instance_renderer> _image_instance_renderer;
+
+            std::unordered_map<std::string, std::unique_ptr<instance_renderer>> _custom_geometry_instance_renderers;
 
             //-------------------------------------------------------------------------
             std::unique_ptr<batch_renderer> _primitive_batch_renderer;
@@ -337,46 +395,95 @@ namespace ppp
 
                 const std::string& shader_tag = _fill_user_shader.empty() ? _geometry_builder.shader_tag() : _fill_user_shader;
 
-                if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
+                if (internal::_draw_mode == render_draw_mode::BATCHED)
                 {
-                    auto renderer = std::make_unique<primitive_batch_renderer>(
-                        _fill_user_shader.empty() ? internal::_pos_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                        _fill_user_shader.empty() ? internal::_pos_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                        shader_tag);
-
-                    if (_geometry_builder.is_active())
+                    if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
                     {
-                        renderer->buffer_policy(render_buffer_policy::RETAINED);
+                        auto renderer = std::make_unique<primitive_batch_renderer>(
+                            _fill_user_shader.empty() ? internal::_pos_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
+                            _fill_user_shader.empty() ? internal::_pos_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                            shader_tag);
+
+                        if (_geometry_builder.is_active())
+                        {
+                            renderer->buffer_policy(render_buffer_policy::RETAINED);
+                        }
+
+                        renderer->draw_policy(render_draw_policy::CUSTOM);
+                        internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                     }
 
-                    renderer->draw_policy(render_draw_policy::CUSTOM);
-                    internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
+                    internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
                 }
+                else
+                {
+                    if (internal::_custom_geometry_instance_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_instance_renderers))
+                    {
+                        auto renderer = std::make_unique<primitive_instance_renderer>(
+                            _fill_user_shader.empty() ? internal::_pos_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
+                            _fill_user_shader.empty() ? internal::_pos_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                            shader_tag);
 
-                internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology, item, brush::fill(), transform::active_world());
+                        if (_geometry_builder.is_active())
+                        {
+                            renderer->buffer_policy(render_buffer_policy::RETAINED);
+                        }
+
+                        renderer->draw_policy(render_draw_policy::CUSTOM);
+
+                        internal::_custom_geometry_instance_renderers.emplace(shader_tag, std::move(renderer));
+                    }
+
+                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_instance(topology, item);
+                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(item->id(), brush::fill(), transform_stack::active_world());
+                }
             }
             //-------------------------------------------------------------------------
             void submit_custom_image_item(const irender_item* item)
             {
                 const std::string& shader_tag = _fill_user_shader.empty() ? _geometry_builder.shader_tag() : _fill_user_shader;
 
-                if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
+                if (internal::_draw_mode == render_draw_mode::BATCHED)
                 {
-                    auto renderer = std::make_unique<texture_batch_renderer>(
-                        _fill_user_shader.empty() ? internal::_pos_tex_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                        _fill_user_shader.empty() ? internal::_pos_tex_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                        shader_tag);
-
-                    if (_geometry_builder.is_active())
+                    if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
                     {
-                        renderer->buffer_policy(render_buffer_policy::RETAINED);
+                        auto renderer = std::make_unique<texture_batch_renderer>(
+                            _fill_user_shader.empty() ? internal::_pos_tex_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
+                            _fill_user_shader.empty() ? internal::_pos_tex_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                            shader_tag);
+
+                        if (_geometry_builder.is_active())
+                        {
+                            renderer->buffer_policy(render_buffer_policy::RETAINED);
+                        }
+
+                        renderer->draw_policy(render_draw_policy::CUSTOM);
+                        internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                     }
 
-                    renderer->draw_policy(render_draw_policy::CUSTOM);
-                    internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
+                    internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform_stack::active_world());
                 }
+                else
+                {
+                    if (internal::_custom_geometry_instance_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_instance_renderers))
+                    {
+                        auto renderer = std::make_unique<texture_instance_renderer>(
+                            _fill_user_shader.empty() ? internal::_pos_tex_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
+                            _fill_user_shader.empty() ? internal::_pos_tex_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                            shader_tag);
 
-                internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
+                        if (_geometry_builder.is_active())
+                        {
+                            renderer->buffer_policy(render_buffer_policy::RETAINED);
+                        }
+
+                        renderer->draw_policy(render_draw_policy::CUSTOM);
+                        internal::_custom_geometry_instance_renderers.emplace(shader_tag, std::move(renderer));
+                    }
+
+                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_instance(topology_type::TRIANGLES, item);
+                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(item->id(), brush::tint(), transform_stack::active_world());
+                }
             }
         }
 
@@ -423,7 +530,8 @@ namespace ppp
 
             internal::create_frame_buffer();
 
-            internal::_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::instance_unlit_color);
+            internal::_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), shader_pool::tags::instance_unlit_color);
+            internal::_image_instance_renderer = std::make_unique<texture_instance_renderer>(internal::_pos_tex_layout.data(), internal::_pos_tex_layout.size(), shader_pool::tags::instance_unlit_texture);
 
             internal::_primitive_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
             internal::_primitive_stroke_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
@@ -438,6 +546,7 @@ namespace ppp
         void terminate()
         {
             internal::_primitive_instance_renderer->terminate();
+            internal::_image_instance_renderer->terminate();
 
             internal::_font_batch_renderer->terminate();
             internal::_image_batch_renderer->terminate();
@@ -449,12 +558,18 @@ namespace ppp
             {
                 pair.second->terminate();
             }
+
+            for (auto& pair : internal::_custom_geometry_instance_renderers)
+            {
+                pair.second->terminate();
+            }
         }
 
         //-------------------------------------------------------------------------
         void begin()
         {
             internal::_primitive_instance_renderer->begin();
+            internal::_image_instance_renderer->begin();
 
             internal::_primitive_batch_renderer->begin();
             internal::_primitive_stroke_batch_renderer->begin();
@@ -463,6 +578,11 @@ namespace ppp
             internal::_font_batch_renderer->begin();
 
             for (auto& pair : internal::_custom_geometry_batch_renderers)
+            {
+                pair.second->begin();
+            }
+
+            for (auto& pair : internal::_custom_geometry_instance_renderers)
             {
                 pair.second->begin();
             }
@@ -532,6 +652,8 @@ namespace ppp
             glm::mat4 image_v = glm::lookAt(internal::_image_camera.eye, internal::_image_camera.center, internal::_image_camera.up);
             glm::mat4 image_vp = image_p * image_v;
 
+            internal::_image_instance_renderer->render(image_vp);
+
             internal::_image_batch_renderer->render(image_vp);
             internal::_image_stroke_batch_renderer->render(image_vp);
 
@@ -542,6 +664,11 @@ namespace ppp
             internal::_font_batch_renderer->render(font_vp);
 
             for (auto& pair : internal::_custom_geometry_batch_renderers)
+            {
+                pair.second->render(active_vp);
+            }
+
+            for (auto& pair : internal::_custom_geometry_instance_renderers)
             {
                 pair.second->render(active_vp);
             }
@@ -608,6 +735,7 @@ namespace ppp
         void push_solid_rendering(bool enable)
         {
             internal::_primitive_instance_renderer->enable_solid_rendering(enable);
+            internal::_image_instance_renderer->enable_solid_rendering(enable);
 
             internal::_primitive_batch_renderer->enable_solid_rendering(enable);
             internal::_primitive_stroke_batch_renderer->enable_solid_rendering(enable);
@@ -618,6 +746,11 @@ namespace ppp
             internal::_font_batch_renderer->enable_solid_rendering(enable);
 
             for (auto& pair : internal::_custom_geometry_batch_renderers)
+            {
+                pair.second->enable_solid_rendering(enable);
+            }
+
+            for (auto& pair : internal::_custom_geometry_instance_renderers)
             {
                 pair.second->enable_solid_rendering(enable);
             }
@@ -637,6 +770,11 @@ namespace ppp
             internal::_font_batch_renderer->enable_wireframe_rendering(enable);
 
             for (auto& pair : internal::_custom_geometry_batch_renderers)
+            {
+                pair.second->enable_wireframe_rendering(enable);
+            }
+
+            for (auto& pair : internal::_custom_geometry_instance_renderers)
             {
                 pair.second->enable_wireframe_rendering(enable);
             }
@@ -804,14 +942,14 @@ namespace ppp
                         return;
                     }
 
-                    internal::_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform::active_world());
+                    internal::_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
                 }
             }
             else
             {
                 if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
                 {
-                    return;
+                    internal::submit_custom_render_item(topology, item);
                 }
                 else
                 {
@@ -823,7 +961,7 @@ namespace ppp
                     }
 
                     internal::_primitive_instance_renderer->append_instance(topology, item);
-                    internal::_primitive_instance_renderer->append_drawing_data(item->id(), brush::fill(), transform::active_world());
+                    internal::_primitive_instance_renderer->append_drawing_data(item->id(), brush::fill(), transform_stack::active_world());
                 }
             }
         }
@@ -846,25 +984,47 @@ namespace ppp
 
             glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
 
-            internal::_primitive_stroke_batch_renderer->append_drawing_data(topology, item, stroke_color, transform::active_world());
+            internal::_primitive_stroke_batch_renderer->append_drawing_data(topology, item, stroke_color, transform_stack::active_world());
         }
 
         //-------------------------------------------------------------------------
         void submit_font_item(const irender_item* item)
         {
-            internal::_font_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform::active_world());
+            internal::_font_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
         }
 
         //-------------------------------------------------------------------------
         void submit_image_item(const irender_item* item)
         {
-            if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
+            if (internal::_draw_mode == render_draw_mode::BATCHED)
             {
-                internal::submit_custom_image_item(item);
+                if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
+                {
+                    internal::submit_custom_image_item(item);
+                }
+                else
+                {
+                    internal::_image_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform_stack::active_world());
+                }
             }
             else
             {
-                internal::_image_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform::active_world());
+                if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
+                {
+                    internal::submit_custom_render_item(topology_type::TRIANGLES, item);
+                }
+                else
+                {
+                    if (brush::fill_enabled() == false)
+                    {
+                        // When there is no "stroke" and there is no "fill" the object would be invisible.
+                        // So we don't add anything to the drawing list.
+                        return;
+                    }
+
+                    internal::_image_instance_renderer->append_instance(topology_type::TRIANGLES, item);
+                    internal::_image_instance_renderer->append_drawing_data(item->id(), brush::fill(), transform_stack::active_world());
+                }
             }
         }
 
@@ -879,7 +1039,7 @@ namespace ppp
 
             glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
 
-            internal::_image_stroke_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, stroke_color, transform::active_world());
+            internal::_image_stroke_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, stroke_color, transform_stack::active_world());
         }
 
         //-------------------------------------------------------------------------

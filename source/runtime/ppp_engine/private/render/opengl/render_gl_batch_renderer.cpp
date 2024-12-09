@@ -30,9 +30,6 @@ namespace ppp
             static constexpr s32 _max_texture_units = 8;
 
             //-------------------------------------------------------------------------
-            static constexpr s32 _solid = 1 << 1;
-            static constexpr s32 _wireframe = 1 << 0;
-
             static f32 _wireframe_linewidth = 3.0f;
             static s32 _wireframe_linecolor = 0x000000FF;
 
@@ -58,7 +55,6 @@ namespace ppp
                     break;
                 }
             }
-
             //-------------------------------------------------------------------------
             static u32 topology(topology_type type)
             {
@@ -142,7 +138,6 @@ namespace ppp
         {
             internal::_wireframe_linewidth = width; 
         }
-
         //-------------------------------------------------------------------------
         void batch_renderer::set_wireframe_linecolor(s32 color) 
         {
@@ -150,13 +145,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        batch_renderer::batch_renderer(vertex_attribute_layout* layouts, u64 layout_count, const std::string& shader_tag, bool enable_texture_support)
-            : m_shader_tag(shader_tag)
+        batch_renderer::batch_renderer(const attribute_layout* layouts, u64 layout_count, const std::string& shader_tag, bool enable_texture_support)
+            : base_renderer(layouts, layout_count, shader_tag, enable_texture_support)
             , m_drawing_data_map()
-            , m_rasterization_mode(internal::_solid)
-            , m_layouts(layouts)
-            , m_layout_count(layout_count)
-            , m_texture_support(enable_texture_support)
             , m_buffer_policy(render_buffer_policy::IMMEDIATE)
             , m_render_policy(render_draw_policy::BUILD_IN)
         {
@@ -227,44 +218,12 @@ namespace ppp
             {
                 s32 max_vertices = internal::max_vertices(topology);
                 s32 max_indices = internal::max_indices(topology);
-                s32 max_textures = m_texture_support ? internal::max_textures() : -1;
+                s32 max_textures = has_texture_support() ? internal::max_textures() : -1;
 
-                m_drawing_data_map.emplace(topology, batch_drawing_data(max_vertices, max_indices, max_textures, m_layouts, m_layout_count, m_buffer_policy));
+                m_drawing_data_map.emplace(topology, batch_drawing_data(max_vertices, max_indices, max_textures, layouts(), layout_count(), m_buffer_policy));
             }
 
             m_drawing_data_map.at(topology).append(item, color, world);
-        }
-
-        //-------------------------------------------------------------------------
-        void batch_renderer::enable_solid_rendering(bool enable)
-        {
-            if (enable)
-            {
-                m_rasterization_mode |= internal::_solid;
-            }
-            else
-            {
-                m_rasterization_mode &= ~internal::_solid;
-            }
-
-            // Make sure the solid_render function is either excluded or included in the render policy
-            draw_policy(m_render_policy);
-        }
-
-        //-------------------------------------------------------------------------
-        void batch_renderer::enable_wireframe_rendering(bool enable)
-        {
-            if (enable)
-            {
-                m_rasterization_mode |= internal::_wireframe;
-            }
-            else
-            {
-                m_rasterization_mode &= ~internal::_wireframe;
-            }
-
-            // Make sure the wireframe_render function is either excluded or included in the render policy
-            draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------
@@ -304,33 +263,6 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void batch_renderer::user_shader_program(const std::string& tag)
-        {
-            if (shader_pool::has_shader(tag))
-            {
-                m_user_shader_tag = tag;
-            }
-        }
-
-        //-------------------------------------------------------------------------
-        void batch_renderer::reset_user_shader_program()
-        {
-            m_user_shader_tag = {};
-        }
-
-        //-------------------------------------------------------------------------
-        bool batch_renderer::solid_rendering_supported() const 
-        {
-            return m_rasterization_mode & internal::_solid;
-        }
-
-        //-------------------------------------------------------------------------
-        bool batch_renderer::wireframe_rendering_supported() const 
-        {
-            return m_rasterization_mode & internal::_wireframe;
-        }
-
-        //-------------------------------------------------------------------------
         bool batch_renderer::has_drawing_data() const
         {
             return std::any_of(std::cbegin(m_drawing_data_map), std::cend(m_drawing_data_map),
@@ -338,12 +270,6 @@ namespace ppp
             {
                 return pair.second.has_drawing_data();
             });
-        }
-
-        //-------------------------------------------------------------------------
-        u32 batch_renderer::shader_program() const 
-        {
-            return shader_pool::get_shader_program(m_user_shader_tag.empty() ? m_shader_tag : m_user_shader_tag);
         }
 
         //-------------------------------------------------------------------------
@@ -382,7 +308,7 @@ namespace ppp
 
         // Primitive Batch Renderer
         //-------------------------------------------------------------------------
-        primitive_batch_renderer::primitive_batch_renderer(vertex_attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
+        primitive_batch_renderer::primitive_batch_renderer(attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
             :batch_renderer(layouts, layout_cout, shader_tag, false)
         {
 
@@ -402,30 +328,16 @@ namespace ppp
                     batch->bind();
                     batch->submit();
                     batch->draw(topology, shader_program());
+                    batch->unbind();
 
                     batch = drawing_data.next_batch();
-
-                    // GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, batch->vertex_buffer_byte_size(), batch->vertices()));
-
-                    // if (batch->active_index_count() != 0)
-                    // {
-                    //     GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
-
-                    //     shaders::apply_uniforms(shader_program());
-                    //     GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
-                    // }
-                    // else
-                    // {
-                    //     shaders::apply_uniforms(shader_program());
-                    //     GL_CALL(glDrawArrays(gl_topology, 0, batch->active_vertex_count()));
-                    // }
                 }
             }
         }
 
         // Texture Batch Renderer
         //-------------------------------------------------------------------------
-        texture_batch_renderer::texture_batch_renderer(vertex_attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
+        texture_batch_renderer::texture_batch_renderer(attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
             :batch_renderer(layouts, layout_cout, shader_tag, true)
         {
 
@@ -459,26 +371,10 @@ namespace ppp
 
                     batch->submit();
                     batch->draw(topology, shader_program());
+                    batch->unbind();
 
                     batch = drawing_data.next_batch();
-
-                    // GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, batch->vertex_buffer_byte_size(), batch->vertices()));
-
-                    // if (batch->active_index_count() != 0)
-                    // {
-                    //     GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, batch->index_buffer_byte_size(), batch->indices()));
-
-                    //     shaders::apply_uniforms(shader_program());
-                    //     GL_CALL(glDrawElements(gl_topology, batch->active_index_count(), internal::index_type(), nullptr));
-                    // }
-                    // else
-                    // {
-                    //     shaders::apply_uniforms(shader_program());
-                    //     GL_CALL(glDrawArrays(gl_topology, 0, batch->active_vertex_count()));
-                    // }
                 }
-
-                batch->unbind();
             }
         }
     }

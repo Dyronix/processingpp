@@ -11,10 +11,10 @@ namespace ppp
 {
     namespace render
     {
-        class vertex_buffer
+        class instance_buffer
         {
         public:
-            vertex_buffer(const attribute_layout* layouts, u64 layout_count, u64 vertex_count);
+            instance_buffer(const attribute_layout* layouts, u64 layout_count, u64 instance_count);
 
         public:
             void                            bind() const;
@@ -38,9 +38,9 @@ namespace ppp
             const u8*                       data() const;
 
             u64                             total_size_in_bytes() const;
-            u64                             vertex_size_in_bytes() const;
-            u64                             vertex_count() const;
-            u64                             active_vertex_count() const;
+            u64                             instance_size_in_bytes() const;
+            u64                             instance_count() const;
+            u64                             active_instance_count() const;
 
         private:
             class impl;

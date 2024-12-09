@@ -26,6 +26,11 @@ namespace ppp
             //-------------------------------------------------------------------------
             static void check_drawing_type(u32 index_count, GLenum type)
             {
+                if (index_count == 0)
+                {
+                    return;
+                }
+
                 switch (type)
                 {
                 case GL_LINES:
@@ -44,7 +49,6 @@ namespace ppp
                     break;
                 }
             }
-
             //-------------------------------------------------------------------------
             static u32 topology(topology_type type)
             {
@@ -58,7 +62,6 @@ namespace ppp
                 log::error("Invalid topology_type type specified, using GL_TRIANGLES");
                 return GL_TRIANGLES;
             }
-
             //-------------------------------------------------------------------------
             static u32 index_type()
             {
@@ -74,7 +77,7 @@ namespace ppp
         {
         public:
             //-------------------------------------------------------------------------
-            buffer_manager(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count)
+            buffer_manager(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
                 : m_max_vertex_count(size_vertex_buffer)
                 , m_max_index_count(size_index_buffer)
                 , m_vertex_buffer(layouts, layout_count, size_vertex_buffer)
@@ -92,7 +95,6 @@ namespace ppp
             {
                 return m_vertex_buffer.active_vertex_count() + nr_vertices < m_max_vertex_count && m_index_buffer.active_index_count() + nr_indices < m_max_index_count;
             }
-
             //-------------------------------------------------------------------------
             bool has_data() const
             {
@@ -108,12 +110,11 @@ namespace ppp
                 copy_vertex_data(item, color);
 
                 transform_vertex_positions(start_index, end_index, world);
-                if (m_vertex_buffer.has_layout(vertex_attribute_type::NORMAL))
+                if (m_vertex_buffer.has_layout(attribute_type::NORMAL))
                 {
                     transform_vertex_normals(start_index, end_index, world);
                 }
             }
-
             //-------------------------------------------------------------------------
             void add_vertices(const irender_item* item, s32 sampler_id, const glm::vec4& color, const glm::mat4& world)
             {
@@ -124,7 +125,6 @@ namespace ppp
 
                 transform_vertex_diffuse_texture_ids(start_index, end_index, sampler_id);
             }
-
             //-------------------------------------------------------------------------
             void add_indices(const irender_item* item)
             {
@@ -144,13 +144,18 @@ namespace ppp
 
                 if (active_index_count() != 0)
                 {
-                    //GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index_buffer_byte_size(), indices()));
                     m_index_buffer.submit();
                 }
             }
 
             //-------------------------------------------------------------------------
             void reset()
+            {
+                m_vertex_buffer.reset();
+                m_index_buffer.reset();
+            }
+            //-------------------------------------------------------------------------
+            void release()
             {
                 m_vertex_buffer.free();
                 m_index_buffer.free();
@@ -176,13 +181,12 @@ namespace ppp
             {
                 vertex_buffer_ops::vertex_attribute_addition_scope vaas(m_vertex_buffer, item->vertex_count());
 
-                if (m_vertex_buffer.has_layout(vertex_attribute_type::POSITION)) vertex_buffer_ops::set_attribute_data(vaas, vertex_attribute_type::POSITION, item->vertex_positions().data());
-                if (m_vertex_buffer.has_layout(vertex_attribute_type::NORMAL)) vertex_buffer_ops::set_attribute_data(vaas, vertex_attribute_type::NORMAL, item->vertex_normals().data());
-                if (m_vertex_buffer.has_layout(vertex_attribute_type::TEXCOORD)) vertex_buffer_ops::set_attribute_data(vaas, vertex_attribute_type::TEXCOORD, item->vertex_uvs().data());
+                if (m_vertex_buffer.has_layout(attribute_type::POSITION)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::POSITION, item->vertex_positions().data());
+                if (m_vertex_buffer.has_layout(attribute_type::NORMAL)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::NORMAL, item->vertex_normals().data());
+                if (m_vertex_buffer.has_layout(attribute_type::TEXCOORD)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::TEXCOORD, item->vertex_uvs().data());
 
-                vertex_buffer_ops::map_attribute_data(vaas, vertex_attribute_type::COLOR, (void*)&color[0]);
+                vertex_buffer_ops::map_attribute_data(vaas, attribute_type::COLOR, (void*)&color[0]);
             }
-
             //-------------------------------------------------------------------------
             void copy_index_data(const irender_item* item)
             {
@@ -196,7 +200,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             void transform_vertex_positions(s32 start_index, s32 end_index, const glm::mat4& world)
             {
-                vertex_buffer_ops::transform_attribute_data<glm::vec3>(m_vertex_buffer, vertex_attribute_type::POSITION, start_index, end_index, [&](glm::vec3& position)
+                vertex_buffer_ops::transform_attribute_data<glm::vec3>(m_vertex_buffer, attribute_type::POSITION, start_index, end_index, [&](glm::vec3& position)
                 {
                     glm::vec4 transformed_pos = world * glm::vec4(position, 1.0f);
 
@@ -205,29 +209,26 @@ namespace ppp
                     position.z = transformed_pos.z;
                 });
             }
-
             //-------------------------------------------------------------------------
             void transform_vertex_normals(s32 start_index, s32 end_index, const glm::mat4& world)
             {
                 glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(world)));
 
-                vertex_buffer_ops::transform_attribute_data<glm::vec3>(m_vertex_buffer, vertex_attribute_type::NORMAL, start_index, end_index, [&](glm::vec3& normal)
+                vertex_buffer_ops::transform_attribute_data<glm::vec3>(m_vertex_buffer, attribute_type::NORMAL, start_index, end_index, [&](glm::vec3& normal)
                 {
                     glm::vec3 transformed_normal = normal_matrix * normal;
 
                     normal = glm::normalize(transformed_normal);
                 });
             }
-
             //-------------------------------------------------------------------------
             void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 sampler_id)
             {
-                vertex_buffer_ops::transform_attribute_data<f32>(m_vertex_buffer, vertex_attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](float& id)
+                vertex_buffer_ops::transform_attribute_data<f32>(m_vertex_buffer, attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](float& id)
                 {
                     id = (f32)sampler_id;
                 });
-            }
-            
+            }           
             //-------------------------------------------------------------------------
             void transform_index_locations(s32 start_index, s32 end_index, u64 offset)
             {
@@ -249,8 +250,11 @@ namespace ppp
         {
         public:
             //-------------------------------------------------------------------------
-            impl(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, s32 size_textures)
+            impl(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, s32 size_textures)
             {
+                assert(layouts != nullptr);
+                assert(layout_count > 0);
+
                 // Allocate VAO
                 GL_CALL(glGenVertexArrays(1, &m_vao));
                 GL_CALL(glBindVertexArray(m_vao));
@@ -291,9 +295,9 @@ namespace ppp
             {
                 GLenum gl_topology = internal::topology(topology);
 
-                #ifndef NDEBUG
+#ifndef NDEBUG
                 internal::check_drawing_type(m_buffer_manager->active_index_count(), gl_topology);
-                #endif
+#endif
 
                 shaders::apply_uniforms(shader_program);
 
@@ -314,7 +318,7 @@ namespace ppp
         };
 
         //-------------------------------------------------------------------------
-        batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, s32 size_textures)
+        batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, s32 size_textures)
             : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count, size_textures))
         {}
         //-------------------------------------------------------------------------
@@ -363,7 +367,7 @@ namespace ppp
             
             if (m_pimpl->m_texture_registry->has_reserved_texture_space())
             {
-                assert(item->texture_ids().size() == 1);
+                assert(item->texture_ids().size() == 1 && "Currently only one texture per render item is supported");
 
                 s32 sampler_id = m_pimpl->m_texture_registry->add_texture(item->texture_ids()[0]);
                 if (sampler_id != -1)
@@ -386,6 +390,12 @@ namespace ppp
         {
             m_pimpl->m_buffer_manager->reset();
             m_pimpl->m_texture_registry->reset();
+        }
+        //-------------------------------------------------------------------------
+        void batch::release()
+        {
+            m_pimpl->m_buffer_manager->release();
+            m_pimpl->m_texture_registry->release();
         }
 
         //-------------------------------------------------------------------------
@@ -432,12 +442,12 @@ namespace ppp
         u32 batch::max_texture_count() const { return m_pimpl->m_texture_registry->max_texture_count(); }
 
         //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
+        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
             : batch_drawing_data(size_vertex_buffer, size_index_buffer, -1, layouts, layout_count, render_buffer_policy)
         {
         }
         //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
+        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
             : m_layouts(layouts)
             , m_layout_count(layout_count)
             , m_buffer_policy(render_buffer_policy)
@@ -484,7 +494,7 @@ namespace ppp
             
                 append(item, color, world);
             }
-        }
+        }       
         //-------------------------------------------------------------------------
         void batch_drawing_data::reset()
         {
@@ -500,11 +510,17 @@ namespace ppp
             }
 
             m_draw_batch = 0;
-        }
+        }        
         //-------------------------------------------------------------------------
         void batch_drawing_data::release()
         {
-            reset();
+            for (batch& b : m_batches)
+            {
+                b.reset();
+            }
+
+            m_push_batch = 0;
+            m_draw_batch = 0;
         }
 
         //-------------------------------------------------------------------------

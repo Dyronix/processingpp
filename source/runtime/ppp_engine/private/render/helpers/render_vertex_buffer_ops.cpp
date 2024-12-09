@@ -34,10 +34,10 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void set_attribute_data(vertex_attribute_addition_scope& vaas, vertex_attribute_type type, const void* data_ptr)
+            void set_attribute_data(vertex_attribute_addition_scope& vaas, attribute_type type, const void* data_ptr)
             {
                 vertex_buffer& vb = vaas.get_vertex_buffer();
-                const vertex_attribute_layout* element_layout = vb.find_layout(type);
+                const attribute_layout* element_layout = vb.find_layout(type);
                 if (!element_layout)
                 {
                     log::error("Tag not found in layout!");
@@ -57,10 +57,10 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void map_attribute_data(vertex_attribute_addition_scope& vaas, vertex_attribute_type type, const void* data_ptr)
+            void map_attribute_data(vertex_attribute_addition_scope& vaas, attribute_type type, const void* data_ptr)
             {
                 vertex_buffer& vb = vaas.get_vertex_buffer();
-                const vertex_attribute_layout* element_layout = vb.find_layout(type);
+                const attribute_layout* element_layout = vb.find_layout(type);
                 if (!element_layout)
                 {
                     log::error("Tag not found in layout!");

@@ -35,23 +35,23 @@ namespace ppp
             };  
 
             //-------------------------------------------------------------------------
-            void set_attribute_data(vertex_attribute_addition_scope& vaas, vertex_attribute_type type, const void* data_ptr);
+            void set_attribute_data(vertex_attribute_addition_scope& vaas, attribute_type type, const void* data_ptr);
 
             //-------------------------------------------------------------------------
-            void map_attribute_data(vertex_attribute_addition_scope& vaas, vertex_attribute_type type, const void* data_ptr);
+            void map_attribute_data(vertex_attribute_addition_scope& vaas, attribute_type type, const void* data_ptr);
 
             //-------------------------------------------------------------------------
             template<typename T>
-            void transform_attribute_data(vertex_buffer& vb, vertex_attribute_type type, std::function<void(T&)> transform_func)
+            void transform_attribute_data(vertex_buffer& vb, attribute_type type, std::function<void(T&)> transform_func)
             {
                 transform_attribute_data<T>(vb, type, 0, vb.active_vertex_count(), transform_func);
             }
 
             //-------------------------------------------------------------------------
             template<typename T>
-            void transform_attribute_data(vertex_buffer& vb, vertex_attribute_type type, u64 start_index,u64 end_index,std::function<void(T&)> transform_func)
+            void transform_attribute_data(vertex_buffer& vb, attribute_type type, u64 start_index,u64 end_index,std::function<void(T&)> transform_func)
             {
-                const vertex_attribute_layout* attribute_layout = vb.find_layout(type);
+                const attribute_layout* attribute_layout = vb.find_layout(type);
                 if (!attribute_layout)
                 {
                     log::error("Tag not found in layout!");

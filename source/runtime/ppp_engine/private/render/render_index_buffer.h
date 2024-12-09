@@ -24,6 +24,7 @@ namespace ppp
             void                            close();
 
         public:
+            void                            reset();
             void                            free();
 
             u8*                             data();

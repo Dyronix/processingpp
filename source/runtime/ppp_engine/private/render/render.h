@@ -58,6 +58,7 @@ namespace ppp
         void push_scissor_enable(bool enable);
 
         bool scissor_enabled();
+
         ScissorRect scissor();
 
         // Image Item

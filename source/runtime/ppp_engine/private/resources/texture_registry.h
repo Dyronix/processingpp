@@ -21,6 +21,7 @@ namespace ppp
             s32 add_texture(u32 image_id);
 
             void reset();
+            void release();
 
             const std::vector<s32>& samplers() const;
             const std::vector<u32>& textures() const;

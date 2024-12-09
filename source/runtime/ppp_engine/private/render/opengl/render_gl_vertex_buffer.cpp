@@ -8,10 +8,24 @@ namespace ppp
 {
     namespace render
     {
+        namespace internal
+        {
+            //-------------------------------------------------------------------------
+            static GLenum convert_to_gl_data_type(attribute_data_type type)
+            {
+                switch (type)
+                {
+                case attribute_data_type::FLOAT: return GL_FLOAT;
+                case attribute_data_type::UNSIGNED_INT: return GL_UNSIGNED_INT;
+                }
+                return 0;  // Fallback to avoid compiler warnings
+            }
+        }
+
         struct vertex_buffer::impl
         {
             //-------------------------------------------------------------------------
-            impl(const vertex_attribute_layout* layouts, u64 layout_count, u64 vertex_count)
+            impl(const attribute_layout* layouts, u64 layout_count, u64 vertex_count)
                 : layouts(layouts)
                 , layout_count(layout_count)
                 , vertex_count(vertex_count)
@@ -21,19 +35,33 @@ namespace ppp
                 , vbo(0)
                 , is_bound(false)
             {
-                auto vertex_size = calculate_total_size_vertex_type(layouts, layout_count);
+                auto vertex_size = calculate_total_size_layout(layouts, layout_count);
 
                 buffer.resize(vertex_size * vertex_count);
 
                 glGenBuffers(1, &vbo);
                 glBindBuffer(GL_ARRAY_BUFFER, vbo);
                 glBufferData(GL_ARRAY_BUFFER, vertex_size * vertex_count, nullptr, GL_DYNAMIC_DRAW);
+
+                for (u64 i = 0; i < layout_count; ++i)
+                {
+                    const attribute_layout& layout = layouts[i];
+
+                    for (s32 j = 0; j < layout.span; ++j)
+                    {
+                        GL_CALL(glEnableVertexAttribArray(i + j));
+                        GL_CALL(glVertexAttribPointer(i + j, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset));
+                    }
+                }
             }
 
             //-------------------------------------------------------------------------
             ~impl()
             {
-                glDeleteBuffers(1, &vbo);
+                if (vbo)
+                {
+                    glDeleteBuffers(1, &vbo);
+                }
             }
 
             //-------------------------------------------------------------------------
@@ -51,17 +79,24 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            void free()
+            {
+                glDeleteBuffers(1, &vbo);
+                vbo = 0;
+            }
+
+            //-------------------------------------------------------------------------
             void submit() const
             {
                 assert(is_bound && "Cannot upload data to an unbound buffer");
 
-                const u64 vertex_buffer_byte_size =  calculate_total_size_vertex_type(layouts, layout_count);
+                const u64 vertex_buffer_byte_size =  calculate_total_size_layout(layouts, layout_count);
 
                 GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_buffer_byte_size * vertex_count, buffer.data()));
             }
 
             //-------------------------------------------------------------------------
-            const vertex_attribute_layout*  layouts;
+            const attribute_layout*         layouts;
             const u64                       layout_count;
 
             u64                             vertex_count;
@@ -76,7 +111,7 @@ namespace ppp
         };
 
         //-------------------------------------------------------------------------
-        vertex_buffer::vertex_buffer(const vertex_attribute_layout* layouts, u64 layout_count, u64 vertex_count)
+        vertex_buffer::vertex_buffer(const attribute_layout* layouts, u64 layout_count, u64 vertex_count)
             : m_pimpl(std::make_unique<impl>(layouts, layout_count, vertex_count))
         {
 
@@ -114,13 +149,24 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void vertex_buffer::free()
+        void vertex_buffer::reset()
         {
             m_pimpl->current_vertex_count = 0;
         }
 
         //-------------------------------------------------------------------------
-        const vertex_attribute_layout* vertex_buffer::find_layout(vertex_attribute_type type) const
+        void vertex_buffer::free()
+        {
+            reset();
+
+            m_pimpl->buffer.clear();
+
+            m_pimpl->unbind();
+            m_pimpl->free();
+        }
+
+        //-------------------------------------------------------------------------
+        const attribute_layout* vertex_buffer::find_layout(attribute_type type) const
         {
             for (u64 i = 0; i < m_pimpl->layout_count; ++i)
             {
@@ -134,13 +180,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool vertex_buffer::has_layout(vertex_attribute_type type) const
+        bool vertex_buffer::has_layout(attribute_type type) const
         {
             return find_layout(type) != nullptr;
         }
 
         //------------------------------------------------------------------------- 
-        const vertex_attribute_layout* vertex_buffer::layouts() const
+        const attribute_layout* vertex_buffer::layouts() const
         {
             return m_pimpl->layouts;
         }
@@ -166,14 +212,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         u64 vertex_buffer::total_size_in_bytes() const
         {
-            auto vertex_size = calculate_total_size_vertex_type(m_pimpl->layouts, m_pimpl->layout_count);
+            auto vertex_size = calculate_total_size_layout(m_pimpl->layouts, m_pimpl->layout_count);
             return vertex_size * m_pimpl->current_vertex_count;
         }
 
         //-------------------------------------------------------------------------
         u64 vertex_buffer::vertex_size_in_bytes() const
         {
-            return calculate_total_size_vertex_type(m_pimpl->layouts, m_pimpl->layout_count);
+            return calculate_total_size_layout(m_pimpl->layouts, m_pimpl->layout_count);
         }
 
         //-------------------------------------------------------------------------

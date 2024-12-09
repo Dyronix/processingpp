@@ -32,7 +32,10 @@ namespace ppp
 
             ~impl()
             {
-                glDeleteBuffers(1, &ebo);
+                if (ebo)
+                {
+                    glDeleteBuffers(1, &ebo);
+                }
             }
 
             //-------------------------------------------------------------------------
@@ -57,6 +60,13 @@ namespace ppp
                 const u64 index_buffer_byte_size = sizeof(index) * index_count;
 
                 GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index_buffer_byte_size, buffer.data()));
+            }
+
+            //-------------------------------------------------------------------------
+            void free()
+            {
+                glDeleteBuffers(1, &ebo);
+                ebo = 0;
             }
 
             u64                             index_count;
@@ -107,9 +117,20 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void index_buffer::free()
+        void index_buffer::reset()
         {
             m_pimpl->current_index_count = 0;
+        }
+
+        //-------------------------------------------------------------------------
+        void index_buffer::free()
+        {
+            reset();
+
+            m_pimpl->buffer.clear();
+
+            m_pimpl->unbind();
+            m_pimpl->free();
         }
 
         //-------------------------------------------------------------------------

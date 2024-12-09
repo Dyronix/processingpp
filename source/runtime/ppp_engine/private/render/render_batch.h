@@ -16,7 +16,7 @@ namespace ppp
         class batch
         {
         public:
-            batch(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, s32 size_textures = -1);
+            batch(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, s32 size_textures = -1);
             ~batch();                                       // has to be defined, due to auto compiler generated function and forward delclaration
 
             batch(const batch& other) = delete;             // unique ptr, so we can delete
@@ -34,6 +34,7 @@ namespace ppp
         public:
             void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world);
             void reset();
+            void release();
 
             bool can_add(s32 nr_vertices, s32 nr_indices) const;
 
@@ -66,8 +67,8 @@ namespace ppp
         class batch_drawing_data
         {
         public:
-            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const vertex_attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy);
-            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const vertex_attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy);
+            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy);
+            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy);
 
             void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world);
             void reset();
@@ -87,7 +88,7 @@ namespace ppp
             batch_arr m_batches;
             render_buffer_policy m_buffer_policy;
 
-            const vertex_attribute_layout* m_layouts;
+            const attribute_layout* m_layouts;
             const u64 m_layout_count;
         };
     }

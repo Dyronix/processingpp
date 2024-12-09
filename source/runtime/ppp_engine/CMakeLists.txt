@@ -24,6 +24,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/device_input.h
     # render
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_base_renderer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch_renderer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_renderer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch.h
@@ -34,12 +35,14 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_components.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_buffer.h
     ## render-opengl
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_vertex_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_index_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_base_renderer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch_renderer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance_renderer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl.cpp
@@ -47,6 +50,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_error.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_error.h
     ## render-helpers
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_vertex_buffer_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_vertex_buffer_ops.cpp
     # geometry

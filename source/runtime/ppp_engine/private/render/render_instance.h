@@ -15,55 +15,81 @@ namespace ppp
 {
     namespace render
     {
-        struct instance_data
+        class instance
         {
-            glm::mat4 world;
-            glm::vec4 color;
+        public:
+            instance(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count);
+
+            instance(const instance& other) = delete;             // unique ptr, so we can delete
+            instance(instance&& other);                           // has to be defined, due to auto compiler generated function and forward delclaration
+
+            instance& operator=(const instance& other) = delete;  // unique ptr, so we can delete
+            instance& operator=(instance&& other);                // has to be defined, due to auto compiler generated function and forward delclaration
+
+        public:
+            void bind() const;
+            void unbind() const;
+            void submit() const;
+            void draw(topology_type topology, u32 shader_program) const;
+
+        public:
+            void increment_instance_count();
+
+            void append(const void* data_ptr);
+            void reset();
+            void release();
+
+            bool has_data() const;
+            bool has_reserved_texture_space() const;
+
+        public:
+            u64 instance_id() const;
+
+            const void* vertices() const;
+            const void* indices() const;
+            const s32* samplers() const;
+            const u32* textures() const;
+
+            u32 active_vertex_count() const;
+            u32 active_index_count() const;
+            u32 active_sampler_count() const;
+            u32 active_texture_count() const;
+
+            u64 vertex_buffer_byte_size() const;
+            u64 index_buffer_byte_size() const;
+
+        private:
+            class impl;
+            std::unique_ptr<impl> m_pimpl;
         };
 
         class instance_drawing_data
         {
         public:
-            instance_drawing_data(topology_type topology, const irender_item* instance, const vertex_attribute_layout* layouts, u64 layout_count);
+            instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy);
 
-            void increment_instance_count();
-            void set(s32 instance_id, const glm::vec4& color, const glm::mat4& world);
-            void append(const glm::vec4& color, const glm::mat4& world);
-            void release();
+        public:
+            void append(const irender_item* item, const void* instance_data_ptr);
             void reset();
+            void release();
 
-            const irender_item* instance() const;
-            const topology_type topology() const;
+            const instance* first_instance();
+            const instance* next_instance();
 
-            s32 instance_count() const;
-
-            bool has_instance_data() const;
             bool has_drawing_data() const;
 
-            u32 vao() const;
-            u32 vbo() const;
-            u32 ebo() const;
-            u32 ibo() const;
-
         private:
-            u32	m_vao = 0;
-            u32	m_vbo = 0;
-            u32 m_ebo = 0;
-            u32 m_ibo = 0;
+            using instance_map = std::vector<instance>;
 
-            const irender_item* m_instance;
-            const topology_type m_topology_type;
-
-            s32 m_instance_count = 0;
-            u64 m_instance_data_offset = 0;
+            instance_map m_instances;
+            render_buffer_policy m_buffer_policy;
             
-            std::unique_ptr<class vertex_buffer> m_vertex_buffer;
-            std::unique_ptr<class index_buffer> m_index_buffer;
-
-            std::vector<instance_data> m_instance_buffer;
-
-            const vertex_attribute_layout* m_layouts;
+            const attribute_layout* m_layouts;
             const u64 m_layout_count;
+            const attribute_layout* m_instance_layouts;
+            const u64 m_instance_layout_count;
+
+            s32 m_draw_instance = 0;
         };
     }
 }
