@@ -50,8 +50,8 @@ namespace ppp
                 m_rasterization_mode &= ~internal::_solid;
             }
 
-            // Make sure the solid_render function is either excluded or included in the render policy
-            draw_policy(m_render_policy);
+            //// Make sure the solid_render function is either excluded or included in the render policy
+            //draw_policy(m_render_policy);
         }
         //-------------------------------------------------------------------------
         void base_renderer::enable_wireframe_rendering(bool enable)
@@ -65,8 +65,8 @@ namespace ppp
                 m_rasterization_mode &= ~internal::_wireframe;
             }
 
-            // Make sure the wireframe_render function is either excluded or included in the render policy
-            draw_policy(m_render_policy);
+            //// Make sure the wireframe_render function is either excluded or included in the render policy
+            //draw_policy(m_render_policy);
         }
 
         //-------------------------------------------------------------------------

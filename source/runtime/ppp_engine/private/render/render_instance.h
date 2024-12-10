@@ -18,13 +18,14 @@ namespace ppp
         class instance
         {
         public:
-            instance(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count);
+            instance(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, s32 size_textures = -1);
+            ~instance();
 
             instance(const instance& other) = delete;             // unique ptr, so we can delete
-            instance(instance&& other);                           // has to be defined, due to auto compiler generated function and forward delclaration
+            instance(instance&& other) noexcept;                           // has to be defined, due to auto compiler generated function and forward delclaration
 
             instance& operator=(const instance& other) = delete;  // unique ptr, so we can delete
-            instance& operator=(instance&& other);                // has to be defined, due to auto compiler generated function and forward delclaration
+            instance& operator=(instance&& other) noexcept;                // has to be defined, due to auto compiler generated function and forward delclaration
 
         public:
             void bind() const;
@@ -67,6 +68,13 @@ namespace ppp
         {
         public:
             instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy);
+            ~instance_drawing_data();
+
+            instance_drawing_data(const instance_drawing_data& other) = delete;             // unique ptr, so we can delete
+            instance_drawing_data(instance_drawing_data&& other) noexcept;                           // has to be defined, due to auto compiler generated function and forward delclaration
+
+            instance_drawing_data& operator=(const instance_drawing_data& other) = delete;  // unique ptr, so we can delete
+            instance_drawing_data& operator=(instance_drawing_data&& other) noexcept;                // has to be defined, due to auto compiler generated function and forward delclaration
 
         public:
             void append(const irender_item* item, const void* instance_data_ptr);
@@ -81,15 +89,9 @@ namespace ppp
         private:
             using instance_map = std::vector<instance>;
 
-            instance_map m_instances;
-            render_buffer_policy m_buffer_policy;
-            
-            const attribute_layout* m_layouts;
-            const u64 m_layout_count;
-            const attribute_layout* m_instance_layouts;
-            const u64 m_instance_layout_count;
-
-            s32 m_draw_instance = 0;
+        private:
+            struct impl;
+            std::unique_ptr<impl> m_pimpl;
         };
     }
 }

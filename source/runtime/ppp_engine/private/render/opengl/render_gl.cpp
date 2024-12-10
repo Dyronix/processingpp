@@ -58,6 +58,7 @@ namespace ppp
             bool _scissor_enable = false;
 
             //-------------------------------------------------------------------------
+            // VERTEX LAYOUTs
             struct pos_format
             {
                 glm::vec3 position;
@@ -74,7 +75,6 @@ namespace ppp
                 glm::vec3 position;
                 glm::vec4 color;
             };
-
             //-------------------------------------------------------------------------
             struct pos_tex_col_format
             {
@@ -83,7 +83,6 @@ namespace ppp
                 glm::vec4 color;
                 f32       texture_idx;
             };
-
             //-------------------------------------------------------------------------
             struct pos_tex_col_norm_format
             {
@@ -95,6 +94,15 @@ namespace ppp
             };
 
             //-------------------------------------------------------------------------
+            // INSTANCE LAYOUTS
+            struct world_color_format
+            {
+                glm::mat4 world;
+                glm::vec4 color;
+            };
+
+            //-------------------------------------------------------------------------
+            // VERTEX LAYOUTS
             std::array<attribute_layout, 1> _pos_layout
             {
                 attribute_layout{
@@ -103,6 +111,7 @@ namespace ppp
 
                     0,
                     3,
+                    1,
                     false,
                     sizeof(pos_format),
                     0
@@ -117,6 +126,7 @@ namespace ppp
 
                     0,
                     3,
+                    1,
                     false,
                     sizeof(pos_col_format),
                     0
@@ -127,6 +137,7 @@ namespace ppp
 
                     1,
                     4,
+                    1,
                     false,
                     sizeof(pos_col_format),
                     3 * sizeof(float)
@@ -141,6 +152,7 @@ namespace ppp
 
                     0,
                     3,
+                    1,
                     false,
                     sizeof(pos_tex_format),
                     0
@@ -151,6 +163,7 @@ namespace ppp
 
                     1,
                     2,
+                    1,
                     false,
                     sizeof(pos_tex_format),
                     3 * sizeof(float)
@@ -165,6 +178,7 @@ namespace ppp
 
                     0,
                     3,
+                    1,
                     false,
                     sizeof(pos_tex_col_format),
                     0
@@ -175,6 +189,7 @@ namespace ppp
 
                     1,
                     2,
+                    1,
                     false,
                     sizeof(pos_tex_col_format),
                     3 * sizeof(float)
@@ -185,6 +200,7 @@ namespace ppp
 
                     2,
                     4,
+                    1,
                     false,
                     sizeof(pos_tex_col_format),
                     3 * sizeof(float) + 2 * sizeof(float)
@@ -194,6 +210,7 @@ namespace ppp
                     attribute_data_type::FLOAT,
 
                     3,
+                    1,
                     1,
                     false,
                     sizeof(pos_tex_col_format),
@@ -209,6 +226,7 @@ namespace ppp
 
                     0,
                     3,
+                    1,
                     false,
                     sizeof(pos_tex_col_norm_format),
                     0
@@ -219,6 +237,7 @@ namespace ppp
 
                     1,
                     2,
+                    1,
                     false,
                     sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float)
@@ -229,6 +248,7 @@ namespace ppp
 
                     2,
                     3,
+                    1,
                     false,
                     sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float) + 2 * sizeof(float)
@@ -239,6 +259,7 @@ namespace ppp
 
                     3,
                     4,
+                    1,
                     false,
                     sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float) + 3 * sizeof(float) + 2 * sizeof(float)
@@ -249,9 +270,38 @@ namespace ppp
 
                     4,
                     1,
+                    1,
                     false,
                     sizeof(pos_tex_col_norm_format),
                     3 * sizeof(float) + 3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
+                }
+            };
+
+            //-------------------------------------------------------------------------
+            // INSTANCE LAYOUTS
+            std::array<attribute_layout, 2> _color_world_layout
+            {
+                attribute_layout{
+                    attribute_type::WORLD_MATRIX,
+                    attribute_data_type::FLOAT,
+
+                    0,
+                    4,
+                    4,
+                    false,
+                    sizeof(world_color_format),
+                    0
+                },
+                attribute_layout{
+                    attribute_type::COLOR,
+                    attribute_data_type::FLOAT,
+
+                    1,
+                    4,
+                    1,
+                    false,
+                    sizeof(world_color_format),
+                    3 * sizeof(float)
                 }
             };
 
@@ -422,6 +472,8 @@ namespace ppp
                         auto renderer = std::make_unique<primitive_instance_renderer>(
                             _fill_user_shader.empty() ? internal::_pos_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
                             _fill_user_shader.empty() ? internal::_pos_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                            _color_world_layout.data(),
+                            _color_world_layout.size(),
                             shader_tag);
 
                         if (_geometry_builder.is_active())
@@ -469,6 +521,8 @@ namespace ppp
                         auto renderer = std::make_unique<texture_instance_renderer>(
                             _fill_user_shader.empty() ? internal::_pos_tex_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
                             _fill_user_shader.empty() ? internal::_pos_tex_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                            _color_world_layout.data(),
+                            _color_world_layout.size(),
                             shader_tag);
 
                         if (_geometry_builder.is_active())
@@ -528,8 +582,8 @@ namespace ppp
 
             internal::create_frame_buffer();
 
-            internal::_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), shader_pool::tags::instance_unlit_color);
-            internal::_image_instance_renderer = std::make_unique<texture_instance_renderer>(internal::_pos_tex_layout.data(), internal::_pos_tex_layout.size(), shader_pool::tags::instance_unlit_texture);
+            internal::_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_color);
+            internal::_image_instance_renderer = std::make_unique<texture_instance_renderer>(internal::_pos_tex_layout.data(), internal::_pos_tex_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_texture);
 
             internal::_primitive_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
             internal::_primitive_stroke_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);

@@ -25,8 +25,8 @@ namespace ppp
             //-------------------------------------------------------------------------
             struct instance_data
             {
-                glm::vec4 color;
                 glm::mat4 world;
+                glm::vec4 color;
             };
 
             static std::vector<u8> _intermediate_buffer(sizeof(instance_data));
@@ -171,8 +171,8 @@ namespace ppp
                 m_instance_data_map.emplace(topology, instance_drawing_data(layouts(), layout_count(), m_instance_layouts, m_instance_layout_count, m_buffer_policy));
             }
 
-            memcpy(internal::_intermediate_buffer.data() + offsetof(internal::instance_data, color), &color, sizeof(glm::vec4));
             memcpy(internal::_intermediate_buffer.data() + offsetof(internal::instance_data, world), &world, sizeof(glm::mat4));
+            memcpy(internal::_intermediate_buffer.data() + offsetof(internal::instance_data, color), &color, sizeof(glm::vec4));
 
             m_instance_data_map.at(topology).append(item, internal::_intermediate_buffer.data());
 

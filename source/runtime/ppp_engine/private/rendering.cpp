@@ -12,8 +12,8 @@ namespace ppp
             render::push_scissor_enable(true);
             render::push_scissor(x, y, w, h);
 
-            transform::push();
-            transform::translate(glm::vec2(x, y));
+            transform_stack::push();
+            transform_stack::translate(glm::vec2(x, y));
         }
 
         void resize_canvas(float x, float y, float w, float h)
@@ -22,15 +22,15 @@ namespace ppp
             render::push_scissor(x, y, w, h);
 
             // Dequeue the previous one
-            transform::pop();
+            transform_stack::pop();
             // Enqueue the new one
-            transform::push();
-            transform::translate(glm::vec2(x, y));
+            transform_stack::push();
+            transform_stack::translate(glm::vec2(x, y));
         }
 
         void no_canvas()
         {
-            transform::pop();
+            transform_stack::pop();
 
             render::push_scissor_enable(false);
         }

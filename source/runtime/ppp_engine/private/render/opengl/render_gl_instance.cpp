@@ -74,7 +74,8 @@ namespace ppp
                 return GL_UNSIGNED_INT;
             }
 
-            s32 s_instance_data_initial_capacity = 16;
+            //-------------------------------------------------------------------------
+            constexpr s32 s_instance_data_initial_capacity = 16;
         }
 
         //-------------------------------------------------------------------------
@@ -328,25 +329,17 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         // Instance
-        instance::instance(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
-            :m_pimpl(std::make_unique<impl>(instance, layouts, layout_count, instance_layouts, instance_layout_count))
+        instance::instance(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, s32 size_textures)
+            :m_pimpl(std::make_unique<impl>(instance, layouts, layout_count, instance_layouts, instance_layout_count, size_textures))
         {
 
         }
         //-------------------------------------------------------------------------
         instance::~instance() = default;
         //-------------------------------------------------------------------------
-        instance::instance(instance&& other)
-            : m_pimpl(std::exchange(other.m_pimpl, nullptr))
-        {
-        }
+        instance::instance(instance&& other) noexcept = default;
         //-------------------------------------------------------------------------
-        instance& instance::operator=(instance&& other)
-        {
-            m_pimpl = std::exchange(other.m_pimpl, nullptr);
-
-            return *this;
-        }
+        instance& instance::operator=(instance&& other) noexcept = default;
 
         //-------------------------------------------------------------------------
         void instance::bind() const
@@ -434,14 +427,35 @@ namespace ppp
         u64 instance::index_buffer_byte_size() const { return m_pimpl->m_buffer_manager->active_indices_byte_size(); }
 
         //-------------------------------------------------------------------------
+        // Instance Drawing Data Impl
+        struct instance_drawing_data::impl
+        {
+            impl(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
+                : instances()
+                , buffer_policy(render_buffer_policy)
+                , layouts(layouts)
+                , layout_count(layout_count)
+                , instance_layouts(instance_layouts)
+                , instance_layout_count(instance_layout_count)
+            {
+
+            }
+
+            instance_map                instances                 = {};
+            render_buffer_policy        buffer_policy             = render_buffer_policy::RETAINED;
+
+            const attribute_layout*     layouts                   = nullptr;
+            const u64                   layout_count              = 0;
+            const attribute_layout*     instance_layouts          = nullptr;
+            const u64                   instance_layout_count     = 0;
+
+            s32                         draw_instance             = 0;
+        };
+
+        //-------------------------------------------------------------------------
         // Instance Drawing Data
         instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
-            : m_instances()
-            , m_buffer_policy(render_buffer_policy)
-            , m_layouts(layouts)
-            , m_layout_count(layout_count)
-            , m_instance_layouts(instance_layouts)
-            , m_instance_layout_count(instance_layout_count)
+            : m_pimpl(std::make_unique<impl>(layouts, layout_count, instance_layouts, instance_layout_count, render_buffer_policy))
         {
             assert(layouts != nullptr);
             assert(layout_count > 0);
@@ -449,19 +463,25 @@ namespace ppp
             assert(instance_layouts != nullptr);
             assert(instance_layout_count > 0);
         }
+        //-------------------------------------------------------------------------
+        instance_drawing_data::~instance_drawing_data() = default;
+        //-------------------------------------------------------------------------
+        instance_drawing_data::instance_drawing_data(instance_drawing_data&& other) noexcept = default;
+        //-------------------------------------------------------------------------
+        instance_drawing_data& instance_drawing_data::operator=(instance_drawing_data&& other) noexcept = default;
 
         //-------------------------------------------------------------------------
         void instance_drawing_data::append(const irender_item* item, const void* instance_data_ptr)
         {
-            auto it = std::find_if(std::begin(m_instances), std::end(m_instances),
+            auto it = std::find_if(std::begin(m_pimpl->instances), std::end(m_pimpl->instances),
                 [item](const instance& inst)
             {
                 return inst.instance_id() == item->id();
             });
 
-            if (it == std::cend(m_instances))
+            if (it == std::cend(m_pimpl->instances))
             {
-                instance& inst = m_instances.emplace_back(item, m_layouts, m_layout_count, m_instance_layouts, m_instance_layout_count);
+                instance& inst = m_pimpl->instances.emplace_back(item, m_pimpl->layouts, m_pimpl->layout_count, m_pimpl->instance_layouts, m_pimpl->instance_layout_count);
 
                 inst.increment_instance_count();
                 inst.append(instance_data_ptr);
@@ -476,33 +496,33 @@ namespace ppp
         //-------------------------------------------------------------------------
         void instance_drawing_data::reset()
         {
-            if (m_buffer_policy == render_buffer_policy::IMMEDIATE)
+            if (m_pimpl->buffer_policy == render_buffer_policy::IMMEDIATE)
             {
-                for (instance& b : m_instances)
+                for (instance& b : m_pimpl->instances)
                 {
                     b.reset();
                 }
             }
 
-            m_draw_instance = 0;
+            m_pimpl->draw_instance = 0;
         }
 
 
         //-------------------------------------------------------------------------
         void instance_drawing_data::release()
         {
-            for (instance& b : m_instances)
+            for (instance& b : m_pimpl->instances)
             {
                 b.reset();
             }
 
-            m_draw_instance = 0;
+            m_pimpl->draw_instance = 0;
         }
 
         //-------------------------------------------------------------------------
         const instance* instance_drawing_data::first_instance()
         {
-            m_draw_instance = 0;
+            m_pimpl->draw_instance = 0;
 
             return next_instance();
         }
@@ -510,11 +530,11 @@ namespace ppp
         //-------------------------------------------------------------------------
         const instance* instance_drawing_data::next_instance()
         {
-            if (m_draw_instance < m_instances.size())
+            if (m_pimpl->draw_instance < m_pimpl->instances.size())
             {
-                auto b = &m_instances[m_draw_instance];
+                auto b = &m_pimpl->instances[m_pimpl->draw_instance];
 
-                ++m_draw_instance;
+                ++m_pimpl->draw_instance;
 
                 return b;
             }
@@ -523,7 +543,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool instance_drawing_data::has_drawing_data() const
         {
-            return std::any_of(m_instances.cbegin(), m_instances.cend(), [](const instance& i) { return i.has_data(); });
+            return std::any_of(m_pimpl->instances.cbegin(), m_pimpl->instances.cend(), [](const instance& i) { return i.has_data(); });
         }
     }
 }

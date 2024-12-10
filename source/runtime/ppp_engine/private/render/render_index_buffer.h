@@ -13,6 +13,7 @@ namespace ppp
         {
         public:
             index_buffer(u64 index_count);
+            ~index_buffer();
 
         public:
             void                            bind() const;

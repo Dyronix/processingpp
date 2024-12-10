@@ -100,7 +100,7 @@ target_sources(processing_engine PRIVATE
     # util
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/brush.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/brush.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/transform_stack.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/transform_stack.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/transform_stack.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/hash.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/log.h

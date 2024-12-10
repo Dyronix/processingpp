@@ -64,6 +64,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void texture_registry::release()
+        {
+            reset();
+        }
+
+        //-------------------------------------------------------------------------
         const std::vector<s32>& texture_registry::samplers() const { return m_samplers; }
         const std::vector<u32>& texture_registry::textures() const { return m_images; }
 

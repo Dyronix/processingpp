@@ -19,7 +19,6 @@ namespace ppp
                 , max_elements_to_set(0)
                 , buffer()
                 , ebo(0)
-                , is_bound(false)
             {
                 const size_t size_ebo = sizeof(index) * count;
 
@@ -42,21 +41,17 @@ namespace ppp
             void bind() const
             {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-                is_bound = true;
             }
 
             //-------------------------------------------------------------------------
             void unbind() const
             {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-                is_bound = false;
             }
 
             //-------------------------------------------------------------------------
             void submit() const
             {
-                assert(is_bound && "Cannot upload data to an unbound buffer");
-
                 const u64 index_buffer_byte_size = sizeof(index) * index_count;
 
                 GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index_buffer_byte_size, buffer.data()));
@@ -76,14 +71,15 @@ namespace ppp
             std::vector<u8>                 buffer;
 
             u32                             ebo;
-
-            mutable bool                    is_bound;
         };
 
         //-------------------------------------------------------------------------
         index_buffer::index_buffer(u64 index_count)
             : m_pimpl(std::make_unique<impl>(index_count))
         {}
+
+        //-------------------------------------------------------------------------
+        index_buffer::~index_buffer() = default;
 
         //-------------------------------------------------------------------------
         void index_buffer::bind() const

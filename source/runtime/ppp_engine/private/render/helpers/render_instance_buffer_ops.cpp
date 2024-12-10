@@ -12,7 +12,7 @@ namespace ppp
                 , m_active(true)
                 , m_max_elements_to_set(data_count)
             {
-                assert(data_count > m_instance_buffer.instance_count() - m_instance_buffer.active_instance_count() && "instance buffer overflow");
+                assert(data_count < m_instance_buffer.instance_count() - m_instance_buffer.active_instance_count() && "instance buffer overflow");
 
                 m_instance_buffer.open(data_count);
             }

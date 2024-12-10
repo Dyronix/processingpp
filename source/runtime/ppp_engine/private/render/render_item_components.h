@@ -22,8 +22,8 @@ namespace ppp
             NORMAL,
             TEXCOORD,
             COLOR,
-
-            DIFFUSE_TEXTURE_INDEX
+            DIFFUSE_TEXTURE_INDEX,
+            WORLD_MATRIX
         };
 
         //-------------------------------------------------------------------------

@@ -15,6 +15,7 @@ namespace ppp
         {
         public:
             vertex_buffer(const attribute_layout* layouts, u64 layout_count, u64 vertex_count);
+            ~vertex_buffer();
 
         public:
             void                            bind() const;

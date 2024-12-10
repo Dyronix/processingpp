@@ -20,10 +20,10 @@ namespace ppp
             ~batch();                                       // has to be defined, due to auto compiler generated function and forward delclaration
 
             batch(const batch& other) = delete;             // unique ptr, so we can delete
-            batch(batch&& other);                           // has to be defined, due to auto compiler generated function and forward delclaration
+            batch(batch&& other) noexcept;                           // has to be defined, due to auto compiler generated function and forward delclaration
 
             batch& operator=(const batch& other) = delete;  // unique ptr, so we can delete
-            batch& operator=(batch&& other);                // has to be defined, due to auto compiler generated function and forward delclaration
+            batch& operator=(batch&& other) noexcept;                // has to be defined, due to auto compiler generated function and forward delclaration
 
         public:
             void bind() const;
@@ -69,6 +69,13 @@ namespace ppp
         public:
             batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy);
             batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy);
+            ~batch_drawing_data();
+
+            batch_drawing_data(const batch_drawing_data& other) = delete;             // unique ptr, so we can delete
+            batch_drawing_data(batch_drawing_data&& other) noexcept;                           // has to be defined, due to auto compiler generated function and forward delclaration
+
+            batch_drawing_data& operator=(const batch_drawing_data& other) = delete;  // unique ptr, so we can delete
+            batch_drawing_data& operator=(batch_drawing_data&& other) noexcept;                // has to be defined, due to auto compiler generated function and forward delclaration
 
             void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world);
             void reset();
@@ -82,14 +89,9 @@ namespace ppp
         private:
             using batch_arr = std::vector<batch>;
 
-            s32 m_draw_batch = 0;
-            s32 m_push_batch = 0;
-
-            batch_arr m_batches;
-            render_buffer_policy m_buffer_policy;
-
-            const attribute_layout* m_layouts;
-            const u64 m_layout_count;
+        private:
+            struct impl;
+            std::unique_ptr<impl> m_pimpl;
         };
     }
 }

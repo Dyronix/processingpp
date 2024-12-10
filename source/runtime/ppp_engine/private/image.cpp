@@ -195,23 +195,23 @@ namespace ppp
         {
             geometry::geometry* geom = internal::make_image(image_id);
 
-            transform::push();
-            transform::translate(glm::vec2(x, y));
+            transform_stack::push();
+            transform_stack::translate(glm::vec2(x, y));
             
             if (internal::_image_mode == image_mode_type::CORNER)
             {
                 glm::vec2 center = geometry::rectanglular_center_translation(x, y, width, height);
 
-                transform::translate(glm::vec2(center.x, center.y));
+                transform_stack::translate(glm::vec2(center.x, center.y));
             }
 
-            transform::scale(glm::vec2(width, height));
+            transform_stack::scale(glm::vec2(width, height));
 
             render::submit_image_item(geom);
 
-            glm::mat4& world = transform::active_world();
+            glm::mat4& world = transform_stack::active_world();
 
-            transform::pop();
+            transform_stack::pop();
 
             if (render::brush::stroke_enabled())
             {

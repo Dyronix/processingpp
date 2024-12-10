@@ -73,6 +73,8 @@ namespace ppp
             }
         }
 
+        //-------------------------------------------------------------------------
+        // Buffer Manager
         class buffer_manager
         {
         public:
@@ -246,11 +248,16 @@ namespace ppp
             index_buffer m_index_buffer;
         };
 
+        //-------------------------------------------------------------------------
+        // Batch Impl
         class batch::impl
         {
         public:
             //-------------------------------------------------------------------------
             impl(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, s32 size_textures)
+                :m_buffer_manager(nullptr)
+                ,m_texture_registry(nullptr)
+                ,m_vao(0)
             {
                 assert(layouts != nullptr);
                 assert(layout_count > 0);
@@ -318,23 +325,16 @@ namespace ppp
         };
 
         //-------------------------------------------------------------------------
+        // Batch
         batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, s32 size_textures)
             : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count, size_textures))
         {}
         //-------------------------------------------------------------------------
         batch::~batch() = default;
         //-------------------------------------------------------------------------
-        batch::batch(batch&& other)
-            : m_pimpl(std::exchange(other.m_pimpl, nullptr))
-        {
-        }
+        batch::batch(batch&& other) noexcept = default;
         //-------------------------------------------------------------------------
-        batch& batch::operator=(batch&& other)
-        {
-            m_pimpl = std::exchange(other.m_pimpl, nullptr);
-
-            return *this;
-        }
+        batch& batch::operator=(batch&& other) noexcept = default;
 
         //-------------------------------------------------------------------------
         void batch::bind() const
@@ -442,25 +442,52 @@ namespace ppp
         u32 batch::max_texture_count() const { return m_pimpl->m_texture_registry->max_texture_count(); }
 
         //-------------------------------------------------------------------------
+        // Batch Drawing Data Impl
+        struct batch_drawing_data::impl
+        {
+            //-------------------------------------------------------------------------
+            impl(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
+                : layouts(layouts)
+                , layout_count(layout_count)
+                , buffer_policy(render_buffer_policy)
+            {
+                assert(size_vertex_buffer > 0);
+                assert(size_index_buffer > 0);
+
+                assert(layouts != nullptr);
+                assert(layout_count > 0);
+
+                // Already start with one batch
+                batches.emplace_back(size_vertex_buffer, size_index_buffer, layouts, layout_count, size_textures);
+            }
+
+            s32                         draw_batch      = 0;
+            s32                         push_batch      = 0;
+
+            batch_arr                   batches         = {};
+            render_buffer_policy        buffer_policy   = render_buffer_policy::RETAINED;
+
+            const attribute_layout*     layouts         = nullptr;
+            const u64                   layout_count    = 0;
+        };
+
+        //-------------------------------------------------------------------------
         batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
             : batch_drawing_data(size_vertex_buffer, size_index_buffer, -1, layouts, layout_count, render_buffer_policy)
         {
         }
+
         //-------------------------------------------------------------------------
         batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
-            : m_layouts(layouts)
-            , m_layout_count(layout_count)
-            , m_buffer_policy(render_buffer_policy)
-        {
-            assert(size_vertex_buffer > 0);
-            assert(size_index_buffer > 0);
+            : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, size_textures, layouts, layout_count, render_buffer_policy))
+        {}
 
-            assert(layouts != nullptr);
-            assert(layout_count > 0);
-
-            // Already start with one batch
-            m_batches.emplace_back(size_vertex_buffer, size_index_buffer, layouts, layout_count, size_textures);
-        }
+        //-------------------------------------------------------------------------
+        batch_drawing_data::~batch_drawing_data() = default;
+        //-------------------------------------------------------------------------
+        batch_drawing_data::batch_drawing_data(batch_drawing_data&& other) noexcept = default;
+        //-------------------------------------------------------------------------
+        batch_drawing_data& batch_drawing_data::operator=(batch_drawing_data && other) noexcept = default;
 
         //-------------------------------------------------------------------------
         void batch_drawing_data::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
@@ -471,26 +498,26 @@ namespace ppp
                 exit(EXIT_FAILURE);
             }
             
-            if (m_batches[m_push_batch].can_add(item->vertex_count(), item->index_count()))
+            if (m_pimpl->batches[m_pimpl->push_batch].can_add(item->vertex_count(), item->index_count()))
             {
-                m_batches[m_push_batch].append(item, color, world);
+                m_pimpl->batches[m_pimpl->push_batch].append(item, color, world);
             }
             else
             {
-                if (m_batches.size() <= m_push_batch + 1)
+                if (m_pimpl->batches.size() <= m_pimpl->push_batch + 1)
                 {
-                    u32 max_vertex_count = m_batches[m_push_batch].max_vertex_count();
-                    u32 max_index_count = m_batches[m_push_batch].max_index_count();
+                    u32 max_vertex_count = m_pimpl->batches[m_pimpl->push_batch].max_vertex_count();
+                    u32 max_index_count = m_pimpl->batches[m_pimpl->push_batch].max_index_count();
             
                     // it might be that this batch does not support textures
-                    s32 max_images = m_batches[m_push_batch].has_reserved_texture_space()
-                        ? m_batches[m_push_batch].max_texture_count()
+                    s32 max_images = m_pimpl->batches[m_pimpl->push_batch].has_reserved_texture_space()
+                        ? m_pimpl->batches[m_pimpl->push_batch].max_texture_count()
                         : -1;
             
-                    m_batches.emplace_back(max_vertex_count, max_index_count, m_layouts, m_layout_count, max_images);
+                    m_pimpl->batches.emplace_back(max_vertex_count, max_index_count, m_pimpl->layouts, m_pimpl->layout_count, max_images);
                 }
             
-                ++m_push_batch;
+                ++m_pimpl->push_batch;
             
                 append(item, color, world);
             }
@@ -499,45 +526,45 @@ namespace ppp
         void batch_drawing_data::reset()
         {
             // We clear everything if we are in immediate mode
-            if (m_buffer_policy == render_buffer_policy::IMMEDIATE)
+            if (m_pimpl->buffer_policy == render_buffer_policy::IMMEDIATE)
             {
-                for (batch& b : m_batches)
+                for (batch& b : m_pimpl->batches)
                 {
                     b.reset();
                 }
 
-                m_push_batch = 0;
+                m_pimpl->push_batch = 0;
             }
 
-            m_draw_batch = 0;
+            m_pimpl->draw_batch = 0;
         }        
         //-------------------------------------------------------------------------
         void batch_drawing_data::release()
         {
-            for (batch& b : m_batches)
+            for (batch& b : m_pimpl->batches)
             {
                 b.reset();
             }
 
-            m_push_batch = 0;
-            m_draw_batch = 0;
+            m_pimpl->push_batch = 0;
+            m_pimpl->draw_batch = 0;
         }
 
         //-------------------------------------------------------------------------
         const batch* batch_drawing_data::first_batch()
         {
-            m_draw_batch = 0;
+            m_pimpl->draw_batch = 0;
 
             return next_batch();
         }
         //-------------------------------------------------------------------------
         const batch* batch_drawing_data::next_batch()
         {
-            if (m_draw_batch < m_batches.size())
+            if (m_pimpl->draw_batch < m_pimpl->batches.size())
             {
-                auto b = &m_batches[m_draw_batch];
+                auto b = &m_pimpl->batches[m_pimpl->draw_batch];
 
-                ++m_draw_batch;
+                ++m_pimpl->draw_batch;
 
                 return b;
             }
@@ -548,7 +575,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool batch_drawing_data::has_drawing_data() const
         {
-            return std::any_of(m_batches.cbegin(), m_batches.cend(), [](const batch& b) { return b.has_data(); });
+            return std::any_of(m_pimpl->batches.cbegin(), m_pimpl->batches.cend(), [](const batch& b) { return b.has_data(); });
         }
     }
 }

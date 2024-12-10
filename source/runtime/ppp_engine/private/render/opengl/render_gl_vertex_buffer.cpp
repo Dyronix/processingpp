@@ -33,7 +33,6 @@ namespace ppp
                 , max_elements_to_set(0)
                 , buffer()
                 , vbo(0)
-                , is_bound(false)
             {
                 auto vertex_size = calculate_total_size_layout(layouts, layout_count);
 
@@ -68,14 +67,12 @@ namespace ppp
             void bind() const
             {
                 glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                is_bound = true;
             }
 
             //-------------------------------------------------------------------------
             void unbind() const
             {
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
-                is_bound = false;
             }
 
             //-------------------------------------------------------------------------
@@ -88,8 +85,6 @@ namespace ppp
             //-------------------------------------------------------------------------
             void submit() const
             {
-                assert(is_bound && "Cannot upload data to an unbound buffer");
-
                 const u64 vertex_buffer_byte_size =  calculate_total_size_layout(layouts, layout_count);
 
                 GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_buffer_byte_size * vertex_count, buffer.data()));
@@ -106,8 +101,6 @@ namespace ppp
             std::vector<u8>                 buffer;
 
             u32                             vbo;
-
-            mutable bool                    is_bound;
         };
 
         //-------------------------------------------------------------------------
@@ -116,6 +109,9 @@ namespace ppp
         {
 
         }
+
+        //-------------------------------------------------------------------------
+        vertex_buffer::~vertex_buffer() = default;
 
         //-------------------------------------------------------------------------
         void vertex_buffer::bind() const

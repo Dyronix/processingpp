@@ -15,6 +15,7 @@ namespace ppp
         {
         public:
             instance_buffer(const attribute_layout* layouts, u64 layout_count, u64 instance_count);
+            ~instance_buffer();
 
         public:
             void                            bind() const;

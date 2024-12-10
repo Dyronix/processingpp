@@ -101,7 +101,7 @@ namespace ppp
            
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
 
-            glm::mat4 world = transform::active_world();
+            glm::mat4 world = transform_stack::active_world();
 
             transform::pop();
 
@@ -191,7 +191,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
 
-            glm::mat4 world = transform::active_world();
+            glm::mat4 world = transform_stack::active_world();
 
             transform::pop();
 
@@ -233,7 +233,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
 
-            glm::mat4 world = transform::active_world();
+            glm::mat4 world = transform_stack::active_world();
 
             transform::pop();
 
@@ -278,7 +278,7 @@ namespace ppp
 
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
 
-            glm::mat4 world = transform::active_world();
+            glm::mat4 world = transform_stack::active_world();
 
             transform::pop();
 

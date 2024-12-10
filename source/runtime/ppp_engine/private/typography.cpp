@@ -107,17 +107,17 @@ namespace ppp
 
                 glm::vec2 center = geometry::rectanglular_center_translation(xpos, ypos, w, h);
 
-                transform::push();
-                transform::translate(glm::vec2(xpos, ypos));
+                transform_stack::push();
+                transform_stack::translate(glm::vec2(xpos, ypos));
                 if (internal::_text_mode == text_mode_type::CORNER)
                 {
-                    transform::translate(glm::vec2(center.x, center.y));
+                    transform_stack::translate(glm::vec2(center.x, center.y));
                 }
-                transform::scale(glm::vec2(w, h));
+                transform_stack::scale(glm::vec2(w, h));
 
                 render::submit_font_item(geom);
 
-                transform::pop();
+                transform_stack::pop();
 
                 // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
                 x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
