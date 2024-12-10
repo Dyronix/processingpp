@@ -30,6 +30,7 @@ namespace ppp
                 , layout_count(layout_count)
                 , instance_count(instance_count)
                 , current_instance_count(0)
+                , max_elements_to_set(0)
                 , buffer()
                 , ibo(0)
                 , is_bound(false)
@@ -145,6 +146,16 @@ namespace ppp
         {
             m_pimpl->current_instance_count += m_pimpl->max_elements_to_set;
             m_pimpl->max_elements_to_set = 0;
+
+            if (m_pimpl->instance_count == m_pimpl->current_instance_count)
+            {
+                s32 new_cap = m_pimpl->buffer.capacity() * 2;
+                u64 layout_size = calculate_total_size_layout(layouts(), layout_count());
+
+                m_pimpl->buffer.reserve(new_cap);
+
+                glBufferData(GL_ARRAY_BUFFER, new_cap * layout_size, nullptr, GL_DYNAMIC_DRAW); // Allocate new GPU memory
+            }
         }
 
         //-------------------------------------------------------------------------

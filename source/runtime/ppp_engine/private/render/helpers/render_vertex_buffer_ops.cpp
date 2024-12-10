@@ -6,6 +6,7 @@ namespace ppp
     {
         namespace vertex_buffer_ops
         {
+            //-------------------------------------------------------------------------
             vertex_attribute_addition_scope::vertex_attribute_addition_scope(vertex_buffer& vb, u64 data_count)
                 : m_vertex_buffer(vb)
                 , m_active(true)
@@ -16,6 +17,7 @@ namespace ppp
                 m_vertex_buffer.open(data_count);
             }
 
+            //-------------------------------------------------------------------------
             vertex_attribute_addition_scope::~vertex_attribute_addition_scope() 
             {
                 if (m_active) 
@@ -24,6 +26,7 @@ namespace ppp
                 }
             }
 
+            //-------------------------------------------------------------------------
             void vertex_attribute_addition_scope::close() 
             {
                 if (m_active) 

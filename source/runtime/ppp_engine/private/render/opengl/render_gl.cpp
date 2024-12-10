@@ -434,8 +434,7 @@ namespace ppp
                         internal::_custom_geometry_instance_renderers.emplace(shader_tag, std::move(renderer));
                     }
 
-                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_instance(topology, item);
-                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(item->id(), brush::fill(), transform_stack::active_world());
+                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
                 }
             }
             //-------------------------------------------------------------------------
@@ -481,8 +480,7 @@ namespace ppp
                         internal::_custom_geometry_instance_renderers.emplace(shader_tag, std::move(renderer));
                     }
 
-                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_instance(topology_type::TRIANGLES, item);
-                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(item->id(), brush::tint(), transform_stack::active_world());
+                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform_stack::active_world());
                 }
             }
         }
@@ -960,8 +958,7 @@ namespace ppp
                         return;
                     }
 
-                    internal::_primitive_instance_renderer->append_instance(topology, item);
-                    internal::_primitive_instance_renderer->append_drawing_data(item->id(), brush::fill(), transform_stack::active_world());
+                    internal::_primitive_instance_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
                 }
             }
         }
@@ -1022,8 +1019,7 @@ namespace ppp
                         return;
                     }
 
-                    internal::_image_instance_renderer->append_instance(topology_type::TRIANGLES, item);
-                    internal::_image_instance_renderer->append_drawing_data(item->id(), brush::fill(), transform_stack::active_world());
+                    internal::_image_instance_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
                 }
             }
         }

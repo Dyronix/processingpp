@@ -23,7 +23,13 @@ namespace ppp
         namespace internal
         {
             //-------------------------------------------------------------------------
-            static constexpr s32 _max_texture_units = 8;
+            struct instance_data
+            {
+                glm::vec4 color;
+                glm::mat4 world;
+            };
+
+            static std::vector<u8> _intermediate_buffer(sizeof(instance_data));
 
             //-------------------------------------------------------------------------
             static f32 _wireframe_linewidth = 3.0f;
@@ -72,15 +78,6 @@ namespace ppp
 
                 log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
                 return GL_UNSIGNED_INT;
-            }
-
-            //-------------------------------------------------------------------------
-            u32 max_textures()
-            {
-                s32 max_texture_units = 0;
-                GL_CALL(glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units));
-
-                return std::min(max_texture_units, internal::_max_texture_units);
             }
         }
 
@@ -171,12 +168,15 @@ namespace ppp
         {
             if (m_instance_data_map.find(topology) == std::cend(m_instance_data_map))
             {
-                s32 max_textures = has_texture_support() ? internal::max_textures() : -1;
-
-                m_instance_data_map.emplace(topology, instance_drawing_data(max_textures, layouts(), layout_count(), m_instance_layouts, m_instance_layout_count));
+                m_instance_data_map.emplace(topology, instance_drawing_data(layouts(), layout_count(), m_instance_layouts, m_instance_layout_count, m_buffer_policy));
             }
 
-            m_instance_data_map.at(topology).append(item, color, world);
+            memcpy(internal::_intermediate_buffer.data() + offsetof(internal::instance_data, color), &color, sizeof(glm::vec4));
+            memcpy(internal::_intermediate_buffer.data() + offsetof(internal::instance_data, world), &world, sizeof(glm::mat4));
+
+            m_instance_data_map.at(topology).append(item, internal::_intermediate_buffer.data());
+
+            memset(internal::_intermediate_buffer.data(), 0, sizeof(internal::instance_data));
         }
 
         //-------------------------------------------------------------------------
@@ -312,11 +312,11 @@ namespace ppp
 
                     inst->bind();
 
-                    shaders::push_uniform_array(shader_program(), "s_image", inst->sampler_count(), inst->samplers());
+                    shaders::push_uniform_array(shader_program(), "s_image", inst->active_sampler_count(), inst->samplers());
 
                     s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                    for (int i = 0; i < inst->texture_count(); ++i)
+                    for (int i = 0; i < inst->active_texture_count(); ++i)
                     {
                         GL_CALL(glActiveTexture(GL_TEXTURE0 + (offset * i)));
                         GL_CALL(glBindTexture(GL_TEXTURE_2D, inst->textures()[i]));

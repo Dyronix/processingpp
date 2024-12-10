@@ -8,6 +8,7 @@
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
+#include "render/helpers/render_instance_buffer_ops.h"
 
 #include "resources/texture_registry.h"
 
@@ -93,37 +94,17 @@ namespace ppp
             //-------------------------------------------------------------------------
             bool has_data() const
             {
-                return m_vertex_buffer.active_vertex_count() > 0 || m_index_buffer.active_index_count() > 0;
+                return (m_vertex_buffer.active_vertex_count() > 0 || m_index_buffer.active_index_count() > 0) && m_instance_buffer.active_instance_count() > 0;
             }
 
             //-------------------------------------------------------------------------
             void add_instance_data(const void* instance_data_ptr)
             {
-                //m_instance_buffer.bind();
-
-                //if (m_instance_buffer.size() == m_instance_buffer.capacity())
-                //{
-                //    s32 new_cap = m_instance_buffer.capacity() * 2;
-
-                //    m_instance_buffer.reserve(new_cap);
-
-                //    glBufferData(GL_ARRAY_BUFFER, new_cap * sizeof(instance_data), nullptr, GL_DYNAMIC_DRAW); // Allocate new GPU memory
-                //}
-
-                //instance_data inst_data = { world, color };
-
-                //glBufferSubData(GL_ARRAY_BUFFER, m_instance_data_offset, sizeof(instance_data), (void*)&inst_data);
-                //m_instance_buffer.unbind();
-
-                //m_instance_buffer.push_back(inst_data);
-                //m_instance_data_offset += sizeof(instance_data);
+                copy_instance_data(instance_data_ptr);
             }
             //-------------------------------------------------------------------------
             void add_vertices(const irender_item* item)
             {
-                s32 start_index = m_vertex_buffer.active_vertex_count();
-                s32 end_index = start_index + item->vertex_count();
-
                 copy_vertex_data(item);
             }
             //-------------------------------------------------------------------------
@@ -208,6 +189,13 @@ namespace ppp
                 assert(sizeof(item->faces()[0][0]) == sizeof(index) && "different index size was used");
 
                 index_buffer_ops::set_index_data(ias, item->faces().data());
+            }
+            //-------------------------------------------------------------------------
+            void copy_instance_data(const void* data_ptr)
+            {
+                instance_buffer_ops::instance_addition_scope ias(m_instance_buffer, 1);
+                
+                instance_buffer_ops::set_instance_data(ias, data_ptr);
             }
 
             //-------------------------------------------------------------------------

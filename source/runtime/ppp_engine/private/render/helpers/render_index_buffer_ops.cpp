@@ -6,6 +6,7 @@ namespace ppp
     {
         namespace index_buffer_ops
         {
+            //-------------------------------------------------------------------------
             index_addition_scope::index_addition_scope(index_buffer& vb, u64 data_count)
                 : m_index_buffer(vb)
                 , m_active(true)
@@ -16,6 +17,7 @@ namespace ppp
                 m_index_buffer.open(data_count);
             }
 
+            //-------------------------------------------------------------------------
             index_addition_scope::~index_addition_scope() 
             {
                 if (m_active) 
@@ -24,6 +26,7 @@ namespace ppp
                 }
             }
 
+            //-------------------------------------------------------------------------
             void index_addition_scope::close() 
             {
                 if (m_active) 
@@ -38,7 +41,7 @@ namespace ppp
             {
                 index_buffer& ib = ias.get_index_buffer();
 
-                memcpy(ib.data() + ib.active_index_count(), data_ptr, sizeof(index) * ias.get_max_elemenst_to_set());
+                memcpy(ib.data() + (ib.active_index_count() * sizeof(index)), data_ptr, sizeof(index) * ias.get_max_elemenst_to_set());
             }
 
             //-------------------------------------------------------------------------
