@@ -274,8 +274,11 @@ namespace ppp
 
             //-------------------------------------------------------------------------
             ~impl()
-            {   
-                GL_CALL(glDeleteVertexArrays(1, &m_vao));
+            {
+                if (m_vao)
+                {
+                    GL_CALL(glDeleteVertexArrays(1, &m_vao));
+                }
             }
 
             
@@ -295,6 +298,14 @@ namespace ppp
             void submit() const
             {
                 m_buffer_manager->submit();
+            }
+
+            //-------------------------------------------------------------------------
+            void release()
+            {
+                GL_CALL(glDeleteVertexArrays(1, &m_vao));
+
+                m_vao = 0;
             }
 
             //-------------------------------------------------------------------------
@@ -396,6 +407,8 @@ namespace ppp
         {
             m_pimpl->m_buffer_manager->release();
             m_pimpl->m_texture_registry->release();
+
+            m_pimpl->release();
         }
 
         //-------------------------------------------------------------------------
@@ -544,6 +557,7 @@ namespace ppp
             for (batch& b : m_pimpl->batches)
             {
                 b.reset();
+                b.release();
             }
 
             m_pimpl->push_batch = 0;

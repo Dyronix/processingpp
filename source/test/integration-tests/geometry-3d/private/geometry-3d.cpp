@@ -14,7 +14,7 @@
 
 #define PPP_CHECK_TEST_FRAME 1
 #define PPP_SAVE_TEST_FRAME 0
-#define PPP_CLOSE_AFTER_X_FRAMES 1
+#define PPP_CLOSE_AFTER_X_FRAMES 0
 
 namespace ppp
 {

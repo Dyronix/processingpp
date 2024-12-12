@@ -7,8 +7,8 @@ namespace ppp
         namespace index_buffer_ops
         {
             //-------------------------------------------------------------------------
-            index_addition_scope::index_addition_scope(index_buffer& vb, u64 data_count)
-                : m_index_buffer(vb)
+            index_addition_scope::index_addition_scope(index_buffer& ib, u64 data_count)
+                : m_index_buffer(ib)
                 , m_active(true)
                 , m_max_elements_to_set(data_count)
             {
@@ -55,7 +55,7 @@ namespace ppp
             {
                 for (u64 i = start_index; i < end_index; ++i)
                 {
-                    index* index_ptr = reinterpret_cast<index*>(ib.data() + i);
+                    index* index_ptr = reinterpret_cast<index*>(ib.data() + (i * sizeof(index)));
                     transform_func(*index_ptr);
                 }
             }
