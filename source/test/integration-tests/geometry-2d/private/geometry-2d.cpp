@@ -12,7 +12,7 @@
 #include "camera.h"
 
 #define PPP_CHECK_TEST_FRAME 1
-#define PPP_CLOSE_AFTER_X_FRAMES 1
+#define PPP_CLOSE_AFTER_X_FRAMES 0
 
 // Demo of shapes and images with stroke and inner stroke
 namespace ppp

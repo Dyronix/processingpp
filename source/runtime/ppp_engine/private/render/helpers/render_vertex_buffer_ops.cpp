@@ -12,7 +12,7 @@ namespace ppp
                 , m_active(true)
                 , m_max_elements_to_set(data_count)
             {
-                assert(data_count < m_vertex_buffer.vertex_count() - m_vertex_buffer.active_vertex_count() && "Vertex buffer overflow");
+                assert(data_count <= m_vertex_buffer.vertex_count() - m_vertex_buffer.active_vertex_count() && "Vertex buffer overflow");
 
                 m_vertex_buffer.open(data_count);
             }

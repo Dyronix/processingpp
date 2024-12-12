@@ -25,7 +25,7 @@ namespace ppp
         struct instance_buffer::impl
         {
             //-------------------------------------------------------------------------
-            impl(const attribute_layout* layouts, u64 layout_count, u64 instance_count)
+            impl(u64 instance_count, const attribute_layout* layouts, u64 layout_count, u64 layout_id_offset)
                 : layouts(layouts)
                 , layout_count(layout_count)
                 , instance_count(instance_count)
@@ -42,16 +42,24 @@ namespace ppp
                 GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, ibo));
                 GL_CALL(glBufferData(GL_ARRAY_BUFFER, instance_count * instance_size, nullptr, GL_DYNAMIC_DRAW)); // Allocate initial size
 
+                u64 offset = layout_id_offset;
+                u64 attribute_index = 0;
                 for (u64 i = 0; i < layout_count; ++i)
                 {
                     const attribute_layout& layout = layouts[i];
 
                     for (s32 j = 0; j < layout.span; ++j)
                     {
-                        GL_CALL(glEnableVertexAttribArray(i + j));
-                        GL_CALL(glVertexAttribPointer(i + j, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset));
+                        attribute_index = offset + i + j;
+
+                        GL_CALL(glEnableVertexAttribArray(attribute_index));
+                        GL_CALL(glVertexAttribPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset));
                     }
+
+                    offset = attribute_index;
                 }
+
+                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
             }
 
             //-------------------------------------------------------------------------
@@ -87,6 +95,8 @@ namespace ppp
             {
                 const u64 instance_size = calculate_total_size_layout(layouts, layout_count);
 
+                bind();
+
                 GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, instance_size * instance_count, buffer.data()));
             }
 
@@ -104,8 +114,8 @@ namespace ppp
         };
 
         //-------------------------------------------------------------------------
-        instance_buffer::instance_buffer(const attribute_layout* layouts, u64 layout_count, u64 vertex_count)
-            : m_pimpl(std::make_unique<impl>(layouts, layout_count, vertex_count))
+        instance_buffer::instance_buffer(u64 instance_count, const attribute_layout* layouts, u64 layout_count, u64 layout_id_offset)
+            : m_pimpl(std::make_unique<impl>(instance_count, layouts, layout_count, layout_id_offset))
         {
 
         }

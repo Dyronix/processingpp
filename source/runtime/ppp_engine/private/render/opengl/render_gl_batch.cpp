@@ -82,7 +82,7 @@ namespace ppp
             buffer_manager(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
                 : m_max_vertex_count(size_vertex_buffer)
                 , m_max_index_count(size_index_buffer)
-                , m_vertex_buffer(layouts, layout_count, size_vertex_buffer)
+                , m_vertex_buffer(size_vertex_buffer, layouts, layout_count)
                 , m_index_buffer(size_index_buffer)
             {
                 assert(size_vertex_buffer > 0);
@@ -132,7 +132,8 @@ namespace ppp
             {
                 assert(!item->faces().empty());
 
-                s32 start_index = m_index_buffer.active_index_count();
+                auto index_buffer = &m_index_buffer;
+                s32 start_index = index_buffer->active_index_count();
                 s32 end_index = start_index + item->index_count();
 
                 copy_index_data(item);
@@ -489,7 +490,6 @@ namespace ppp
             : batch_drawing_data(size_vertex_buffer, size_index_buffer, -1, layouts, layout_count, render_buffer_policy)
         {
         }
-
         //-------------------------------------------------------------------------
         batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
             : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, size_textures, layouts, layout_count, render_buffer_policy))

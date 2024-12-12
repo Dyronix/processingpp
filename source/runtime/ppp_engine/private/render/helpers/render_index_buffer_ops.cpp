@@ -12,7 +12,7 @@ namespace ppp
                 , m_active(true)
                 , m_max_elements_to_set(data_count)
             {
-                assert(data_count < m_index_buffer.index_count() - m_index_buffer.active_index_count() && "index buffer overflow");
+                assert(data_count <= m_index_buffer.index_count() - m_index_buffer.active_index_count() && "index buffer overflow");
 
                 m_index_buffer.open(data_count);
             }

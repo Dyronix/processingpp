@@ -85,9 +85,9 @@ namespace ppp
         public:
             //-------------------------------------------------------------------------
             buffer_manager(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
-                : m_vertex_buffer(layouts, layout_count, instance->vertex_count())
+                : m_vertex_buffer(instance->vertex_count(), layouts, layout_count)
                 , m_index_buffer(instance->index_count())
-                , m_instance_buffer(instance_layouts, instance_layout_count, internal::s_instance_data_initial_capacity)
+                , m_instance_buffer(internal::s_instance_data_initial_capacity, instance_layouts, instance_layout_count, layout_count)
             {
 
             }
@@ -236,7 +236,7 @@ namespace ppp
                 assert(instance_layouts != nullptr);
                 assert(instance_layout_count > 0);
 
-                assert(instance->vertex_count() == 0 && "render item does not have vertices");
+                assert(instance->vertex_count() > 0 && "render item does not have vertices");
 
                 // Allocate VAO
                 GL_CALL(glGenVertexArrays(1, &m_vao));
@@ -476,7 +476,8 @@ namespace ppp
             auto it = std::find_if(std::begin(m_pimpl->instances), std::end(m_pimpl->instances),
                 [item](const instance& inst)
             {
-                return inst.instance_id() == item->id();
+                bool is_equal = inst.instance_id() == item->id();
+                return is_equal;
             });
 
             if (it == std::cend(m_pimpl->instances))
@@ -538,6 +539,8 @@ namespace ppp
 
                 return b;
             }
+
+            return nullptr;
         }
 
         //-------------------------------------------------------------------------

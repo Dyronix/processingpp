@@ -13,6 +13,7 @@ namespace ppp
         class index_buffer::impl
         {
         public:
+            //-------------------------------------------------------------------------
             impl(u64 count)
                 : index_count(count)
                 , current_index_count(0)
@@ -27,26 +28,28 @@ namespace ppp
                 GL_CALL(glGenBuffers(1, &ebo));
                 GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
                 GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW));
+                GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
             }
 
+            //-------------------------------------------------------------------------
             ~impl()
             {
                 if (ebo)
                 {
-                    glDeleteBuffers(1, &ebo);
+                    GL_CALL(glDeleteBuffers(1, &ebo));
                 }
             }
 
             //-------------------------------------------------------------------------
             void bind() const
             {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+                GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
             }
 
             //-------------------------------------------------------------------------
             void unbind() const
             {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+                GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
             }
 
             //-------------------------------------------------------------------------
@@ -54,13 +57,14 @@ namespace ppp
             {
                 const u64 index_buffer_byte_size = sizeof(index) * index_count;
 
+                bind();
                 GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index_buffer_byte_size, buffer.data()));
             }
 
             //-------------------------------------------------------------------------
             void free()
             {
-                glDeleteBuffers(1, &ebo);
+                GL_CALL(glDeleteBuffers(1, &ebo));
                 ebo = 0;
             }
 

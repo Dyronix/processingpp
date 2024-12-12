@@ -14,7 +14,7 @@ namespace ppp
         class instance_buffer
         {
         public:
-            instance_buffer(const attribute_layout* layouts, u64 layout_count, u64 instance_count);
+            instance_buffer(u64 instance_count, const attribute_layout* layouts, u64 layout_count, u64 layout_id_offset = 0);
             ~instance_buffer();
 
         public:

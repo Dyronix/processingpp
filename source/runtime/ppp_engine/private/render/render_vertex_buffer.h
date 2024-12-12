@@ -14,7 +14,7 @@ namespace ppp
         class vertex_buffer
         {
         public:
-            vertex_buffer(const attribute_layout* layouts, u64 layout_count, u64 vertex_count);
+            vertex_buffer(u64 vertex_count, const attribute_layout* layouts, u64 layout_count, u64 layout_id_offset = 0);
             ~vertex_buffer();
 
         public:
