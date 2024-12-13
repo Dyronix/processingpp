@@ -177,7 +177,7 @@ namespace ppp
 
             GL_CALL(glUseProgram(shader_program()));
 
-            shaders::push_uniform(shader_program(), "u_worldviewproj", vp);
+            shaders::push_uniform(shader_program(), "u_view_proj", vp);
 
             for (auto& pair : m_drawing_data_map)
             {

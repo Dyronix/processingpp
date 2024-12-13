@@ -3,7 +3,7 @@
 layout(points) in;
 layout(triangle_strip, max_vertices = 24) out;
 
-uniform mat4 u_worldviewproj;
+uniform mat4 u_view_proj;
 
 uniform int u_amplitude_x;
 uniform int u_amplitude_z;
@@ -34,7 +34,7 @@ void create_vertex(vec3 offset)
     vec4 actual_offset = vec4(offset * u_cube_size, 0.0);
     vec4 world_position = gl_in[0].gl_Position + actual_offset + vec4(vec3(0.0, y, 0.0), 1.0f);
     
-    gl_Position = u_worldviewproj * world_position;
+    gl_Position = u_view_proj * world_position;
     vec3 lerped_color = mix(vec3(0.0, 0.0, 1.0), vec3(1.0, 0.0, 0.0), color_factor);
     v_frag_color = vec4(lerped_color, 1.0) * v_color[0];
     

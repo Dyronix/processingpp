@@ -418,7 +418,7 @@ namespace ppp
                     layout (location = 0) in vec3 a_position;						                \n\
                     layout (location = 1) in vec4 a_color;							                \n\
                                                                                                     \n\
-                    uniform mat4 u_worldviewproj;                                                   \n\
+                    uniform mat4 u_view_proj;                                                   \n\
                     uniform bool u_wireframe;                                                       \n\
                     uniform vec4 u_wireframe_color;                                                 \n\
                                                                                                     \n\
@@ -427,7 +427,7 @@ namespace ppp
                     void main()														                \n\
                     {																                \n\
                         v_color = u_wireframe ? u_wireframe_color : a_color;	                    \n\
-                        gl_Position = u_worldviewproj * vec4(a_position, 1.0);  	                \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);  	                \n\
                     }";
 
                 return unlit_vs_source;
@@ -457,7 +457,7 @@ namespace ppp
                     layout (location = 1) in mat4 a_inst_mat_model;							        \n\
                     layout (location = 5) in vec4 a_inst_color;							            \n\
                                                                                                     \n\
-                    uniform mat4 u_worldviewproj;                                                   \n\
+                    uniform mat4 u_view_proj;                                                   \n\
                     uniform bool u_wireframe;                                                       \n\
                     uniform vec4 u_wireframe_color;                                                 \n\
                                                                                                     \n\
@@ -466,7 +466,7 @@ namespace ppp
                     void main()														                \n\
                     {																                \n\
                         v_color = u_wireframe ? u_wireframe_color : a_inst_color;                   \n\
-                        gl_Position = u_worldviewproj * a_inst_mat_model * vec4(a_position, 1.0);   \n\
+                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);   \n\
                     }";
 
                 return unlit_vs_source;
@@ -482,7 +482,7 @@ namespace ppp
                     layout (location = 2) in vec4 a_tint_color;                                     \n\
                     layout (location = 3) in float a_texture_idx;                                   \n\
                                                                                                     \n\
-                    uniform mat4 u_worldviewproj;                                                   \n\
+                    uniform mat4 u_view_proj;                                                   \n\
                     uniform bool u_wireframe;                                                       \n\
                     uniform vec4 u_wireframe_color;                                                 \n\
                                                                                                     \n\
@@ -495,7 +495,7 @@ namespace ppp
                         v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;	            \n\
                         v_texture = a_texture;                                                      \n\
                         v_texture_idx = a_texture_idx;                                              \n\
-                        gl_Position = u_worldviewproj * vec4(a_position, 1.0);                      \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);                      \n\
                     }";
 
                 return unlit_texture_vs_source;
@@ -538,7 +538,7 @@ namespace ppp
                     layout (location = 2) in vec4 a_tint_color;                                                 \n\
                     layout (location = 3) in float a_texture_idx;                                               \n\
                                                                                                                 \n\
-                    uniform mat4 u_worldviewproj;                                                               \n\
+                    uniform mat4 u_view_proj;                                                               \n\
                     uniform bool u_wireframe;                                                                   \n\
                     uniform vec4 u_wireframe_color;                                                             \n\
                                                                                                                 \n\
@@ -551,7 +551,7 @@ namespace ppp
                         v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;                          \n\
                         v_texture = a_texture;                                                                  \n\
                         v_texture_idx = a_texture_idx;                                                          \n\
-                        gl_Position = u_worldviewproj * vec4(a_position, 1.0);                                  \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);                                  \n\
                     }";
 
                 return unlit_font_vs_source;
@@ -590,7 +590,7 @@ namespace ppp
                     layout (location = 3) in vec4 a_tint_color;                                 \n\
                     layout (location = 4) in float a_texture_idx;                               \n\
                                                                                                 \n\
-                    uniform mat4 u_worldviewproj;                                               \n\
+                    uniform mat4 u_view_proj;                                               \n\
                                                                                                 \n\
                     out vec4 v_tint_color;                                                      \n\
                     out vec2 v_texture;                                                         \n\
@@ -603,7 +603,7 @@ namespace ppp
                         v_texture = a_texture;                                                  \n\
                         v_normal = a_normal;                                                    \n\
                         v_texture_idx = a_texture_idx;                                          \n\
-                        gl_Position = u_worldviewproj * vec4(a_position, 1.0);                  \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);                  \n\
                     }";
 
                 return unlit_normal_vs_source;
@@ -648,7 +648,7 @@ namespace ppp
                     layout (location = 3) in vec4 a_tint_color;                                 \n\
                     layout (location = 4) in float a_texture_idx;                               \n\
                                                                                                 \n\
-                    uniform mat4 u_worldviewproj;                                               \n\
+                    uniform mat4 u_view_proj;                                               \n\
                                                                                                 \n\
                     out vec4 v_tint_color;                                                      \n\
                     out vec2 v_texture;                                                         \n\
@@ -664,7 +664,7 @@ namespace ppp
                         v_normal = a_normal;                                                    \n\
                         v_texture_idx = a_texture_idx;                                          \n\
                                                                                                 \n\
-                        gl_Position = u_worldviewproj * vec4(a_position, 1.0);                  \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);                  \n\
                     }";
 
                 return unlit_specular_vs_source;

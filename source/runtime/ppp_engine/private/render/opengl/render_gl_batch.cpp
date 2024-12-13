@@ -75,11 +75,11 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         // Buffer Manager
-        class buffer_manager
+        class batch_buffer_manager
         {
         public:
             //-------------------------------------------------------------------------
-            buffer_manager(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
+            batch_buffer_manager(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
                 : m_max_vertex_count(size_vertex_buffer)
                 , m_max_index_count(size_index_buffer)
                 , m_vertex_buffer(size_vertex_buffer, layouts, layout_count)
@@ -267,7 +267,7 @@ namespace ppp
                 GL_CALL(glGenVertexArrays(1, &m_vao));
                 GL_CALL(glBindVertexArray(m_vao));
 
-                m_buffer_manager = std::make_unique<buffer_manager>(size_vertex_buffer, size_index_buffer, layouts, layout_count);
+                m_buffer_manager = std::make_unique<batch_buffer_manager>(size_vertex_buffer, size_index_buffer, layouts, layout_count);
                 m_texture_registry = std::make_unique<texture_registry>(size_textures);
 
                 GL_CALL(glBindVertexArray(0));
@@ -330,7 +330,7 @@ namespace ppp
                 }
             }
 
-            std::unique_ptr<buffer_manager> m_buffer_manager;
+            std::unique_ptr<batch_buffer_manager> m_buffer_manager;
             std::unique_ptr<texture_registry> m_texture_registry;
 
             u32 m_vao;

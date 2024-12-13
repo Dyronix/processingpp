@@ -43,7 +43,7 @@ namespace ppp
                 const attribute_layout* element_layout = vb.find_layout(type);
                 if (!element_layout)
                 {
-                    log::error("Tag not found in layout!");
+                    log::error("Attribute type not found in layout: {}", conversions::to_string(type));
                     return;
                 }
 
@@ -66,7 +66,7 @@ namespace ppp
                 const attribute_layout* element_layout = vb.find_layout(type);
                 if (!element_layout)
                 {
-                    log::error("Tag not found in layout!");
+                    log::error("Attribute type not found in layout: {}", conversions::to_string(type));
                     return;
                 }
 

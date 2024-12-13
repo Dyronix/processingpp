@@ -80,11 +80,11 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         // Buffer Manager
-        class buffer_manager
+        class instance_buffer_manager
         {
         public:
             //-------------------------------------------------------------------------
-            buffer_manager(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+            instance_buffer_manager(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
                 : m_vertex_buffer(instance->vertex_count(), layouts, layout_count)
                 , m_index_buffer(instance->index_count())
                 , m_instance_buffer(internal::s_instance_data_initial_capacity, instance_layouts, instance_layout_count, layout_count)
@@ -145,9 +145,15 @@ namespace ppp
 
             //-------------------------------------------------------------------------
             void reset()
-            {
-                m_vertex_buffer.reset();
-                m_index_buffer.reset();
+            {   
+                // We do not reset the vertex and index buffer as we need to retain the information 
+                //  we stored when we created this instance.
+                // If we reset them the "has_data" function thinks there is no available vertex 
+                //  ( and/or index ) information so it won't draw anything.
+                // 
+                // m_vertex_buffer.reset();
+                // m_index_buffer.reset();
+
                 m_instance_buffer.reset();
             }
             //-------------------------------------------------------------------------
@@ -177,10 +183,6 @@ namespace ppp
                 if (m_vertex_buffer.has_layout(attribute_type::POSITION)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::POSITION, item->vertex_positions().data());
                 if (m_vertex_buffer.has_layout(attribute_type::NORMAL)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::NORMAL, item->vertex_normals().data());
                 if (m_vertex_buffer.has_layout(attribute_type::TEXCOORD)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::TEXCOORD, item->vertex_uvs().data());
-
-                // TODO: Change this, we should not allocated per vertex color data if we will not use it
-                glm::vec4 color_white = { 1.0f, 1.0f, 1.0f, 1.0f };
-                vertex_buffer_ops::map_attribute_data(vaas, attribute_type::COLOR, (void*)&color_white[0]);
             }
             //-------------------------------------------------------------------------
             void copy_index_data(const irender_item* item)
@@ -228,7 +230,8 @@ namespace ppp
         {
         public:
             impl(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, s32 size_textures)
-                :m_instance_count(instance->id())
+                :m_instance_id(instance->id())
+                ,m_instance_count(0)
             {
                 assert(layouts != nullptr);
                 assert(layout_count > 0);
@@ -242,7 +245,7 @@ namespace ppp
                 GL_CALL(glGenVertexArrays(1, &m_vao));
                 GL_CALL(glBindVertexArray(m_vao));
 
-                m_buffer_manager = std::make_unique<buffer_manager>(instance, layouts, layout_count, instance_layouts, instance_layout_count);
+                m_buffer_manager = std::make_unique<instance_buffer_manager>(instance, layouts, layout_count, instance_layouts, instance_layout_count);
                 m_texture_registry = std::make_unique<texture_registry>(size_textures);
 
                 if (instance->index_count() != 0)
@@ -321,7 +324,7 @@ namespace ppp
             u64 m_instance_id = 0;
             s32 m_instance_count = 0;
 
-            std::unique_ptr<buffer_manager> m_buffer_manager;
+            std::unique_ptr<instance_buffer_manager> m_buffer_manager;
             std::unique_ptr<texture_registry> m_texture_registry;
 
             u32 m_vao;
@@ -376,6 +379,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         void instance::reset()
         {
+            m_pimpl->m_instance_count = 0;
+
             m_pimpl->m_buffer_manager->reset();
             m_pimpl->m_texture_registry->reset();
         }
@@ -512,9 +517,10 @@ namespace ppp
         //-------------------------------------------------------------------------
         void instance_drawing_data::release()
         {
-            for (instance& b : m_pimpl->instances)
+            for (instance& i : m_pimpl->instances)
             {
-                b.reset();
+                i.reset();
+                i.release();
             }
 
             m_pimpl->draw_instance = 0;

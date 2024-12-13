@@ -14,7 +14,7 @@
 namespace ppp
 {
     namespace render
-    {
+    {       
         //-------------------------------------------------------------------------
         enum class attribute_type
         {
@@ -103,5 +103,32 @@ namespace ppp
 
             virtual const u64 id() const = 0;
         };
+
+        namespace conversions
+        {
+            //-------------------------------------------------------------------------
+            inline const char* to_string(attribute_type type)
+            {
+                static const std::string s_attribute_type_position = "POSITION";
+                static const std::string s_attribute_type_normal = "NORMAL";
+                static const std::string s_attribute_type_texcoord = "TEXCOORD";
+                static const std::string s_attribute_type_color = "COLOR";
+                static const std::string s_attribute_type_diffuse_texture_index = "DIFFUSE TEXTURE INDEX";
+                static const std::string s_attribute_type_world_matrix = "WORLD MATRIX";
+
+                switch (type)
+                {
+                case attribute_type::POSITION:                 return s_attribute_type_position.data();
+                case attribute_type::NORMAL:                   return s_attribute_type_normal.data();
+                case attribute_type::TEXCOORD:                 return s_attribute_type_texcoord.data();
+                case attribute_type::COLOR:                    return s_attribute_type_color.data();
+                case attribute_type::DIFFUSE_TEXTURE_INDEX:    return s_attribute_type_diffuse_texture_index.data();
+                case attribute_type::WORLD_MATRIX:             return s_attribute_type_world_matrix.data();
+                default:
+                    assert(false && "Unknown attribute type");
+                    return {};
+                }
+            }
+        }
     }
 }

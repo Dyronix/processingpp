@@ -301,7 +301,7 @@ namespace ppp
                     1,
                     false,
                     sizeof(world_color_format),
-                    3 * sizeof(float)
+                    4 * 4 * sizeof(float)
                 }
             };
 
