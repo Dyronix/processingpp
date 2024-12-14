@@ -9,6 +9,12 @@ namespace ppp
 {
     namespace material
     {
+        namespace internal
+        {
+            //-------------------------------------------------------------------------
+            std::unordered_map<u32, u32> _active_textures = {};
+        }
+
         shader_program::shader_program()
             :id(-1)
         {}
@@ -61,7 +67,32 @@ namespace ppp
 
         void texture(unsigned int image_id, unsigned int texture_channel)
         {
+            internal::_active_textures[texture_channel] = image_id;
+        }
 
+        void reset_texture(unsigned int texture_channel)
+        {
+            if (internal::_active_textures.find(texture_channel) == std::cend(internal::_active_textures))
+            {
+                return;
+            }
+
+            internal::_active_textures[texture_channel] = -1;
+        }
+
+        void reset_textures()
+        {
+            internal::_active_textures.clear();
+        }
+
+        unsigned int get_texture(unsigned int texture_channel)
+        {
+            if (internal::_active_textures.find(texture_channel) == std::cend(internal::_active_textures))
+            {
+                return -1;
+            }
+
+            return internal::_active_textures.at(texture_channel);
         }
 
         void shader(const std::string& tag)
@@ -69,7 +100,7 @@ namespace ppp
             render::push_active_shader(tag, render::vertex_type::POSITION_TEXCOORD_NORMAL_COLOR);
         }
         
-        void reset()
+        void reset_shader()
         {
             render::push_reset_shader();
         }

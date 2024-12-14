@@ -21,6 +21,9 @@ namespace ppp
         public:
             geometry(const std::string& id, bool smooth_normals, const geometry_creation_fn& creation_fn);
 
+            bool has_texture_id(render::texture_id id) const override;
+            bool has_smooth_normals() const override;
+
             u64 vertex_count() const override;
             u64 index_count() const override;
             u64 texture_count() const override;

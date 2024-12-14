@@ -90,6 +90,9 @@ namespace ppp
         class irender_item
         {
         public:
+            virtual bool has_texture_id(render::texture_id id) const = 0;
+            virtual bool has_smooth_normals() const = 0;
+
             virtual u64 vertex_count() const = 0;
             virtual u64 index_count() const = 0;
             virtual u64 texture_count() const = 0;

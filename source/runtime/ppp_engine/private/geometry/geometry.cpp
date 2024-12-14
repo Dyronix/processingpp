@@ -53,6 +53,22 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        bool geometry::has_texture_id(render::texture_id id) const
+        {
+            return std::find_if(std::cbegin(m_texture_ids), std::cend(m_texture_ids),
+                [id](const render::texture_id other)
+            {
+                return id == other;
+            }) != std::cend(m_texture_ids);
+        }
+
+        //-------------------------------------------------------------------------
+        bool geometry::has_smooth_normals() const
+        {
+            return m_smooth_normals;
+        }
+
+        //-------------------------------------------------------------------------
         u64 geometry::vertex_count() const
         {
             return m_vertex_positions.size();
