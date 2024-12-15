@@ -994,7 +994,14 @@ namespace ppp
                         return;
                     }
 
-                    internal::_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
+                    if (item->texture_ids().empty())
+                    {
+                        internal::_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
+                    }
+                    else
+                    {
+                        internal::_image_batch_renderer->append_drawing_data(topology, item, brush::tint(), transform_stack::active_world());
+                    }
                 }
             }
             else
@@ -1012,7 +1019,14 @@ namespace ppp
                         return;
                     }
 
-                    internal::_primitive_instance_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
+                    if (item->texture_ids().empty())
+                    {
+                        internal::_primitive_instance_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
+                    }
+                    else
+                    {
+                        internal::_image_instance_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
+                    }
                 }
             }
         }

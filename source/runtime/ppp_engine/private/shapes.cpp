@@ -1,5 +1,6 @@
 #include "shapes.h"
 #include "transform.h"
+#include "material.h"
 
 #include "render/render.h"
 #include "render/render_types.h"
@@ -39,6 +40,23 @@ namespace ppp
     {
         namespace internal
         {
+            void apply_textures_to_geometry(geometry::geometry* geom)
+            {
+                u32 channel = 0;
+                u32 texture = material::get_texture(channel);
+
+                while (texture != -1)
+                {
+                    if (geom->has_texture_id(texture) == false)
+                    {
+                        geom->texture_ids().push_back(texture);
+                    }
+                    
+                    channel = channel + 1;
+                    texture = material::get_texture(channel);
+                }
+            }
+
             shape_mode_type _rect_mode = shape_mode_type::CORNER;
             shape_mode_type _ellipse_mode = shape_mode_type::CENTER;
             shape_mode_type _triangle_mode = shape_mode_type::CENTER;
@@ -317,6 +335,8 @@ namespace ppp
         {
             geometry::geometry* geom = geometry::make_box(internal::_normal_mode == normal_mode_type::SMOOTH);
 
+            internal::apply_textures_to_geometry(geom);
+
             transform::push();
             transform::scale(width, height, depth);
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
@@ -327,6 +347,8 @@ namespace ppp
         void cylinder(float radius, float height, int detail, bool bottom_cap, bool top_cap)
         {
             geometry::geometry* geom = geometry::make_cylinder(internal::_normal_mode == normal_mode_type::SMOOTH, top_cap, bottom_cap, detail);
+
+            internal::apply_textures_to_geometry(geom);
 
             transform::push();
             transform::scale(radius, height, radius);
@@ -339,6 +361,8 @@ namespace ppp
         {
             geometry::geometry* geom = geometry::make_plane(internal::_normal_mode == normal_mode_type::SMOOTH);
 
+            internal::apply_textures_to_geometry(geom);
+
             transform::push();
             transform::scale(width, height, 1.0f);
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
@@ -349,6 +373,8 @@ namespace ppp
         void sphere(float radius, int detail)
         {
             geometry::geometry* geom = geometry::make_sphere(internal::_normal_mode == normal_mode_type::SMOOTH, detail, detail);
+
+            internal::apply_textures_to_geometry(geom);
 
             transform::push();
             transform::scale(radius, radius, radius);
@@ -361,6 +387,8 @@ namespace ppp
         {
             geometry::geometry* geom = geometry::make_torus(internal::_normal_mode == normal_mode_type::SMOOTH, radius, tube_radius, detailx, detaily);
 
+            internal::apply_textures_to_geometry(geom);
+
             transform::push();
             transform::scale(radius, radius, radius);
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
@@ -371,6 +399,8 @@ namespace ppp
         void cone(float radius, float height, int detail, bool cap)
         {
             geometry::geometry* geom = geometry::make_cone(internal::_normal_mode == normal_mode_type::SMOOTH, cap, detail);
+
+            internal::apply_textures_to_geometry(geom);
 
             transform::push();
             transform::scale(radius, height, radius);
@@ -383,6 +413,8 @@ namespace ppp
         {
             geometry::geometry* geom = geometry::make_tetrahedron(internal::_normal_mode == normal_mode_type::SMOOTH);
 
+            internal::apply_textures_to_geometry(geom);
+
             transform::push();
             transform::scale(width, height, width);
             render::submit_render_item(render::topology_type::TRIANGLES, geom);
@@ -393,6 +425,8 @@ namespace ppp
         void octahedron(float width, float height)
         {
             geometry::geometry* geom = geometry::make_octahedron(internal::_normal_mode == normal_mode_type::SMOOTH);
+
+            internal::apply_textures_to_geometry(geom);
 
             transform::push();
             transform::scale(width, height, width);

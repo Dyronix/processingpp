@@ -10,9 +10,7 @@
 #include "image.h"
 #include "typography.h"
 #include "camera.h"
-
-#define PPP_CHECK_TEST_FRAME 1
-#define PPP_CLOSE_AFTER_X_FRAMES 0
+#include "material.h"
 
 // Demo of shapes and images with stroke and inner stroke
 namespace ppp
@@ -37,54 +35,6 @@ namespace ppp
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
     }
 
-    void end_draw()
-    {
-        if (environment::frame_count() == 5)
-        {
-            if (_generate_new_data)
-            {
-                image::load_pixels(0, 0, _window_width, _window_height);
-                image::save_pixels("local:/test-geometry-2d.png", _window_width, _window_height);
-            }
-
-            #if PPP_CHECK_TEST_FRAME
-            auto test_frame = image::load("local:/test-geometry-2d.png");
-            auto test_frame_pixels = image::load_pixels(test_frame.id);
-
-            size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
-
-            std::vector<unsigned char> active_test_frame_pixels(total_size);
-            memcpy_s(
-                active_test_frame_pixels.data(),
-                total_size,
-                test_frame_pixels,
-                total_size);
-
-            auto frame_pixels = image::load_pixels(0, 0, _window_width, _window_height);
-
-            std::vector<unsigned char> active_frame_pixels(total_size);
-            memcpy_s(
-                active_frame_pixels.data(),
-                total_size,
-                frame_pixels,
-                total_size);
-
-            if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
-            {
-                environment::print("[TEST FAILED][G2D] image buffers are not identical!");
-            }
-            else
-            {
-                environment::print("[TEST SUCCESS][G2D] image buffers are identical.");
-            }
-            #endif
-
-            #if PPP_CLOSE_AFTER_X_FRAMES
-            structure::quit();
-            #endif
-        }
-    }
-
     AppParams entry(int argc, char** argv)
     {
         environment::print("current working dir: " + environment::cwd());
@@ -93,8 +43,6 @@ namespace ppp
 
         app_params.window_width = 1280;
         app_params.window_height = 720;
-
-        _generate_new_data = find_argument(argc, argv, "--generate-new-data");
 
         return app_params;
     }
@@ -112,56 +60,31 @@ namespace ppp
         shapes::enable_wireframe_mode(false);
         shapes::enable_solid_mode(true);
 
+        camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
+        camera::camera(20, -40, 400);
+
         _image_container = image::load("local:content/container.jpg");
         _image_wall = image::load("local:content/wall.jpg");
-
-        structure::on_draw_end(end_draw);
     }
 
     void draw()
     {
+        color::background(200);
+
+        camera::OrbitCameraOptions options;
+
+        options.zoom_sensitivity = 200.0f;
+        options.panning_sensitivity = 0.5f;
+        options.rotation_sensitivity = 0.5f;
+        options.min_zoom = 1.0f;
+        options.max_zoom = 600.0f;
+
+        camera::orbit_control(options);
+
         color::fill({ 255,0,0,255 });
 
-        color::stroke({ 255, 255 , 255, 255 });
-        color::stroke_weight(5.0f);
-        color::inner_stroke({ 0, 255 , 0, 255 });
-        color::inner_stroke_weight(5.0f);
+        material::texture(_image_container.id);
 
-        int shape_count = 8;
-        int shape_size = 50;
-
-        int x = _window_width * 0.5f - ((shape_count - 1) * shape_size);
-        int y = _window_height * 0.5f;
-
-        shapes::ellipse(x, y, shape_size * 0.5f, shape_size * 0.5f);
-
-        x += shape_size * 2;
-
-        shapes::circle(x, y, shape_size * 0.5f, 4);
-
-        // circles are drawn from the center so we subtract have the radius here
-        x += (shape_size * 2) - shape_size * 0.5f;
-
-        //shapes::line(x, y, x + shape_size, y);
-
-        x += shape_size * 2;
-
-        //shapes::point(x, y);
-
-        x += shape_size * 2;
-
-        shapes::polygon(x - (shape_size * 0.5f), y - (shape_size * 0.5f), x + (shape_size * 0.5f), y - (shape_size * 0.5f), x + (shape_size * 0.5f), y + (shape_size * 0.5f), x - (shape_size * 0.5f), y + (shape_size * 0.5f));
-
-        x += shape_size * 2;
-
-        shapes::rect(x, y, shape_size, shape_size);
-
-        x += shape_size * 2;
-
-        shapes::square(x, y, shape_size);
-
-        x += shape_size * 2;
-
-        shapes::triangle(x + shape_size, y - (shape_size * 0.5f), x + (shape_size * 0.5f), y + (shape_size * 0.5f), x, y - (shape_size * 0.5f));
+        shapes::box(50.0f, 50.0f, 50.0f);
     }
 }
