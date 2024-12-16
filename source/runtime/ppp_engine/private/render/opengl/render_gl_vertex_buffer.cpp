@@ -42,21 +42,23 @@ namespace ppp
                 GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
                 GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertex_size * vertex_count, nullptr, GL_DYNAMIC_DRAW));
 
-                u64 offset = layout_id_offset;
+                u64 attribute_index_offset = layout_id_offset;
+                
                 u64 attribute_index = 0;
+
                 for (u64 i = 0; i < layout_count; ++i)
                 {
                     const attribute_layout& layout = layouts[i];
 
                     for (s32 j = 0; j < layout.span; ++j)
                     {
-                        attribute_index = offset + i + j;
+                        attribute_index = attribute_index_offset + i + j;
 
                         GL_CALL(glEnableVertexAttribArray(attribute_index));
                         GL_CALL(glVertexAttribPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset));
                     }
 
-                    offset = attribute_index;
+                    attribute_index_offset = layout_id_offset + (layout.span - 1);
                 }
                 
                 GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));

@@ -47,6 +47,7 @@ namespace ppp
 
                 u64 attribute_index = 0;
                 u64 attribute_offset = 0;
+
                 for (u64 i = 0; i < layout_count; ++i)
                 {
                     const attribute_layout& layout = layouts[i];
@@ -62,7 +63,7 @@ namespace ppp
                         GL_CALL(glVertexAttribDivisor(attribute_index, 1));
                     }
 
-                    attribute_index_offset = attribute_index;
+                    attribute_index_offset = layout_id_offset + (layout.span - 1);
                     attribute_stride_offset += layout.total_size_in_bytes();
                 }
 
