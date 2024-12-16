@@ -85,11 +85,11 @@ namespace ppp
         }
     }
 
-    AppParams entry(int argc, char** argv)
+    app_params entry(int argc, char** argv)
     {
         environment::print("current working dir: " + environment::cwd());
 
-        AppParams app_params;
+        app_params app_params;
 
         app_params.window_width = 1280;
         app_params.window_height = 720;

@@ -44,17 +44,17 @@ namespace ppp
             std::vector<glm::vec2>& vertex_uvs() { return m_vertex_uvs; }
 
             std::vector<render::face>& faces() { return m_faces; }
-            std::vector<render::texture_id>& texture_ids() { return m_texture_ids; }
 
         private:
             std::vector<glm::vec3> m_vertex_positions;
             std::vector<glm::vec3> m_vertex_normals;
             std::vector<glm::vec2> m_vertex_uvs;
             std::vector<glm::vec4> m_vertex_colors;
-
+            
             std::vector<render::face> m_faces;
             std::vector<render::texture_id> m_texture_ids;
 
+        private:
             bool m_smooth_normals; 
 
             u64 m_id;

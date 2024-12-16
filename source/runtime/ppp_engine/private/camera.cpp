@@ -35,11 +35,12 @@ namespace ppp
             glm::mat4   _active_projection = glm::mat4(1.0f);
             bool        _active_projection_is_ortho = true;
             
-            Camera      _active_camera = {};
+            scene_camera _active_camera = {};
+            scene_camera_mode _active_camera_mode = scene_camera_mode::CAMERA_2D;
 
             void push_active_camera()
             {
-                render::push_active_camera(
+                render::push_camera(
                     {internal::_active_camera.eyex, internal::_active_camera.eyey, internal::_active_camera.eyez},              // eye
                     {internal::_active_camera.centerx, internal::_active_camera.centery, internal::_active_camera.centerz},     // center
                     {internal::_active_camera.upx, internal::_active_camera.upy, internal::_active_camera.upz},                 // up
@@ -48,7 +49,7 @@ namespace ppp
             }
         }
 
-        Camera::Camera()
+        scene_camera::scene_camera()
         {
             eyex = 0.0f;
             eyey = 0.0f;
@@ -67,7 +68,7 @@ namespace ppp
             polar = glm::radians(45.0f);
         }
 
-        void Camera::set_position(float in_eyex, float in_eyey, float in_eyez)
+        void scene_camera::set_position(float in_eyex, float in_eyey, float in_eyez)
         {
             eyex = in_eyex;
             eyey = in_eyey; 
@@ -76,14 +77,14 @@ namespace ppp
             radius = glm::length(glm::vec3(eyex, eyey, eyez) - glm::vec3(centerx, centery, centerz));
         }
         
-        void Camera::set_up_direction(float in_upx, float in_upy, float in_upz)
+        void scene_camera::set_up_direction(float in_upx, float in_upy, float in_upz)
         {
             upx = in_upx;
             upy = in_upy;
             upz = in_upz;
         }
         
-        void Camera::set_center(float in_centerx, float in_centery, float in_centerz)
+        void scene_camera::set_center(float in_centerx, float in_centery, float in_centerz)
         {
             centerx = in_centerx;
             centery = in_centery;
@@ -107,21 +108,21 @@ namespace ppp
             return { internal::_active_camera.upx, internal::_active_camera.upy, internal::_active_camera.upz };
         }
 
-        Camera create_camera()
+        scene_camera create_camera()
         {
-            Camera c = Camera();
+            scene_camera c = scene_camera();
 
-            set_camera(c);
+            set_scene_camera(c);
 
             return internal::_active_camera;
         }
         
-        void set_camera(Camera c)
+        void set_scene_camera(scene_camera c)
         {
-            camera(c.eyex, c.eyey, c.eyez, c.centerx, c.centery, c.centerz, c.upx, c.upy, c.upz);
+            set_scene_camera(c.eyex, c.eyey, c.eyez, c.centerx, c.centery, c.centerz, c.upx, c.upy, c.upz);
         }
 
-        void camera(float eyex, float eyey, float eyez, float centerx, float centery, float centerz, float upx, float upy, float upz)
+        void set_scene_camera(float eyex, float eyey, float eyez, float centerx, float centery, float centerz, float upx, float upy, float upz)
         {
             internal::_active_camera.set_position(eyex, eyey, eyez);
             internal::_active_camera.set_center(centerx, centery, centerz);
@@ -154,6 +155,21 @@ namespace ppp
 
                 perspective(fovy, aspect, near, far); // will push the active camera
             }
+        }
+
+        void set_scene_camera_mode(scene_camera_mode m)
+        {
+            render::camera_mode mode = render::camera_mode::CAMERA_2D;
+
+            switch (m)
+            {
+            case scene_camera_mode::CAMERA_3D: mode = render::camera_mode::CAMERA_3D; break;
+            case scene_camera_mode::CAMERA_2D: mode = render::camera_mode::CAMERA_2D; break;
+            case scene_camera_mode::CAMERA_IMAGE: mode = render::camera_mode::CAMERA_IMAGE; break;
+            case scene_camera_mode::CAMERA_FONT: mode = render::camera_mode::CAMERA_FONT; break;
+            }
+
+            render::push_active_camera_mode(mode);
         }
 
         void ortho(float left, float right, float bottom, float top, float near, float far)
@@ -194,7 +210,7 @@ namespace ppp
             internal::push_active_camera();
         }
 
-        void orbit_control(OrbitCameraOptions options)
+        void orbit_control(orbit_scene_camera_options options)
         {
             f32 zs = options.zoom_sensitivity != 0.0f ? options.zoom_sensitivity : internal::_zoom_sensitivity;
             f32 rs = options.rotation_sensitivity != 0.0f ? options.rotation_sensitivity : internal::_rotate_sensitivity;

@@ -34,7 +34,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    s32 init(const AppParams& app_params, const std::string& executable_path)
+    s32 init(const app_params& app_params, const std::string& executable_path)
     {
         if (!device::initialize(app_params.window_width, app_params.window_height))
         {
@@ -72,7 +72,7 @@ namespace ppp
         return 0;
     }
     //-------------------------------------------------------------------------
-    s32 run(const AppParams& app_params)
+    s32 run(const app_params& app_params)
     {
         while (!device::should_close())
         {
@@ -116,7 +116,7 @@ namespace ppp
         return 0;
     }
     //-------------------------------------------------------------------------
-    s32 quit(const AppParams& app_params)
+    s32 quit(const app_params& app_params)
     {
         font_pool::terminate();
         texture_pool::terminate();
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
         ppp::log::info("Application argument: {}", argv[i]);
     }
 
-    ppp::AppParams app_params = ppp::entry(argc, argv);
+    ppp::app_params app_params = ppp::entry(argc, argv);
 
     s32 result = 0;
 

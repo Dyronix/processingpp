@@ -35,11 +35,11 @@ namespace ppp
         keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
     }
 
-    AppParams entry(int argc, char** argv)
+    app_params entry(int argc, char** argv)
     {
         environment::print("current working dir: " + environment::cwd());
 
-        AppParams app_params;
+        app_params app_params;
 
         app_params.window_width = 1280;
         app_params.window_height = 720;
@@ -61,7 +61,7 @@ namespace ppp
         shapes::enable_solid_mode(true);
 
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
-        camera::camera(20, -40, 400);
+        camera::set_scene_camera(20, -40, 400);
 
         _image_container = image::load("local:content/container.jpg");
         _image_wall = image::load("local:content/wall.jpg");
@@ -71,7 +71,7 @@ namespace ppp
     {
         color::background(200);
 
-        camera::OrbitCameraOptions options;
+        camera::orbit_scene_camera_options options;
 
         options.zoom_sensitivity = 200.0f;
         options.panning_sensitivity = 0.5f;
@@ -83,8 +83,18 @@ namespace ppp
 
         color::fill({ 255,0,0,255 });
 
+        transform::push();
+        material::reset_textures();
         material::texture(_image_container.id);
-
+        transform::translate(-30.0f, 0.0f, 0.0f);
         shapes::box(50.0f, 50.0f, 50.0f);
+        transform::pop();
+
+        transform::push();
+        material::reset_textures();
+        material::texture(_image_wall.id);
+        transform::translate(30.0f, 0.0f, 0.0f);
+        shapes::box(50.0f, 50.0f, 50.0f);
+        transform::pop();
     }
 }

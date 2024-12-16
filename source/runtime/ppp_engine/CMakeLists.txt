@@ -14,8 +14,6 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/shader_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_registry.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_registry.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/geometry_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/geometry_pool.cpp
     # device
@@ -56,6 +54,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_vertex_buffer_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_instance_buffer_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_instance_buffer_ops.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_texture_registry.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_texture_registry.h
     # geometry
     # 3d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h
@@ -113,6 +113,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/perlin_noise.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/steady_clock.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/steady_clock.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/object_pool.h
     # engine
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/camera.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/shapes.cpp

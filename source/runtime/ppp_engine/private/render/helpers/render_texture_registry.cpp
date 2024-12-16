@@ -1,4 +1,4 @@
-#include "resources/texture_registry.h"
+#include "render/helpers/render_texture_registry.h"
 
 namespace ppp
 {

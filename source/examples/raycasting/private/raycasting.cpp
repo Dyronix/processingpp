@@ -22,9 +22,9 @@ namespace ppp
 
     typography::font_id _font;
 
-    AppParams entry(int argc, char** argv)
+    app_params entry(int argc, char** argv)
     {
-        AppParams app_params;
+        app_params app_params;
 
         app_params.window_width = 1280;
         app_params.window_height = 720;

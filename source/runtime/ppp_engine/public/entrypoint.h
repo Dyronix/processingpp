@@ -4,7 +4,7 @@
 
 namespace ppp
 {
-    struct AppParams
+    struct app_params
     {
         int window_width = 1280;
         int window_height = 720;
@@ -15,7 +15,7 @@ namespace ppp
     int find_argument(int argc, char** argv, const char* target);
     int find_argument_with_value(int argc, char** argv, const char* target, const char** value);
 
-    extern AppParams entry(int argc, char** argv);
+    extern app_params entry(int argc, char** argv);
 
     extern void setup();
     extern void draw();

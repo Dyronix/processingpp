@@ -7,8 +7,7 @@
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
-
-#include "resources/texture_registry.h"
+#include "render/helpers/render_texture_registry.h"
 
 #include "util/types.h"
 #include "util/log.h"
@@ -380,6 +379,14 @@ namespace ppp
             if (m_pimpl->m_texture_registry->has_reserved_texture_space())
             {
                 assert(item->texture_ids().size() == 1 && "Currently only one texture per render item is supported");
+
+                /*
+                * When smoothing normals vertices are deduplicated, 
+                *   this mean that when we have 36 or 24 unique vertices ( or any other variation ) they will be welded together
+                *   a normal is generated for these vertices, the problem is that UV space is messed up when this happens.
+                *   some weird artifacts appear when this is the case, hence why we disable it.
+                */
+                assert(item->has_smooth_normals() == false && "Smooth normals and texturing is not supported");
 
                 s32 sampler_id = m_pimpl->m_texture_registry->add_texture(item->texture_ids()[0]);
                 if (sampler_id != -1)

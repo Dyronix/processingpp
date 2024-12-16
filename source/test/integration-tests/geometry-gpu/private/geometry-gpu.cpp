@@ -143,11 +143,11 @@ namespace ppp
         }
     }
 
-    AppParams entry(int argc, char** argv)
+    app_params entry(int argc, char** argv)
     {
         environment::print("current working dir: " + environment::cwd());
 
-        AppParams app_params;
+        app_params app_params;
 
         app_params.window_width = _window_width;
         app_params.window_height = _window_height;
@@ -172,7 +172,7 @@ namespace ppp
         create_cyber_ocean_geometry();
 
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
-        camera::camera(20, -40, 300);
+        camera::set_scene_camera(20, -40, 300);
 
         _color_top = { 255, 0, 0, 255 };     // Red for top
         _color_bottom = { 0, 0, 255, 255 };  // Blue for bottom
@@ -184,7 +184,7 @@ namespace ppp
     {
         color::background(200);
 
-        camera::OrbitCameraOptions options;
+        camera::orbit_scene_camera_options options;
 
         options.zoom_sensitivity = 200.0f;
         options.panning_sensitivity = 0.5f;

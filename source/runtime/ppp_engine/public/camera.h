@@ -6,9 +6,17 @@ namespace ppp
 {
     namespace camera
     {
-        struct Camera
+        enum class scene_camera_mode
         {
-            Camera();
+            CAMERA_3D,
+            CAMERA_2D,
+            CAMERA_IMAGE,
+            CAMERA_FONT
+        };
+
+        struct scene_camera
+        {
+            scene_camera();
 
             float eyex, eyey, eyez;
             float centerx, centery, centerz;
@@ -23,7 +31,7 @@ namespace ppp
             void set_up_direction(float upx, float upy, float upz);
         };
 
-        struct OrbitCameraOptions
+        struct orbit_scene_camera_options
         {
             float zoom_sensitivity = 0.0f;
             float rotation_sensitivity = 0.0f;
@@ -37,14 +45,16 @@ namespace ppp
         glm::vec3 active_camera_target();
         glm::vec3 active_camera_up();
 
-        Camera create_camera();
+        scene_camera create_camera();
 
-        void set_camera(Camera c);
-        void camera(float eyex, float eyey, float eyez = 800.0f, float centerx = 0.0f, float centery = 0.0f, float centerz = 0.0f, float upx = 0.0f, float upy = 1.0f, float upz = 0.0f);
+        void set_scene_camera(scene_camera c);
+        void set_scene_camera(float eyex, float eyey, float eyez = 800.0f, float centerx = 0.0f, float centery = 0.0f, float centerz = 0.0f, float upx = 0.0f, float upy = 1.0f, float upz = 0.0f);
+
+        void set_scene_camera_mode(scene_camera_mode m);
 
         void ortho(float left, float right, float bottom, float top, float near, float far);
         void perspective(float fovy, float aspect, float near, float far);
 
-        void orbit_control(OrbitCameraOptions options = {});
+        void orbit_control(orbit_scene_camera_options options = {});
     }
 }

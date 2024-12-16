@@ -76,9 +76,9 @@ namespace ppp
         }
     }
 
-    AppParams entry(int argc, char** argv)
+    app_params entry(int argc, char** argv)
     {
-        AppParams app_params;
+        app_params app_params;
 
         app_params.window_width = _window_width;
         app_params.window_height = _window_height;

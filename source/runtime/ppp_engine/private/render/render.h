@@ -18,8 +18,16 @@ namespace ppp
         constexpr u32 DEPTH_BUFFER_BIT = 0x00000100;
         constexpr u32 STENCIL_BUFFER_BIT = 0x00000400;
         constexpr u32 COLOR_BUFFER_BIT = 0x00004000;
+
+        enum class camera_mode
+        {
+            CAMERA_3D,
+            CAMERA_2D,
+            CAMERA_IMAGE,
+            CAMERA_FONT
+        };
        
-        struct ScissorRect
+        struct scissor_rect
         {
             s32 x;
             s32 y;
@@ -45,7 +53,8 @@ namespace ppp
         void end_geometry_builder();
 
         // Camera
-        void push_active_camera(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj);
+        void push_camera(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj);
+        void push_active_camera_mode(camera_mode mode);
 
         // Rasterization
         void push_solid_rendering(bool enable);
@@ -59,7 +68,7 @@ namespace ppp
 
         bool scissor_enabled();
 
-        ScissorRect scissor();
+        scissor_rect scissor();
 
         // Image Item
         u32 create_image_item(f32 width, f32 height, s32 channels, u8* data);
@@ -73,9 +82,12 @@ namespace ppp
         // Font Item
         void submit_font_item(const irender_item* item);
 
-        // Render Item
-        void submit_render_item(topology_type topology, const irender_item* item);
-        void submit_stroke_render_item(topology_type topology, const irender_item* item, bool outer);
+        // 2D Render Item
+        void submit_2d_render_item(topology_type topology, const irender_item* item);
+        void submit_stroke_2d_render_item(topology_type topology, const irender_item* item, bool outer);
+
+        // 3D Render Item
+        void submit_3d_render_item(topology_type topology, const irender_item* item);
 
         // Clear 
         void clear_color(f32 r, f32 g, f32 b, f32 a);

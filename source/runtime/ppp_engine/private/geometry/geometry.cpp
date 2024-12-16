@@ -55,11 +55,11 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool geometry::has_texture_id(render::texture_id id) const
         {
-            return std::find_if(std::cbegin(m_texture_ids), std::cend(m_texture_ids),
+            return std::find_if(std::cbegin(texture_ids()), std::cend(texture_ids()),
                 [id](const render::texture_id other)
             {
                 return id == other;
-            }) != std::cend(m_texture_ids);
+            }) != std::cend(texture_ids());
         }
 
         //-------------------------------------------------------------------------
@@ -90,7 +90,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         u64 geometry::texture_count() const
         {
-            return m_texture_ids.size();
+            return texture_ids().size();
         }
 
         //-------------------------------------------------------------------------

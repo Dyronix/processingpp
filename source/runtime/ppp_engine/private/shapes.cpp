@@ -40,28 +40,31 @@ namespace ppp
     {
         namespace internal
         {
+            std::vector<render::texture_id> _active_textures;
+
             void apply_textures_to_geometry(geometry::geometry* geom)
             {
+                _active_textures.clear();
+
                 u32 channel = 0;
                 u32 texture = material::get_texture(channel);
 
                 while (texture != -1)
                 {
-                    if (geom->has_texture_id(texture) == false)
-                    {
-                        geom->texture_ids().push_back(texture);
-                    }
+                    _active_textures.push_back(texture);
                     
                     channel = channel + 1;
                     texture = material::get_texture(channel);
                 }
+
+                geom->set_texture_array(& _active_textures);
             }
 
             shape_mode_type _rect_mode = shape_mode_type::CORNER;
             shape_mode_type _ellipse_mode = shape_mode_type::CENTER;
             shape_mode_type _triangle_mode = shape_mode_type::CENTER;
 
-            normal_mode_type _normal_mode = normal_mode_type::SMOOTH;
+            normal_mode_type _normal_mode = normal_mode_type::FLAT;
         }
 
         //-------------------------------------------------------------------------
@@ -117,7 +120,7 @@ namespace ppp
 
             transform::scale(w, h);
            
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_2d_render_item(render::topology_type::TRIANGLES, geom);
 
             glm::mat4 world = transform_stack::active_world();
 
@@ -129,7 +132,7 @@ namespace ppp
 
                 auto stroke_item = geometry::extrude_ellipse(world, geom, render::brush::stroke_width());
 
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                render::submit_stroke_2d_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
 
             if (render::brush::inner_stroke_enabled())
@@ -138,7 +141,7 @@ namespace ppp
 
                 auto stroke_item = geometry::extrude_ellipse(world, geom, -render::brush::inner_stroke_width());
 
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                render::submit_stroke_2d_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
         }
         
@@ -153,7 +156,7 @@ namespace ppp
         {
             geometry::geometry* geom = geometry::make_line(x1, y1, x2, y2);
 
-            render::submit_render_item(render::topology_type::LINES, geom);
+            render::submit_2d_render_item(render::topology_type::LINES, geom);
 
             if (render::brush::stroke_enabled())
             {
@@ -161,7 +164,7 @@ namespace ppp
 
                 auto stroke_item = geometry::extrude_line(geom->vertex_positions().data(), geom->vertex_count(), render::brush::stroke_width());
 
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                render::submit_stroke_2d_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
         }
         
@@ -173,7 +176,7 @@ namespace ppp
             transform::push();
             transform::translate(x, y);
 
-            render::submit_render_item(render::topology_type::POINTS, geom);
+            render::submit_2d_render_item(render::topology_type::POINTS, geom);
             
             transform::pop();
 
@@ -187,7 +190,7 @@ namespace ppp
                 transform::translate(x, y);
                 transform::scale(render::brush::stroke_width(), render::brush::stroke_width());
 
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                render::submit_stroke_2d_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
                 
                 transform::pop();
             }
@@ -207,7 +210,7 @@ namespace ppp
                 transform::translate(-center.x, -center.y);
             }
 
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_2d_render_item(render::topology_type::TRIANGLES, geom);
 
             glm::mat4 world = transform_stack::active_world();
 
@@ -219,7 +222,7 @@ namespace ppp
 
                 auto stroke_item = geometry::extrude_polygon(world, geom, render::brush::stroke_width());
                 
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                render::submit_stroke_2d_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
 
             if (render::brush::inner_stroke_enabled())
@@ -228,7 +231,7 @@ namespace ppp
 
                 auto stroke_item = geometry::extrude_polygon(world, geom, -render::brush::inner_stroke_width());
 
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                render::submit_stroke_2d_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
         }
         
@@ -249,7 +252,7 @@ namespace ppp
 
             transform::scale(w, h);
 
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_2d_render_item(render::topology_type::TRIANGLES, geom);
 
             glm::mat4 world = transform_stack::active_world();
 
@@ -261,7 +264,7 @@ namespace ppp
 
                 auto stroke_item = geometry::extrude_polygon(world, geom, render::brush::stroke_width());
 
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                render::submit_stroke_2d_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
 
             if (render::brush::inner_stroke_enabled())
@@ -270,7 +273,7 @@ namespace ppp
 
                 auto stroke_item = geometry::extrude_polygon(world, geom, -render::brush::inner_stroke_width());
 
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                render::submit_stroke_2d_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
         }
         
@@ -294,7 +297,7 @@ namespace ppp
                 transform::translate(-center.x, -center.y);
             }
 
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_2d_render_item(render::topology_type::TRIANGLES, geom);
 
             glm::mat4 world = transform_stack::active_world();
 
@@ -306,7 +309,7 @@ namespace ppp
 
                 auto stroke_item = geometry::extrude_triangle(world, geom, render::brush::stroke_width());
 
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                render::submit_stroke_2d_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
 
             if (render::brush::inner_stroke_enabled())
@@ -315,7 +318,7 @@ namespace ppp
 
                 auto stroke_item = geometry::extrude_triangle(world, geom, -render::brush::inner_stroke_width());
 
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
+                render::submit_stroke_2d_render_item(render::topology_type::TRIANGLES, stroke_item, outer_stroke);
             }
         }
 
@@ -326,7 +329,7 @@ namespace ppp
 
             transform::push();
             transform::translate(x, y, z);
-            render::submit_render_item(render::topology_type::POINTS, geom);
+            render::submit_3d_render_item(render::topology_type::POINTS, geom);
             transform::pop();
         }
 
@@ -339,7 +342,7 @@ namespace ppp
 
             transform::push();
             transform::scale(width, height, depth);
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_3d_render_item(render::topology_type::TRIANGLES, geom);
             transform::pop();
         }
         
@@ -352,7 +355,7 @@ namespace ppp
 
             transform::push();
             transform::scale(radius, height, radius);
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_3d_render_item(render::topology_type::TRIANGLES, geom);
             transform::pop();
         }
         
@@ -365,7 +368,7 @@ namespace ppp
 
             transform::push();
             transform::scale(width, height, 1.0f);
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_3d_render_item(render::topology_type::TRIANGLES, geom);
             transform::pop();
         }
         
@@ -378,7 +381,7 @@ namespace ppp
 
             transform::push();
             transform::scale(radius, radius, radius);
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_3d_render_item(render::topology_type::TRIANGLES, geom);
             transform::pop();
         }
         
@@ -391,7 +394,7 @@ namespace ppp
 
             transform::push();
             transform::scale(radius, radius, radius);
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_3d_render_item(render::topology_type::TRIANGLES, geom);
             transform::pop();
         }
 
@@ -404,7 +407,7 @@ namespace ppp
 
             transform::push();
             transform::scale(radius, height, radius);
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_3d_render_item(render::topology_type::TRIANGLES, geom);
             transform::pop();
         }
 
@@ -417,7 +420,7 @@ namespace ppp
 
             transform::push();
             transform::scale(width, height, width);
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_3d_render_item(render::topology_type::TRIANGLES, geom);
             transform::pop();
         }
 
@@ -430,7 +433,7 @@ namespace ppp
 
             transform::push();
             transform::scale(width, height, width);
-            render::submit_render_item(render::topology_type::TRIANGLES, geom);
+            render::submit_3d_render_item(render::topology_type::TRIANGLES, geom);
             transform::pop();
         }
 

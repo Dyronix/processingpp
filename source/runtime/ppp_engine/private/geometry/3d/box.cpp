@@ -11,7 +11,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         static void make_faces(geometry* self)
         {
-            self->faces().assign(36, { 0, 0, 0 });
+            self->faces().assign(12, { 0, 0, 0 });
             self->faces() = {
                 // Front face
                 {0, 1, 2}, {0, 2, 3},
