@@ -127,6 +127,12 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
+    bool has_argument(int argc, char** argv, const char* target)
+    {
+        return find_argument(argc, argv, target) != -1;
+    }
+
+    //-------------------------------------------------------------------------
     int find_argument(int argc, char** argv, const char* target)
     {
         for (int i = 1; i < argc; i++) 

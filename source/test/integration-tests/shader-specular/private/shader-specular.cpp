@@ -12,13 +12,11 @@
 #include "material.h"
 #include "image.h"
 
-#define PPP_CHECK_TEST_FRAME 1
-#define PPP_SAVE_TEST_FRAME 0
-#define PPP_CLOSE_AFTER_X_FRAMES 0
-
 namespace ppp
 {
     bool _generate_new_data = false;
+    bool _no_close_after_x_frames = false;
+    bool _no_testing = false;
 
     constexpr int _window_width = 1280;
     constexpr int _window_height = 720;
@@ -128,41 +126,43 @@ namespace ppp
                 image::save_pixels("local:/test-shader-specular.png", _window_width, _window_height);
             }
 
-#if PPP_CHECK_TEST_FRAME
-            auto test_frame = image::load("local:/test-shader-specular.png");
-            auto test_frame_pixels = image::load_pixels(test_frame.id);
-
-            size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
-
-            std::vector<unsigned char> active_test_frame_pixels(total_size);
-            memcpy_s(
-                active_test_frame_pixels.data(),
-                total_size,
-                test_frame_pixels,
-                total_size);
-
-            auto frame_pixels = image::load_pixels(0, 0, _window_width, _window_height);
-
-            std::vector<unsigned char> active_frame_pixels(total_size);
-            memcpy_s(
-                active_frame_pixels.data(),
-                total_size,
-                frame_pixels,
-                total_size);
-
-            if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
+            if (!_no_testing)
             {
-                environment::print("[TEST FAILED][SSPEC] image buffers are not identical!");
-            }
-            else
-            {
-                environment::print("[TEST SUCCESS][SSPEC] image buffers are identical.");
-            }
-#endif
+                auto test_frame = image::load("local:/test-shader-specular.png");
+                auto test_frame_pixels = image::load_pixels(test_frame.id);
 
-#if PPP_CLOSE_AFTER_X_FRAMES
-            structure::quit();
-#endif
+                size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
+
+                std::vector<unsigned char> active_test_frame_pixels(total_size);
+                memcpy_s(
+                    active_test_frame_pixels.data(),
+                    total_size,
+                    test_frame_pixels,
+                    total_size);
+
+                auto frame_pixels = image::load_pixels(0, 0, _window_width, _window_height);
+
+                std::vector<unsigned char> active_frame_pixels(total_size);
+                memcpy_s(
+                    active_frame_pixels.data(),
+                    total_size,
+                    frame_pixels,
+                    total_size);
+
+                if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
+                {
+                    environment::print("[TEST FAILED][SSPEC] image buffers are not identical!");
+                }
+                else
+                {
+                    environment::print("[TEST SUCCESS][SSPEC] image buffers are identical.");
+                }
+            }
+
+            if (!_no_close_after_x_frames)
+            {
+                structure::quit();
+            }
         }
     }
 
@@ -175,7 +175,9 @@ namespace ppp
         app_params.window_width = _window_width;
         app_params.window_height = _window_height;
 
-        _generate_new_data = find_argument(argc, argv, "--generate-new-data");
+        _generate_new_data = has_argument(argc, argv, "--generate-new-data");
+        _no_close_after_x_frames = has_argument(argc, argv, "--no_close");
+        _no_testing = has_argument(argc, argv, "--no_testing");
 
         return app_params;
     }
