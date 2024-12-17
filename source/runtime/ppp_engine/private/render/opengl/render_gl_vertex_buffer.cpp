@@ -17,7 +17,10 @@ namespace ppp
                 {
                 case attribute_data_type::FLOAT: return GL_FLOAT;
                 case attribute_data_type::UNSIGNED_INT: return GL_UNSIGNED_INT;
+                case attribute_data_type::INT: return GL_INT;
                 }
+
+                assert(false);
                 return 0;  // Fallback to avoid compiler warnings
             }
         }
@@ -55,7 +58,17 @@ namespace ppp
                         attribute_index = attribute_index_offset + i + j;
 
                         GL_CALL(glEnableVertexAttribArray(attribute_index));
-                        GL_CALL(glVertexAttribPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset));
+
+                        switch (layout.data_type)
+                        {
+                        case attribute_data_type::FLOAT: 
+                            GL_CALL(glVertexAttribPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset));
+                            break;
+                        case attribute_data_type::UNSIGNED_INT: // fallthrough
+                        case attribute_data_type::INT:
+                            GL_CALL(glVertexAttribIPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.stride, (void*)layout.offset));
+                            break;
+                        }
                     }
 
                     attribute_index_offset = layout_id_offset + (layout.span - 1);

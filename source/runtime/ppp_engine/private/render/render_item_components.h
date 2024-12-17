@@ -45,7 +45,8 @@ namespace ppp
         enum class attribute_data_type
         {
             FLOAT,
-            UNSIGNED_INT
+            UNSIGNED_INT,
+            INT
         };
 
         //-------------------------------------------------------------------------
@@ -55,7 +56,10 @@ namespace ppp
             {
             case attribute_data_type::FLOAT:               return 4;
             case attribute_data_type::UNSIGNED_INT:        return 4;
+            case attribute_data_type::INT:                 return 4;
             }
+
+            assert(false);
             return 0;  // Fallback to avoid compiler warnings
         }
 
@@ -112,12 +116,12 @@ namespace ppp
             //-------------------------------------------------------------------------
             inline const char* to_string(attribute_type type)
             {
-                static const std::string s_attribute_type_position = "POSITION";
-                static const std::string s_attribute_type_normal = "NORMAL";
-                static const std::string s_attribute_type_texcoord = "TEXCOORD";
-                static const std::string s_attribute_type_color = "COLOR";
-                static const std::string s_attribute_type_diffuse_texture_index = "DIFFUSE TEXTURE INDEX";
-                static const std::string s_attribute_type_world_matrix = "WORLD MATRIX";
+                static const std::string s_attribute_type_position = "POSITION|VEC3";
+                static const std::string s_attribute_type_normal = "NORMAL|VEC3";
+                static const std::string s_attribute_type_texcoord = "TEXCOORD|VEC2";
+                static const std::string s_attribute_type_color = "COLOR|VEC4";
+                static const std::string s_attribute_type_diffuse_texture_index = "DIFFUSE TEXTURE INDEX|INT";
+                static const std::string s_attribute_type_world_matrix = "WORLD MATRIX|MAT4";
 
                 switch (type)
                 {

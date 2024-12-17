@@ -105,16 +105,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             void add_vertices(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
             {
-                s32 start_index = m_vertex_buffer.active_vertex_count();
-                s32 end_index = start_index + item->vertex_count();
-
-                copy_vertex_data(item, color);
-
-                transform_vertex_positions(start_index, end_index, world);
-                if (m_vertex_buffer.has_layout(attribute_type::NORMAL))
-                {
-                    transform_vertex_normals(start_index, end_index, world);
-                }
+                add_vertices(item, -1, color, world);
             }
             //-------------------------------------------------------------------------
             void add_vertices(const irender_item* item, s32 sampler_id, const glm::vec4& color, const glm::mat4& world)
@@ -122,9 +113,18 @@ namespace ppp
                 s32 start_index = m_vertex_buffer.active_vertex_count();
                 s32 end_index = start_index + item->vertex_count();
 
-                add_vertices(item, color, world);
+                copy_vertex_data(item, sampler_id, color);
 
-                transform_vertex_diffuse_texture_ids(start_index, end_index, sampler_id);
+                transform_vertex_positions(start_index, end_index, world);
+                if (m_vertex_buffer.has_layout(attribute_type::NORMAL))
+                {
+                    transform_vertex_normals(start_index, end_index, world);
+                }
+
+                if (m_vertex_buffer.has_layout(attribute_type::DIFFUSE_TEXTURE_INDEX) && sampler_id != -1)
+                {
+                    transform_vertex_diffuse_texture_ids(start_index, end_index, sampler_id);
+                }
             }
             //-------------------------------------------------------------------------
             void add_indices(const irender_item* item)
@@ -179,13 +179,18 @@ namespace ppp
 
         private:
             //-------------------------------------------------------------------------
-            void copy_vertex_data(const irender_item* item, const glm::vec4& color)
+            void copy_vertex_data(const irender_item* item, s32 sampler_id, const glm::vec4& color)
             {
                 vertex_buffer_ops::vertex_attribute_addition_scope vaas(m_vertex_buffer, item->vertex_count());
 
                 if (m_vertex_buffer.has_layout(attribute_type::POSITION)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::POSITION, item->vertex_positions().data());
                 if (m_vertex_buffer.has_layout(attribute_type::NORMAL)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::NORMAL, item->vertex_normals().data());
                 if (m_vertex_buffer.has_layout(attribute_type::TEXCOORD)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::TEXCOORD, item->vertex_uvs().data());
+                
+                if (m_vertex_buffer.has_layout(attribute_type::DIFFUSE_TEXTURE_INDEX) && sampler_id != - 1)
+                {
+                    vertex_buffer_ops::map_attribute_data(vaas, attribute_type::DIFFUSE_TEXTURE_INDEX, (void*)&sampler_id);
+                }
 
                 vertex_buffer_ops::map_attribute_data(vaas, attribute_type::COLOR, (void*)&color[0]);
             }
@@ -226,9 +231,9 @@ namespace ppp
             //-------------------------------------------------------------------------
             void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 sampler_id)
             {
-                vertex_buffer_ops::transform_attribute_data<f32>(m_vertex_buffer, attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](f32& id)
+                vertex_buffer_ops::transform_attribute_data<s32>(m_vertex_buffer, attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](s32& id)
                 {
-                    id = (f32)sampler_id;
+                    id = sampler_id;
                 });
             }           
             //-------------------------------------------------------------------------

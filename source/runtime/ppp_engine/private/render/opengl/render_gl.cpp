@@ -211,7 +211,7 @@ namespace ppp
                 },
                 attribute_layout{
                     attribute_type::DIFFUSE_TEXTURE_INDEX,
-                    attribute_data_type::FLOAT,
+                    attribute_data_type::INT,
 
                     3,
                     1,
@@ -270,7 +270,7 @@ namespace ppp
                 },
                 attribute_layout{
                     attribute_type::DIFFUSE_TEXTURE_INDEX,
-                    attribute_data_type::FLOAT,
+                    attribute_data_type::INT,
 
                     4,
                     1,

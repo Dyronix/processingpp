@@ -17,7 +17,10 @@ namespace ppp
                 {
                 case attribute_data_type::FLOAT: return GL_FLOAT;
                 case attribute_data_type::UNSIGNED_INT: return GL_UNSIGNED_INT;
+                case attribute_data_type::INT: return GL_INT;
                 }
+
+                assert(false);
                 return 0;  // Fallback to avoid compiler warnings
             }
         }

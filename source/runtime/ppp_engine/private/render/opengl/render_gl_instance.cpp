@@ -203,9 +203,9 @@ namespace ppp
             //-------------------------------------------------------------------------
             void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 sampler_id)
             {
-                vertex_buffer_ops::transform_attribute_data<f32>(m_vertex_buffer, attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](float& id)
+                vertex_buffer_ops::transform_attribute_data<s32>(m_vertex_buffer, attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](s32& id)
                 {
-                    id = (f32)sampler_id;
+                    id = sampler_id;
                 });
             }
             //-------------------------------------------------------------------------

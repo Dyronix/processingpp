@@ -418,7 +418,7 @@ namespace ppp
                     layout (location = 0) in vec3 a_position;						                \n\
                     layout (location = 1) in vec4 a_color;							                \n\
                                                                                                     \n\
-                    uniform mat4 u_view_proj;                                                   \n\
+                    uniform mat4 u_view_proj;                                                       \n\
                     uniform bool u_wireframe;                                                       \n\
                     uniform vec4 u_wireframe_color;                                                 \n\
                                                                                                     \n\
@@ -427,7 +427,7 @@ namespace ppp
                     void main()														                \n\
                     {																                \n\
                         v_color = u_wireframe ? u_wireframe_color : a_color;	                    \n\
-                        gl_Position = u_view_proj * vec4(a_position, 1.0);  	                \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);  	                    \n\
                     }";
 
                 return unlit_vs_source;
@@ -457,7 +457,7 @@ namespace ppp
                     layout (location = 1) in mat4 a_inst_mat_model;							        \n\
                     layout (location = 5) in vec4 a_inst_color;							            \n\
                                                                                                     \n\
-                    uniform mat4 u_view_proj;                                                   \n\
+                    uniform mat4 u_view_proj;                                                       \n\
                     uniform bool u_wireframe;                                                       \n\
                     uniform vec4 u_wireframe_color;                                                 \n\
                                                                                                     \n\
@@ -480,22 +480,22 @@ namespace ppp
                     layout (location = 0) in vec3 a_position;                                       \n\
                     layout (location = 1) in vec2 a_texture;                                        \n\
                     layout (location = 2) in vec4 a_tint_color;                                     \n\
-                    layout (location = 3) in float a_texture_idx;                                   \n\
+                    layout (location = 3) in int  a_texture_idx;                                    \n\
                                                                                                     \n\
-                    uniform mat4 u_view_proj;                                                   \n\
+                    uniform mat4 u_view_proj;                                                       \n\
                     uniform bool u_wireframe;                                                       \n\
                     uniform vec4 u_wireframe_color;                                                 \n\
                                                                                                     \n\
                     out vec4 v_tint_color;                                                          \n\
                     out vec2 v_texture;                                                             \n\
-                    out float v_texture_idx;                                                        \n\
+                    flat out int v_texture_idx;                                                     \n\
                                                                                                     \n\
                     void main()                                                                     \n\
                     {						                                                        \n\
                         v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;	            \n\
                         v_texture = a_texture;                                                      \n\
                         v_texture_idx = a_texture_idx;                                              \n\
-                        gl_Position = u_view_proj * vec4(a_position, 1.0);                      \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);                          \n\
                     }";
 
                 return unlit_texture_vs_source;
@@ -509,14 +509,13 @@ namespace ppp
                                                                                                     \n\
                     in vec4 v_tint_color;                                                           \n\
                     in vec2 v_texture;                                                              \n\
-                    in float v_texture_idx;                                                         \n\
+                    flat in int v_texture_idx;                                                      \n\
                                                                                                     \n\
                     out vec4 frag_color;                                                            \n\
                                                                                                     \n\
                     void main()                                                                     \n\
                     {                                                                               \n\
-                        int idx = int(v_texture_idx);                                               \n\
-                        vec4 color = texture(s_image[idx], v_texture) * v_tint_color;               \n\
+                        vec4 color = texture(s_image[v_texture_idx], v_texture) * v_tint_color;     \n\
                         frag_color = color;                                                         \n\
                     }";
 
@@ -525,7 +524,34 @@ namespace ppp
 
             const char* const instance_unlit_texture_vertex_shader_code()
             {
-                return nullptr;
+                const char* const unlit_texture_vs_source =
+                    "#version 460 core                                                              \n\
+                                                                                                    \n\
+                    layout (location = 0) in vec3 a_position;                                       \n\
+                    layout (location = 1) in vec2 a_texture;                                        \n\
+                    layout (location = 2) in int  a_texture_idx;                                    \n\
+                                                                                                    \n\
+                    // per instance data                                                            \n\
+                    layout (location = 3) in mat4 a_inst_mat_model;							        \n\
+                    layout (location = 7) in vec4 a_inst_color;							            \n\
+                                                                                                    \n\
+                    uniform mat4 u_view_proj;                                                       \n\
+                    uniform bool u_wireframe;                                                       \n\
+                    uniform vec4 u_wireframe_color;                                                 \n\
+                                                                                                    \n\
+                    out vec4 v_tint_color;                                                          \n\
+                    out vec2 v_texture;                                                             \n\
+                    flat out int v_texture_idx;                                                     \n\
+                                                                                                    \n\
+                    void main()                                                                     \n\
+                    {						                                                        \n\
+                        v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;	            \n\
+                        v_texture = a_texture;                                                      \n\
+                        v_texture_idx = a_texture_idx;                                              \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);                          \n\
+                    }";
+
+                return unlit_texture_vs_source;
             }
 
             const char* const unlit_font_vertex_shader_code()
@@ -536,22 +562,22 @@ namespace ppp
                     layout (location = 0) in vec3 a_position;                                                   \n\
                     layout (location = 1) in vec2 a_texture;                                                    \n\
                     layout (location = 2) in vec4 a_tint_color;                                                 \n\
-                    layout (location = 3) in float a_texture_idx;                                               \n\
+                    layout (location = 3) in int a_texture_idx;                                                 \n\
                                                                                                                 \n\
-                    uniform mat4 u_view_proj;                                                               \n\
+                    uniform mat4 u_view_proj;                                                                   \n\
                     uniform bool u_wireframe;                                                                   \n\
                     uniform vec4 u_wireframe_color;                                                             \n\
                                                                                                                 \n\
                     out vec4 v_tint_color;                                                                      \n\
                     out vec2 v_texture;                                                                         \n\
-                    out float v_texture_idx;                                                                    \n\
+                    flat out int v_texture_idx;                                                                      \n\
                                                                                                                 \n\
                     void main()                                                                                 \n\
                     {						                                                                    \n\
                         v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;                          \n\
                         v_texture = a_texture;                                                                  \n\
                         v_texture_idx = a_texture_idx;                                                          \n\
-                        gl_Position = u_view_proj * vec4(a_position, 1.0);                                  \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);                                      \n\
                     }";
 
                 return unlit_font_vs_source;
@@ -565,14 +591,13 @@ namespace ppp
                                                                                                                 \n\
                     in vec4 v_tint_color;                                                                       \n\
                     in vec2 v_texture;                                                                          \n\
-                    in float v_texture_idx;                                                                     \n\
+                    flat in int v_texture_idx;                                                                       \n\
                                                                                                                 \n\
                     out vec4 frag_color;                                                                        \n\
                                                                                                                 \n\
                     void main()                                                                                 \n\
                     {                                                                                           \n\
-                        int idx = int(v_texture_idx);                                                           \n\
-                        vec4 color = vec4(v_tint_color.rgb, texture(s_image[idx], v_texture).r);                \n\
+                        vec4 color = vec4(v_tint_color.rgb, texture(s_image[v_texture_idx], v_texture).r);      \n\
                         frag_color = color;                                                                     \n\
                     }";
 
@@ -588,14 +613,14 @@ namespace ppp
                     layout (location = 1) in vec2 a_texture;                                    \n\
                     layout (location = 2) in vec3 a_normal;                                     \n\
                     layout (location = 3) in vec4 a_tint_color;                                 \n\
-                    layout (location = 4) in float a_texture_idx;                               \n\
+                    layout (location = 4) in int a_texture_idx;                                 \n\
                                                                                                 \n\
-                    uniform mat4 u_view_proj;                                               \n\
+                    uniform mat4 u_view_proj;                                                   \n\
                                                                                                 \n\
                     out vec4 v_tint_color;                                                      \n\
                     out vec2 v_texture;                                                         \n\
                     out vec3 v_normal;                                                          \n\
-                    out float v_texture_idx;                                                    \n\
+                    flat out int v_texture_idx;                                                      \n\
                                                                                                 \n\
                     void main()                                                                 \n\
                     {						                                                    \n\
@@ -603,7 +628,7 @@ namespace ppp
                         v_texture = a_texture;                                                  \n\
                         v_normal = a_normal;                                                    \n\
                         v_texture_idx = a_texture_idx;                                          \n\
-                        gl_Position = u_view_proj * vec4(a_position, 1.0);                  \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);                      \n\
                     }";
 
                 return unlit_normal_vs_source;
@@ -616,7 +641,7 @@ namespace ppp
                     in vec4 v_tint_color;                                                       \n\
                     in vec2 v_texture;                                                          \n\
                     in vec3 v_normal;                                                           \n\
-                    in float v_texture_idx;                                                     \n\
+                    flat in int v_texture_idx;                                                       \n\
                                                                                                 \n\
                     out vec4 frag_color;                                                        \n\
                                                                                                 \n\
@@ -646,15 +671,15 @@ namespace ppp
                     layout (location = 1) in vec2 a_texture;                                    \n\
                     layout (location = 2) in vec3 a_normal;                                     \n\
                     layout (location = 3) in vec4 a_tint_color;                                 \n\
-                    layout (location = 4) in float a_texture_idx;                               \n\
+                    layout (location = 4) in int  a_texture_idx;                                \n\
                                                                                                 \n\
-                    uniform mat4 u_view_proj;                                               \n\
+                    uniform mat4 u_view_proj;                                                   \n\
                                                                                                 \n\
                     out vec4 v_tint_color;                                                      \n\
                     out vec2 v_texture;                                                         \n\
                     out vec3 v_position;                                                        \n\
                     out vec3 v_normal;                                                          \n\
-                    out float v_texture_idx;                                                    \n\
+                    flat out int v_texture_idx;                                                      \n\
                                                                                                 \n\
                     void main()                                                                 \n\
                     {						                                                    \n\
@@ -664,7 +689,7 @@ namespace ppp
                         v_normal = a_normal;                                                    \n\
                         v_texture_idx = a_texture_idx;                                          \n\
                                                                                                 \n\
-                        gl_Position = u_view_proj * vec4(a_position, 1.0);                  \n\
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);                      \n\
                     }";
 
                 return unlit_specular_vs_source;
@@ -678,7 +703,7 @@ namespace ppp
                     in vec2 v_texture;                                                                          \n\
                     in vec3 v_position;                                                                         \n\
                     in vec3 v_normal;                                                                           \n\
-                    in float v_texture_idx;                                                                     \n\
+                    flat in int v_texture_idx;                                                                       \n\
                                                                                                                 \n\
                     out vec4 frag_color;                                                                        \n\
                                                                                                                 \n\
