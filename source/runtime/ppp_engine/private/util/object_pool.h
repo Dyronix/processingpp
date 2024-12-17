@@ -118,7 +118,7 @@ namespace ppp
     private:
         std::vector<T>      m_objects;            // Contiguous storage for m_objects
         std::vector<bool>   m_active;          // Tracks m_active/inactive status
-        std::stack<u64>  m_free_indices;    // Stack of free indices for reuse
+        std::stack<u64>     m_free_indices;    // Stack of free indices for reuse
 
         //-------------------------------------------------------------------------
         void expand_pool(u64 count)

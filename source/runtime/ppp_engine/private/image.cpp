@@ -33,6 +33,72 @@ namespace ppp
         {
             auto _image_mode = image_mode_type::CENTER;
 
+            class image_item : public render::irender_item
+            {
+            public:
+                image_item(const geometry::geometry* geom, const std::vector<render::texture_id>& ids = {})
+                    :m_geometry(geom)
+                    , m_texture_ids(ids)
+                {}
+
+                bool has_texture_id(render::texture_id id) const override
+                {
+                    return std::find_if(std::cbegin(texture_ids()), std::cend(texture_ids()),
+                        [id](const render::texture_id other)
+                    {
+                        return id == other;
+                    }) != std::cend(texture_ids());
+                }
+                bool has_smooth_normals() const override
+                {
+                    return m_geometry->has_smooth_normals();
+                }
+
+                u64 vertex_count() const override
+                {
+                    return m_geometry->vertex_count();
+                }
+                u64 index_count() const override
+                {
+                    return m_geometry->index_count();
+                }
+                u64 texture_count() const override
+                {
+                    return texture_ids().size();
+                }
+
+                const std::vector<glm::vec3>& vertex_positions() const override
+                {
+                    return m_geometry->vertex_positions();
+                }
+                const std::vector<glm::vec3>& vertex_normals() const override
+                {
+                    return m_geometry->vertex_normals();
+                }
+                const std::vector<glm::vec2>& vertex_uvs() const override
+                {
+                    return m_geometry->vertex_uvs();
+                }
+
+                const std::vector<render::face>& faces() const override
+                {
+                    return m_geometry->faces();
+                }
+                const std::vector<render::texture_id>& texture_ids() const override
+                {
+                    return m_texture_ids;
+                }
+
+                const u64 id() const override
+                {
+                    return m_geometry->id();
+                }
+
+            private:
+                const geometry::geometry* m_geometry;
+                const std::vector<render::texture_id> m_texture_ids;
+            };
+
             geometry::geometry* extrude_image(const glm::mat4& world, const geometry::geometry* in_geom, f32 extrusion_width)
             {
                 return geometry::extrude_rectangle(world, in_geom, extrusion_width);
@@ -53,16 +119,10 @@ namespace ppp
                         geometry::compute_quad_vertex_normals(geom);
                     };
 
-                    geometry::geometry* geom = geometry_pool::add_new_geometry(geometry::geometry(gid, false, create_geom_fn));
-
-                    geom->texture_ids().push_back(image_id);
-
-                    return geom;
+                    return geometry_pool::add_new_geometry(geometry::geometry(gid, false, create_geom_fn));
                 }
-                else
-                {
-                    return geometry_pool::get_geometry(gid);
-                }
+
+                return geometry_pool::get_geometry(gid);
             }
         }
 
@@ -193,7 +253,8 @@ namespace ppp
 
         void draw(image_id image_id, float x, float y, float width, float height)
         {
-            geometry::geometry* geom = internal::make_image(image_id);
+            geometry::geometry* image_geom = internal::make_image(image_id);
+            internal::image_item image_render_item = internal::image_item(image_geom, { image_id });
 
             transform_stack::push();
             transform_stack::translate(glm::vec2(x, y));
@@ -207,7 +268,7 @@ namespace ppp
 
             transform_stack::scale(glm::vec2(width, height));
 
-            render::submit_image_item(geom);
+            render::submit_image_item(&image_render_item);
 
             glm::mat4& world = transform_stack::active_world();
 
@@ -217,18 +278,20 @@ namespace ppp
             {
                 constexpr bool outer_stroke = true;
 
-                geometry::geometry* stroke_geom = internal::extrude_image(world, geom, render::brush::stroke_width());
+                geometry::geometry* stroke_geom = internal::extrude_image(world, image_geom, render::brush::stroke_width());
+                internal::image_item stroke_item = internal::image_item(stroke_geom);
 
-                render::submit_stroke_image_item(stroke_geom, outer_stroke);
+                render::submit_stroke_image_item(&stroke_item, outer_stroke);
             }
 
             if (render::brush::inner_stroke_enabled())
             {
                 constexpr bool outer_stroke = false;
 
-                geometry::geometry* stroke_geom = internal::extrude_image(world, geom, -render::brush::stroke_width());
+                geometry::geometry* stroke_geom = internal::extrude_image(world, image_geom, -render::brush::stroke_width());
+                internal::image_item stroke_item = internal::image_item(stroke_geom);
 
-                render::submit_stroke_image_item(stroke_geom, outer_stroke);
+                render::submit_stroke_image_item(&stroke_item, outer_stroke);
             }
         }
 

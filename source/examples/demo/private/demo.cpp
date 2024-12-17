@@ -87,14 +87,15 @@ namespace ppp
         material::reset_textures();
         material::texture(_image_container.id);
         transform::translate(-30.0f, 0.0f, 0.0f);
-        shapes::box(50.0f, 50.0f, 50.0f);
+        shapes::plane(50.0f, 50.0f);
         transform::pop();
 
         transform::push();
         material::reset_textures();
         material::texture(_image_wall.id);
+        
         transform::translate(30.0f, 0.0f, 0.0f);
-        shapes::box(50.0f, 50.0f, 50.0f);
+        shapes::plane(50.0f, 50.0f);
         transform::pop();
     }
 }

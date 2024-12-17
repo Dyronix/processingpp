@@ -25,11 +25,77 @@ namespace ppp
         {
             auto _text_mode = text_mode_type::CENTER;
 
-            geometry::geometry* make_font(s32 character, render::texture_id texture_id, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y)
+            class font_character_item : public render::irender_item
+            {
+            public:
+                font_character_item(const geometry::geometry* geom, const std::vector<render::texture_id>& ids = {})
+                    :m_geometry(geom)
+                    ,m_texture_ids(ids)
+                {}
+
+                bool has_texture_id(render::texture_id id) const override
+                {
+                    return std::find_if(std::cbegin(texture_ids()), std::cend(texture_ids()),
+                        [id](const render::texture_id other)
+                    {
+                        return id == other;
+                    }) != std::cend(texture_ids());
+                }
+                bool has_smooth_normals() const override
+                {
+                    return m_geometry->has_smooth_normals();
+                }
+
+                u64 vertex_count() const override
+                {
+                    return m_geometry->vertex_count();
+                }
+                u64 index_count() const override
+                {
+                    return m_geometry->index_count();
+                }
+                u64 texture_count() const override
+                {
+                    return texture_ids().size();
+                }
+
+                const std::vector<glm::vec3>& vertex_positions() const override
+                {
+                    return m_geometry->vertex_positions();
+                }
+                const std::vector<glm::vec3>& vertex_normals() const override
+                {
+                    return m_geometry->vertex_normals();
+                }
+                const std::vector<glm::vec2>& vertex_uvs() const override
+                {
+                    return m_geometry->vertex_uvs();
+                }
+
+                const std::vector<render::face>& faces() const override
+                {
+                    return m_geometry->faces();
+                }
+                const std::vector<render::texture_id>& texture_ids() const override
+                {
+                    return m_texture_ids;
+                }
+
+                const u64 id() const override
+                {
+                    return m_geometry->id();
+                }
+
+            private:
+                const geometry::geometry* m_geometry;
+                const std::vector<render::texture_id> m_texture_ids;
+            };
+
+            font_character_item make_font_character(s32 character, render::texture_id texture_id, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y)
             {
                 std::stringstream stream;
 
-                stream << "font_character|";
+                stream << "font_character_item|";
                 stream << character << "|";
                 stream << texture_id;
 
@@ -56,14 +122,12 @@ namespace ppp
 
                     geometry::geometry* geom = geometry_pool::add_new_geometry(geometry::geometry(gid, false, create_geom_fn));
 
-                    geom->texture_ids().push_back(texture_id);
+                    return font_character_item(geom, { texture_id });
+                }
 
-                    return geom;
-                }
-                else
-                {
-                    return geometry_pool::get_geometry(gid);
-                }
+                geometry::geometry* geom = geometry_pool::get_geometry(gid);
+
+                return font_character_item(geom, { texture_id });
             }
         }
 
@@ -103,7 +167,7 @@ namespace ppp
                 f32 w = ch.size.x * scale;
                 f32 h = ch.size.y * scale;
 
-                geometry::geometry* geom = internal::make_font((s32)*it, active_font->atlas.texture_id, ch.uv_start.x, ch.uv_start.y, ch.uv_end.x, ch.uv_end.y);
+                internal::font_character_item font_character_render_item = internal::make_font_character((s32)*it, active_font->atlas.texture_id, ch.uv_start.x, ch.uv_start.y, ch.uv_end.x, ch.uv_end.y);
 
                 glm::vec2 center = geometry::rectanglular_center_translation(xpos, ypos, w, h);
 
@@ -115,7 +179,7 @@ namespace ppp
                 }
                 transform_stack::scale(glm::vec2(w, h));
 
-                render::submit_font_item(geom);
+                render::submit_font_item(&font_character_render_item);
 
                 transform_stack::pop();
 

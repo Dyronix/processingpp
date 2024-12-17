@@ -728,7 +728,7 @@ namespace ppp
             f32 w = static_cast<f32>(internal::_frame_buffer_width);
             f32 h = static_cast<f32>(internal::_frame_buffer_height);
 
-            GL_CALL(glEnable(GL_BLEND));
+            GL_CALL(glDisable(GL_BLEND));
             GL_CALL(glEnable(GL_CULL_FACE));
             GL_CALL(glEnable(GL_DEPTH_TEST));
 

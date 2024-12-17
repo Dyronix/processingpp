@@ -53,16 +53,6 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool geometry::has_texture_id(render::texture_id id) const
-        {
-            return std::find_if(std::cbegin(texture_ids()), std::cend(texture_ids()),
-                [id](const render::texture_id other)
-            {
-                return id == other;
-            }) != std::cend(texture_ids());
-        }
-
-        //-------------------------------------------------------------------------
         bool geometry::has_smooth_normals() const
         {
             return m_smooth_normals;
@@ -85,12 +75,6 @@ namespace ppp
             constexpr s32 nr_vertices_in_triangle = 3;
 
             return m_faces.size() * nr_vertices_in_triangle;
-        }
-
-        //-------------------------------------------------------------------------
-        u64 geometry::texture_count() const
-        {
-            return texture_ids().size();
         }
 
         //-------------------------------------------------------------------------
