@@ -1,0 +1,15 @@
+add_executable(test-rendering-batched)
+
+target_sources(test-rendering-batched PRIVATE 
+${SOURCE_TEST_DIRECTORY}/integration-tests/test-rendering-batched/private/test-rendering-batched.cpp)
+
+# Create the project filters
+GROUPSOURCES(${SOURCE_TEST_DIRECTORY}/integration-tests/test-rendering-batched/private private)
+
+target_include_directories(test-rendering-batched PRIVATE ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public)
+
+target_link_libraries(test-rendering-batched processing_engine)
+
+# Target properties
+set_target_properties(test-rendering-batched PROPERTIES
+                      FOLDER "test/integration")

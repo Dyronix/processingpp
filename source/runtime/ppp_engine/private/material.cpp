@@ -15,6 +15,40 @@ namespace ppp
             std::unordered_map<u32, u32> _active_textures = {};
         }
 
+        namespace tags
+        {
+            // batched
+            const std::string& unlit_color()
+            {
+                return render::draw_mode() == render::render_draw_mode::BATCHED
+                    ? shader_pool::tags::unlit_color
+                    : shader_pool::tags::instance_unlit_color;
+            }
+            const std::string& unlit_texture()
+            {
+                return render::draw_mode() == render::render_draw_mode::BATCHED
+                    ? shader_pool::tags::unlit_texture
+                    : shader_pool::tags::instance_unlit_texture;
+            }
+            const std::string& unlit_font()
+            {
+                return shader_pool::tags::unlit_font;
+            }
+            const std::string& unlit_normal()
+            {
+                return render::draw_mode() == render::render_draw_mode::BATCHED
+                    ? shader_pool::tags::unlit_normal
+                    : shader_pool::tags::instance_unlit_normal;
+            }
+
+            const std::string& lit_specular()
+            {
+                return render::draw_mode() == render::render_draw_mode::BATCHED
+                    ? shader_pool::tags::lit_specular
+                    : shader_pool::tags::instance_lit_specular;
+            }
+        }
+
         shader_program::shader_program()
             :id(-1)
         {}
@@ -107,16 +141,32 @@ namespace ppp
 
         shader_program normal_material()
         {
-            shader(shader_pool::tags::unlit_normal);
+            const std::string& tag = render::draw_mode() == render::render_draw_mode::BATCHED 
+                ? shader_pool::tags::unlit_normal 
+                : shader_pool::tags::instance_unlit_normal;
 
-            return get_shader(shader_pool::tags::unlit_normal);
+            render::vertex_type vertex_type = render::draw_mode() == render::render_draw_mode::BATCHED
+                ? render::vertex_type::POSITION_NORMAL_COLOR
+                : render::vertex_type::POSITION_NORMAL;
+
+            render::push_active_shader(tag, vertex_type);
+
+            return get_shader(tag);
         }
 
         shader_program specular_material()
         {
-            shader(shader_pool::tags::lit_specular);
+            const std::string& tag = render::draw_mode() == render::render_draw_mode::BATCHED
+                ? shader_pool::tags::lit_specular
+                : shader_pool::tags::instance_lit_specular;
+
+            render::vertex_type vertex_type = render::draw_mode() == render::render_draw_mode::BATCHED
+                ? render::vertex_type::POSITION_NORMAL_COLOR
+                : render::vertex_type::POSITION_NORMAL;
+
+            render::push_active_shader(tag, vertex_type);
             
-            return get_shader(shader_pool::tags::lit_specular);
+            return get_shader(tag);
         }
 
         shader_program create_shader(const std::string& tag, const std::string& vertex_source, const std::string& fragment_source)

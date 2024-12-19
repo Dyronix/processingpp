@@ -1,6 +1,7 @@
 #include "render/render_instance_renderer.h"
 #include "render/render_item_components.h"
 #include "render/render_shaders.h"
+#include "render/render_features.h"
 
 #include "render/opengl/render_gl_error.h"
 
@@ -22,15 +23,6 @@ namespace ppp
     {
         namespace internal
         {
-            //-------------------------------------------------------------------------
-            struct instance_data
-            {
-                glm::mat4 world;
-                glm::vec4 color;
-            };
-
-            static std::vector<u8> _intermediate_buffer(sizeof(instance_data));
-
             //-------------------------------------------------------------------------
             static f32 _wireframe_linewidth = 3.0f;
             static s32 _wireframe_linecolor = 0x000000FF;
@@ -168,15 +160,12 @@ namespace ppp
         {
             if (m_instance_data_map.find(topology) == std::cend(m_instance_data_map))
             {
-                m_instance_data_map.emplace(topology, instance_drawing_data(layouts(), layout_count(), m_instance_layouts, m_instance_layout_count, m_buffer_policy));
+                s32 max_tex = has_texture_support() ? max_textures() : -1;
+
+                m_instance_data_map.emplace(topology, instance_drawing_data(max_tex, layouts(), layout_count(), m_instance_layouts, m_instance_layout_count, m_buffer_policy));
             }
 
-            memcpy(internal::_intermediate_buffer.data() + offsetof(internal::instance_data, world), &world, sizeof(glm::mat4));
-            memcpy(internal::_intermediate_buffer.data() + offsetof(internal::instance_data, color), &color, sizeof(glm::vec4));
-
-            m_instance_data_map.at(topology).append(item, internal::_intermediate_buffer.data());
-
-            memset(internal::_intermediate_buffer.data(), 0, sizeof(internal::instance_data));
+            m_instance_data_map.at(topology).append(item, color, world);
         }
 
         //-------------------------------------------------------------------------

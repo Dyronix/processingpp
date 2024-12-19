@@ -466,7 +466,7 @@ namespace ppp
                     void main()														                \n\
                     {																                \n\
                         v_color = u_wireframe ? u_wireframe_color : a_inst_color;                   \n\
-                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);   \n\
+                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);       \n\
                     }";
 
                 return unlit_vs_source;
@@ -529,9 +529,9 @@ namespace ppp
                                                                                                     \n\
                     layout (location = 0) in vec3 a_position;                                       \n\
                     layout (location = 1) in vec2 a_texture;                                        \n\
-                    layout (location = 2) in int  a_texture_idx;                                    \n\
                                                                                                     \n\
                     // per instance data                                                            \n\
+                    layout (location = 2) in int  a_inst_texture_idx;                               \n\
                     layout (location = 3) in mat4 a_inst_mat_model;							        \n\
                     layout (location = 7) in vec4 a_inst_color;							            \n\
                                                                                                     \n\
@@ -545,10 +545,10 @@ namespace ppp
                                                                                                     \n\
                     void main()                                                                     \n\
                     {						                                                        \n\
-                        v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;	            \n\
+                        v_tint_color = u_wireframe ? u_wireframe_color : a_inst_color;	            \n\
                         v_texture = a_texture;                                                      \n\
-                        v_texture_idx = a_texture_idx;                                              \n\
-                        gl_Position = u_view_proj * vec4(a_position, 1.0);                          \n\
+                        v_texture_idx = a_inst_texture_idx;                                         \n\
+                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);       \n\
                     }";
 
                 return unlit_texture_vs_source;
@@ -610,24 +610,19 @@ namespace ppp
                     "#version 460 core                                                          \n\
                                                                                                 \n\
                     layout (location = 0) in vec3 a_position;                                   \n\
-                    layout (location = 1) in vec2 a_texture;                                    \n\
-                    layout (location = 2) in vec3 a_normal;                                     \n\
-                    layout (location = 3) in vec4 a_tint_color;                                 \n\
-                    layout (location = 4) in int a_texture_idx;                                 \n\
+                    layout (location = 1) in vec3 a_normal;                                     \n\
+                    layout (location = 2) in vec4 a_tint_color;                                 \n\
                                                                                                 \n\
                     uniform mat4 u_view_proj;                                                   \n\
                                                                                                 \n\
                     out vec4 v_tint_color;                                                      \n\
-                    out vec2 v_texture;                                                         \n\
                     out vec3 v_normal;                                                          \n\
-                    flat out int v_texture_idx;                                                      \n\
+                    flat out int v_texture_idx;                                                 \n\
                                                                                                 \n\
                     void main()                                                                 \n\
                     {						                                                    \n\
                         v_tint_color = a_tint_color;	                                        \n\
-                        v_texture = a_texture;                                                  \n\
                         v_normal = a_normal;                                                    \n\
-                        v_texture_idx = a_texture_idx;                                          \n\
                         gl_Position = u_view_proj * vec4(a_position, 1.0);                      \n\
                     }";
 
@@ -639,9 +634,7 @@ namespace ppp
                     "#version 460 core                                                          \n\
                                                                                                 \n\
                     in vec4 v_tint_color;                                                       \n\
-                    in vec2 v_texture;                                                          \n\
                     in vec3 v_normal;                                                           \n\
-                    flat in int v_texture_idx;                                                       \n\
                                                                                                 \n\
                     out vec4 frag_color;                                                        \n\
                                                                                                 \n\
@@ -659,7 +652,29 @@ namespace ppp
 
             const char* const instance_unlit_normal_vertex_shader_code()
             {
-                return nullptr;
+                const char* const unlit_normal_vs_source =
+                    "#version 460 core                                                          \n\
+                                                                                                \n\
+                    layout (location = 0) in vec3 a_position;                                   \n\
+                    layout (location = 1) in vec3 a_normal;                                     \n\
+                                                                                                \n\
+                    // per instance data                                                        \n\
+                    layout (location = 2) in mat4 a_inst_mat_model;							    \n\
+                    layout (location = 6) in vec4 a_inst_color;							        \n\
+                                                                                                \n\
+                    uniform mat4 u_view_proj;                                                   \n\
+                                                                                                \n\
+                    out vec4 v_tint_color;                                                      \n\
+                    out vec3 v_normal;                                                          \n\
+                                                                                                \n\
+                    void main()                                                                 \n\
+                    {						                                                    \n\
+                        v_tint_color = a_inst_color;	                                        \n\
+                        v_normal = a_normal;                                                    \n\
+                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);   \n\
+                    }";
+
+                return unlit_normal_vs_source;
             }
 
             const char* const specular_vertex_shader_code()
@@ -668,26 +683,20 @@ namespace ppp
                     "#version 460 core                                                          \n\
                                                                                                 \n\
                     layout (location = 0) in vec3 a_position;                                   \n\
-                    layout (location = 1) in vec2 a_texture;                                    \n\
-                    layout (location = 2) in vec3 a_normal;                                     \n\
-                    layout (location = 3) in vec4 a_tint_color;                                 \n\
-                    layout (location = 4) in int  a_texture_idx;                                \n\
+                    layout (location = 1) in vec3 a_normal;                                     \n\
+                    layout (location = 2) in vec4 a_tint_color;                                 \n\
                                                                                                 \n\
                     uniform mat4 u_view_proj;                                                   \n\
                                                                                                 \n\
                     out vec4 v_tint_color;                                                      \n\
-                    out vec2 v_texture;                                                         \n\
                     out vec3 v_position;                                                        \n\
                     out vec3 v_normal;                                                          \n\
-                    flat out int v_texture_idx;                                                      \n\
                                                                                                 \n\
                     void main()                                                                 \n\
                     {						                                                    \n\
                         v_tint_color = a_tint_color;	                                        \n\
-                        v_texture = a_texture;                                                  \n\
                         v_position = a_position;                                                \n\
                         v_normal = a_normal;                                                    \n\
-                        v_texture_idx = a_texture_idx;                                          \n\
                                                                                                 \n\
                         gl_Position = u_view_proj * vec4(a_position, 1.0);                      \n\
                     }";
@@ -700,10 +709,8 @@ namespace ppp
                     "#version 460 core                                                                          \n\
                                                                                                                 \n\
                     in vec4 v_tint_color;                                                                       \n\
-                    in vec2 v_texture;                                                                          \n\
                     in vec3 v_position;                                                                         \n\
                     in vec3 v_normal;                                                                           \n\
-                    flat in int v_texture_idx;                                                                       \n\
                                                                                                                 \n\
                     out vec4 frag_color;                                                                        \n\
                                                                                                                 \n\
@@ -741,7 +748,32 @@ namespace ppp
 
             const char* const instance_specular_vertex_shader_code()
             {
-                return nullptr;
+                const char* const unlit_specular_vs_source =
+                    "#version 460 core                                                          \n\
+                                                                                                \n\
+                    layout (location = 0) in vec3 a_position;                                   \n\
+                    layout (location = 1) in vec3 a_normal;                                     \n\
+                                                                                                \n\
+                    // per instance data                                                        \n\
+                    layout (location = 2) in mat4 a_inst_mat_model;							    \n\
+                    layout (location = 6) in vec4 a_inst_color;							        \n\
+                                                                                                \n\
+                    uniform mat4 u_view_proj;                                                   \n\
+                                                                                                \n\
+                    out vec4 v_tint_color;                                                      \n\
+                    out vec3 v_position;                                                        \n\
+                    out vec3 v_normal;                                                          \n\
+                                                                                                \n\
+                    void main()                                                                 \n\
+                    {						                                                    \n\
+                        v_tint_color = a_inst_color;	                                        \n\
+                        v_position = a_position;                                                \n\
+                        v_normal = a_normal;                                                    \n\
+                                                                                                \n\
+                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);   \n\
+                    }";
+
+                return unlit_specular_vs_source;
             }
 
             u32 create_shader_program(const char* vs_source, const char* fs_source)

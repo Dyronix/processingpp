@@ -1,6 +1,7 @@
 #include "render/render_batch_renderer.h"
 #include "render/render_item_components.h"
 #include "render/render_shaders.h"
+#include "render/render_features.h"
 
 #include "render/opengl/render_gl_error.h"
 
@@ -22,13 +23,6 @@ namespace ppp
     {
         namespace internal
         {
-            //-------------------------------------------------------------------------
-            static constexpr s32 _max_points = 9'000;
-            static constexpr s32 _max_lines = 9'000;
-            static constexpr s32 _max_triangles = 9'000;
-
-            static constexpr s32 _max_texture_units = 8;
-
             //-------------------------------------------------------------------------
             static f32 _wireframe_linewidth = 3.0f;
             static s32 _wireframe_linecolor = 0x000000FF;
@@ -76,59 +70,6 @@ namespace ppp
 
                 log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
                 return GL_UNSIGNED_INT;
-            }
-
-            //-------------------------------------------------------------------------
-            u32 max_vertices(topology_type type)
-            {
-                s32 max_vertex_elements = 0;
-                GL_CALL(glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_vertex_elements));
-
-                s32 max_vertices = 0;
-                switch (type)
-                {
-                case topology_type::POINTS:
-                    max_vertices = std::min(max_vertex_elements, _max_points);
-                    break;
-                case topology_type::LINES:
-                    max_vertices = std::min(max_vertex_elements, _max_lines);
-                    break;
-                case topology_type::TRIANGLES:
-                    max_vertices = std::min(max_vertex_elements, _max_triangles);
-                    break;
-                }
-
-                return max_vertices;
-            }
-            //-------------------------------------------------------------------------
-            u32 max_indices(topology_type type)
-            {
-                s32 max_index_elements = 0;
-                GL_CALL(glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_index_elements));
-
-                s32 max_indices = 0;
-                switch (type)
-                {
-                case topology_type::POINTS:
-                    max_indices = std::min(max_index_elements, _max_points * 1);
-                    break;
-                case topology_type::LINES:
-                    max_indices = std::min(max_index_elements, _max_lines * 2);
-                    break;
-                case topology_type::TRIANGLES:
-                    max_indices = std::min(max_index_elements, _max_triangles * 3);
-                    break;
-                }
-
-                return max_indices;
-            }
-            //-------------------------------------------------------------------------
-            u32 max_textures()
-            {
-                s32 max_texture_units = 0;
-                GL_CALL(glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units));
-
-                return std::min(max_texture_units, internal::_max_texture_units);
             }
         }
 
@@ -216,11 +157,11 @@ namespace ppp
         {
             if (m_drawing_data_map.find(topology) == std::cend(m_drawing_data_map))
             {
-                s32 max_vertices = internal::max_vertices(topology);
-                s32 max_indices = internal::max_indices(topology);
-                s32 max_textures = has_texture_support() ? internal::max_textures() : -1;
+                s32 max_ver = max_vertices(topology);
+                s32 max_idx = max_indices(topology);
+                s32 max_tex = has_texture_support() ? max_textures() : -1;
 
-                m_drawing_data_map.emplace(topology, batch_drawing_data(max_vertices, max_indices, max_textures, layouts(), layout_count(), m_buffer_policy));
+                m_drawing_data_map.emplace(topology, batch_drawing_data(max_ver, max_idx, max_tex, layouts(), layout_count(), m_buffer_policy));
             }
 
             m_drawing_data_map.at(topology).append(item, color, world);

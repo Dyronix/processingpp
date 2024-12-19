@@ -65,6 +65,8 @@ namespace ppp
 
         _image_container = image::load("local:content/container.jpg");
         _image_wall = image::load("local:content/wall.jpg");
+
+        rendering::enable_instance_draw_mode();
     }
 
     void draw()
@@ -83,32 +85,39 @@ namespace ppp
 
         color::fill({ 255,0,0,255 });
 
-        transform::push();
-        material::reset_textures();
-        material::texture(_image_wall.id);
-        transform::translate(-90.0f, 0.0f, 0.0f);
-        shapes::box(50.0f, 50.0f, 50.0f);
-        transform::pop();
+        int grid_width = 5;  
+        int grid_height = 3; 
+        int grid_depth = 4;  
 
-        transform::push();
-        material::reset_textures();
-        material::texture(_image_container.id);
-        transform::translate(-30.0f, 0.0f, 0.0f);
-        shapes::box(50.0f, 50.0f, 50.0f);
-        transform::pop();
+        float cube_x_offset = 60.0f;
+        float cube_y_offset = 60.0f;
+        float cube_z_offset = 60.0f;
 
-        transform::push();
-        material::reset_textures();
-        material::texture(_image_wall.id);
-        transform::translate(30.0f, 0.0f, 0.0f);
-        shapes::box(50.0f, 50.0f, 50.0f);
-        transform::pop();
+        float start_x = (-1.0f * cube_x_offset) * (grid_width / 2);
+        float start_y = (-1.0f * cube_y_offset) * (grid_height / 2);
+        float start_z = (-1.0f * cube_z_offset) * (grid_depth / 2);
 
-        transform::push();
-        material::reset_textures();
-        material::texture(_image_container.id);
-        transform::translate(90.0f, 0.0f, 0.0f);
-        shapes::box(50.0f, 50.0f, 50.0f);
-        transform::pop();
+        for (int layer = 0; layer < grid_depth; ++layer)
+        {
+            for (int row = 0; row < grid_height; ++row)
+            {
+                for (int col = 0; col < grid_width; ++col)
+                {
+                    transform::push();
+
+                    material::reset_textures();
+                    material::texture((layer + row + col) % 2 ? _image_wall.id : _image_container.id);
+
+                    transform::translate(
+                        start_x + col * cube_x_offset,     
+                        start_y + row * cube_y_offset,     
+                        start_z + layer * cube_z_offset    
+                    );
+
+                    shapes::box(50.0f, 50.0f, 50.0f);
+                    transform::pop();
+                }
+            }
+        }
     }
 }

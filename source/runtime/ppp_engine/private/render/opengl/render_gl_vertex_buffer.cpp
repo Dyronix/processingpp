@@ -46,8 +46,10 @@ namespace ppp
                 GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertex_size * vertex_count, nullptr, GL_DYNAMIC_DRAW));
 
                 u64 attribute_index_offset = layout_id_offset;
-                
+                u64 attribute_stride_offset = 0;
+
                 u64 attribute_index = 0;
+                u64 attribute_offset = 0;
 
                 for (u64 i = 0; i < layout_count; ++i)
                 {
@@ -56,22 +58,23 @@ namespace ppp
                     for (s32 j = 0; j < layout.span; ++j)
                     {
                         attribute_index = attribute_index_offset + i + j;
+                        attribute_offset = attribute_stride_offset + j * layout.count * layout.element_size_in_bytes();
 
                         GL_CALL(glEnableVertexAttribArray(attribute_index));
-
                         switch (layout.data_type)
                         {
-                        case attribute_data_type::FLOAT: 
-                            GL_CALL(glVertexAttribPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)layout.offset));
+                        case attribute_data_type::FLOAT:
+                            GL_CALL(glVertexAttribPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)attribute_offset));
                             break;
                         case attribute_data_type::UNSIGNED_INT: // fallthrough
                         case attribute_data_type::INT:
-                            GL_CALL(glVertexAttribIPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.stride, (void*)layout.offset));
+                            GL_CALL(glVertexAttribIPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.stride, (void*)attribute_offset));
                             break;
                         }
                     }
 
                     attribute_index_offset = layout_id_offset + (layout.span - 1);
+                    attribute_stride_offset += layout.total_size_in_bytes();
                 }
                 
                 GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));

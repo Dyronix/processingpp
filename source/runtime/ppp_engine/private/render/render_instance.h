@@ -36,7 +36,7 @@ namespace ppp
         public:
             void increment_instance_count();
 
-            void append(const void* data_ptr);
+            void append(const std::vector<texture_id>& texture_ids, const glm::vec4& color, const glm::mat4& world);
             void reset();
             void release();
 
@@ -68,6 +68,7 @@ namespace ppp
         {
         public:
             instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy);
+            instance_drawing_data(s32 max_textures, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy);
             ~instance_drawing_data();
 
             instance_drawing_data(const instance_drawing_data& other) = delete;             // unique ptr, so we can delete
@@ -77,7 +78,7 @@ namespace ppp
             instance_drawing_data& operator=(instance_drawing_data&& other) noexcept;                // has to be defined, due to auto compiler generated function and forward delclaration
 
         public:
-            void append(const irender_item* item, const void* instance_data_ptr);
+            void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world);
             void reset();
             void release();
 

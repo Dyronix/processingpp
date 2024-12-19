@@ -35,8 +35,6 @@ namespace ppp
             s32 h;
         };
 
-        void draw_mode(render_draw_mode mode);
-
         bool initialize(s32 w, s32 h, void* user_data);
         void terminate();
 
@@ -44,8 +42,13 @@ namespace ppp
         void render();
         void end();
         
+        // Drawing mode (BATCHED | INSTANCING)
+        void draw_mode(render_draw_mode mode);
+
+        render_draw_mode draw_mode();
+
         // Shader
-        void push_active_shader(const std::string& tag, vertex_type vertex_type);
+        void push_active_shader(const std::string& tag, vertex_type type);
         void push_reset_shader();
 
         // Geometry Builder

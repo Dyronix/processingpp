@@ -60,13 +60,24 @@ if(PPP_ENABLE_TESTING)
 
 	add_subdirectory(${SOURCE_TEST_DIRECTORY})
 
+	# Run integration tests
 	# Add a custom target that always builds and runs the batch script
-	add_custom_target(run-integration-tests
+	add_custom_target(integration-tests-run
 		COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --blue "Executing integration-tests-run.bat"
 		COMMAND "${SOURCE_TEST_DIRECTORY}/integration-tests-run.bat" ${SOURCE_TEST_DIRECTORY}
 		VERBATIM
 	)
 
-	set_property(TARGET run-integration-tests PROPERTY FOLDER "test")
+	set_property(TARGET integration-tests-run PROPERTY FOLDER "test")
+
+	# Generate new data for all the available tests
+	# Add a custom target that always builds and runs the batch script
+	add_custom_target(integration-tests-generate-data
+		COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --blue "Executing integration-tests-generate.bat"
+		COMMAND "${SOURCE_TEST_DIRECTORY}/integration-tests-generate.bat" ${SOURCE_TEST_DIRECTORY}
+		VERBATIM
+	)
+
+	set_property(TARGET integration-tests-generate-data PROPERTY FOLDER "test")
 
 endif()

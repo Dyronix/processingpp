@@ -14,7 +14,10 @@ namespace ppp
         enum class vertex_type
         {
             POSITION,
+            POSITION_NORMAL,
+            POSITION_NORMAL_COLOR,
             POSITION_TEXCOORD,
+            POSITION_TEXCOORD_NORMAL,
             POSITION_COLOR,
             POSITION_TEXCOORD_COLOR,
             POSITION_TEXCOORD_NORMAL_COLOR

@@ -9,7 +9,6 @@
 
 #include "util/transform_stack.h"
 #include "util/brush.h"
-#include "util/object_pool.h"
 
 #include "geometry/geometry.h"
 
@@ -544,7 +543,11 @@ namespace ppp
         //-------------------------------------------------------------------------
         void build_primitive_geometry(std::function<void()> callback)
         {
-            render::begin_geometry_builder(shader_pool::tags::unlit_color);
+            const std::string& tag = render::draw_mode() == render::render_draw_mode::BATCHED
+                ? shader_pool::tags::unlit_color
+                : shader_pool::tags::instance_unlit_color;
+
+            render::begin_geometry_builder(tag);
 
             callback();
 
@@ -554,7 +557,11 @@ namespace ppp
         //-------------------------------------------------------------------------
         void build_textured_geometry(std::function<void()> callback)
         {
-            render::begin_geometry_builder(shader_pool::tags::unlit_texture);
+            const std::string& tag = render::draw_mode() == render::render_draw_mode::BATCHED
+                ? shader_pool::tags::unlit_texture
+                : shader_pool::tags::instance_unlit_texture;
+
+            render::begin_geometry_builder(tag);
 
             callback();
 

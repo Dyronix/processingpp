@@ -27,10 +27,15 @@ namespace ppp
             internal::get_shader_program_map()[tags::instance_unlit_color] = render::shaders::create_shader_program(render::shaders::instance_unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code());
             
             internal::get_shader_program_map()[tags::unlit_texture] = render::shaders::create_shader_program(render::shaders::unlit_texture_vertex_shader_code(), render::shaders::unlit_texture_pixel_shader_code());
+            internal::get_shader_program_map()[tags::instance_unlit_texture] = render::shaders::create_shader_program(render::shaders::instance_unlit_texture_vertex_shader_code(), render::shaders::unlit_texture_pixel_shader_code());
+            
             internal::get_shader_program_map()[tags::unlit_font] = render::shaders::create_shader_program(render::shaders::unlit_font_vertex_shader_code(), render::shaders::unlit_font_pixel_shader_code());
 
             internal::get_shader_program_map()[tags::unlit_normal] = render::shaders::create_shader_program(render::shaders::unlit_normal_vertex_shader_code(), render::shaders::unlit_normal_pixel_shader_code());
+            internal::get_shader_program_map()[tags::instance_unlit_normal] = render::shaders::create_shader_program(render::shaders::instance_unlit_normal_vertex_shader_code(), render::shaders::unlit_normal_pixel_shader_code());
+            
             internal::get_shader_program_map()[tags::lit_specular] = render::shaders::create_shader_program(render::shaders::specular_vertex_shader_code(), render::shaders::specular_pixel_shader_code());
+            internal::get_shader_program_map()[tags::instance_lit_specular] = render::shaders::create_shader_program(render::shaders::instance_specular_vertex_shader_code(), render::shaders::specular_pixel_shader_code());
 
             return true;
         }
@@ -86,9 +91,13 @@ namespace ppp
         u32 get_shader_program(std::string_view tag)
         {
             auto it = internal::get_shader_program_map().find(tag.data());
-            return it != std::cend(internal::get_shader_program_map())
-                ? it->second
-                : 0;
+            if (it != std::cend(internal::get_shader_program_map()))
+            {
+                return it->second;
+            }
+
+            log::error("Unable to find shader with tag: {}", tag.data());
+            return 0;
         }
     }
 }

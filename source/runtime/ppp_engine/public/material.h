@@ -8,6 +8,16 @@ namespace ppp
 {
     namespace material
     {
+        namespace tags
+        {
+            const std::string& unlit_color();
+            const std::string& unlit_texture();
+            const std::string& unlit_font();
+            const std::string& unlit_normal();
+
+            const std::string& lit_specular();
+        }
+
         using shader_program_id = unsigned int;
 
         struct shader_program

@@ -61,7 +61,16 @@ namespace ppp
                         attribute_offset = attribute_stride_offset + j * layout.count * layout.element_size_in_bytes();
 
                         GL_CALL(glEnableVertexAttribArray(attribute_index));
-                        GL_CALL(glVertexAttribPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)attribute_offset));
+                        switch (layout.data_type)
+                        {
+                        case attribute_data_type::FLOAT:
+                            GL_CALL(glVertexAttribPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)attribute_offset));
+                            break;
+                        case attribute_data_type::UNSIGNED_INT: // fallthrough
+                        case attribute_data_type::INT:
+                            GL_CALL(glVertexAttribIPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.stride, (void*)attribute_offset));
+                            break;
+                        }
 
                         GL_CALL(glVertexAttribDivisor(attribute_index, 1));
                     }

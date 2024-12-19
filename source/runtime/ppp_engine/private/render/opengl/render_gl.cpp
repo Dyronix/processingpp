@@ -68,10 +68,30 @@ namespace ppp
                 glm::vec3 position;
             };
             //-------------------------------------------------------------------------
+            struct pos_norm_format
+            {
+                glm::vec3 position;
+                glm::vec3 normal;
+            };
+            //-------------------------------------------------------------------------
+            struct pos_norm_color_format
+            {
+                glm::vec3 position;
+                glm::vec3 normal;
+                glm::vec4 color;
+            };
+            //-------------------------------------------------------------------------
             struct pos_tex_format
             {
                 glm::vec3 position;
                 glm::vec2 texcoord;
+            };
+            //-------------------------------------------------------------------------
+            struct pos_tex_norm_format
+            {
+                glm::vec3 position;
+                glm::vec2 texcoord;
+                glm::vec3 normal;
             };
             //-------------------------------------------------------------------------
             struct pos_col_format
@@ -85,7 +105,7 @@ namespace ppp
                 glm::vec3 position;
                 glm::vec2 texcoord;
                 glm::vec4 color;
-                f32       texture_idx;
+                s32       texture_idx;
             };
             //-------------------------------------------------------------------------
             struct pos_tex_col_norm_format
@@ -94,7 +114,7 @@ namespace ppp
                 glm::vec2 texcoord;
                 glm::vec3 normal;
                 glm::vec4 color;
-                f32       texture_idx;
+                s32       texture_idx;
             };
 
             //-------------------------------------------------------------------------
@@ -103,6 +123,13 @@ namespace ppp
             {
                 glm::mat4 world;
                 glm::vec4 color;
+            };
+            //-------------------------------------------------------------------------
+            struct world_color_texid_format
+            {
+                glm::mat4 world;
+                glm::vec4 color;
+                s32       texture_idx;
             };
 
             //-------------------------------------------------------------------------
@@ -119,6 +146,69 @@ namespace ppp
                     false,
                     sizeof(pos_format),
                     0
+                }
+            };
+            //-------------------------------------------------------------------------
+            std::array<attribute_layout, 2> _pos_norm_layout
+            {
+                attribute_layout{
+                    attribute_type::POSITION,
+                    attribute_data_type::FLOAT,
+
+                    0,
+                    3,
+                    1,
+                    false,
+                    sizeof(pos_norm_format),
+                    0
+                },
+                attribute_layout{
+                    attribute_type::NORMAL,
+                    attribute_data_type::FLOAT,
+
+                    1,
+                    3,
+                    1,
+                    false,
+                    sizeof(pos_norm_format),
+                    3 * sizeof(float)
+                }
+            };
+            //-------------------------------------------------------------------------
+            std::array<attribute_layout, 3> _pos_norm_col_layout
+            {
+                attribute_layout{
+                    attribute_type::POSITION,
+                    attribute_data_type::FLOAT,
+
+                    0,
+                    3,
+                    1,
+                    false,
+                    sizeof(pos_norm_color_format),
+                    0
+                },
+                attribute_layout{
+                    attribute_type::NORMAL,
+                    attribute_data_type::FLOAT,
+
+                    1,
+                    3,
+                    1,
+                    false,
+                    sizeof(pos_norm_color_format),
+                    3 * sizeof(float)
+                },
+                attribute_layout{
+                    attribute_type::COLOR,
+                    attribute_data_type::FLOAT,
+
+                    1,
+                    4,
+                    1,
+                    false,
+                    sizeof(pos_norm_color_format),
+                    3 * sizeof(float) + 3 * sizeof(float)
                 }
             };
             //-------------------------------------------------------------------------
@@ -171,6 +261,43 @@ namespace ppp
                     false,
                     sizeof(pos_tex_format),
                     3 * sizeof(float)
+                }
+            };
+            //-------------------------------------------------------------------------
+            std::array<attribute_layout, 3> _pos_tex_norm_layout
+            {
+                attribute_layout{
+                    attribute_type::POSITION,
+                    attribute_data_type::FLOAT,
+
+                    0,
+                    3,
+                    1,
+                    false,
+                    sizeof(pos_tex_norm_format),
+                    0
+                },
+                attribute_layout{
+                    attribute_type::TEXCOORD,
+                    attribute_data_type::FLOAT,
+
+                    1,
+                    2,
+                    1,
+                    false,
+                    sizeof(pos_tex_norm_format),
+                    3 * sizeof(float)
+                },
+                attribute_layout{
+                    attribute_type::NORMAL,
+                    attribute_data_type::FLOAT,
+
+                    2,
+                    3,
+                    1,
+                    false,
+                    sizeof(pos_tex_norm_format),
+                    3 * sizeof(float) + 2 * sizeof(float)
                 }
             };
             //-------------------------------------------------------------------------
@@ -308,6 +435,43 @@ namespace ppp
                     4 * 4 * sizeof(float)
                 }
             };
+            //-------------------------------------------------------------------------
+            std::array<attribute_layout, 3> _color_world_texid_layout
+            {
+                attribute_layout{
+                    attribute_type::DIFFUSE_TEXTURE_INDEX,
+                    attribute_data_type::INT,
+
+                    0,
+                    1,
+                    1,
+                    false,
+                    sizeof(world_color_texid_format),
+                    0
+                },
+                attribute_layout{
+                    attribute_type::WORLD_MATRIX,
+                    attribute_data_type::FLOAT,
+
+                    1,
+                    4,
+                    4,
+                    false,
+                    sizeof(world_color_texid_format),
+                    sizeof(s32)
+                },
+                attribute_layout{
+                    attribute_type::COLOR,
+                    attribute_data_type::FLOAT,
+
+                    2,
+                    4,
+                    1,
+                    false,
+                    sizeof(world_color_texid_format),
+                    sizeof(s32) + 4 * 4 * sizeof(float)
+                }
+            };
 
             //-------------------------------------------------------------------------
             constexpr s32 _min_frame_buffer_width = 32;
@@ -333,7 +497,10 @@ namespace ppp
                 switch (type)
                 {
                 case vertex_type::POSITION: return _pos_layout.data();
+                case vertex_type::POSITION_NORMAL: return _pos_norm_layout.data();
+                case vertex_type::POSITION_NORMAL_COLOR: return _pos_norm_col_layout.data();
                 case vertex_type::POSITION_TEXCOORD: return _pos_tex_layout.data();
+                case vertex_type::POSITION_TEXCOORD_NORMAL: return _pos_tex_norm_layout.data();
                 case vertex_type::POSITION_COLOR: return _pos_col_layout.data();
                 case vertex_type::POSITION_TEXCOORD_COLOR: return _pos_tex_col_layout.data();
                 case vertex_type::POSITION_TEXCOORD_NORMAL_COLOR: return _pos_tex_col_norm_layout.data();
@@ -348,7 +515,10 @@ namespace ppp
                 switch (type)
                 {
                 case vertex_type::POSITION: return _pos_layout.size();
+                case vertex_type::POSITION_NORMAL: return _pos_norm_layout.size();
+                case vertex_type::POSITION_NORMAL_COLOR: return _pos_norm_col_layout.size();
                 case vertex_type::POSITION_TEXCOORD: return _pos_tex_layout.size();
+                case vertex_type::POSITION_TEXCOORD_NORMAL: return _pos_tex_norm_layout.size();
                 case vertex_type::POSITION_COLOR: return _pos_col_layout.size();
                 case vertex_type::POSITION_TEXCOORD_COLOR: return _pos_tex_col_layout.size();
                 case vertex_type::POSITION_TEXCOORD_NORMAL_COLOR: return _pos_tex_col_norm_layout.size();
@@ -535,8 +705,8 @@ namespace ppp
                         auto renderer = std::make_unique<texture_instance_renderer>(
                             _fill_user_shader.empty() ? internal::_pos_tex_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
                             _fill_user_shader.empty() ? internal::_pos_tex_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                            _color_world_layout.data(),
-                            _color_world_layout.size(),
+                            _color_world_texid_layout.data(),
+                            _color_world_texid_layout.size(),
                             shader_tag);
 
                         if (_geometry_builder.is_active())
@@ -551,12 +721,6 @@ namespace ppp
                     internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform_stack::active_world());
                 }
             }
-        }
-
-        //-------------------------------------------------------------------------
-        void draw_mode(render_draw_mode mode)
-        {
-            internal::_draw_mode = mode;
         }
 
         //-------------------------------------------------------------------------
@@ -606,10 +770,10 @@ namespace ppp
             // Instance renderers
             internal::_2d_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_color);
             internal::_2d_primitive_stroke_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_color);
-            internal::_image_instance_renderer = std::make_unique<texture_instance_renderer>(internal::_pos_tex_layout.data(), internal::_pos_tex_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_texture);
-            internal::_image_stroke_instance_renderer = std::make_unique<texture_instance_renderer>(internal::_pos_tex_layout.data(), internal::_pos_tex_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_texture);
+            internal::_image_instance_renderer = std::make_unique<texture_instance_renderer>(internal::_pos_tex_layout.data(), internal::_pos_tex_layout.size(), internal::_color_world_texid_layout.data(), internal::_color_world_texid_layout.size(), shader_pool::tags::instance_unlit_texture);
+            internal::_image_stroke_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_color);
             internal::_3d_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_color);
-            internal::_3d_textured_instance_renderer = std::make_unique<texture_instance_renderer>(internal::_pos_tex_layout.data(), internal::_pos_tex_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_texture);
+            internal::_3d_textured_instance_renderer = std::make_unique<texture_instance_renderer>(internal::_pos_tex_layout.data(), internal::_pos_tex_layout.size(), internal::_color_world_texid_layout.data(), internal::_color_world_texid_layout.size(), shader_pool::tags::instance_unlit_texture);
 
             // Batch renderers
             internal::_2d_primitive_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
@@ -807,10 +971,22 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void push_active_shader(const std::string& tag, vertex_type vertex_type)
+        void draw_mode(render_draw_mode mode)
+        {
+            internal::_draw_mode = mode;
+        }
+
+        //-------------------------------------------------------------------------
+        render_draw_mode draw_mode()
+        {
+            return internal::_draw_mode;
+        }
+
+        //-------------------------------------------------------------------------
+        void push_active_shader(const std::string& tag, vertex_type type)
         {
             internal::_fill_user_shader = tag;
-            internal::_fill_user_vertex_type = vertex_type;
+            internal::_fill_user_vertex_type = type;
         }
 
         //-------------------------------------------------------------------------
@@ -1238,7 +1414,7 @@ namespace ppp
                     }
                     else
                     {
-                        internal::_3d_textured_instance_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
+                        internal::_3d_textured_instance_renderer->append_drawing_data(topology, item, brush::tint(), transform_stack::active_world());
                     }
                 }
             }
