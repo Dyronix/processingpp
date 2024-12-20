@@ -94,6 +94,11 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/rectangle.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/rectangle.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/geometry_2d_helpers.h
+    # model
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model/parse_stl.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model/parse_stl.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model/parse_obj.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model/parse_obj.cpp
 
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.cpp
@@ -132,6 +137,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/trigonometry.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/typography.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/image.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/entrypoint.cpp)
 
 target_sources(processing_engine PUBLIC 
@@ -151,6 +157,7 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/trigonometry.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/typography.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/image.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/model.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/engine.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/entrypoint.h)
 

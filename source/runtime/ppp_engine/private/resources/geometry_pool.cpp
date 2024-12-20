@@ -1,5 +1,7 @@
 #include "resources/geometry_pool.h"
 
+#include "util/log.h"
+
 #include <unordered_map>
 
 namespace ppp
@@ -66,6 +68,8 @@ namespace ppp
             {
                 return &internal::get_geometry_map().at(geometry_id);
             }
+
+            log::error("Unable to find model with id: {}", geometry_id);
 
             return nullptr;
         }

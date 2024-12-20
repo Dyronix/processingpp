@@ -11,6 +11,7 @@
 #include "image.h"
 #include "material.h"
 #include "mathematics.h"
+#include "model.h"
 #include "random.h"
 #include "rendering.h"
 #include "shapes.h"
