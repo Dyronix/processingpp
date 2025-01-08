@@ -229,14 +229,14 @@ namespace ppp
                     normal = glm::normalize(transformed_normal);
                 });
             }
-            //-------------------------------------------------------------------------
-            void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 shape_id)
-            {
-                vertex_buffer_ops::transform_attribute_data<s32>(m_vertex_buffer, attribute_type::SHAPE_ID, start_index, end_index, [&](s32& id)
-                {
-                    id = shape_id;
-                });
-            }           
+            ////-------------------------------------------------------------------------
+            //void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 shape_id)
+            //{
+            //    vertex_buffer_ops::transform_attribute_data<s32>(m_vertex_buffer, attribute_type::SHAPE_ID, start_index, end_index, [&](s32& id)
+            //    {
+            //        id = shape_id;
+            //    });
+            //}           
             //-------------------------------------------------------------------------
             void transform_index_locations(s32 start_index, s32 end_index, u64 offset)
             {

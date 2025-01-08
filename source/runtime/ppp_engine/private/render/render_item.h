@@ -37,8 +37,7 @@ namespace ppp
             case attribute_type::NORMAL:                 return 3;
             case attribute_type::TEXCOORD:               return 2;
             case attribute_type::COLOR:                  return 4;
-
-            case attribute_type::SHAPE_ID:  return 1;
+            case attribute_type::SHAPE_ID:               return 1;
             }
             return 0;  // Fallback to avoid compiler warnings
         }
