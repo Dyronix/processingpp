@@ -1,9 +1,7 @@
 add_executable(test-model-create-obj)
 
 target_sources(test-model-create-obj PRIVATE 
-${SOURCE_TEST_DIRECTORY}/integration-tests/test-model-create-obj/private/potion-00.h
-${SOURCE_TEST_DIRECTORY}/integration-tests/test-model-create-obj/private/potion-01.h
-${SOURCE_TEST_DIRECTORY}/integration-tests/test-model-create-obj/private/potion-02.h
+${SOURCE_TEST_DIRECTORY}/integration-tests/test-model-create-obj/private/crystal.h
 ${SOURCE_TEST_DIRECTORY}/integration-tests/test-model-create-obj/private/test-model-create-obj.cpp)
 
 # Create the project filters

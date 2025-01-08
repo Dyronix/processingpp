@@ -4,6 +4,8 @@
 #include "model/parse_obj.h"
 #include "model/parse_stl.h"
 
+#include "fileio/fileio.h"
+
 #include "render/render.h"
 #include "render/render_item_components.h"
 
@@ -123,6 +125,16 @@ namespace ppp
             }
 
             return model(geom, _active_textures);
+        }
+
+        //-------------------------------------------------------------------------
+        model_id load_model(const std::string& model_path)
+        {
+            const std::string gid = model_path;
+
+            auto buffer = fileio::read_text_file(model_path);
+
+            return create_model(buffer, model_file_type::OBJ);
         }
 
         //-------------------------------------------------------------------------

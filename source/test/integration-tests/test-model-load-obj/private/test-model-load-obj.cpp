@@ -1,19 +1,25 @@
 #include "engine.h"
 
+// Demo of shapes and images with stroke and inner stroke
 namespace ppp
 {
     bool _generate_new_data = false;
     bool _no_close_after_x_frames = false;
-    bool _animate_scene = false;
     bool _no_testing = false;
 
     constexpr int _window_width = 1280;
     constexpr int _window_height = 720;
-    constexpr int _canvas_width = 600;
-    constexpr int _canvas_height = 600;
 
-    image::image _image_container;
-    image::image _image_wall;
+    model::model_id _model_ambulance;
+    model::model_id _model_police;
+    model::model_id _model_firetruck;
+
+    image::image _image_color_map;
+
+    void setup_canvas()
+    {
+        color::background(15);
+    }
 
     void setup_input_events()
     {
@@ -27,12 +33,12 @@ namespace ppp
             if (_generate_new_data)
             {
                 image::load_pixels(0, 0, _window_width, _window_height);
-                image::save_pixels("local:/test-rendering-instanced-textured.png", _window_width, _window_height);
+                image::save_pixels("local:/test-model-load.png", _window_width, _window_height);
             }
 
             if (!_no_testing)
             {
-                auto test_frame = image::load("local:/test-rendering-instanced-textured.png");
+                auto test_frame = image::load("local:/test-model-load.png");
                 auto test_frame_pixels = image::load_pixels(test_frame.id);
 
                 size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
@@ -55,11 +61,11 @@ namespace ppp
 
                 if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
                 {
-                    environment::print("[TEST FAILED][RINSTTEX] image buffers are not identical!");
+                    environment::print("[TEST FAILED][MDLL] image buffers are not identical!");
                 }
                 else
                 {
-                    environment::print("[TEST SUCCESS][RINSTTEX] image buffers are identical.");
+                    environment::print("[TEST SUCCESS][MDLL] image buffers are identical.");
                 }
             }
 
@@ -76,12 +82,11 @@ namespace ppp
 
         app_params app_params;
 
-        app_params.window_width = _window_width;
-        app_params.window_height = _window_height;
+        app_params.window_width = 1280;
+        app_params.window_height = 720;
 
         _generate_new_data = has_argument(argc, argv, "--generate-new-data");
         _no_close_after_x_frames = has_argument(argc, argv, "--no_close");
-        _animate_scene = has_argument(argc, argv, "--animate");
         _no_testing = has_argument(argc, argv, "--no_testing");
 
         return app_params;
@@ -89,6 +94,7 @@ namespace ppp
 
     void setup()
     {
+        setup_canvas();
         setup_input_events();
 
         shapes::enable_wireframe_mode(false);
@@ -97,12 +103,12 @@ namespace ppp
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
         camera::set_scene_camera(20, -40, 400);
 
-        _image_container = image::load("local:content/t_container.jpg");
-        _image_wall = image::load("local:content/t_wall.jpg");
+        _image_color_map = image::load("local:content/t_colormap.png");
+        _model_ambulance = model::load_model("local:content/models/ambulance.obj");
+        _model_police = model::load_model("local:content/models/police.obj");
+        _model_firetruck = model::load_model("local:content/models/firetruck.obj");
 
         structure::on_draw_end(end_draw);
-
-        rendering::enable_instance_draw_mode();
     }
 
     void draw()
@@ -121,39 +127,25 @@ namespace ppp
 
         color::fill({ 255,0,0,255 });
 
-        int grid_width = 5;
-        int grid_height = 3;
-        int grid_depth = 4;
+        material::reset_textures();
+        material::texture(_image_color_map.id);
 
-        float cube_x_offset = 60.0f;
-        float cube_y_offset = 60.0f;
-        float cube_z_offset = 60.0f;
+        transform::push();
+        transform::translate(-105.0f, -25.0f, 0.0f);
+        transform::scale(50.0f, 50.0f, 50.0f);
+        model::draw(_model_police);
+        transform::pop();
 
-        float start_x = (-1.0f * cube_x_offset) * (grid_width / 2);
-        float start_y = (-1.0f * cube_y_offset) * (grid_height / 2);
-        float start_z = (-1.0f * cube_z_offset) * (grid_depth / 2);
+        transform::push();
+        transform::translate(0.0f, -25.0f, 0.0f);
+        transform::scale(50.0f, 50.0f, 50.0f);
+        model::draw(_model_ambulance);
+        transform::pop();
 
-        for (int layer = 0; layer < grid_depth; ++layer)
-        {
-            for (int row = 0; row < grid_height; ++row)
-            {
-                for (int col = 0; col < grid_width; ++col)
-                {
-                    transform::push();
-
-                    material::reset_textures();
-                    material::texture((layer + row + col) % 2 ? _image_wall.id : _image_container.id);
-
-                    transform::translate(
-                        start_x + col * cube_x_offset,
-                        start_y + row * cube_y_offset,
-                        start_z + layer * cube_z_offset
-                    );
-
-                    shapes::box(50.0f, 50.0f, 50.0f);
-                    transform::pop();
-                }
-            }
-        }
+        transform::push();
+        transform::translate(115.0f, -25.0f, 0.0f);
+        transform::scale(50.0f, 50.0f, 50.0f);
+        model::draw(_model_firetruck);
+        transform::pop();
     }
 }

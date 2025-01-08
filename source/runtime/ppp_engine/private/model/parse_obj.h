@@ -17,15 +17,15 @@ namespace ppp
 
     namespace model
     {
-        //struct material
-        //{
-        //    glm::vec4 diffuse_color;
-        //    glm::vec4 ambient_color;
-        //    glm::vec4 specular_color;
-        //
-        //    std::vector<render::texture_id> texture_ids;
-        //};
+        struct material
+        {
+            glm::vec4 diffuse_color;
+            glm::vec4 ambient_color;
+            glm::vec4 specular_color;
+        
+            std::vector<render::texture_id> texture_ids;
+        };
 
-        geometry::geometry* parse_obj(geometry::geometry* geom, const std::vector<std::string> buffer/*, std::unordered_map<std::string, material> materials = {}*/);
+        geometry::geometry* parse_obj(geometry::geometry* geom, const std::vector<std::string> buffer, std::unordered_map<std::string, material> materials = {});
     }
 }

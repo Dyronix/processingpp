@@ -59,15 +59,15 @@ namespace ppp
 
         environment::frame_rate(60);
 
-        _font = typography::load_font("local:/content/fonts/PokemonGb-RAeo.ttf", 16);
-        if (_font == -1)
-        {
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            typography::text_font(_font);
-        }
+        //_font = typography::load_font("local:/content/fonts/PokemonGb-RAeo.ttf", 16);
+        //if (_font == -1)
+        //{
+        //    exit(EXIT_FAILURE);
+        //}
+        //else
+        //{
+        //    typography::text_font(_font);
+        //}
     }
 
     void draw()
@@ -81,11 +81,11 @@ namespace ppp
         _particle.look(_walls);
         _particle.show();
 
-        color::fill({255,0,0,255});
-        std::string str_frame_rate = std::to_string(environment::frame_rate());
-        std::string str_delta_time = std::to_string(environment::delta_time());
-
-        typography::text(str_frame_rate, 10, 10);
-        typography::text(str_delta_time, 70, 10);
+        //color::fill({255,0,0,255});
+        //std::string str_frame_rate = std::to_string(environment::frame_rate());
+        //std::string str_delta_time = std::to_string(environment::delta_time());
+        //
+        //typography::text(str_frame_rate, 10, 10);
+        //typography::text(str_delta_time, 70, 10);
     }
 }

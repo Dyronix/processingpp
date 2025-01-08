@@ -103,8 +103,8 @@ namespace ppp
         shapes::enable_wireframe_mode(false);
         shapes::enable_solid_mode(true);
 
-        _image_container = image::load("local:content/container.jpg");
-        _image_wall = image::load("local:content/wall.jpg");
+        _image_container = image::load("local:content/t_container.jpg");
+        _image_wall = image::load("local:content/t_wall.jpg");
 
         structure::on_draw_end(end_draw);
     }

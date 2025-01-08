@@ -97,8 +97,8 @@ namespace ppp
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
         camera::set_scene_camera(20, -40, 400);
 
-        _image_container = image::load("local:content/container.jpg");
-        _image_wall = image::load("local:content/wall.jpg");
+        _image_container = image::load("local:content/t_container.jpg");
+        _image_wall = image::load("local:content/t_wall.jpg");
 
         structure::on_draw_end(end_draw);
 

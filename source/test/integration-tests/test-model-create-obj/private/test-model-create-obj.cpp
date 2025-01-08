@@ -10,10 +10,7 @@ namespace ppp
     constexpr int _window_width = 1280;
     constexpr int _window_height = 720;
 
-    model::model_id _potion_00_id;
-    model::model_id _potion_01_id;
-    model::model_id _potion_02_id;
-
+    model::model_id _model_id;
     image::image _image;
 
     void setup_canvas()
@@ -103,18 +100,12 @@ namespace ppp
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
         camera::set_scene_camera(20, -40, 400);
 
-        _image = image::load("local:content/T_simple-fantasy-interiors.png");
+        _image = image::load("local:content/t_crystal.png");
 
-        std::string potion_00_string = 
-            #include "potion-00.h"
-        std::string potion_01_string = 
-            #include "potion-01.h"
-        std::string potion_02_string = 
-            #include "potion-02.h"
+        std::string crystal_string = 
+            #include "crystal.h"
 
-        _potion_00_id = model::create_model(potion_00_string, model::model_file_type::OBJ);
-        _potion_01_id = model::create_model(potion_01_string, model::model_file_type::OBJ);
-        _potion_02_id = model::create_model(potion_02_string, model::model_file_type::OBJ);
+        _model_id = model::create_model(crystal_string, model::model_file_type::OBJ);
 
         structure::on_draw_end(end_draw);
     }
@@ -139,21 +130,9 @@ namespace ppp
         material::texture(_image.id);
 
         transform::push();
-        transform::translate(-75.0f, 0.0f, 0.0f);
-        transform::scale(100.0f, 100.0f, 100.0f);
-        model::draw(_potion_00_id);
-        transform::pop();
-
-        transform::push();
-        transform::translate(00.0f, 0.0f, 0.0f);
-        transform::scale(100.0f, 100.0f, 100.0f);
-        model::draw(_potion_01_id);
-        transform::pop();
-
-        transform::push();
-        transform::translate(75.0f, 0.0f, 0.0f);
-        transform::scale(100.0f, 100.0f, 100.0f);
-        model::draw(_potion_02_id);
+        transform::translate(00.0f, -45.0f, 0.0f);
+        transform::scale(40.0f, 40.0f, 40.0f);
+        model::draw(_model_id);
         transform::pop();
     }
 }
