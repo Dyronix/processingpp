@@ -24,7 +24,7 @@ namespace ppp
             NORMAL,
             TEXCOORD,
             COLOR,
-            DIFFUSE_TEXTURE_INDEX,
+            SHAPE_ID,
             WORLD_MATRIX
         };
 
@@ -38,7 +38,7 @@ namespace ppp
             case attribute_type::TEXCOORD:               return 2;
             case attribute_type::COLOR:                  return 4;
 
-            case attribute_type::DIFFUSE_TEXTURE_INDEX:  return 1;
+            case attribute_type::SHAPE_ID:  return 1;
             }
             return 0;  // Fallback to avoid compiler warnings
         }
@@ -122,7 +122,7 @@ namespace ppp
                 static const std::string s_attribute_type_normal = "NORMAL|VEC3";
                 static const std::string s_attribute_type_texcoord = "TEXCOORD|VEC2";
                 static const std::string s_attribute_type_color = "COLOR|VEC4";
-                static const std::string s_attribute_type_diffuse_texture_index = "DIFFUSE TEXTURE INDEX|INT";
+                static const std::string s_attribute_type_diffuse_texture_index = "SHAPE ID|INT";
                 static const std::string s_attribute_type_world_matrix = "WORLD MATRIX|MAT4";
 
                 switch (type)
@@ -131,7 +131,7 @@ namespace ppp
                 case attribute_type::NORMAL:                   return s_attribute_type_normal.data();
                 case attribute_type::TEXCOORD:                 return s_attribute_type_texcoord.data();
                 case attribute_type::COLOR:                    return s_attribute_type_color.data();
-                case attribute_type::DIFFUSE_TEXTURE_INDEX:    return s_attribute_type_diffuse_texture_index.data();
+                case attribute_type::SHAPE_ID:                 return s_attribute_type_diffuse_texture_index.data();
                 case attribute_type::WORLD_MATRIX:             return s_attribute_type_world_matrix.data();
                 default:
                     assert(false && "Unknown attribute type");

@@ -337,7 +337,7 @@ namespace ppp
                     3 * sizeof(float) + 2 * sizeof(float)
                 },
                 attribute_layout{
-                    attribute_type::DIFFUSE_TEXTURE_INDEX,
+                    attribute_type::SHAPE_ID,
                     attribute_data_type::INT,
 
                     3,
@@ -396,7 +396,7 @@ namespace ppp
                     3 * sizeof(float) + 3 * sizeof(float) + 2 * sizeof(float)
                 },
                 attribute_layout{
-                    attribute_type::DIFFUSE_TEXTURE_INDEX,
+                    attribute_type::SHAPE_ID,
                     attribute_data_type::INT,
 
                     4,
@@ -439,7 +439,7 @@ namespace ppp
             std::array<attribute_layout, 3> _color_world_texid_layout
             {
                 attribute_layout{
-                    attribute_type::DIFFUSE_TEXTURE_INDEX,
+                    attribute_type::SHAPE_ID,
                     attribute_data_type::INT,
 
                     0,

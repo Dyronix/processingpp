@@ -36,7 +36,7 @@ namespace ppp
             void reset();
             void release();
 
-            bool can_add(s32 nr_vertices, s32 nr_indices) const;
+            bool can_add(const irender_item* item) const;
 
             bool has_data() const;
             bool has_reserved_texture_space() const;

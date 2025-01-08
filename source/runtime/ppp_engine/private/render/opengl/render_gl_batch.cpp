@@ -70,6 +70,17 @@ namespace ppp
                 log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
                 return GL_UNSIGNED_INT;
             }
+            //-------------------------------------------------------------------------
+            static const std::vector<image_usage_type>& image_usage_types()
+            {
+                static std::vector<image_usage_type> all_types =
+                {
+                    image_usage_type::DIFFUSE, image_usage_type::NORMAL, image_usage_type::SPECULAR, image_usage_type::EMISSIVE,
+                    image_usage_type::HEIGHT, image_usage_type::SHADOW, image_usage_type::CUSTOM_0, image_usage_type::CUSTOM_1
+                };
+
+                return all_types;
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -103,36 +114,30 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void add_vertices(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
-            {
-                add_vertices(item, -1, color, world);
-            }
-            //-------------------------------------------------------------------------
-            void add_vertices(const irender_item* item, s32 sampler_id, const glm::vec4& color, const glm::mat4& world)
+            void add_vertices(const irender_item* item, s32 shape_id, const glm::vec4& color, const glm::mat4& world)
             {
                 s32 start_index = m_vertex_buffer.active_vertex_count();
                 s32 end_index = start_index + item->vertex_count();
 
-                copy_vertex_data(item, sampler_id, color);
-
+                copy_vertex_data(item, shape_id, color);
                 transform_vertex_positions(start_index, end_index, world);
+
                 if (m_vertex_buffer.has_layout(attribute_type::NORMAL))
                 {
                     transform_vertex_normals(start_index, end_index, world);
                 }
 
-                if (m_vertex_buffer.has_layout(attribute_type::DIFFUSE_TEXTURE_INDEX) && sampler_id != -1)
-                {
-                    transform_vertex_diffuse_texture_ids(start_index, end_index, sampler_id);
-                }
+                //if (m_vertex_buffer.has_layout(attribute_type::SHAPE_ID))
+                //{
+                //    transform_vertex_diffuse_texture_ids(start_index, end_index, shape_id);
+                //}
             }
             //-------------------------------------------------------------------------
             void add_indices(const irender_item* item)
             {
                 assert(!item->faces().empty());
 
-                auto index_buffer = &m_index_buffer;
-                s32 start_index = index_buffer->active_index_count();
+                s32 start_index = m_index_buffer.active_index_count();
                 s32 end_index = start_index + item->index_count();
 
                 copy_index_data(item);
@@ -179,18 +184,14 @@ namespace ppp
 
         private:
             //-------------------------------------------------------------------------
-            void copy_vertex_data(const irender_item* item, s32 sampler_id, const glm::vec4& color)
+            void copy_vertex_data(const irender_item* item, s32 shape_id, const glm::vec4& color)
             {
                 vertex_buffer_ops::vertex_attribute_addition_scope vaas(m_vertex_buffer, item->vertex_count());
 
                 if (m_vertex_buffer.has_layout(attribute_type::POSITION)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::POSITION, item->vertex_positions().data());
                 if (m_vertex_buffer.has_layout(attribute_type::NORMAL)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::NORMAL, item->vertex_normals().data());
-                if (m_vertex_buffer.has_layout(attribute_type::TEXCOORD)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::TEXCOORD, item->vertex_uvs().data());
-                
-                if (m_vertex_buffer.has_layout(attribute_type::DIFFUSE_TEXTURE_INDEX) && sampler_id != - 1)
-                {
-                    vertex_buffer_ops::map_attribute_data(vaas, attribute_type::DIFFUSE_TEXTURE_INDEX, (void*)&sampler_id);
-                }
+                if (m_vertex_buffer.has_layout(attribute_type::TEXCOORD)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::TEXCOORD, item->vertex_uvs().data());              
+                if (m_vertex_buffer.has_layout(attribute_type::SHAPE_ID)) vertex_buffer_ops::map_attribute_data(vaas, attribute_type::SHAPE_ID, (void*)&shape_id);
 
                 vertex_buffer_ops::map_attribute_data(vaas, attribute_type::COLOR, (void*)&color[0]);
             }
@@ -229,11 +230,11 @@ namespace ppp
                 });
             }
             //-------------------------------------------------------------------------
-            void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 sampler_id)
+            void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 shape_id)
             {
-                vertex_buffer_ops::transform_attribute_data<s32>(m_vertex_buffer, attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](s32& id)
+                vertex_buffer_ops::transform_attribute_data<s32>(m_vertex_buffer, attribute_type::SHAPE_ID, start_index, end_index, [&](s32& id)
                 {
-                    id = sampler_id;
+                    id = shape_id;
                 });
             }           
             //-------------------------------------------------------------------------
@@ -337,7 +338,8 @@ namespace ppp
             std::unique_ptr<batch_buffer_manager> m_buffer_manager;
             std::unique_ptr<texture_registry> m_texture_registry;
 
-            u32 m_vao;
+            u32 m_vao = 0;
+            s32 m_shape_count = 0;
         };
 
         //-------------------------------------------------------------------------
@@ -376,6 +378,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         void batch::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
         {
+            /*
+            * When smoothing normals vertices are deduplicated,
+            *   this mean that when we have 36 or 24 unique vertices ( or any other variation ) they will be welded together
+            *   a normal is generated for these vertices, the problem is that UV space is messed up when this happens.
+            *   some weird artifacts appear when this is the case, hence why we disable it.
+            */
+            assert(item->has_smooth_normals() == false && "Smooth normals and texturing is not supported");
+
             if (item->index_count() != 0)
             {
                 m_pimpl->m_buffer_manager->add_indices(item);
@@ -383,31 +393,21 @@ namespace ppp
             
             if (m_pimpl->m_texture_registry->has_reserved_texture_space())
             {
-                assert(item->texture_ids().size() == 1 && "Currently only one texture per render item is supported");
-
-                /*
-                * When smoothing normals vertices are deduplicated, 
-                *   this mean that when we have 36 or 24 unique vertices ( or any other variation ) they will be welded together
-                *   a normal is generated for these vertices, the problem is that UV space is messed up when this happens.
-                *   some weird artifacts appear when this is the case, hence why we disable it.
-                */
-                assert(item->has_smooth_normals() == false && "Smooth normals and texturing is not supported");
-
-                s32 sampler_id = m_pimpl->m_texture_registry->add_texture(item->texture_ids()[0]);
-                if (sampler_id != -1)
+                for (const image_usage_type& type : internal::image_usage_types())
                 {
-                    m_pimpl->m_buffer_manager->add_vertices(item, sampler_id, color, world);
-                }
-                else
-                {
-                    log::error("Unable to generate sampler id for texture.");
-                    exit(EXIT_FAILURE);
+                    for (const texture_id& id : item->material_attributes().textures(type))
+                    {
+                        s32 sampler_id = m_pimpl->m_texture_registry->add_texture(type, id);
+                        if (sampler_id == -1)
+                        {
+                            log::error("Unable to generate sampler id for texture.");
+                            exit(EXIT_FAILURE);
+                        }
+                    }
                 }
             }
-            else
-            {
-                m_pimpl->m_buffer_manager->add_vertices(item, color, world);
-            }
+
+            m_pimpl->m_buffer_manager->add_vertices(item, m_pimpl->m_shape_count++, color, world);
         }
         //-------------------------------------------------------------------------
         void batch::reset()
@@ -425,9 +425,28 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool batch::can_add(s32 nr_vertices, s32 nr_indices) const
+        bool batch::can_add(const irender_item* item) const
         {
-            return m_pimpl->m_buffer_manager->can_add(nr_vertices, nr_indices);
+            s32 nr_vertices = item->vertex_count();
+            s32 nr_indices = item->index_count();
+
+            if (m_pimpl->m_buffer_manager->can_add(nr_vertices, nr_indices))
+            {
+                if (m_pimpl->m_texture_registry->has_reserved_texture_space())
+                {
+                    for (const image_usage_type& type : internal::image_usage_types())
+                    {
+                        s32 num_textures = item->material_attributes().num_textures(type);
+
+                        if (m_pimpl->m_texture_registry->can_add_texture(type, num_textures) == false)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
         }
         //-------------------------------------------------------------------------
         bool batch::has_data() const
@@ -523,7 +542,7 @@ namespace ppp
                 exit(EXIT_FAILURE);
             }
             
-            if (m_pimpl->batches[m_pimpl->push_batch].can_add(item->vertex_count(), item->index_count()))
+            if (m_pimpl->batches[m_pimpl->push_batch].can_add(item))
             {
                 m_pimpl->batches[m_pimpl->push_batch].append(item, color, world);
             }
