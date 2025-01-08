@@ -35,6 +35,18 @@ namespace ppp
             REPEAT,
         };
 
+        enum class image_usage_type
+        {
+            DIFFUSE,
+            NORMAL,
+            SPECULAR,
+            EMISSIVE,
+            HEIGHT,
+            SHADOW,
+            CUSTOM_0,
+            CUSTOM_1
+        };
+
         enum class render_buffer_policy
         {
             IMMEDIATE,

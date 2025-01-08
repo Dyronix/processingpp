@@ -3,7 +3,7 @@
 #include "util/hash.h"
 #include "util/types.h"
 
-#include "render/render_item_components.h"
+#include "render/render_item.h"
 #include "render/render_types.h"
 
 #include <glm/glm.hpp>

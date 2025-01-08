@@ -6,6 +6,9 @@ namespace ppp
     constexpr int _window_width = 1280;
     constexpr int _window_height = 720;
 
+    image::image _image_container;
+    image::image _image_wall;
+
     void setup_canvas()
     {
         color::background(15);
@@ -38,6 +41,9 @@ namespace ppp
 
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
         camera::set_scene_camera(20, -40, 400);
+
+        _image_container = image::load("local:content/t_container.jpg");
+        _image_wall = image::load("local:content/t_wall.jpg");
     }
 
     void draw()
@@ -55,5 +61,16 @@ namespace ppp
         camera::orbit_control(options);
 
         color::fill({ 255,0,0,255 });
+
+        transform::push();
+        
+        material::reset_textures();
+
+        material::texture(_image_wall.id, material::texture_usage::DIFFUSE);
+        material::texture(_image_container.id, material::texture_usage::DIFFUSE);
+
+        shapes::box(50.0f, 50.0f, 50.0f);
+
+        transform::pop();
     }
 }

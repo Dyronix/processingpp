@@ -4,6 +4,7 @@
 
 #include "render/render.h"
 #include "render/render_types.h"
+#include "render/render_features.h"
 
 #include "resources/shader_pool.h"
 
@@ -47,25 +48,44 @@ namespace ppp
             normal_mode_type _normal_mode = normal_mode_type::FLAT;
         }
 
+        namespace conversions
+        {
+            //-------------------------------------------------------------------------
+            render::image_usage_type to_image_usage_type(material::texture_usage usage)
+            {
+                switch (usage)
+                {
+                case material::texture_usage::DIFFUSE: return render::image_usage_type::DIFFUSE;
+                case material::texture_usage::EMISSIVE: return render::image_usage_type::EMISSIVE;
+                case material::texture_usage::NORMAL: return render::image_usage_type::NORMAL;
+                case material::texture_usage::SPECULAR: return render::image_usage_type::SPECULAR;
+                case material::texture_usage::HEIGHT: return render::image_usage_type::HEIGHT;
+                case material::texture_usage::CUSTOM_0: return render::image_usage_type::CUSTOM_0;
+                case material::texture_usage::CUSTOM_1: return render::image_usage_type::CUSTOM_1;
+                }
+            }
+        }
+
         //-------------------------------------------------------------------------
-        std::vector<render::texture_id> _active_textures;
+        render::material_attributes _active_attributes;
 
         //-------------------------------------------------------------------------
         class shape : public render::irender_item
         {
         public:
-            shape(const geometry::geometry* geom, const std::vector<render::texture_id>& ids = {})
+            shape(const geometry::geometry* geom, const render::material_attributes& attributes = { render::max_textures() })
                 :m_geometry(geom)
-                ,m_texture_ids(ids)
+                , m_material_attributes(attributes)
             {}
+
+            const render::material_attributes& material_attributes() const override
+            {
+                return m_material_attributes;
+            }
 
             bool has_texture_id(render::texture_id id) const override
             {
-                return std::find_if(std::cbegin(texture_ids()), std::cend(texture_ids()),
-                    [id](const render::texture_id other)
-                {
-                    return id == other;
-                }) != std::cend(texture_ids());
+                return m_material_attributes.has_texture_id(id);
             }
             bool has_smooth_normals() const override
             {
@@ -79,10 +99,6 @@ namespace ppp
             u64 index_count() const override
             {
                 return m_geometry->index_count();
-            }
-            u64 texture_count() const override
-            {
-                return texture_ids().size();
             }
 
             const std::vector<glm::vec3>& vertex_positions() const override
@@ -102,10 +118,6 @@ namespace ppp
             {
                 return m_geometry->faces();
             }
-            const std::vector<render::texture_id>& texture_ids() const override
-            {
-                return m_texture_ids;
-            }
 
             const u64 id() const override
             {
@@ -114,26 +126,46 @@ namespace ppp
 
         private:
             const geometry::geometry* m_geometry;
-            const std::vector<render::texture_id> m_texture_ids;
+            const render::material_attributes m_material_attributes;
         };
+
+        //-------------------------------------------------------------------------
+        static std::vector<material::texture_usage>& texture_usages()
+        {
+            static std::vector<material::texture_usage> usages =
+            {
+                material::texture_usage::DIFFUSE,
+                material::texture_usage::EMISSIVE,
+                material::texture_usage::NORMAL,
+                material::texture_usage::SPECULAR,
+                material::texture_usage::HEIGHT,
+                material::texture_usage::CUSTOM_0,
+                material::texture_usage::CUSTOM_1,
+            };
+
+            return usages;
+        }
 
         //-------------------------------------------------------------------------
         shape create_shape(const geometry::geometry* geom)
         {
-            _active_textures.clear();
+            _active_attributes.reset();
 
-            u32 channel = 0;
-            u32 texture = material::get_texture(channel);
-
-            while (texture != -1)
+            for (auto usage : texture_usages())
             {
-                _active_textures.push_back(texture);
+                u32 channel = 0;
+                u32 texture = material::get_texture(usage, channel);
 
-                channel = channel + 1;
-                texture = material::get_texture(channel);
+                while (texture != -1)
+                {
+                    _active_attributes.add_texture(conversions::to_image_usage_type(usage), texture);
+
+                    channel = channel + 1;
+                    texture = material::get_texture(usage, channel);
+                }
             }
 
-            return shape(geom, _active_textures);
+            return shape(geom, _active_attributes);
         }
 
         //-------------------------------------------------------------------------

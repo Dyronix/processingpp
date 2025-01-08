@@ -1,54 +1,159 @@
 #include "render/helpers/render_texture_registry.h"
 
+#include <algorithm>
+
 namespace ppp
 {
     namespace render
     {
-        //-------------------------------------------------------------------------
-        texture_registry::texture_registry(s32 size_textures)
-            :m_max_texture_count(size_textures)
+        namespace internal
         {
-            if (size_textures != -1)
+            //-------------------------------------------------------------------------
+            static const std::vector<image_usage_type>& image_usage_types()
             {
-                m_image_to_sampler_map.reserve(size_textures);
+                static std::vector<image_usage_type> all_types =
+                {
+                    image_usage_type::DIFFUSE, image_usage_type::NORMAL, image_usage_type::SPECULAR, image_usage_type::EMISSIVE,
+                    image_usage_type::HEIGHT, image_usage_type::SHADOW, image_usage_type::CUSTOM_0, image_usage_type::CUSTOM_1
+                };
 
-                m_images.reserve(size_textures);
-                m_samplers.reserve(size_textures);
+                return all_types;
             }
         }
 
         //-------------------------------------------------------------------------
-        bool texture_registry::can_add(s32 nr_textures)
+        // Texture Binding Map
+        texture_binding_map::texture_binding_map(s32 size_textures)
+            :m_max_texture_entries(size_textures)
         {
-            return has_reserved_texture_space() && m_image_to_sampler_map.size() + nr_textures < m_max_texture_count;
+            if (size_textures != -1)
+            {
+                m_texture_entry_to_sampler_entry_map.reserve(size_textures);
+
+                m_texture_entries.reserve(size_textures);
+                m_sampler_entries.reserve(size_textures);
+            }
+        }
+
+        //-------------------------------------------------------------------------
+        bool texture_binding_map::can_add(s32 nr_textures) const
+        {
+            return has_reserved_texture_space() && m_texture_entry_to_sampler_entry_map.size() + nr_textures < m_max_texture_entries;
+        }
+
+        //-------------------------------------------------------------------------
+        bool texture_binding_map::has_data() const
+        {
+            return m_texture_entries.size() > 0;
+        }
+
+        //-------------------------------------------------------------------------
+        bool texture_binding_map::has_reserved_texture_space() const
+        {
+            return m_max_texture_entries > 0;
+        }
+
+        //-------------------------------------------------------------------------
+        s32 texture_binding_map::add_texture(texture_entry entry)
+        {
+            if (has_reserved_texture_space())
+            {
+                if (m_texture_entry_to_sampler_entry_map.find(entry) == m_texture_entry_to_sampler_entry_map.cend())
+                {
+                    m_texture_entry_to_sampler_entry_map[entry] = m_sampler_entries.size();
+
+                    m_texture_entries.push_back(entry);
+                    m_sampler_entries.push_back(m_sampler_entries.size());
+                }
+
+                return m_texture_entry_to_sampler_entry_map.at(entry);
+            }
+
+            return -1;
+        }
+
+        //-------------------------------------------------------------------------
+        void texture_binding_map::reset()
+        {
+            m_texture_entry_to_sampler_entry_map.clear();
+
+            m_texture_entries.clear();
+            m_sampler_entries.clear();
+        }
+
+        //-------------------------------------------------------------------------
+        void texture_binding_map::release()
+        {
+            reset();
+        }
+
+        //-------------------------------------------------------------------------
+        const std::vector<texture_sampler_entry>& texture_binding_map::samplers() const { return m_sampler_entries; }
+        const std::vector<texture_entry>& texture_binding_map::textures() const { return m_texture_entries; }
+
+        //-------------------------------------------------------------------------
+        u64 texture_binding_map::active_sampler_count() const { return has_reserved_texture_space() ? m_sampler_entries.size() : 0; }
+        u64 texture_binding_map::active_texture_count() const { return has_reserved_texture_space() ? m_texture_entries.size() : 0; }
+
+        //-------------------------------------------------------------------------
+        u32 texture_binding_map::max_texture_count() const { return has_reserved_texture_space() ? m_max_texture_entries : 0; }
+
+        //-------------------------------------------------------------------------
+        // Texture Registry
+        
+        //-------------------------------------------------------------------------
+        texture_registry::texture_registry(s32 max_textures)
+            :m_max_texture_count(max_textures)
+        {
+            s32 nr_types = (s32)internal::image_usage_types().size();
+
+            m_binding_map.emplace(image_usage_type::DIFFUSE, texture_binding_map(max_textures / nr_types));
+            m_binding_map.emplace(image_usage_type::SPECULAR, texture_binding_map(max_textures / nr_types));
+            m_binding_map.emplace(image_usage_type::NORMAL, texture_binding_map(max_textures / nr_types));
+            m_binding_map.emplace(image_usage_type::EMISSIVE, texture_binding_map(max_textures / nr_types));
+            m_binding_map.emplace(image_usage_type::HEIGHT, texture_binding_map(max_textures / nr_types));
+            m_binding_map.emplace(image_usage_type::SHADOW, texture_binding_map(max_textures / nr_types));
+            m_binding_map.emplace(image_usage_type::CUSTOM_0, texture_binding_map(max_textures / nr_types));
+            m_binding_map.emplace(image_usage_type::CUSTOM_1, texture_binding_map(max_textures / nr_types));
+        }
+
+        //-------------------------------------------------------------------------
+        bool texture_registry::can_add_texture(image_usage_type usage_type, s32 nr_textures) const
+        {
+            if (m_binding_map.find(usage_type) != m_binding_map.cend())
+            {
+                return m_binding_map.at(usage_type).can_add(nr_textures);
+            }
+
+            return false;
         }
 
         //-------------------------------------------------------------------------
         bool texture_registry::has_data() const
         {
-            return m_images.size() > 0;
+            return std::any_of(m_binding_map.begin(), m_binding_map.end(),
+                [](const auto& pair)
+            {
+                return pair.second.has_data();
+            });
         }
 
         //-------------------------------------------------------------------------
         bool texture_registry::has_reserved_texture_space() const
         {
-            return m_max_texture_count > 0;
+            return std::any_of(m_binding_map.begin(), m_binding_map.end(),
+                [](const auto& pair)
+            {
+                return pair.second.has_reserved_texture_space();
+            });
         }
 
         //-------------------------------------------------------------------------
-        s32 texture_registry::add_texture(u32 image_id)
+        s32 texture_registry::add_texture(image_usage_type usage_type, texture_entry entry)
         {
-            if (has_reserved_texture_space())
+            if (m_binding_map.find(usage_type) != m_binding_map.cend())
             {
-                if (m_image_to_sampler_map.find(image_id) == m_image_to_sampler_map.cend())
-                {
-                    m_image_to_sampler_map[image_id] = m_samplers.size();
-
-                    m_images.push_back(image_id);
-                    m_samplers.push_back(m_samplers.size());
-                }
-
-                return m_image_to_sampler_map.at(image_id);
+                return m_binding_map.at(usage_type).add_texture(entry);
             }
 
             return -1;
@@ -57,27 +162,71 @@ namespace ppp
         //-------------------------------------------------------------------------
         void texture_registry::reset()
         {
-            m_image_to_sampler_map.clear();
-
-            m_images.clear();
-            m_samplers.clear();
+            for (auto& registry : m_binding_map)
+            {
+                registry.second.reset();
+            }
         }
 
         //-------------------------------------------------------------------------
         void texture_registry::release()
         {
-            reset();
+            for (auto& registry : m_binding_map)
+            {
+                registry.second.release();
+            }
         }
 
         //-------------------------------------------------------------------------
-        const std::vector<s32>& texture_registry::samplers() const { return m_samplers; }
-        const std::vector<u32>& texture_registry::textures() const { return m_images; }
+        const std::vector<texture_sampler_entry>& texture_registry::samplers(image_usage_type usage_type) const
+        {
+            if (m_binding_map.find(usage_type) != m_binding_map.cend())
+            {
+                return m_binding_map.at(usage_type).samplers();
+            }
+
+            static std::vector<texture_sampler_entry> empty_vec;
+
+            return empty_vec;
+        }
+        //-------------------------------------------------------------------------
+        const std::vector<texture_entry>& texture_registry::textures(image_usage_type usage_type) const
+        {
+            if (m_binding_map.find(usage_type) != m_binding_map.cend())
+            {
+                return m_binding_map.at(usage_type).textures();
+            }
+
+            static std::vector<texture_entry> empty_vec;
+
+            return empty_vec;
+        }
 
         //-------------------------------------------------------------------------
-        u64 texture_registry::active_sampler_count() const { return has_reserved_texture_space() ? m_samplers.size() : 0; }
-        u64 texture_registry::active_texture_count() const { return has_reserved_texture_space() ? m_images.size() : 0; }
+        u64 texture_registry::active_sampler_count(image_usage_type usage_type) const
+        {
+            if (m_binding_map.find(usage_type) != m_binding_map.cend())
+            {
+                return m_binding_map.at(usage_type).active_sampler_count();
+            }
+
+            return 0;
+        }
+        //-------------------------------------------------------------------------
+        u64 texture_registry::active_texture_count(image_usage_type usage_type) const
+        {
+            if (m_binding_map.find(usage_type) != m_binding_map.cend())
+            {
+                return m_binding_map.at(usage_type).active_texture_count();
+            }
+
+            return 0;
+        }
 
         //-------------------------------------------------------------------------
-        u32 texture_registry::max_texture_count() const { return has_reserved_texture_space() ? m_max_texture_count : 0; }
+        u32 texture_registry::max_texture_count() const
+        {
+            return has_reserved_texture_space() ? m_max_texture_count : 0;
+        }
     }
 }

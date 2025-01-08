@@ -17,7 +17,7 @@ namespace ppp
 
     namespace model
     {
-        struct material
+        struct material_attributes
         {
             glm::vec4 diffuse_color;
             glm::vec4 ambient_color;

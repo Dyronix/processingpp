@@ -12,7 +12,7 @@ namespace ppp
         static constexpr s32 _max_lines = 9'000;
         static constexpr s32 _max_triangles = 9'000;
 
-        static constexpr s32 _max_texture_units = 8;
+        static constexpr s32 _max_texture_units = 32;
 
         //-------------------------------------------------------------------------
         u32 max_vertices(topology_type type)

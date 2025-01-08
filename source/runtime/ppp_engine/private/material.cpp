@@ -12,7 +12,26 @@ namespace ppp
         namespace internal
         {
             //-------------------------------------------------------------------------
-            std::unordered_map<u32, u32> _active_textures = {};
+            std::unordered_map<texture_usage, std::unordered_map<u32, u32>> _active_textures = {};
+        }
+
+        namespace conversions
+        {
+            std::string to_string(texture_usage usage)
+            {
+                switch (usage)
+                {
+                case ppp::material::texture_usage::DIFFUSE: return "USAGE|DIFFUSE";
+                case ppp::material::texture_usage::NORMAL: return "USAGE|NORMAL";
+                case ppp::material::texture_usage::SPECULAR: return "USAGE|SPECULAR";
+                case ppp::material::texture_usage::EMISSIVE: return "USAGE|EMISSIVE";
+                case ppp::material::texture_usage::HEIGHT: return "USAGE|HEIGHT";
+                case ppp::material::texture_usage::CUSTOM_0: return "USAGE|CUSTOM_0";
+                case ppp::material::texture_usage::CUSTOM_1: return "USAGE|CUSTOM_1";
+                default:
+                    return "USAGE|UNKNOWN";
+                }
+            }
         }
 
         namespace tags
@@ -96,22 +115,38 @@ namespace ppp
 
         void texture(unsigned int image_id)
         {
-            texture(image_id, 0);
+            texture(image_id, texture_usage::DIFFUSE, 0);
         }
 
-        void texture(unsigned int image_id, unsigned int texture_channel)
+        void texture(unsigned int image_id, texture_usage usage)
         {
-            internal::_active_textures[texture_channel] = image_id;
+            texture(image_id, usage, 0);
         }
 
-        void reset_texture(unsigned int texture_channel)
+        void texture(unsigned int image_id, texture_usage usage, unsigned int channel)
         {
-            if (internal::_active_textures.find(texture_channel) == std::cend(internal::_active_textures))
+            internal::_active_textures[usage][channel] = image_id;
+        }
+
+        void reset_texture(texture_usage usage, unsigned int channel)
+        {
+            auto it = internal::_active_textures.find(usage);
+
+            // Cannot find textures for texture usage
+            if (it == std::cend(internal::_active_textures))
             {
+                log::warn("Unable to find texture for texture usage: {}", conversions::to_string(usage));
                 return;
             }
 
-            internal::_active_textures[texture_channel] = -1;
+            // Cannot find textures for texture channel
+            if (it->second.find(channel) == std::cend(it->second))
+            {
+                log::warn("Unable to find texture for texture channel: {}", channel);
+                return;
+            }
+
+            internal::_active_textures[usage][channel] = -1;
         }
 
         void reset_textures()
@@ -119,14 +154,25 @@ namespace ppp
             internal::_active_textures.clear();
         }
 
-        unsigned int get_texture(unsigned int texture_channel)
+        unsigned int get_texture(texture_usage usage, unsigned int channel)
         {
-            if (internal::_active_textures.find(texture_channel) == std::cend(internal::_active_textures))
+            auto it = internal::_active_textures.find(usage);
+
+            // Cannot find textures for texture usage
+            if (it == std::cend(internal::_active_textures))
             {
+                log::warn("Unable to find texture for texture usage: {}", conversions::to_string(usage));
                 return -1;
             }
 
-            return internal::_active_textures.at(texture_channel);
+            // Cannot find textures for texture channel
+            if (it->second.find(channel) == std::cend(it->second))
+            {
+                log::warn("Unable to find texture for texture channel: {}", channel);
+                return -1;
+            }
+
+            return internal::_active_textures.at(usage).at(channel);
         }
 
         void shader(const std::string& tag)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "render/render_item_components.h"
+#include "render/render_item.h"
 
 #include "util/log.h"
 

@@ -38,13 +38,25 @@ namespace ppp
             void set_uniform(const std::string& uniform_name, const glm::mat4& value);
         };
 
-        void texture(unsigned int image_id);
-        void texture(unsigned int image_id, unsigned int texture_channel);
+        enum class texture_usage
+        {
+            DIFFUSE,
+            NORMAL,
+            SPECULAR,
+            EMISSIVE,
+            HEIGHT,
+            CUSTOM_0,
+            CUSTOM_1
+        };
 
-        void reset_texture(unsigned int texture_channel = 0);
+        void texture(unsigned int image_id);
+        void texture(unsigned int image_id, texture_usage usage);
+        void texture(unsigned int image_id, texture_usage usage, unsigned int channel);
+
+        void reset_texture(texture_usage usage, unsigned int channel = 0);
         void reset_textures();
 
-        unsigned int get_texture(unsigned int texture_channel = 0);
+        unsigned int get_texture(texture_usage usage, unsigned int channel = 0);
 
         void shader(const std::string& tag);
         void reset_shader();

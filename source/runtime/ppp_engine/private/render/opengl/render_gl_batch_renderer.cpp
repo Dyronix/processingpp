@@ -1,5 +1,5 @@
 #include "render/render_batch_renderer.h"
-#include "render/render_item_components.h"
+#include "render/render_item.h"
 #include "render/render_shaders.h"
 #include "render/render_features.h"
 
