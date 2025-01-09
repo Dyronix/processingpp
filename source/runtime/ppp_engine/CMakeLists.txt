@@ -31,7 +31,6 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_types.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shaders.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_material.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_storage_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.h
@@ -98,8 +97,6 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/rectangle.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/geometry_2d_helpers.h
     # model
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model/parse_stl.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model/parse_stl.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model/parse_obj.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model/parse_obj.cpp
 

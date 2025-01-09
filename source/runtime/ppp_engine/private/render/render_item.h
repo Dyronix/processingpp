@@ -1,7 +1,5 @@
 #pragma once
 
-#include "render_item_material.h"
-
 #include "util/types.h"
 #include "util/log.h"
 
@@ -96,19 +94,19 @@ namespace ppp
         class irender_item
         {
         public:
-            virtual const material_attributes& material_attributes() const = 0;
-
             virtual bool has_texture_id(render::texture_id id) const = 0;
             virtual bool has_smooth_normals() const = 0;
 
             virtual u64 vertex_count() const = 0;
             virtual u64 index_count() const = 0;
+            virtual u64 texture_count() const = 0;
 
             virtual const std::vector<glm::vec3>& vertex_positions() const = 0;
             virtual const std::vector<glm::vec3>& vertex_normals() const = 0;
             virtual const std::vector<glm::vec2>& vertex_uvs() const = 0;
 
             virtual const std::vector<face>& faces() const = 0;
+            virtual const std::vector<texture_id>& texture_ids() const = 0;
 
             virtual const u64 id() const = 0;
         };

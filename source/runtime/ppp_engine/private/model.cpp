@@ -2,7 +2,6 @@
 #include "material.h"
 
 #include "model/parse_obj.h"
-#include "model/parse_stl.h"
 
 #include "fileio/fileio.h"
 
@@ -28,7 +27,6 @@ namespace ppp
                 switch (file_type)
                 {
                 case ppp::model::model_file_type::OBJ: return "obj";
-                case ppp::model::model_file_type::STL: return "stl";
                     break;
                 default:
                     log::error("Trying to parse unknown type, exiting program");
@@ -151,13 +149,6 @@ namespace ppp
 
                 switch(file_type)
                 {
-                case model_file_type::STL:
-                    create_geom_fn = [&model_string](geometry::geometry* self)
-                    {
-                        std::vector<u8> buffer(model_string.begin(), model_string.end());
-                        parse_stl(self, buffer);
-                    };
-                    break;
                 case model_file_type::OBJ:
                     create_geom_fn = [&model_string](geometry::geometry* self)
                     {

@@ -16,69 +16,7 @@ namespace ppp
 {
     namespace model
     {
-        std::unordered_map<std::string, material> parse_mtl(const std::string& mtl_path) 
-        {
-            std::unordered_map<std::string, material> materials;
-
-            std::ifstream file(mtl_path);
-            if (!file.is_open()) 
-            {
-                throw std::runtime_error("Failed to open MTL file: " + mtl_path);
-            }
-
-            std::string line;
-            std::string current_material;
-
-            while (std::getline(file, line)) 
-            {
-                std::istringstream iss(line);
-                std::string token;
-
-                iss >> token;
-
-                if (token == "newmtl") 
-                {
-                    iss >> current_material;
-                    materials[current_material] = material();
-                }
-                else if (token == "Kd") 
-                {
-                    f32 r, g, b;
-                    iss >> r >> g >> b;
-                    materials[current_material].diffuse_color = glm::vec4(r, g, b, 1.0f);
-                }
-                else if (token == "Ka") 
-                {
-                    f32 r, g, b;
-                    iss >> r >> g >> b;
-                    materials[current_material].ambient_color = glm::vec4(r, g, b, 1.0f);
-                }
-                else if (token == "Ks") 
-                {
-                    f32 r, g, b;
-                    iss >> r >> g >> b;
-                    materials[current_material].specular_color = glm::vec4(r, g, b, 1.0f);
-                }
-                else if (token == "map_Kd") 
-                {
-                    std::string texture_path;
-                    iss >> texture_path;
-
-                    auto image = image::load(texture_path);
-                    if (image.id == 0)
-                    {
-                        log::error("Failed to load image at path: {}", texture_path);
-                        exit(EXIT_FAILURE);
-                    }
-
-                    materials[current_material].texture_ids.push_back(image.id);
-                }
-            }
-
-            return materials;
-        }
-
-        geometry::geometry* parse_obj(geometry::geometry* geom, const std::vector<std::string> buffer, std::unordered_map<std::string, material> materials)
+        geometry::geometry* parse_obj(geometry::geometry* geom, const std::vector<std::string> buffer)
         {
             std::unordered_map<std::string, std::unordered_map<std::string, s32>> used_verts;
 

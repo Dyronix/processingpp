@@ -10,7 +10,6 @@ namespace ppp
         enum class model_file_type
         {
             OBJ,
-            STL
         };
 
         using model_id = unsigned long long;
