@@ -7,7 +7,8 @@
 #include "fileio/fileio.h"
 
 #include "render/render.h"
-#include "render/render_item_components.h"
+#include "render/render_item.h"
+#include "render/render_features.h"
 
 #include "geometry/geometry.h"
 

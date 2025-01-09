@@ -30,12 +30,15 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_types.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shaders.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_components.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_item_material.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_storage_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_vertex_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_features.h
     ## render-opengl
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_storage_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_vertex_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_index_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance_buffer.cpp
