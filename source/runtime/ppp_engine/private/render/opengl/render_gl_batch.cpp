@@ -114,16 +114,11 @@ namespace ppp
                 s32 end_index = start_index + item->vertex_count();
 
                 copy_vertex_data(item, sampler_id, color);
-
                 transform_vertex_positions(start_index, end_index, world);
+
                 if (m_vertex_buffer.has_layout(attribute_type::NORMAL))
                 {
                     transform_vertex_normals(start_index, end_index, world);
-                }
-
-                if (m_vertex_buffer.has_layout(attribute_type::DIFFUSE_TEXTURE_INDEX) && sampler_id != -1)
-                {
-                    transform_vertex_diffuse_texture_ids(start_index, end_index, sampler_id);
                 }
             }
             //-------------------------------------------------------------------------
@@ -186,11 +181,7 @@ namespace ppp
                 if (m_vertex_buffer.has_layout(attribute_type::POSITION)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::POSITION, item->vertex_positions().data());
                 if (m_vertex_buffer.has_layout(attribute_type::NORMAL)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::NORMAL, item->vertex_normals().data());
                 if (m_vertex_buffer.has_layout(attribute_type::TEXCOORD)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::TEXCOORD, item->vertex_uvs().data());
-                
-                if (m_vertex_buffer.has_layout(attribute_type::DIFFUSE_TEXTURE_INDEX) && sampler_id != - 1)
-                {
-                    vertex_buffer_ops::map_attribute_data(vaas, attribute_type::DIFFUSE_TEXTURE_INDEX, (void*)&sampler_id);
-                }
+                if (m_vertex_buffer.has_layout(attribute_type::DIFFUSE_TEXTURE_INDEX) && sampler_id != - 1) vertex_buffer_ops::map_attribute_data(vaas, attribute_type::DIFFUSE_TEXTURE_INDEX, (void*)&sampler_id);
 
                 vertex_buffer_ops::map_attribute_data(vaas, attribute_type::COLOR, (void*)&color[0]);
             }
