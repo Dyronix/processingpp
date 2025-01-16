@@ -160,7 +160,7 @@ namespace ppp
         {
             if (m_instance_data_map.find(topology) == std::cend(m_instance_data_map))
             {
-                s32 max_tex = has_texture_support() ? max_textures() : -1;
+                s32 max_tex = -1;
 
                 m_instance_data_map.emplace(topology, instance_drawing_data(max_tex, layouts(), layout_count(), m_instance_layouts, m_instance_layout_count, m_buffer_policy));
             }
