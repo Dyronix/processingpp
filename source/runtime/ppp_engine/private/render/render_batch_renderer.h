@@ -16,7 +16,7 @@ namespace ppp
             static void set_wireframe_linecolor(s32 color);
 
         public:
-            batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag, bool enable_texture_support = false);
+            batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag);
             ~batch_renderer() override;
 
         public:

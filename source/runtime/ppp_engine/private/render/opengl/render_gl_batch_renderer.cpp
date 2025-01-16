@@ -6,6 +6,7 @@
 #include "render/opengl/render_gl_error.h"
 
 #include "resources/shader_pool.h"
+#include "resources/material_pool.h"
 
 #include "util/log.h"
 #include "util/color_ops.h"
@@ -86,8 +87,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        batch_renderer::batch_renderer(const attribute_layout* layouts, u64 layout_count, const std::string& shader_tag, bool enable_texture_support)
-            : base_renderer(layouts, layout_count, shader_tag, enable_texture_support)
+        batch_renderer::batch_renderer(const attribute_layout* layouts, u64 layout_count, const std::string& shader_tag)
+            : base_renderer(layouts, layout_count, shader_tag)
             , m_drawing_data_map()
             , m_buffer_policy(render_buffer_policy::IMMEDIATE)
             , m_render_policy(render_draw_policy::BUILD_IN)
@@ -159,9 +160,8 @@ namespace ppp
             {
                 s32 max_ver = max_vertices(topology);
                 s32 max_idx = max_indices(topology);
-                s32 max_tex = has_texture_support() ? max_textures() : -1;
 
-                m_drawing_data_map.emplace(topology, batch_drawing_data(max_ver, max_idx, max_tex, layouts(), layout_count(), m_buffer_policy));
+                m_drawing_data_map.emplace(topology, batch_drawing_data(max_ver, max_idx, layouts(), layout_count(), m_buffer_policy));
             }
 
             m_drawing_data_map.at(topology).append(item, color, world);
@@ -250,7 +250,7 @@ namespace ppp
         // Primitive Batch Renderer
         //-------------------------------------------------------------------------
         primitive_batch_renderer::primitive_batch_renderer(attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
-            :batch_renderer(layouts, layout_cout, shader_tag, false)
+            :batch_renderer(layouts, layout_cout, shader_tag)
         {
 
         }
@@ -279,7 +279,7 @@ namespace ppp
         // Texture Batch Renderer
         //-------------------------------------------------------------------------
         texture_batch_renderer::texture_batch_renderer(attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
-            :batch_renderer(layouts, layout_cout, shader_tag, true)
+            :batch_renderer(layouts, layout_cout, shader_tag)
         {
 
         }
