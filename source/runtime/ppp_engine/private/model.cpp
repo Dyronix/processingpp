@@ -53,7 +53,7 @@ namespace ppp
             }
             bool has_textures() const override
             {
-                return m_material->textures().size() > 0;
+                return m_material->has_textures();
             }
 
             u64 vertex_count() const override
