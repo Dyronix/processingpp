@@ -16,7 +16,7 @@ namespace ppp
         class batch
         {
         public:
-            batch(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, s32 size_textures = -1);
+            batch(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count);
             ~batch();                                       // has to be defined, due to auto compiler generated function and forward delclaration
 
             batch(const batch& other) = delete;             // unique ptr, so we can delete
@@ -39,25 +39,19 @@ namespace ppp
             bool can_add(s32 nr_vertices, s32 nr_indices) const;
 
             bool has_data() const;
-            bool has_reserved_texture_space() const;
 
         public:
             const void* vertices() const;
             const void* indices() const;
-            const s32* samplers() const;
-            const u32* textures() const;
             
             u32 active_vertex_count() const;
             u32 active_index_count() const;
-            u32 active_sampler_count() const;
-            u32 active_texture_count() const;
 
             u64 vertex_buffer_byte_size() const;
             u64 index_buffer_byte_size() const;
             
             u32 max_vertex_count() const;
             u32 max_index_count() const;
-            u32 max_texture_count() const;
 
         private:
             class impl;
@@ -68,7 +62,6 @@ namespace ppp
         {
         public:
             batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy);
-            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy);
             ~batch_drawing_data();
 
             batch_drawing_data(const batch_drawing_data& other) = delete;             // unique ptr, so we can delete

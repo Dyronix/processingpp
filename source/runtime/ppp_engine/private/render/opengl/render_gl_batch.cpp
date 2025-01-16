@@ -1,13 +1,18 @@
 #include "render/render_batch.h"
 #include "render/render_vertex_buffer.h"
 #include "render/render_index_buffer.h"
+#include "render/render_storage_buffer.h"
 #include "render/render_shaders.h"
+#include "render/render_features.h"
 
 #include "render/opengl/render_gl_error.h"
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
+#include "render/helpers/render_storage_buffer_ops.h"
 #include "render/helpers/render_texture_registry.h"
+
+#include "resources/material_pool.h"
 
 #include "util/types.h"
 #include "util/log.h"
@@ -103,17 +108,12 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void add_vertices(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
-            {
-                add_vertices(item, -1, color, world);
-            }
-            //-------------------------------------------------------------------------
-            void add_vertices(const irender_item* item, s32 sampler_id, const glm::vec4& color, const glm::mat4& world)
+            void add_vertices(const irender_item* item, s32 material_id, const glm::vec4& color, const glm::mat4& world)
             {
                 s32 start_index = m_vertex_buffer.active_vertex_count();
                 s32 end_index = start_index + item->vertex_count();
 
-                copy_vertex_data(item, sampler_id, color);
+                copy_vertex_data(item, material_id, color);
                 transform_vertex_positions(start_index, end_index, world);
 
                 if (m_vertex_buffer.has_layout(attribute_type::NORMAL))
@@ -174,14 +174,14 @@ namespace ppp
 
         private:
             //-------------------------------------------------------------------------
-            void copy_vertex_data(const irender_item* item, s32 sampler_id, const glm::vec4& color)
+            void copy_vertex_data(const irender_item* item, s32 material_id, const glm::vec4& color)
             {
                 vertex_buffer_ops::vertex_attribute_addition_scope vaas(m_vertex_buffer, item->vertex_count());
 
                 if (m_vertex_buffer.has_layout(attribute_type::POSITION)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::POSITION, item->vertex_positions().data());
                 if (m_vertex_buffer.has_layout(attribute_type::NORMAL)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::NORMAL, item->vertex_normals().data());
                 if (m_vertex_buffer.has_layout(attribute_type::TEXCOORD)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::TEXCOORD, item->vertex_uvs().data());
-                if (m_vertex_buffer.has_layout(attribute_type::DIFFUSE_TEXTURE_INDEX) && sampler_id != - 1) vertex_buffer_ops::map_attribute_data(vaas, attribute_type::DIFFUSE_TEXTURE_INDEX, (void*)&sampler_id);
+                if (m_vertex_buffer.has_layout(attribute_type::DIFFUSE_TEXTURE_INDEX) && material_id != - 1) vertex_buffer_ops::map_attribute_data(vaas, attribute_type::DIFFUSE_TEXTURE_INDEX, (void*)&material_id);
 
                 vertex_buffer_ops::map_attribute_data(vaas, attribute_type::COLOR, (void*)&color[0]);
             }
@@ -244,15 +244,76 @@ namespace ppp
             index_buffer m_index_buffer;
         };
 
+        class batch_material_manager
+        {
+        public:
+            batch_material_manager()
+                :m_storage_buffer(8, sizeof(glm::vec4) + sizeof(glm::vec4) + sizeof(s32) + (sizeof(u32) * max_textures()))
+            {}
+
+            s32 add_material_attributes(const irender_item* item)
+            {
+                if (m_materials.find(item->material_id()) == std::cend(m_materials))
+                {
+                    m_materials[item->material_id()] = m_materials.size();
+                }
+
+                copy_material_data(item);
+
+                return m_materials[item->material_id()];
+            }
+
+            void bind()
+            {
+                m_storage_buffer.bind(0);
+            }
+
+            void unbind()
+            {
+                m_storage_buffer.unbind();
+            }
+
+            void submit()
+            {
+                m_storage_buffer.submit(0);
+            }
+
+            void reset()
+            {
+                m_storage_buffer.reset();
+            }
+
+            void release()
+            {
+                m_storage_buffer.free();
+            }
+
+        private:
+            void copy_material_data(const irender_item* item)
+            {
+                resources::material* material = material_pool::material_at_id(item->material_id());
+                if (material == nullptr)
+                {
+                    return;
+                }
+
+
+            }
+
+        private:
+            storage_buffer m_storage_buffer;
+
+            std::unordered_map<u64, s32> m_materials;
+        };
+
         //-------------------------------------------------------------------------
         // Batch Impl
         class batch::impl
         {
         public:
             //-------------------------------------------------------------------------
-            impl(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, s32 size_textures)
+            impl(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
                 :m_buffer_manager(nullptr)
-                ,m_texture_registry(nullptr)
                 ,m_vao(0)
             {
                 assert(layouts != nullptr);
@@ -263,7 +324,7 @@ namespace ppp
                 GL_CALL(glBindVertexArray(m_vao));
 
                 m_buffer_manager = std::make_unique<batch_buffer_manager>(size_vertex_buffer, size_index_buffer, layouts, layout_count);
-                m_texture_registry = std::make_unique<texture_registry>(size_textures);
+                m_material_manager = std::make_unique<batch_material_manager>();
 
                 GL_CALL(glBindVertexArray(0));
             }
@@ -326,15 +387,15 @@ namespace ppp
             }
 
             std::unique_ptr<batch_buffer_manager> m_buffer_manager;
-            std::unique_ptr<texture_registry> m_texture_registry;
+            std::unique_ptr<batch_material_manager> m_material_manager;
 
             u32 m_vao;
         };
 
         //-------------------------------------------------------------------------
         // Batch
-        batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, s32 size_textures)
-            : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count, size_textures))
+        batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
+            : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
         {}
         //-------------------------------------------------------------------------
         batch::~batch() = default;
@@ -367,51 +428,24 @@ namespace ppp
         //-------------------------------------------------------------------------
         void batch::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
         {
+            s32 material_id = m_pimpl->m_material_manager->add_material_attributes(item);
+
             if (item->index_count() != 0)
             {
                 m_pimpl->m_buffer_manager->add_indices(item);
             }
-            
-            if (m_pimpl->m_texture_registry->has_reserved_texture_space())
-            {
-                assert(item->texture_ids().size() == 1 && "Currently only one texture per render item is supported");
 
-                /*
-                * When smoothing normals vertices are deduplicated, 
-                *   this mean that when we have 36 or 24 unique vertices ( or any other variation ) they will be welded together
-                *   a normal is generated for these vertices, the problem is that UV space is messed up when this happens.
-                *   some weird artifacts appear when this is the case, hence why we disable it.
-                */
-                assert(item->has_smooth_normals() == false && "Smooth normals and texturing is not supported");
-
-                s32 sampler_id = m_pimpl->m_texture_registry->add_texture(item->texture_ids()[0]);
-                if (sampler_id != -1)
-                {
-                    m_pimpl->m_buffer_manager->add_vertices(item, sampler_id, color, world);
-                }
-                else
-                {
-                    log::error("Unable to generate sampler id for texture.");
-                    exit(EXIT_FAILURE);
-                }
-            }
-            else
-            {
-                m_pimpl->m_buffer_manager->add_vertices(item, color, world);
-            }
+            m_pimpl->m_buffer_manager->add_vertices(item, material_id, color, world);
         }
         //-------------------------------------------------------------------------
         void batch::reset()
         {
             m_pimpl->m_buffer_manager->reset();
-            m_pimpl->m_texture_registry->reset();
         }
         //-------------------------------------------------------------------------
         void batch::release()
         {
             m_pimpl->m_buffer_manager->release();
-            m_pimpl->m_texture_registry->release();
-
             m_pimpl->release();
         }
 
@@ -423,28 +457,18 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool batch::has_data() const
         {
-            return m_pimpl->m_buffer_manager->has_data() || (m_pimpl->m_texture_registry->has_reserved_texture_space() && m_pimpl->m_texture_registry->has_data());
+            return m_pimpl->m_buffer_manager->has_data();
         }
-        //-------------------------------------------------------------------------
-        bool batch::has_reserved_texture_space() const { return m_pimpl->m_texture_registry->has_reserved_texture_space(); }
 
         //-------------------------------------------------------------------------
         const void* batch::vertices() const { return m_pimpl->m_buffer_manager->vertices(); }
         //-------------------------------------------------------------------------
         const void* batch::indices() const { return m_pimpl->m_buffer_manager->indices(); }
-        //-------------------------------------------------------------------------
-        const s32* batch::samplers() const { return has_reserved_texture_space() ? m_pimpl->m_texture_registry->samplers().data() : nullptr; }
-        //-------------------------------------------------------------------------
-        const u32* batch::textures() const { return has_reserved_texture_space() ? m_pimpl->m_texture_registry->textures().data() : nullptr; }
 
         //-------------------------------------------------------------------------
         u32 batch::active_vertex_count() const { return m_pimpl->m_buffer_manager->active_vertex_count(); }
         //-------------------------------------------------------------------------
         u32 batch::active_index_count() const { return m_pimpl->m_buffer_manager->active_index_count(); }
-        //-------------------------------------------------------------------------
-        u32 batch::active_sampler_count() const { return m_pimpl->m_texture_registry->active_sampler_count(); }
-        //-------------------------------------------------------------------------
-        u32 batch::active_texture_count() const { return m_pimpl->m_texture_registry->active_texture_count(); }
 
         //-------------------------------------------------------------------------
         u64 batch::vertex_buffer_byte_size() const { return m_pimpl->m_buffer_manager->active_vertices_byte_size(); }
@@ -455,15 +479,13 @@ namespace ppp
         u32 batch::max_vertex_count() const { return m_pimpl->m_buffer_manager->max_vertex_count(); }
         //-------------------------------------------------------------------------
         u32 batch::max_index_count() const { return m_pimpl->m_buffer_manager->max_index_count(); }
-        //-------------------------------------------------------------------------
-        u32 batch::max_texture_count() const { return m_pimpl->m_texture_registry->max_texture_count(); }
 
         //-------------------------------------------------------------------------
         // Batch Drawing Data Impl
         struct batch_drawing_data::impl
         {
             //-------------------------------------------------------------------------
-            impl(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
+            impl(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
                 : layouts(layouts)
                 , layout_count(layout_count)
                 , buffer_policy(render_buffer_policy)
@@ -475,7 +497,7 @@ namespace ppp
                 assert(layout_count > 0);
 
                 // Already start with one batch
-                batches.emplace_back(size_vertex_buffer, size_index_buffer, layouts, layout_count, size_textures);
+                batches.emplace_back(size_vertex_buffer, size_index_buffer, layouts, layout_count);
             }
 
             s32                         draw_batch      = 0;
@@ -490,13 +512,9 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
-            : batch_drawing_data(size_vertex_buffer, size_index_buffer, -1, layouts, layout_count, render_buffer_policy)
+            : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count, render_buffer_policy))
         {
         }
-        //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, s32 size_textures, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
-            : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, size_textures, layouts, layout_count, render_buffer_policy))
-        {}
 
         //-------------------------------------------------------------------------
         batch_drawing_data::~batch_drawing_data() = default;
@@ -525,12 +543,7 @@ namespace ppp
                     u32 max_vertex_count = m_pimpl->batches[m_pimpl->push_batch].max_vertex_count();
                     u32 max_index_count = m_pimpl->batches[m_pimpl->push_batch].max_index_count();
             
-                    // it might be that this batch does not support textures
-                    s32 max_images = m_pimpl->batches[m_pimpl->push_batch].has_reserved_texture_space()
-                        ? m_pimpl->batches[m_pimpl->push_batch].max_texture_count()
-                        : -1;
-            
-                    m_pimpl->batches.emplace_back(max_vertex_count, max_index_count, m_pimpl->layouts, m_pimpl->layout_count, max_images);
+                    m_pimpl->batches.emplace_back(max_vertex_count, max_index_count, m_pimpl->layouts, m_pimpl->layout_count);
                 }
             
                 ++m_pimpl->push_batch;
