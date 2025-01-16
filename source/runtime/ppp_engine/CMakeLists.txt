@@ -16,6 +16,10 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/geometry_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/geometry_pool.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material_pool.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material_pool.cpp
     # device
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/glfw/device_glfw.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/glfw/device_glfw_input.cpp
@@ -58,6 +62,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_vertex_buffer_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_instance_buffer_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_instance_buffer_ops.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_storage_buffer_ops.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_storage_buffer_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_texture_registry.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_texture_registry.h
     # geometry
