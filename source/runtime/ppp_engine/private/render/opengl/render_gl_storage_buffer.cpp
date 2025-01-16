@@ -19,7 +19,7 @@ namespace ppp
                 , buffer()
                 , ssbo(0)
             {
-                buffer.resize(in_element_size * in_element_count);
+                buffer.resize(element_size * element_count);
 
                 GL_CALL(glGenBuffers(1, &ssbo));
                 GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo));
@@ -50,17 +50,31 @@ namespace ppp
             }
 
             //------------------------------------------------------------------------
+            void resize_buffer(u64 new_element_count)
+            {
+                if (new_element_count > element_count)
+                {
+                    element_count = new_element_count;
+
+                    buffer.resize(element_size * new_element_count);
+
+                    GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo));
+                    GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, element_size * new_element_count, nullptr, GL_DYNAMIC_DRAW));
+                    GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                }
+            }
+
+            //------------------------------------------------------------------------
             void free()
             {
                 GL_CALL(glDeleteBuffers(1, &ssbo));
+
                 ssbo = 0;
             }
 
             //------------------------------------------------------------------------
             void submit(u32 binding_point) const
             {
-                const u64 element_size = buffer.size() / element_count;
-
                 bind(binding_point);
 
                 GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, element_size * element_count, buffer.data()));
@@ -109,6 +123,7 @@ namespace ppp
         void storage_buffer::open(u64 max_elements_to_set)
         {
             m_pimpl->max_elements_to_set = max_elements_to_set;
+            m_pimpl->resize_buffer(m_pimpl->current_element_count + max_elements_to_set);
         }
 
         //-------------------------------------------------------------------------
@@ -127,12 +142,10 @@ namespace ppp
         //------------------------------------------------------------------------
         void storage_buffer::free()
         {
+            m_pimpl->unbind();
             m_pimpl->free();
 
             m_pimpl->buffer.clear();
-
-            m_pimpl->unbind();
-            m_pimpl->free();
         }
 
         //------------------------------------------------------------------------
