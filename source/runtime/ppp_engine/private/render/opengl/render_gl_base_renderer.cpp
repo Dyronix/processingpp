@@ -3,6 +3,7 @@
 #include "render/opengl/render_gl_error.h"
 
 #include "resources/shader_pool.h"
+#include "resources/material_pool.h"
 
 #include "util/log.h"
 #include "util/color_ops.h"
@@ -26,13 +27,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        base_renderer::base_renderer(const attribute_layout* layouts, u64 layout_count, const std::string& shader_tag, bool enable_texture_support)
+        base_renderer::base_renderer(const attribute_layout* layouts, u64 layout_count, const std::string& shader_tag)
             : m_user_shader_tag({})
             , m_shader_tag(shader_tag)
             , m_rasterization_mode(internal::_solid)
             , m_layouts(layouts)
             , m_layout_count(layout_count)
-            , m_texture_support(enable_texture_support)
         {}
 
         //-------------------------------------------------------------------------
@@ -99,7 +99,15 @@ namespace ppp
         //-------------------------------------------------------------------------
         u32 base_renderer::shader_program() const
         {
-            return shader_pool::get_shader_program(m_user_shader_tag.empty() ? m_shader_tag : m_user_shader_tag);
+            resources::material* m = material();
+            
+            return shader_pool::get_shader_program(m->shader_tag());
+        }
+
+        //-------------------------------------------------------------------------
+        resources::material* base_renderer::material() const
+        {
+            return material_pool::material_at_shader_tag(m_user_shader_tag.empty() ? m_shader_tag : m_user_shader_tag);
         }
     }
 }

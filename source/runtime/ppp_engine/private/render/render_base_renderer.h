@@ -10,12 +10,17 @@
 
 namespace ppp
 {
+    namespace resources
+    {
+        class material;
+    }
+
     namespace render
     {
         class base_renderer
         {
         public:
-            base_renderer(const attribute_layout* layouts, u64 layout_count, const std::string& shader_tag, bool enable_texture_support = false);
+            base_renderer(const attribute_layout* layouts, u64 layout_count, const std::string& shader_tag);
             virtual ~base_renderer();
 
         public:
@@ -37,13 +42,14 @@ namespace ppp
 
             u32                         shader_program() const;
 
+            resources::material*        material() const;
+
+
         protected:
             s32                         rasterization_mode() const { return m_rasterization_mode; }
 
             const attribute_layout*     layouts() const { return m_layouts; }
             u64                         layout_count() const { return m_layout_count; }
-
-            bool                        has_texture_support() const { return m_texture_support; }
 
         private:
             std::string                 m_user_shader_tag;
@@ -53,8 +59,6 @@ namespace ppp
 
             const attribute_layout*     m_layouts;
             u64                         m_layout_count;
-
-            bool                        m_texture_support;
         };
     }
 }
