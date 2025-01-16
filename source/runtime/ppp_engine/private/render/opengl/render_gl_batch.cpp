@@ -244,45 +244,65 @@ namespace ppp
             index_buffer m_index_buffer;
         };
 
+        //-------------------------------------------------------------------------
+        // Material Buffer Manager
+        namespace batch_material_storage
+        {
+            //-------------------------------------------------------------------------
+            u64 size_in_bytes()
+            {
+                u64 total_size_in_bytes = sizeof(s32) * max_textures()  // max amount of textures that can be bound at once
+                                        + sizeof(s32)                   // actual size of textures that are bound
+                                        + sizeof(glm::vec4)             // ambient color 
+                                        + sizeof(glm::vec4);            // diffuse color
+
+                return total_size_in_bytes;
+            }
+        };
+
         class batch_material_manager
         {
         public:
+            //-------------------------------------------------------------------------
             batch_material_manager()
-                :m_storage_buffer(8, sizeof(glm::vec4) + sizeof(glm::vec4) + sizeof(s32) + (sizeof(u32) * max_textures()))
+                :m_storage_buffer(8, batch_material_storage::size_in_bytes())
             {}
 
+            //-------------------------------------------------------------------------
             s32 add_material_attributes(const irender_item* item)
             {
-                if (m_materials.find(item->material_id()) == std::cend(m_materials))
-                {
-                    m_materials[item->material_id()] = m_materials.size();
-                }
+                s32 material_index = m_storage_buffer.active_element_count();
 
                 copy_material_data(item);
 
-                return m_materials[item->material_id()];
+                return material_index;
             }
 
+            //-------------------------------------------------------------------------
             void bind()
             {
                 m_storage_buffer.bind(0);
             }
 
+            //-------------------------------------------------------------------------
             void unbind()
             {
                 m_storage_buffer.unbind();
             }
 
+            //-------------------------------------------------------------------------
             void submit()
             {
                 m_storage_buffer.submit(0);
             }
 
+            //-------------------------------------------------------------------------
             void reset()
             {
                 m_storage_buffer.reset();
             }
 
+            //-------------------------------------------------------------------------
             void release()
             {
                 m_storage_buffer.free();
@@ -297,13 +317,64 @@ namespace ppp
                     return;
                 }
 
+                storage_buffer_ops::storage_data_addition_scope sdas(m_storage_buffer, 1);
 
+                std::vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
+
+                size_t offset = 0;
+
+                offset = copy_texture_samplers(material, material_data.data(), offset);
+                offset = copy_material_properties(material, material_data.data(), offset);
+
+                storage_buffer_ops::add_storage_data(sdas, material_data.data());
+            }
+
+            //-------------------------------------------------------------------------
+            u64 copy_texture_samplers(const resources::material* material, u8* buffer, u64 offset)
+            {
+                const s32 sampler_count = static_cast<s32>(material->samplers().size());
+
+                if (material->has_textures())
+                {
+                    const s32* samplers = material->samplers().data();
+                    std::memcpy(buffer + offset, samplers, sampler_count * sizeof(s32));
+                    offset += sampler_count * sizeof(s32);
+                }
+
+                // Pad remaining samplers with -1
+                const s32 padding_value = -1;
+                const u64 padding_size = (max_textures() - sampler_count) * sizeof(s32);
+
+                if (padding_size > 0) 
+                {
+                    std::memset(buffer + offset, padding_value, padding_size);
+                    offset += padding_size;
+                }
+
+                // Store sampler count
+                std::memcpy(buffer + offset, &sampler_count, sizeof(sampler_count));
+                offset += sizeof(sampler_count);
+
+                return offset;
+            }
+
+            //-------------------------------------------------------------------------
+            u64 copy_material_properties(const resources::material* material, u8* buffer, u64 offset)
+            {
+                const glm::vec4& ambient_color = material->ambient_color();
+                const glm::vec4& diffuse_color = material->diffuse_color();
+
+                std::memcpy(buffer + offset, &ambient_color, sizeof(ambient_color));
+                offset += sizeof(ambient_color);
+
+                std::memcpy(buffer + offset, &diffuse_color, sizeof(diffuse_color));
+                offset += sizeof(diffuse_color);
+
+                return offset;
             }
 
         private:
             storage_buffer m_storage_buffer;
-
-            std::unordered_map<u64, s32> m_materials;
         };
 
         //-------------------------------------------------------------------------
