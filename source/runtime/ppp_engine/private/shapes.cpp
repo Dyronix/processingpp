@@ -6,6 +6,7 @@
 #include "render/render_types.h"
 
 #include "resources/shader_pool.h"
+#include "resources/material_pool.h"
 
 #include "util/transform_stack.h"
 #include "util/brush.h"
@@ -48,28 +49,21 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        std::vector<render::texture_id> _active_textures;
-
-        //-------------------------------------------------------------------------
         class shape : public render::irender_item
         {
         public:
-            shape(const geometry::geometry* geom, const std::vector<render::texture_id>& ids = {})
-                :m_geometry(geom)
-                ,m_texture_ids(ids)
+            shape(const geometry::geometry* geom, const resources::material* material)
+                : m_geometry(geom)
+                , m_material(material)
             {}
 
-            bool has_texture_id(render::texture_id id) const override
-            {
-                return std::find_if(std::cbegin(texture_ids()), std::cend(texture_ids()),
-                    [id](const render::texture_id other)
-                {
-                    return id == other;
-                }) != std::cend(texture_ids());
-            }
             bool has_smooth_normals() const override
             {
                 return m_geometry->has_smooth_normals();
+            }
+            bool has_textures() const override
+            {
+                return m_material->textures().size() > 0;
             }
 
             u64 vertex_count() const override
@@ -79,10 +73,6 @@ namespace ppp
             u64 index_count() const override
             {
                 return m_geometry->index_count();
-            }
-            u64 texture_count() const override
-            {
-                return texture_ids().size();
             }
 
             const std::vector<glm::vec3>& vertex_positions() const override
@@ -102,38 +92,25 @@ namespace ppp
             {
                 return m_geometry->faces();
             }
-            const std::vector<render::texture_id>& texture_ids() const override
-            {
-                return m_texture_ids;
-            }
 
-            const u64 id() const override
+            const u64 geometry_id() const override
             {
                 return m_geometry->id();
+            }
+            const u64 material_id() const override
+            {
+                m_material->id();
             }
 
         private:
             const geometry::geometry* m_geometry;
-            const std::vector<render::texture_id> m_texture_ids;
+            const resources::material* m_material;
         };
 
         //-------------------------------------------------------------------------
         shape create_shape(const geometry::geometry* geom)
         {
-            _active_textures.clear();
-
-            u32 channel = 0;
-            u32 texture = material::get_texture(channel);
-
-            while (texture != -1)
-            {
-                _active_textures.push_back(texture);
-
-                channel = channel + 1;
-                texture = material::get_texture(channel);
-            }
-
-            return shape(geom, _active_textures);
+            return shape(geom, nullptr);
         }
 
         //-------------------------------------------------------------------------
