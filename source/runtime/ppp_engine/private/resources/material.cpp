@@ -21,6 +21,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        bool material::has_textures() const
+        {
+            return textures().size() > 0;
+        }
+
+        //-------------------------------------------------------------------------
         void material::ambient_color(const glm::vec4& ambient_color) { m_ambient_color = ambient_color; }
         //-------------------------------------------------------------------------
         void material::diffuse_color(const glm::vec4& diffuse_color) { m_diffuse_color = diffuse_color; }

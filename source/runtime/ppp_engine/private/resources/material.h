@@ -21,6 +21,8 @@ namespace ppp
         public:
             material(const std::string& shader_tag);
 
+            bool has_textures() const;
+
             void ambient_color(const glm::vec4& ambient_color);
             void diffuse_color(const glm::vec4& diffuse_color);
 
