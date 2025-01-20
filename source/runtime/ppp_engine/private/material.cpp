@@ -4,19 +4,13 @@
 #include "render/render.h"
 #include "resources/shader_pool.h"
 #include "resources/material_pool.h"
+#include "resources/texture_manager.h"
 #include "util/log.h"
 
 namespace ppp
 {
     namespace material
     {
-        namespace internal
-        {
-            std::vector<resources::material> _materials;
-
-            resources::material* _active_material;
-        }
-
         namespace tags
         {
             //-------------------------------------------------------------------------
@@ -117,15 +111,15 @@ namespace ppp
         {
             assert(material_pool::active_material());
 
-            material_pool::active_material()->add_texture(image_id);
+            texture_manager::add_image(material_pool::active_material()->shader_tag(), image_id);
         }
 
         //-------------------------------------------------------------------------
-        void reset_texture()
+        void reset_textures()
         {
             assert(material_pool::active_material());
 
-            material_pool::active_material()->reset_textures();
+            texture_manager::reset_images(material_pool::active_material()->shader_tag());
         }
 
         //-------------------------------------------------------------------------
@@ -151,11 +145,11 @@ namespace ppp
                 ? shader_pool::tags::unlit_normal 
                 : shader_pool::tags::instance_unlit_normal;
 
+            material_pool::set_active_material(tag);
+
             render::vertex_type vertex_type = render::draw_mode() == render::render_draw_mode::BATCHED
                 ? render::vertex_type::POSITION_NORMAL_COLOR
                 : render::vertex_type::POSITION_NORMAL;
-
-            material_pool::set_active_material(tag);
 
             render::push_active_shader(tag, vertex_type);
 
