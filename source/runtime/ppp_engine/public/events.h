@@ -6,7 +6,7 @@ namespace ppp
 {
     namespace keyboard
     {
-        enum class KeyCode
+        enum class key_code
         {
             /* The unknown key */
             KEY_UNKNOWN,
@@ -131,21 +131,21 @@ namespace ppp
             KEY_MENU
         };
 
-        bool is_key_pressed(KeyCode code);
-        bool is_key_released(KeyCode code);
-        bool is_key_down(KeyCode code);
+        bool is_key_pressed(key_code code);
+        bool is_key_released(key_code code);
+        bool is_key_down(key_code code);
 
         bool is_any_key_pressed();
         bool is_any_key_released();
         bool is_any_key_down();
 
-        KeyCode key();
+        key_code key();
 
-        void add_key_pressed_callback(const std::function<void(KeyCode)>& callback);
-        void add_key_released_callback(const std::function<void(KeyCode)>& callback);
-        void add_key_down_callback(const std::function<void(KeyCode)>& callback);
+        void add_key_pressed_callback(const std::function<void(key_code)>& callback);
+        void add_key_released_callback(const std::function<void(key_code)>& callback);
+        void add_key_down_callback(const std::function<void(key_code)>& callback);
 
-        void set_quit_application_keycode(KeyCode code);
+        void set_quit_application_keycode(key_code code);
     }
 
     namespace mouse
