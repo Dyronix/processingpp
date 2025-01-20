@@ -14,6 +14,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/shader_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_pool.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_manager.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/texture_manager.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/geometry_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/geometry_pool.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material.h
@@ -126,6 +128,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/perlin_noise.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/steady_clock.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/steady_clock.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/pointer_math.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/pointer_math.cpp
     # engine
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/camera.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/shapes.cpp
