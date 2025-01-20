@@ -6,6 +6,8 @@
 
 #include "resources/texture_pool.h"
 #include "resources/geometry_pool.h"
+#include "resources/material_pool.h"
+#include "resources/shader_pool.h"
 
 #include "geometry/geometry.h"
 #include "geometry/geometry_helpers.h"
@@ -36,22 +38,18 @@ namespace ppp
             class image_item : public render::irender_item
             {
             public:
-                image_item(const geometry::geometry* geom, const std::vector<render::texture_id>& ids = {})
-                    :m_geometry(geom)
-                    , m_texture_ids(ids)
+                image_item(const geometry::geometry* geom, const resources::imaterial* material)
+                    : m_geometry(geom)
+                    , m_material(material)
                 {}
 
-                bool has_texture_id(render::texture_id id) const override
-                {
-                    return std::find_if(std::cbegin(texture_ids()), std::cend(texture_ids()),
-                        [id](const render::texture_id other)
-                    {
-                        return id == other;
-                    }) != std::cend(texture_ids());
-                }
                 bool has_smooth_normals() const override
                 {
                     return m_geometry->has_smooth_normals();
+                }
+                bool has_textures() const override
+                {
+                    return m_material->has_textures();
                 }
 
                 u64 vertex_count() const override
@@ -61,10 +59,6 @@ namespace ppp
                 u64 index_count() const override
                 {
                     return m_geometry->index_count();
-                }
-                u64 texture_count() const override
-                {
-                    return texture_ids().size();
                 }
 
                 const std::vector<glm::vec3>& vertex_positions() const override
@@ -84,19 +78,24 @@ namespace ppp
                 {
                     return m_geometry->faces();
                 }
-                const std::vector<render::texture_id>& texture_ids() const override
-                {
-                    return m_texture_ids;
-                }
 
-                const u64 id() const override
+                const u64 geometry_id() const override
                 {
                     return m_geometry->id();
+                }
+                const u64 material_id() const override
+                {
+                    return m_material->id();
+                }
+
+                const resources::imaterial* material() const override
+                {
+                    return m_material;
                 }
 
             private:
                 const geometry::geometry* m_geometry;
-                const std::vector<render::texture_id> m_texture_ids;
+                const resources::imaterial* m_material;
             };
 
             geometry::geometry* extrude_image(const glm::mat4& world, const geometry::geometry* in_geom, f32 extrusion_width)
@@ -254,7 +253,13 @@ namespace ppp
         void draw(image_id image_id, float x, float y, float width, float height)
         {
             geometry::geometry* image_geom = internal::make_image(image_id);
-            internal::image_item image_render_item = internal::image_item(image_geom, { image_id });
+
+            resources::imaterial* mat_unlit_tex = material_pool::material_at_shader_tag(shader_pool::tags::unlit_texture);
+
+            // Once we have more than 32 textures added to this material this won't work anymore.
+            mat_unlit_tex->add_texture(image_id);
+
+            internal::image_item image_render_item = internal::image_item(image_geom, mat_unlit_tex);
 
             transform_stack::push();
             transform_stack::translate(glm::vec2(x, y));
@@ -279,7 +284,7 @@ namespace ppp
                 constexpr bool outer_stroke = true;
 
                 geometry::geometry* stroke_geom = internal::extrude_image(world, image_geom, render::brush::stroke_width());
-                internal::image_item stroke_item = internal::image_item(stroke_geom);
+                internal::image_item stroke_item = internal::image_item(stroke_geom, nullptr);
 
                 render::submit_stroke_image_item(&stroke_item, outer_stroke);
             }
@@ -289,7 +294,7 @@ namespace ppp
                 constexpr bool outer_stroke = false;
 
                 geometry::geometry* stroke_geom = internal::extrude_image(world, image_geom, -render::brush::stroke_width());
-                internal::image_item stroke_item = internal::image_item(stroke_geom);
+                internal::image_item stroke_item = internal::image_item(stroke_geom, nullptr);
 
                 render::submit_stroke_image_item(&stroke_item, outer_stroke);
             }

@@ -1,8 +1,13 @@
 #include "typography.h"
+
 #include "render/render.h"
+
 #include "resources/font_pool.h"
 #include "resources/geometry_pool.h"
+#include "resources/material_pool.h"
+
 #include "fileio/fileio.h"
+
 #include "geometry/geometry.h"
 #include "geometry/geometry_helpers.h"
 #include "geometry/2d/rectangle.h"
@@ -28,22 +33,18 @@ namespace ppp
             class font_character_item : public render::irender_item
             {
             public:
-                font_character_item(const geometry::geometry* geom, const std::vector<render::texture_id>& ids = {})
+                font_character_item(const geometry::geometry* geom, const resources::material* material)
                     :m_geometry(geom)
-                    ,m_texture_ids(ids)
+                    ,m_material(material)
                 {}
 
-                bool has_texture_id(render::texture_id id) const override
-                {
-                    return std::find_if(std::cbegin(texture_ids()), std::cend(texture_ids()),
-                        [id](const render::texture_id other)
-                    {
-                        return id == other;
-                    }) != std::cend(texture_ids());
-                }
                 bool has_smooth_normals() const override
                 {
                     return m_geometry->has_smooth_normals();
+                }
+                bool has_textures() const override
+                {
+                    return m_material->has_textures();
                 }
 
                 u64 vertex_count() const override
@@ -53,10 +54,6 @@ namespace ppp
                 u64 index_count() const override
                 {
                     return m_geometry->index_count();
-                }
-                u64 texture_count() const override
-                {
-                    return texture_ids().size();
                 }
 
                 const std::vector<glm::vec3>& vertex_positions() const override
@@ -76,19 +73,25 @@ namespace ppp
                 {
                     return m_geometry->faces();
                 }
-                const std::vector<render::texture_id>& texture_ids() const override
-                {
-                    return m_texture_ids;
-                }
 
-                const u64 id() const override
+                const u64 geometry_id() const override
                 {
                     return m_geometry->id();
                 }
 
+                const u64 material_id() const override
+                {
+                    return m_material->id();
+                }
+
+                const resources::imaterial* material() const override
+                {
+                    return m_material;
+                }
+
             private:
                 const geometry::geometry* m_geometry;
-                const std::vector<render::texture_id> m_texture_ids;
+                const resources::material* m_material;
             };
 
             font_character_item make_font_character(s32 character, render::texture_id texture_id, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y)
@@ -122,12 +125,12 @@ namespace ppp
 
                     geometry::geometry* geom = geometry_pool::add_new_geometry(geometry::geometry(gid, false, create_geom_fn));
 
-                    return font_character_item(geom, { texture_id });
+                    return font_character_item(geom, nullptr);
                 }
 
                 geometry::geometry* geom = geometry_pool::get_geometry(gid);
 
-                return font_character_item(geom, { texture_id });
+                return font_character_item(geom, nullptr);
             }
         }
 

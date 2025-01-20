@@ -52,7 +52,7 @@ namespace ppp
         class shape : public render::irender_item
         {
         public:
-            shape(const geometry::geometry* geom, const resources::material* material)
+            shape(const geometry::geometry* geom, const resources::imaterial* material)
                 : m_geometry(geom)
                 , m_material(material)
             {}
@@ -99,18 +99,23 @@ namespace ppp
             }
             const u64 material_id() const override
             {
-                m_material->id();
+                return m_material->id();
+            }
+
+            const resources::imaterial* material() const override
+            {
+                return m_material;
             }
 
         private:
             const geometry::geometry* m_geometry;
-            const resources::material* m_material;
+            const resources::imaterial* m_material;
         };
 
         //-------------------------------------------------------------------------
         shape create_shape(const geometry::geometry* geom)
         {
-            return shape(geom, nullptr);
+            return shape(geom, material_pool::active_material_instance());
         }
 
         //-------------------------------------------------------------------------
