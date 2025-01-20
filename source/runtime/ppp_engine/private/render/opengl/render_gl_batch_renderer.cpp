@@ -293,21 +293,24 @@ namespace ppp
             auto batch = drawing_data.first_batch();
             if (batch != nullptr)
             {
+                const auto& samplers = material()->samplers();
+                const auto& textures = material()->textures();
+
                 while (batch != nullptr)
                 {
-                    assert(batch->samplers());
-                    assert(batch->textures());
+                    //assert(batch->samplers());
+                    //assert(batch->textures());
 
                     batch->bind();
 
-                    shaders::push_uniform_array(shader_program(), "s_image", batch->active_sampler_count(), batch->samplers());
+                    shaders::push_uniform_array(shader_program(), "s_image", samplers.size(), samplers.data());
 
                     s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                    for (int i = 0; i < batch->active_texture_count(); ++i)
+                    for (int i = 0; i < textures.size(); ++i)
                     {
                         GL_CALL(glActiveTexture(GL_TEXTURE0 + (offset * i)));
-                        GL_CALL(glBindTexture(GL_TEXTURE_2D, batch->textures()[i]));
+                        GL_CALL(glBindTexture(GL_TEXTURE_2D, textures[i]));
                     }
 
                     batch->submit();

@@ -13,6 +13,11 @@
 
 namespace ppp
 {
+    namespace resources
+    {
+        class imaterial;
+    }
+
     namespace render
     {
         //-------------------------------------------------------------------------
@@ -109,6 +114,7 @@ namespace ppp
             virtual const u64 geometry_id() const = 0;
             virtual const u64 material_id() const = 0;
 
+            virtual const resources::imaterial* material() const = 0;
         };
 
         namespace conversions

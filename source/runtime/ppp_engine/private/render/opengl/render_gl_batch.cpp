@@ -16,6 +16,7 @@
 
 #include "util/types.h"
 #include "util/log.h"
+#include "util/pointer_math.h"
 
 #include <glad/glad.h>
 
@@ -281,7 +282,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             void bind()
             {
-                m_storage_buffer.bind(0);
+                m_storage_buffer.bind(1);
             }
 
             //-------------------------------------------------------------------------
@@ -293,7 +294,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             void submit()
             {
-                m_storage_buffer.submit(0);
+                m_storage_buffer.submit(1);
             }
 
             //-------------------------------------------------------------------------
@@ -311,7 +312,7 @@ namespace ppp
         private:
             void copy_material_data(const irender_item* item)
             {
-                resources::material* material = material_pool::material_at_id(item->material_id());
+                const resources::imaterial* material = item->material();
                 if (material == nullptr)
                 {
                     return;
@@ -326,13 +327,16 @@ namespace ppp
                 offset = copy_texture_samplers(material, material_data.data(), offset);
                 offset = copy_material_properties(material, material_data.data(), offset);
 
-                storage_buffer_ops::add_storage_data(sdas, material_data.data());
+                storage_buffer_ops::set_storage_data(sdas, material_data.data());
             }
 
             //-------------------------------------------------------------------------
-            u64 copy_texture_samplers(const resources::material* material, u8* buffer, u64 offset)
+            u64 copy_texture_samplers(const resources::imaterial* material, u8* buffer, u64 offset)
             {
+                const s32 alignment = 4;
                 const s32 sampler_count = static_cast<s32>(material->samplers().size());
+
+                offset = memory::align_up(offset, alignment); // Align for `int`.
 
                 if (material->has_textures())
                 {
@@ -343,32 +347,37 @@ namespace ppp
 
                 // Pad remaining samplers with -1
                 const s32 padding_value = -1;
-                const u64 padding_size = (max_textures() - sampler_count) * sizeof(s32);
+                const u64 padding_size = (max_textures() - sampler_count);
 
                 if (padding_size > 0) 
                 {
-                    std::memset(buffer + offset, padding_value, padding_size);
-                    offset += padding_size;
+                    std::memset(buffer + offset, padding_value, padding_size * sizeof(s32));
+                    offset += padding_size * sizeof(s32);
                 }
 
                 // Store sampler count
+                offset = memory::align_up(offset, alignment); // Align for `int`.
                 std::memcpy(buffer + offset, &sampler_count, sizeof(sampler_count));
-                offset += sizeof(sampler_count);
+                offset += sizeof(s32);
 
                 return offset;
             }
 
             //-------------------------------------------------------------------------
-            u64 copy_material_properties(const resources::material* material, u8* buffer, u64 offset)
+            u64 copy_material_properties(const resources::imaterial* material, u8* buffer, u64 offset)
             {
+                const s32 alignment = 16;
+
                 const glm::vec4& ambient_color = material->ambient_color();
                 const glm::vec4& diffuse_color = material->diffuse_color();
 
-                std::memcpy(buffer + offset, &ambient_color, sizeof(ambient_color));
-                offset += sizeof(ambient_color);
+                offset = memory::align_up(offset, alignment); // Align for `vec4`.
+                std::memcpy(buffer + offset, &ambient_color, sizeof(glm::vec4));
+                offset += sizeof(glm::vec4);
 
-                std::memcpy(buffer + offset, &diffuse_color, sizeof(diffuse_color));
-                offset += sizeof(diffuse_color);
+                offset = memory::align_up(offset, alignment); // Align for `vec4`.
+                std::memcpy(buffer + offset, &diffuse_color, sizeof(glm::vec4));
+                offset += sizeof(glm::vec4);
 
                 return offset;
             }
@@ -414,11 +423,15 @@ namespace ppp
             void bind() const
             {
                 GL_CALL(glBindVertexArray(m_vao));
+
+                m_material_manager->bind();
             }
 
             //-------------------------------------------------------------------------
             void unbind() const
             {
+                m_material_manager->unbind();
+
                 GL_CALL(glBindVertexArray(0));
             }
 
@@ -426,6 +439,7 @@ namespace ppp
             void submit() const
             {
                 m_buffer_manager->submit();
+                m_material_manager->submit();
             }
 
             //-------------------------------------------------------------------------
@@ -512,11 +526,13 @@ namespace ppp
         void batch::reset()
         {
             m_pimpl->m_buffer_manager->reset();
+            m_pimpl->m_material_manager->reset();
         }
         //-------------------------------------------------------------------------
         void batch::release()
         {
             m_pimpl->m_buffer_manager->release();
+            m_pimpl->m_material_manager->release();
             m_pimpl->release();
         }
 

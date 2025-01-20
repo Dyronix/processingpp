@@ -1,5 +1,7 @@
 #include "render/helpers/render_storage_buffer_ops.h"
 
+#include "util/pointer_math.h"
+
 namespace ppp
 {
     namespace render

@@ -12,7 +12,7 @@ namespace ppp
 {
     namespace resources
     {
-        class material;
+        class imaterial;
     }
 
     namespace render
@@ -42,7 +42,7 @@ namespace ppp
 
             u32                         shader_program() const;
 
-            resources::material*        material() const;
+            resources::imaterial*       material() const;
 
 
         protected:

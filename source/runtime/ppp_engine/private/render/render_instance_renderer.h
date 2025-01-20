@@ -14,7 +14,7 @@ namespace ppp
             static void set_wireframe_linecolor(s32 color);
 
         public:
-            instance_renderer(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, const std::string& shader_tag, bool enable_texture_support = false);
+            instance_renderer(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, const std::string& shader_tag);
             ~instance_renderer() override;
 
         public:

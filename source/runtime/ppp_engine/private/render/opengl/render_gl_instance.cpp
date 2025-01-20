@@ -238,7 +238,7 @@ namespace ppp
         {
         public:
             impl(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, s32 size_textures)
-                :m_instance_id(instance->id())
+                :m_instance_id(instance->geometry_id())
                 ,m_instance_count(0)
             {
                 assert(layouts != nullptr);
@@ -263,14 +263,14 @@ namespace ppp
 
                 if (m_texture_registry->has_reserved_texture_space())
                 {
-                    assert(instance->texture_ids().size() == 1 && "Currently only one texture per render item is supported");
+                    //assert(instance->texture_ids().size() == 1 && "Currently only one texture per render item is supported");
 
-                    s32 sampler_id = m_texture_registry->add_texture(instance->texture_ids()[0]);
-                    if (sampler_id != -1)
-                    {
-                        m_buffer_manager->add_vertices(instance, sampler_id);
-                    }
-                    else
+                    //s32 sampler_id = m_texture_registry->add_texture(instance->texture_ids()[0]);
+                    //if (sampler_id != -1)
+                    //{
+                    //    m_buffer_manager->add_vertices(instance, sampler_id);
+                    //}
+                    //else
                     {
                         log::error("Unable to generate sampler id for texture.");
                         exit(EXIT_FAILURE);
@@ -525,7 +525,7 @@ namespace ppp
             auto it = std::find_if(std::begin(m_pimpl->instances), std::end(m_pimpl->instances),
                 [item](const instance& inst)
             {
-                bool is_equal = inst.instance_id() == item->id();
+                bool is_equal = inst.instance_id() == item->geometry_id();
                 return is_equal;
             });
 
@@ -543,7 +543,8 @@ namespace ppp
             }
 
             new_instance->increment_instance_count();
-            new_instance->append(item->texture_ids(), color, world);
+            //new_instance->append(item->texture_ids(), color, world);
+            new_instance->append({}, color, world);
         }
 
         //-------------------------------------------------------------------------

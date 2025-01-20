@@ -99,13 +99,13 @@ namespace ppp
         //-------------------------------------------------------------------------
         u32 base_renderer::shader_program() const
         {
-            resources::material* m = material();
+            resources::imaterial* m = material();
             
             return shader_pool::get_shader_program(m->shader_tag());
         }
 
         //-------------------------------------------------------------------------
-        resources::material* base_renderer::material() const
+        resources::imaterial* base_renderer::material() const
         {
             return material_pool::material_at_shader_tag(m_user_shader_tag.empty() ? m_shader_tag : m_user_shader_tag);
         }

@@ -2,6 +2,8 @@
 
 #include "render/opengl/render_gl_error.h"
 
+#include "util/pointer_math.h"
+
 #include <glad/glad.h>
 
 namespace ppp
@@ -12,18 +14,18 @@ namespace ppp
         {
             //------------------------------------------------------------------------
             impl(u64 in_element_count, u64 in_element_size)
-                : element_size(in_element_size)
+                : element_size(memory::align_up(in_element_size, 16))
                 , element_count(in_element_count)
                 , current_element_count(0)
                 , max_elements_to_set(0)
                 , buffer()
                 , ssbo(0)
             {
-                buffer.resize(element_size * element_count);
+                buffer.resize(element_size * in_element_count);
 
                 GL_CALL(glGenBuffers(1, &ssbo));
                 GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo));
-                GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, in_element_size * in_element_count, nullptr, GL_DYNAMIC_DRAW));
+                GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, element_size * in_element_count, nullptr, GL_DYNAMIC_DRAW));
 
                 GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
             }
@@ -77,7 +79,7 @@ namespace ppp
             {
                 bind(binding_point);
 
-                GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, element_size * element_count, buffer.data()));
+                GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, element_size * current_element_count, buffer.data()));
             }
 
             //------------------------------------------------------------------------

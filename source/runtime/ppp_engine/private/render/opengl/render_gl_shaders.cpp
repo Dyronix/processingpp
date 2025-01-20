@@ -480,7 +480,7 @@ namespace ppp
                     layout (location = 0) in vec3 a_position;                                       \n\
                     layout (location = 1) in vec2 a_texture;                                        \n\
                     layout (location = 2) in vec4 a_tint_color;                                     \n\
-                    layout (location = 3) in int  a_texture_idx;                                    \n\
+                    layout (location = 3) in int  a_material_idx;                                    \n\
                                                                                                     \n\
                     uniform mat4 u_view_proj;                                                       \n\
                     uniform bool u_wireframe;                                                       \n\
@@ -488,13 +488,13 @@ namespace ppp
                                                                                                     \n\
                     out vec4 v_tint_color;                                                          \n\
                     out vec2 v_texture;                                                             \n\
-                    flat out int v_texture_idx;                                                     \n\
+                    flat out int v_material_idx;                                                     \n\
                                                                                                     \n\
                     void main()                                                                     \n\
                     {						                                                        \n\
                         v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;	            \n\
                         v_texture = a_texture;                                                      \n\
-                        v_texture_idx = a_texture_idx;                                              \n\
+                        v_material_idx = a_material_idx;                                              \n\
                         gl_Position = u_view_proj * vec4(a_position, 1.0);                          \n\
                     }";
 
@@ -505,17 +505,30 @@ namespace ppp
                 const char* const unlit_texture_fs_source =
                     "#version 460 core                                                              \n\
                                                                                                     \n\
-                    layout (binding = 0) uniform sampler2D s_image[8];                              \n\
+                    struct material_attributes                                                      \n\
+                    {                                                                               \n\
+                        int sampler_indices[8];                                                    \n\
+                        int sampler_count;                                                          \n\
+                        vec4 ambient_color;                                                         \n\
+                        vec4 diffuse_color;                                                         \n\
+                    };                                                                              \n\
+                                                                                                    \n\
+                    layout (std430, binding = 1) buffer MaterialBuffer                              \n\
+                    {                                                                               \n\
+                        material_attributes materials[];                                            \n\
+                    };                                                                              \n\
+                                                                                                    \n\
+                    layout (binding = 0) uniform sampler2D s_image[8];                             \n\
                                                                                                     \n\
                     in vec4 v_tint_color;                                                           \n\
                     in vec2 v_texture;                                                              \n\
-                    flat in int v_texture_idx;                                                      \n\
+                    flat in int v_material_idx;                                                     \n\
                                                                                                     \n\
                     out vec4 frag_color;                                                            \n\
                                                                                                     \n\
                     void main()                                                                     \n\
                     {                                                                               \n\
-                        vec4 color = texture(s_image[v_texture_idx], v_texture) * v_tint_color;     \n\
+                        vec4 color = texture(s_image[materials[v_material_idx].sampler_indices[0]], v_texture) * v_tint_color;     \n\
                         frag_color = color;                                                         \n\
                     }";
 
@@ -531,7 +544,7 @@ namespace ppp
                     layout (location = 1) in vec2 a_texture;                                        \n\
                                                                                                     \n\
                     // per instance data                                                            \n\
-                    layout (location = 2) in int  a_inst_texture_idx;                               \n\
+                    layout (location = 2) in int  a_inst_material_idx;                              \n\
                     layout (location = 3) in mat4 a_inst_mat_model;							        \n\
                     layout (location = 7) in vec4 a_inst_color;							            \n\
                                                                                                     \n\
@@ -541,13 +554,13 @@ namespace ppp
                                                                                                     \n\
                     out vec4 v_tint_color;                                                          \n\
                     out vec2 v_texture;                                                             \n\
-                    flat out int v_texture_idx;                                                     \n\
+                    flat out int v_material_idx;                                                    \n\
                                                                                                     \n\
                     void main()                                                                     \n\
                     {						                                                        \n\
                         v_tint_color = u_wireframe ? u_wireframe_color : a_inst_color;	            \n\
                         v_texture = a_texture;                                                      \n\
-                        v_texture_idx = a_inst_texture_idx;                                         \n\
+                        v_material_idx = a_inst_material_idx;                                       \n\
                         gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);       \n\
                     }";
 
