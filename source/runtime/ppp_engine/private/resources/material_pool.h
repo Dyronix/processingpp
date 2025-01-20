@@ -14,13 +14,17 @@ namespace ppp
         bool has_material(const std::string& shader_tag);
         bool has_material(u64 id);
 
-        resources::material* material_at_shader_tag(const std::string& shader_tag);
-        resources::material* material_at_id(u64 id);
+        resources::imaterial* material_at_shader_tag(const std::string& shader_tag);
+        resources::imaterial* material_at_id(u64 id);
+
+        resources::imaterial* material_instance_at_shader_tag(const std::string& shader_tag);
+        resources::imaterial* material_instance_at_id(u64 id);
 
         void add_new_material(const resources::material& material);
         void set_active_material(const std::string& shader_tag);
         void reset_active_material();
 
-        resources::material* active_material();
+        resources::imaterial* active_material();
+        resources::imaterial* active_material_instance();
     }
 }
