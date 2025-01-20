@@ -1,12 +1,17 @@
 #include "entrypoint.h"
 #include "environment.h"
 #include "color.h"
+#include "material.h"
 
 #include "device/device.h"
 #include "render/render.h"
+
 #include "resources/texture_pool.h"
 #include "resources/font_pool.h"
 #include "resources/shader_pool.h"
+#include "resources/material_pool.h"
+#include "resources/geometry_pool.h"
+
 #include "fileio/fileio.h"
 
 #include "util/log.h"
@@ -48,20 +53,11 @@ namespace ppp
         }
 #endif
 
-        if (!texture_pool::initialize())
-        {
-            return -1;
-        }
-
-        if(!font_pool::initialize())
-        {
-            return -1;
-        }
-
-        if(!shader_pool::initialize())
-        {
-            return -1;
-        }
+        if (!texture_pool::initialize())    { log::error("Failed to initialize texture pool");  return -1; }
+        if (!font_pool::initialize())       { log::error("Failed to initialize font pool");     return -1; }
+        if (!shader_pool::initialize())     { log::error("Failed to initialize shader pool");   return -1; }
+        if (!material_pool::initialize())   { log::error("Failed to initialize material pool"); return -1; }
+        if (!geometry_pool::initialize())   { log::error("Failed to initialize geometry pool"); return -1; }
 
         fileio::add_wildcard("local:", internal::get_working_directory(executable_path));
 
