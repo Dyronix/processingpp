@@ -64,26 +64,26 @@ namespace ppp
     {
         trigonometry::angle_mode(trigonometry::AngleMode::RADIANS);
 
-        keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
+        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
 
         keyboard::add_key_pressed_callback(
-            [&](keyboard::KeyCode key)
+            [&](keyboard::key_code key)
         {
             switch(key)
             {
-            case keyboard::KeyCode::KEY_UP:
+            case keyboard::key_code::KEY_UP:
                 _chaos_multiplier = std::clamp(_chaos_multiplier + 0.1f, 1.0f, 10.0f);
                 environment::print("_chaos_multiplier: " + std::to_string(_chaos_multiplier));
                 break;
-            case keyboard::KeyCode::KEY_DOWN:
+            case keyboard::key_code::KEY_DOWN:
                 _chaos_multiplier = std::clamp(_chaos_multiplier - 0.1f, 1.0f, 10.0f);
                 environment::print("_chaos_multiplier: " + std::to_string(_chaos_multiplier));
                 break;
-            case keyboard::KeyCode::KEY_SPACE:
+            case keyboard::key_code::KEY_SPACE:
                 _z_off_enabled = !_z_off_enabled;
                 environment::print("_z_off_enabled: " + std::to_string(_z_off_enabled));
                 break;
-            case keyboard::KeyCode::KEY_F1:
+            case keyboard::key_code::KEY_F1:
                 _lines_enabled = !_lines_enabled;
                 environment::print("_lines_enabled: " + std::to_string(_lines_enabled));
                 break;

@@ -34,7 +34,7 @@ namespace ppp
 
     void setup()
     {
-        keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
+        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
 
         rendering::create_canvas((1280 / 2) - 200, (720 / 2) - 200, 400.0f, 400.0f);
 

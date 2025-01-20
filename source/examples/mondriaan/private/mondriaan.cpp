@@ -88,7 +88,7 @@ namespace ppp
 
     void setup()
     {
-        keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
+        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
 
         mouse::add_mouse_pressed_callback(
             [](mouse::mouse_code code)
