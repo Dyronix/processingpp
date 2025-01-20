@@ -89,7 +89,12 @@ namespace ppp
             }
             const u64 material_id() const override
             {
-                m_material->id();
+                return m_material->id();
+            }
+
+            const resources::imaterial* material() const override
+            {
+                return m_material;
             }
 
         private:
