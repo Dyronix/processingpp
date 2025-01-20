@@ -23,49 +23,49 @@ namespace ppp
 
     void setup_input_events()
     {
-        keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
+        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
 
         keyboard::add_key_pressed_callback(
-            [](keyboard::KeyCode key)
+            [](keyboard::key_code key)
         {
-            if (key == keyboard::KeyCode::KEY_SPACE)
+            if (key == keyboard::key_code::KEY_SPACE)
             {
                 bool show_all_shapes = _show_all > 0;
                 show_all_shapes = !show_all_shapes;
                 _show_all = show_all_shapes ? 1 : 0;
             }
 
-            else if (key == keyboard::KeyCode::KEY_UP && _show_all == 0)
+            else if (key == keyboard::key_code::KEY_UP && _show_all == 0)
             {
                 _shape_vis = (_shape_vis + 1) % _total_shape_count;
             }
-            else if (key == keyboard::KeyCode::KEY_DOWN && _show_all == 0)
+            else if (key == keyboard::key_code::KEY_DOWN && _show_all == 0)
             {
                 _shape_vis = (_shape_vis - 1) < 0 ? _total_shape_count - 1 : _shape_vis - 1;
             }
 
-            else if (key == keyboard::KeyCode::KEY_1)
+            else if (key == keyboard::key_code::KEY_1)
             {
                 _interpolation = 4;
                 environment::print("_interpolation: " + std::to_string(_interpolation));
             }
-            else if (key == keyboard::KeyCode::KEY_2)
+            else if (key == keyboard::key_code::KEY_2)
             {
                 _interpolation = 8;
                 environment::print("_interpolation: " + std::to_string(_interpolation));
             }
-            else if (key == keyboard::KeyCode::KEY_3)
+            else if (key == keyboard::key_code::KEY_3)
             {
                 _interpolation = 12;
                 environment::print("_interpolation: " + std::to_string(_interpolation));
             }
-            else if (key == keyboard::KeyCode::KEY_4)
+            else if (key == keyboard::key_code::KEY_4)
             {
                 _interpolation = 24;
                 environment::print("_interpolation: " + std::to_string(_interpolation));
             }
 
-            else if (key == keyboard::KeyCode::KEY_W)
+            else if (key == keyboard::key_code::KEY_W)
             {
                 _specular_shininess = _specular_shininess >> 1;
                 if (_specular_shininess < 2)
@@ -74,7 +74,7 @@ namespace ppp
                 }
                 environment::print("_specular_shininess: " + std::to_string(_specular_shininess));
             }
-            else if (key == keyboard::KeyCode::KEY_A)
+            else if (key == keyboard::key_code::KEY_A)
             {
                 _specular_strength = _specular_strength += 0.1f;
                 if (_specular_strength > 1.0f)
@@ -83,7 +83,7 @@ namespace ppp
                 }
                 environment::print("_specular_strength: " + std::to_string(_specular_strength));
             }
-            else if (key == keyboard::KeyCode::KEY_S)
+            else if (key == keyboard::key_code::KEY_S)
             {
                 _specular_shininess = _specular_shininess << 1;
                 if (_specular_shininess > 256)
@@ -92,7 +92,7 @@ namespace ppp
                 }
                 environment::print("_specular_shininess: " + std::to_string(_specular_shininess));
             }
-            else if (key == keyboard::KeyCode::KEY_D)
+            else if (key == keyboard::key_code::KEY_D)
             {
                 _specular_strength = _specular_strength -= 0.1f;
                 if (_specular_strength < 0.0f)

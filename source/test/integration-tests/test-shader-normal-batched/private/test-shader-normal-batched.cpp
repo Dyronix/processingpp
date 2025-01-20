@@ -20,40 +20,40 @@ namespace ppp
 
     void setup_input_events()
     {
-        keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
+        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
 
         keyboard::add_key_pressed_callback(
-            [](keyboard::KeyCode key)
+            [](keyboard::key_code key)
         {
-            if (key == keyboard::KeyCode::KEY_SPACE)
+            if (key == keyboard::key_code::KEY_SPACE)
             {
                 bool show_all_shapes = _show_all > 0;
                 show_all_shapes = !show_all_shapes;
                 _show_all = show_all_shapes ? 1 : 0;
             }
 
-            else if (key == keyboard::KeyCode::KEY_UP && _show_all == 0)
+            else if (key == keyboard::key_code::KEY_UP && _show_all == 0)
             {
                 _shape_vis = (_shape_vis + 1) % _total_shape_count;
             }
-            else if (key == keyboard::KeyCode::KEY_DOWN && _show_all == 0)
+            else if (key == keyboard::key_code::KEY_DOWN && _show_all == 0)
             {
                 _shape_vis = (_shape_vis - 1) < 0 ? _total_shape_count - 1 : _shape_vis - 1;
             }
 
-            else if (key == keyboard::KeyCode::KEY_1)
+            else if (key == keyboard::key_code::KEY_1)
             {
                 _interpolation = 4;
             }
-            else if (key == keyboard::KeyCode::KEY_2)
+            else if (key == keyboard::key_code::KEY_2)
             {
                 _interpolation = 8;
             }
-            else if (key == keyboard::KeyCode::KEY_3)
+            else if (key == keyboard::key_code::KEY_3)
             {
                 _interpolation = 12;
             }
-            else if (key == keyboard::KeyCode::KEY_4)
+            else if (key == keyboard::key_code::KEY_4)
             {
                 _interpolation = 24;
             }

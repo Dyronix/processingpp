@@ -33,25 +33,25 @@ namespace ppp
 
     void setup_input_events()
     {
-        keyboard::set_quit_application_keycode(keyboard::KeyCode::KEY_ESCAPE);
+        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
 
         keyboard::add_key_pressed_callback(
-            [](keyboard::KeyCode key)
+            [](keyboard::key_code key)
         {
-            if (key == keyboard::KeyCode::KEY_UP)
+            if (key == keyboard::key_code::KEY_UP)
             {
                 _rows += 1;
             }
-            else if (key == keyboard::KeyCode::KEY_DOWN)
+            else if (key == keyboard::key_code::KEY_DOWN)
             {
                 _rows -= 1;
             }
 
-            if (key == keyboard::KeyCode::KEY_RIGHT)
+            if (key == keyboard::key_code::KEY_RIGHT)
             {
                 _cols += 1;
             }
-            else if (key == keyboard::KeyCode::KEY_LEFT)
+            else if (key == keyboard::key_code::KEY_LEFT)
             {
                 _cols -= 1;
             }
