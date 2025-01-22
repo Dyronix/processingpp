@@ -528,7 +528,10 @@ namespace ppp
                                                                                                     \n\
                     void main()                                                                     \n\
                     {                                                                               \n\
-                        vec4 color = texture(s_image[materials[v_material_idx].sampler_indices[0]], v_texture) * v_tint_color;     \n\
+                        vec4 tex0 = texture(s_image[materials[v_material_idx].sampler_indices[0]], v_texture); \n\
+                        vec4 tex1 = texture(s_image[materials[v_material_idx].sampler_indices[1]], v_texture); \n\
+                        vec4 final_tex = mix(tex0, tex1, 0.2);                                                                  \n\
+                        vec4 color = final_tex * v_tint_color;                      \n\
                         frag_color = color;                                                         \n\
                     }";
 

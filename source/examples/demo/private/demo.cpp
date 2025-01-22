@@ -9,6 +9,7 @@ namespace ppp
 
     image::image _image_container;
     image::image _image_wall;
+    image::image _image_awesomeface;
 
     void setup_input_events()
     {
@@ -39,6 +40,7 @@ namespace ppp
 
         _image_container = image::load("local:content/t_container.jpg");
         _image_wall = image::load("local:content/t_wall.jpg");
+        _image_awesomeface = image::load("local:content/t_awesomeface.jpg");
 
         rendering::enable_batched_draw_mode();
     }
@@ -81,6 +83,7 @@ namespace ppp
 
                     material::reset_textures();
                     material::texture((layer + row + col) % 2 ? _image_wall.id : _image_container.id);
+                    material::texture(_image_awesomeface.id);
 
                     transform::translate(
                         start_x + col * cube_x_offset,
