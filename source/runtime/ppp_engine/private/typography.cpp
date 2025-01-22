@@ -4,6 +4,7 @@
 
 #include "resources/font_pool.h"
 #include "resources/geometry_pool.h"
+#include "resources/shader_pool.h"
 #include "resources/material_pool.h"
 
 #include "fileio/fileio.h"
@@ -33,7 +34,7 @@ namespace ppp
             class font_character_item : public render::irender_item
             {
             public:
-                font_character_item(const geometry::geometry* geom, const resources::material* material)
+                font_character_item(const geometry::geometry* geom, const resources::imaterial* material)
                     :m_geometry(geom)
                     ,m_material(material)
                 {}
@@ -91,11 +92,13 @@ namespace ppp
 
             private:
                 const geometry::geometry* m_geometry;
-                const resources::material* m_material;
+                const resources::imaterial* m_material;
             };
 
             font_character_item make_font_character(s32 character, render::texture_id texture_id, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y)
             {
+                resources::imaterial* mat_font = material_pool::get_or_create_material_instance(shader_pool::tags::unlit_font);
+
                 std::stringstream stream;
 
                 stream << "font_character_item|";
@@ -125,12 +128,12 @@ namespace ppp
 
                     geometry::geometry* geom = geometry_pool::add_new_geometry(geometry::geometry(gid, false, create_geom_fn));
 
-                    return font_character_item(geom, nullptr);
+                    return font_character_item(geom, mat_font);
                 }
 
                 geometry::geometry* geom = geometry_pool::get_geometry(gid);
 
-                return font_character_item(geom, nullptr);
+                return font_character_item(geom, mat_font);
             }
         }
 

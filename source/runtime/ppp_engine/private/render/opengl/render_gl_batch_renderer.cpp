@@ -298,9 +298,6 @@ namespace ppp
 
                 while (batch != nullptr)
                 {
-                    //assert(batch->samplers());
-                    //assert(batch->textures());
-
                     batch->bind();
 
                     shaders::push_uniform_array(shader_program(), "s_image", samplers.size(), samplers.data());

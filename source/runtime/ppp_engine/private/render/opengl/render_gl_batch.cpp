@@ -250,6 +250,7 @@ namespace ppp
         namespace batch_material_storage
         {
             //-------------------------------------------------------------------------
+            // Unaligned size in bytes of the structure storage on the GPU
             u64 size_in_bytes()
             {
                 u64 total_size_in_bytes = sizeof(s32) * max_textures()  // max amount of textures that can be bound at once

@@ -80,7 +80,7 @@ namespace ppp
         class material_instance : public imaterial
         {
         public:
-            material_instance(material* base_material);
+            material_instance(imaterial* base_material);
 
         public:
             void ambient_color(const glm::vec4& color);
@@ -105,7 +105,7 @@ namespace ppp
             const std::string& shader_tag() const override;
 
         private:
-            material* m_base_material;
+            imaterial* m_base_material;
 
             std::optional<glm::vec4> m_ambient_color;
             std::optional<glm::vec4> m_diffuse_color;
@@ -113,16 +113,4 @@ namespace ppp
             sampler_ids m_samplers;
         };
     }
-}
-
-namespace std
-{
-    template<>
-    struct std::hash<ppp::resources::material>
-    {
-        u64 operator()(const ppp::resources::material& m) const noexcept
-        {
-            return m.id();
-        }
-    };
 }

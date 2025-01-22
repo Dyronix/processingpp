@@ -633,10 +633,21 @@ namespace ppp
                 {
                     if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
                     {
-                        auto renderer = std::make_unique<primitive_batch_renderer>(
-                            _fill_user_shader.empty() ? internal::_pos_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                            _fill_user_shader.empty() ? internal::_pos_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                            shader_tag);
+                        std::unique_ptr<batch_renderer> renderer = nullptr;
+                        if (item->has_textures() == false)
+                        {
+                            renderer = std::make_unique<primitive_batch_renderer>(
+                                _fill_user_shader.empty() ? internal::_pos_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.empty() ? internal::_pos_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                shader_tag);
+                        }
+                        else
+                        {
+                            renderer = std::make_unique<texture_batch_renderer>(
+                                _fill_user_shader.empty() ? internal::_pos_tex_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.empty() ? internal::_pos_tex_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                shader_tag);
+                        }
 
                         if (_geometry_builder.is_active())
                         {
@@ -653,12 +664,25 @@ namespace ppp
                 {
                     if (internal::_custom_geometry_instance_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_instance_renderers))
                     {
-                        auto renderer = std::make_unique<primitive_instance_renderer>(
-                            _fill_user_shader.empty() ? internal::_pos_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                            _fill_user_shader.empty() ? internal::_pos_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                            _color_world_layout.data(),
-                            _color_world_layout.size(),
-                            shader_tag);
+                        std::unique_ptr<instance_renderer> renderer = nullptr;
+                        if (item->has_textures() == false)
+                        {
+                            renderer = std::make_unique<primitive_instance_renderer>(
+                                _fill_user_shader.empty() ? internal::_pos_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.empty() ? internal::_pos_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                _color_world_layout.data(),
+                                _color_world_layout.size(),
+                                shader_tag);
+                        }
+                        else
+                        {
+                            renderer = std::make_unique<texture_instance_renderer>(
+                                _fill_user_shader.empty() ? internal::_pos_tex_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.empty() ? internal::_pos_tex_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                _color_world_texid_layout.data(),
+                                _color_world_texid_layout.size(),
+                                shader_tag);
+                        }
 
                         if (_geometry_builder.is_active())
                         {
@@ -990,10 +1014,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void push_reset_shader()
+        const std::string& active_shader()
         {
-            internal::_fill_user_shader = {};
-            internal::_fill_user_vertex_type = (vertex_type)-1; // invalid type
+            return internal::_fill_user_shader;
         }
 
         //-------------------------------------------------------------------------

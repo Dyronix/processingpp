@@ -59,6 +59,8 @@ namespace ppp
         if (!material_pool::initialize())   { log::error("Failed to initialize material pool"); return -1; }
         if (!geometry_pool::initialize())   { log::error("Failed to initialize geometry pool"); return -1; }
 
+        material::shader(shader_pool::tags::unlit_texture);
+
         fileio::add_wildcard("local:", internal::get_working_directory(executable_path));
 
         color::background(1.0f, 1.0f, 1.0f, 1.0f);
@@ -114,6 +116,9 @@ namespace ppp
     //-------------------------------------------------------------------------
     s32 quit(const app_params& app_params)
     {
+        geometry_pool::terminate();
+        material_pool::terminate();
+        shader_pool::terminate();
         font_pool::terminate();
         texture_pool::terminate();
         render::terminate();

@@ -42,7 +42,7 @@ namespace ppp
         class model : public render::irender_item
         {
         public:
-            model(const geometry::geometry* geom, const resources::material* material)
+            model(const geometry::geometry* geom, const resources::imaterial* material)
                 : m_geometry(geom)
                 , m_material(material)
             {}
@@ -99,13 +99,13 @@ namespace ppp
 
         private:
             const geometry::geometry* m_geometry;
-            const resources::material* m_material;
+            const resources::imaterial* m_material;
         };
 
         //-------------------------------------------------------------------------
         model create_model(const geometry::geometry* geom)
         {
-            return model(geom, nullptr);
+            return model(geom, material_pool::get_or_create_material_instance(render::active_shader()));
         }
 
         //-------------------------------------------------------------------------

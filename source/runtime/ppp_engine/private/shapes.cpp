@@ -115,7 +115,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         shape create_shape(const geometry::geometry* geom)
         {
-            return shape(geom, material_pool::active_material_instance());
+            return shape(geom, material_pool::get_or_create_material_instance(render::active_shader()));
         }
 
         //-------------------------------------------------------------------------

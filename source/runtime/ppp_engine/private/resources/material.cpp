@@ -64,7 +64,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         // Material Instance
-        material_instance::material_instance(material* base_material)
+        material_instance::material_instance(imaterial* base_material)
             : m_base_material(base_material)
         {}
 

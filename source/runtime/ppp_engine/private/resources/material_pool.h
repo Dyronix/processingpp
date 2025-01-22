@@ -8,6 +8,14 @@ namespace ppp
 {
     namespace material_pool
     {
+        namespace texture_cache
+        {
+            void add_image(const std::string& shader_tag, render::texture_id image);
+            void reset_images(const std::string& shader_tag);
+
+            const std::vector<render::texture_id>& images(const std::string& shader_tag);
+        }
+
         bool initialize();
         void terminate();
 
@@ -21,10 +29,7 @@ namespace ppp
         resources::imaterial* material_instance_at_id(u64 id);
 
         void add_new_material(const resources::material& material);
-        void set_active_material(const std::string& shader_tag);
-        void reset_active_material();
 
-        resources::imaterial* active_material();
-        resources::imaterial* active_material_instance();
+        resources::imaterial* get_or_create_material_instance(const std::string& shader_tag);
     }
 }

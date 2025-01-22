@@ -59,7 +59,7 @@ namespace ppp
 
         camera::orbit_control(options);
 
-        color::fill({ 255,0,0,255 });
+        color::fill({ 255,255,255,255 });
 
         int grid_width = 2;
         int grid_height = 1;

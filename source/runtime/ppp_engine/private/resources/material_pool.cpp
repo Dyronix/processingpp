@@ -1,6 +1,5 @@
 #include "resources/material_pool.h"
 #include "resources/shader_pool.h"
-#include "resources/texture_manager.h"
 
 #include "util/log.h"
 
@@ -22,7 +21,48 @@ namespace ppp
             std::unordered_map<u64, resources::material, material_id_hasher> _materials;
             std::unordered_map<u64, resources::material_instance> _material_instances;
 
-            resources::imaterial* _active_material = nullptr;
+            std::unordered_map<std::string, std::vector<render::texture_id>> _registered_images;
+        }
+
+        namespace texture_cache
+        {
+            void add_image(const std::string& shader_tag, render::texture_id image)
+            {
+                auto it = internal::_registered_images.find(shader_tag);
+                if (it == std::cend(internal::_registered_images))
+                {
+                    internal::_registered_images[shader_tag] = { image };
+                }
+                else
+                {
+                    auto image_it = std::find(std::cbegin(it->second), std::cend(it->second), image);
+                    if (image_it == std::cend(it->second))
+                    {
+                        it->second.push_back(image);
+                    }
+                }
+            }
+
+            void reset_images(const std::string& shader_tag)
+            {
+                auto it = internal::_registered_images.find(shader_tag);
+                if (it != std::cend(internal::_registered_images))
+                {
+                    internal::_registered_images.at(shader_tag).clear();
+                }
+            }
+
+            const std::vector<render::texture_id>& images(const std::string& shader_tag)
+            {
+                auto it = internal::_registered_images.find(shader_tag);
+                if (it != std::cend(internal::_registered_images))
+                {
+                    return it->second;
+                }
+
+                static std::vector<render::texture_id> empty_ids;
+                return empty_ids;
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -43,9 +83,6 @@ namespace ppp
             add_new_material(resources::material(shader_pool::tags::lit_specular));
             add_new_material(resources::material(shader_pool::tags::instance_lit_specular));
 
-            // Set one active
-            set_active_material(shader_pool::tags::unlit_texture);
-
             return true;
         }
 
@@ -53,6 +90,7 @@ namespace ppp
         void terminate()
         {
             internal::_materials.clear();
+            internal::_material_instances.clear();
         }
 
         //-------------------------------------------------------------------------
@@ -109,57 +147,53 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void set_active_material(const std::string& shader_tag)
+        resources::imaterial* get_or_create_material_instance(const std::string& shader_tag)
         {
-            internal::_active_material = material_at_shader_tag(shader_tag);
-        }
+            auto mat = material_at_shader_tag(shader_tag);
+            auto cache = internal::_registered_images.find(shader_tag);
 
-        //-------------------------------------------------------------------------
-        void reset_active_material()
-        {
-            internal::_active_material = nullptr;
-        }
-
-        //-------------------------------------------------------------------------
-        resources::imaterial* active_material()
-        {
-            return internal::_active_material;
-        }
-
-        //-------------------------------------------------------------------------
-        resources::imaterial* active_material_instance()
-        {
-            assert(active_material());
+            if (mat == nullptr)
+            {
+                log::error("No material found for given tag: {}", shader_tag);
+                return nullptr;
+            }
 
             // Hash active textures for uniqueness
-            size_t texture_hash = 0;
-            for (auto texture : texture_manager::images(active_material()->shader_tag())) 
+            size_t hash = mat->id();
+
+            if (cache != std::cend(internal::_registered_images))
             {
-                texture_hash ^= std::hash<u32>{}(texture)+0x9e3779b9 + (texture_hash << 6) + (texture_hash >> 2);
+                for (auto texture : internal::_registered_images.at(shader_tag))
+                {
+                    hash ^= std::hash<u32>{}(texture)+0x9e3779b9 + (hash << 6) + (hash >> 2);
+                }
             }
 
             // Check if instance already exists
-            auto it = internal::_material_instances.find(texture_hash);
+            auto it = internal::_material_instances.find(hash);
             if (it != internal::_material_instances.end()) 
             {
                 return &it->second;
             }
 
             // Create a new material instance
-            resources::material_instance instance(static_cast<resources::material*>(active_material()));
+            resources::material_instance instance(mat);
 
-            log::info("material instance added: {}", texture_hash);
+            log::info("material instance ({0}) added for shader tag: {1}", hash, shader_tag);
 
             // Assign textures
-            for (auto texture : texture_manager::images(active_material()->shader_tag())) 
+            if (cache != std::cend(internal::_registered_images))
             {
-                instance.add_texture(texture);
+                for (auto texture : internal::_registered_images.at(shader_tag))
+                {
+                    instance.add_texture(texture);
+                }
             }
 
             // Cache the instance
-            internal::_material_instances.emplace(texture_hash, std::move(instance));
+            internal::_material_instances.emplace(hash, std::move(instance));
 
-            return &internal::_material_instances.at(texture_hash);
+            return &internal::_material_instances.at(hash);
         }
     }
 }

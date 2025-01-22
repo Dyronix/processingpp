@@ -254,7 +254,8 @@ namespace ppp
         {
             geometry::geometry* image_geom = internal::make_image(image_id);
 
-            resources::imaterial* mat_unlit_tex = material_pool::material_at_shader_tag(shader_pool::tags::unlit_texture);
+            resources::imaterial* mat_unlit_tex = material_pool::get_or_create_material_instance(shader_pool::tags::unlit_texture);
+            resources::imaterial* mat_unlit_col = material_pool::get_or_create_material_instance(shader_pool::tags::unlit_color);
 
             // Once we have more than 32 textures added to this material this won't work anymore.
             mat_unlit_tex->add_texture(image_id);
@@ -284,7 +285,7 @@ namespace ppp
                 constexpr bool outer_stroke = true;
 
                 geometry::geometry* stroke_geom = internal::extrude_image(world, image_geom, render::brush::stroke_width());
-                internal::image_item stroke_item = internal::image_item(stroke_geom, nullptr);
+                internal::image_item stroke_item = internal::image_item(stroke_geom, mat_unlit_col);
 
                 render::submit_stroke_image_item(&stroke_item, outer_stroke);
             }
@@ -294,7 +295,7 @@ namespace ppp
                 constexpr bool outer_stroke = false;
 
                 geometry::geometry* stroke_geom = internal::extrude_image(world, image_geom, -render::brush::stroke_width());
-                internal::image_item stroke_item = internal::image_item(stroke_geom, nullptr);
+                internal::image_item stroke_item = internal::image_item(stroke_geom, mat_unlit_col);
 
                 render::submit_stroke_image_item(&stroke_item, outer_stroke);
             }
