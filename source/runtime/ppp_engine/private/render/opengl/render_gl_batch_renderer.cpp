@@ -1,6 +1,6 @@
 #include "render/render_batch_renderer.h"
 #include "render/render_item.h"
-#include "render/render_shaders.h"
+#include "render/render_shader_uniform_manager.h"
 #include "render/render_features.h"
 
 #include "render/opengl/render_gl_error.h"

@@ -2,7 +2,7 @@
 #include "render/render_vertex_buffer.h"
 #include "render/render_index_buffer.h"
 #include "render/render_storage_buffer.h"
-#include "render/render_shaders.h"
+#include "render/render_shader_uniform_manager.h"
 #include "render/render_features.h"
 
 #include "render/opengl/render_gl_error.h"

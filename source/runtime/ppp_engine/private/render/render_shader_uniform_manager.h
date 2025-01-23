@@ -4,15 +4,14 @@
 
 #include <glm/glm.hpp>
 
+#include <string>
+
 namespace ppp
 {
     namespace render
     {
         namespace shaders
-        {       
-            u32 create_shader_program(const char* vs_source, const char* fs_source);
-            u32 create_shader_program(const char* vs_source, const char* fs_source, const char* geometry_source);
-
+        {
             void push_uniform(u32 shader_program_id, const std::string& uniform_name, bool value);
             void push_uniform(u32 shader_program_id, const std::string& uniform_name, s32 value);
             void push_uniform(u32 shader_program_id, const std::string& uniform_name, f32 value);

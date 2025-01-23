@@ -1,6 +1,6 @@
 #include "material.h"
 #include "fileio/fileio.h"
-#include "render/render_shaders.h"
+#include "render/render_shader_uniform_manager.h"
 #include "render/render.h"
 #include "resources/shader_pool.h"
 #include "resources/material_pool.h"
