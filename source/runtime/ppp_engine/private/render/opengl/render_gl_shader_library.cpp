@@ -206,7 +206,7 @@ namespace ppp
                         })
                     .add_ssbo("material_buffer", "material_attributes", "materials", 1, true)
 
-                    .add_uniform_array("sampler2D", "s_image", render::max_textures())
+                    .add_uniform_array("sampler2D", "s_images", render::max_textures())
                     
                     .add_input("vec4", "v_tint_color")
                     .add_input("vec2", "v_texture")
@@ -215,8 +215,8 @@ namespace ppp
                     .add_output("vec4", "frag_color")
 
                     .set_main_function_body(R"(
-                        vec4 tex0 = texture(s_image[materials[v_material_idx].sampler_indices[0]], v_texture);
-                        vec4 tex1 = texture(s_image[materials[v_material_idx].sampler_indices[1]], v_texture);
+                        vec4 tex0 = texture(s_images[materials[v_material_idx].sampler_indices[0]], v_texture);
+                        vec4 tex1 = texture(s_images[materials[v_material_idx].sampler_indices[1]], v_texture);
                         vec4 final_tex = mix(tex0, tex1, 0.2);
                         vec4 color = final_tex * v_tint_color;
                         frag_color = color;
@@ -286,7 +286,7 @@ namespace ppp
                 return builder
                     .set_version(460)
 
-                    .add_uniform_array("sampler2D", "s_image", render::max_textures())
+                    .add_uniform_array("sampler2D", "s_images", render::max_textures())
 
                     .add_input("vec4", "v_tint_color")
                     .add_input("vec2", "v_texture")
@@ -295,7 +295,7 @@ namespace ppp
                     .add_output("vec4", "frag_color")
 
                     .set_main_function_body(R"(
-                        vec4 color = vec4(v_tint_color.rgb, texture(s_image[v_texture_idx], v_texture).r); 
+                        vec4 color = vec4(v_tint_color.rgb, texture(s_images[v_texture_idx], v_texture).r); 
                         frag_color = color;
                     )").build();
             }

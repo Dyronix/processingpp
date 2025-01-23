@@ -300,7 +300,7 @@ namespace ppp
                 {
                     batch->bind();
 
-                    shaders::push_uniform_array(shader_program(), "s_image", samplers.size(), samplers.data());
+                    shaders::push_uniform_array(shader_program(), "s_images", samplers.size(), samplers.data());
 
                     s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;

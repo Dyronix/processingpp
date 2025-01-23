@@ -301,7 +301,7 @@ namespace ppp
 
                     inst->bind();
 
-                    shaders::push_uniform_array(shader_program(), "s_image", inst->active_sampler_count(), inst->samplers());
+                    shaders::push_uniform_array(shader_program(), "s_images", inst->active_sampler_count(), inst->samplers());
 
                     s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
