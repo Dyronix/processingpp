@@ -334,6 +334,8 @@ namespace ppp
             //-------------------------------------------------------------------------
             u64 copy_texture_samplers(const resources::imaterial* material, u8* buffer, u64 offset)
             {
+                // For more info on why alignment is 4 see:
+                // https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)
                 const s32 alignment = 4;
                 const s32 sampler_count = static_cast<s32>(material->samplers().size());
 
@@ -367,6 +369,8 @@ namespace ppp
             //-------------------------------------------------------------------------
             u64 copy_material_properties(const resources::imaterial* material, u8* buffer, u64 offset)
             {
+                // For more info on why alignment is 16 see:
+                // https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)
                 const s32 alignment = 16;
 
                 const glm::vec4& ambient_color = material->ambient_color();
