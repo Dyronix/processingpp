@@ -251,7 +251,7 @@ namespace ppp
         {
             //-------------------------------------------------------------------------
             // Unaligned size in bytes of the structure storage on the GPU
-            u64 size_in_bytes()
+            static u64 size_in_bytes()
             {
                 u64 total_size_in_bytes = sizeof(s32) * max_textures()  // max amount of textures that can be bound at once
                                         + sizeof(s32)                   // actual size of textures that are bound
@@ -338,6 +338,8 @@ namespace ppp
                 // https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)
                 const s32 alignment = 4;
                 const s32 sampler_count = static_cast<s32>(material->samplers().size());
+
+                assert(sampler_count <= max_textures());
 
                 offset = memory::align_up(offset, alignment); // Align for `int`.
 

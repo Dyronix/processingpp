@@ -1,4 +1,5 @@
 #include "image.h"
+#include "material.h"
 
 #include "render/render.h"
 
@@ -252,13 +253,13 @@ namespace ppp
 
         void draw(image_id image_id, float x, float y, float width, float height)
         {
+            std::string prev_shader = material::shader(shader_pool::tags::unlit_texture);
+
+            material::reset_textures();
+            material::texture(image_id);
+
             geometry::geometry* image_geom = internal::make_image(image_id);
-
-            resources::imaterial* mat_unlit_tex = material_pool::get_or_create_material_instance(shader_pool::tags::unlit_texture);
-            resources::imaterial* mat_unlit_col = material_pool::get_or_create_material_instance(shader_pool::tags::unlit_color);
-
-            // Once we have more than 32 textures added to this material this won't work anymore.
-            mat_unlit_tex->add_texture(image_id);
+            resources::imaterial* mat_unlit_tex = material_pool::get_or_create_material_instance(render::active_shader());
 
             internal::image_item image_render_item = internal::image_item(image_geom, mat_unlit_tex);
 
@@ -280,6 +281,9 @@ namespace ppp
 
             transform_stack::pop();
 
+            material::shader(shader_pool::tags::unlit_color);
+            resources::imaterial* mat_unlit_col = material_pool::get_or_create_material_instance(render::active_shader());
+
             if (render::brush::stroke_enabled())
             {
                 constexpr bool outer_stroke = true;
@@ -299,6 +303,8 @@ namespace ppp
 
                 render::submit_stroke_image_item(&stroke_item, outer_stroke);
             }
+
+            material::shader(prev_shader);
         }
 
         void no_tint() 

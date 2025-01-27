@@ -141,6 +141,8 @@ namespace ppp
         structure::on_draw_end(end_draw);
 
         rendering::enable_instance_draw_mode();
+
+        material::shader(material::tags::unlit_color());
     }
 
     void draw()

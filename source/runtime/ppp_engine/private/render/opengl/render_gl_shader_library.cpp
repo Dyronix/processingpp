@@ -215,11 +215,7 @@ namespace ppp
                     .add_output("vec4", "frag_color")
 
                     .set_main_function_body(R"(
-                        vec4 tex0 = texture(s_images[materials[v_material_idx].sampler_indices[0]], v_texture);
-                        vec4 tex1 = texture(s_images[materials[v_material_idx].sampler_indices[1]], v_texture);
-                        vec4 final_tex = mix(tex0, tex1, 0.2);
-                        vec4 color = final_tex * v_tint_color;
-                        frag_color = color;
+                        frag_color = texture(s_images[materials[v_material_idx].sampler_indices[0]], v_texture);
                     )").build();
             }
 

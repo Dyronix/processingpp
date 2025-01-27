@@ -107,6 +107,8 @@ namespace ppp
         _image_wall = image::load("local:content/t_wall.jpg");
 
         structure::on_draw_end(end_draw);
+        
+        camera::set_scene_camera_mode(camera::scene_camera_mode::CAMERA_IMAGE);
     }
 
     void draw()
@@ -117,6 +119,8 @@ namespace ppp
         color::stroke_weight(5.0f);
         color::inner_stroke({ 0, 255 , 0, 255 });
         color::inner_stroke_weight(5.0f);
+
+        material::shader(material::tags::unlit_color());
 
         int shape_count = 8;
         int shape_size = 50;
@@ -155,6 +159,8 @@ namespace ppp
         
         shapes::triangle(x + shape_size, y - (shape_size * 0.5f), x + (shape_size * 0.5f), y + (shape_size * 0.5f), x, y - (shape_size * 0.5f));
         
+        material::shader(material::tags::unlit_texture());
+
         x = 96;
         for (int i = 0; i < 9; ++i)
         {

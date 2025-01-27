@@ -137,6 +137,8 @@ namespace ppp
         camera::set_scene_camera(20, -40, 400);
 
         structure::on_draw_end(end_draw);
+
+        material::shader(material::tags::unlit_color());
     }
 
     void draw_shapes_grid()

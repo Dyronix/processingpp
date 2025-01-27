@@ -1,5 +1,7 @@
 #include "resources/material.h"
 
+#include "util/log.h"
+
 namespace ppp
 {
     namespace resources
@@ -79,8 +81,16 @@ namespace ppp
             s32 sampler_id = m_base_material->add_texture(id);
             if (sampler_id >= 0)
             {
-                m_samplers.push_back(sampler_id);
-                return sampler_id;
+                auto it = std::find(std::cbegin(m_samplers), std::cend(m_samplers), sampler_id);
+                if (it == std::cend(m_samplers))
+                {
+                    m_samplers.push_back(sampler_id);
+                }
+            }
+            else
+            {
+                log::error("Unable to add sampler.");
+                exit(EXIT_FAILURE);
             }
 
             return sampler_id;

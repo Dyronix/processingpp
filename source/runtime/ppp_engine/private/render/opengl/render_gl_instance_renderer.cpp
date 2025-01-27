@@ -6,6 +6,7 @@
 #include "render/opengl/render_gl_error.h"
 
 #include "resources/shader_pool.h"
+#include "resources/material_pool.h"
 
 #include "util/log.h"
 #include "util/color_ops.h"
@@ -79,7 +80,6 @@ namespace ppp
         {
             internal::_wireframe_linewidth = width;
         }
-        
         //-------------------------------------------------------------------------
         void instance_renderer::set_wireframe_linecolor(s32 color)
         {
@@ -160,9 +160,7 @@ namespace ppp
         {
             if (m_instance_data_map.find(topology) == std::cend(m_instance_data_map))
             {
-                s32 max_tex = -1;
-
-                m_instance_data_map.emplace(topology, instance_drawing_data(max_tex, layouts(), layout_count(), m_instance_layouts, m_instance_layout_count, m_buffer_policy));
+                m_instance_data_map.emplace(topology, instance_drawing_data(layouts(), layout_count(), m_instance_layouts, m_instance_layout_count, m_buffer_policy));
             }
 
             m_instance_data_map.at(topology).append(item, color, world);
@@ -294,21 +292,21 @@ namespace ppp
             auto inst = drawing_data.first_instance();
             if (inst != nullptr)
             {
+                const auto& samplers = material()->samplers();
+                const auto& textures = material()->textures();
+
                 while (inst != nullptr)
                 {
-                    assert(inst->samplers());
-                    assert(inst->textures());
-
                     inst->bind();
 
-                    shaders::push_uniform_array(shader_program(), "s_images", inst->active_sampler_count(), inst->samplers());
+                    shaders::push_uniform_array(shader_program(), "s_images", samplers.size(), samplers.data());
 
                     s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                    for (int i = 0; i < inst->active_texture_count(); ++i)
+                    for (int i = 0; i < textures.size(); ++i)
                     {
                         GL_CALL(glActiveTexture(GL_TEXTURE0 + (offset * i)));
-                        GL_CALL(glBindTexture(GL_TEXTURE_2D, inst->textures()[i]));
+                        GL_CALL(glBindTexture(GL_TEXTURE_2D, textures[i]));
                     }
 
                     inst->submit();

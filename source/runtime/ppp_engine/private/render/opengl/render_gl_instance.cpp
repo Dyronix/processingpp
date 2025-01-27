@@ -2,17 +2,23 @@
 #include "render/render_vertex_buffer.h"
 #include "render/render_index_buffer.h"
 #include "render/render_instance_buffer.h"
+#include "render/render_storage_buffer.h"
 #include "render/render_shader_uniform_manager.h"
+#include "render/render_features.h"
 
 #include "render/opengl/render_gl_error.h"
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
 #include "render/helpers/render_instance_buffer_ops.h"
+#include "render/helpers/render_storage_buffer_ops.h"
 #include "render/helpers/render_texture_registry.h"
+
+#include "resources/material_pool.h"
 
 #include "util/types.h"
 #include "util/log.h"
+#include "util/pointer_math.h"
 
 #include <glad/glad.h>
 
@@ -30,11 +36,10 @@ namespace ppp
                 glm::mat4   world;
                 glm::vec4   color;
             };
-
             //-------------------------------------------------------------------------
             struct unlit_texture_instance_data
             {
-                s32         tex_id;
+                s32         mat_id;
 
                 glm::mat4   world;
                 glm::vec4   color;
@@ -233,11 +238,157 @@ namespace ppp
         };
 
         //-------------------------------------------------------------------------
+        // Material Buffer Manager
+        namespace instance_material_storage
+        {
+            //-------------------------------------------------------------------------
+            // Unaligned size in bytes of the structure storage on the GPU
+            static u64 size_in_bytes()
+            {
+                u64 total_size_in_bytes = sizeof(s32) * max_textures()  // max amount of textures that can be bound at once
+                    + sizeof(s32)                   // actual size of textures that are bound
+                    + sizeof(glm::vec4)             // ambient color 
+                    + sizeof(glm::vec4);            // diffuse color
+
+                return total_size_in_bytes;
+            }
+        };
+
+        class instance_material_manager
+        {
+        public:
+            //-------------------------------------------------------------------------
+            instance_material_manager()
+                :m_storage_buffer(8, instance_material_storage::size_in_bytes())
+            {}
+
+            //-------------------------------------------------------------------------
+            s32 add_material_attributes(const irender_item* item)
+            {
+                s32 material_index = m_storage_buffer.active_element_count();
+
+                copy_material_data(item);
+
+                return material_index;
+            }
+
+            //-------------------------------------------------------------------------
+            void bind()
+            {
+                m_storage_buffer.bind(1);
+            }
+
+            //-------------------------------------------------------------------------
+            void unbind()
+            {
+                m_storage_buffer.unbind();
+            }
+
+            //-------------------------------------------------------------------------
+            void submit()
+            {
+                m_storage_buffer.submit(1);
+            }
+
+            //-------------------------------------------------------------------------
+            void reset()
+            {
+                m_storage_buffer.reset();
+            }
+
+            //-------------------------------------------------------------------------
+            void release()
+            {
+                m_storage_buffer.free();
+            }
+
+        private:
+            void copy_material_data(const irender_item* item)
+            {
+                const resources::imaterial* material = item->material();
+                if (material == nullptr)
+                {
+                    return;
+                }
+
+                storage_buffer_ops::storage_data_addition_scope sdas(m_storage_buffer, 1);
+
+                std::vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
+
+                size_t offset = 0;
+
+                offset = copy_texture_samplers(material, material_data.data(), offset);
+                offset = copy_material_properties(material, material_data.data(), offset);
+
+                storage_buffer_ops::set_storage_data(sdas, material_data.data());
+            }
+
+            //-------------------------------------------------------------------------
+            u64 copy_texture_samplers(const resources::imaterial* material, u8* buffer, u64 offset)
+            {
+                // For more info on why alignment is 4 see:
+                // https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)
+                const s32 alignment = 4;
+                const s32 sampler_count = static_cast<s32>(material->samplers().size());
+
+                offset = memory::align_up(offset, alignment); // Align for `int`.
+
+                if (material->has_textures())
+                {
+                    const s32* samplers = material->samplers().data();
+                    std::memcpy(buffer + offset, samplers, sampler_count * sizeof(s32));
+                    offset += sampler_count * sizeof(s32);
+                }
+
+                // Pad remaining samplers with -1
+                const s32 padding_value = -1;
+                const u64 padding_size = (max_textures() - sampler_count);
+
+                if (padding_size > 0)
+                {
+                    std::memset(buffer + offset, padding_value, padding_size * sizeof(s32));
+                    offset += padding_size * sizeof(s32);
+                }
+
+                // Store sampler count
+                offset = memory::align_up(offset, alignment); // Align for `int`.
+                std::memcpy(buffer + offset, &sampler_count, sizeof(sampler_count));
+                offset += sizeof(s32);
+
+                return offset;
+            }
+
+            //-------------------------------------------------------------------------
+            u64 copy_material_properties(const resources::imaterial* material, u8* buffer, u64 offset)
+            {
+                // For more info on why alignment is 16 see:
+                // https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)
+                const s32 alignment = 16;
+
+                const glm::vec4& ambient_color = material->ambient_color();
+                const glm::vec4& diffuse_color = material->diffuse_color();
+
+                offset = memory::align_up(offset, alignment); // Align for `vec4`.
+                std::memcpy(buffer + offset, &ambient_color, sizeof(glm::vec4));
+                offset += sizeof(glm::vec4);
+
+                offset = memory::align_up(offset, alignment); // Align for `vec4`.
+                std::memcpy(buffer + offset, &diffuse_color, sizeof(glm::vec4));
+                offset += sizeof(glm::vec4);
+
+                return offset;
+            }
+
+        private:
+            storage_buffer m_storage_buffer;
+        };
+
+        //-------------------------------------------------------------------------
         // Instance Impl
         class instance::impl
         {
         public:
-            impl(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, s32 size_textures)
+            impl(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
                 :m_instance_id(instance->geometry_id())
                 ,m_instance_count(0)
             {
@@ -254,45 +405,39 @@ namespace ppp
                 GL_CALL(glBindVertexArray(m_vao));
 
                 m_buffer_manager = std::make_unique<instance_buffer_manager>(instance, layouts, layout_count, instance_layouts, instance_layout_count);
-                m_texture_registry = std::make_unique<texture_registry>(size_textures);
+                m_material_manager = std::make_unique<instance_material_manager>();
 
                 if (instance->index_count() != 0)
                 {
                     m_buffer_manager->add_indices(instance);
                 }
 
-                if (m_texture_registry->has_reserved_texture_space())
-                {
-                    //assert(instance->texture_ids().size() == 1 && "Currently only one texture per render item is supported");
-
-                    //s32 sampler_id = m_texture_registry->add_texture(instance->texture_ids()[0]);
-                    //if (sampler_id != -1)
-                    //{
-                    //    m_buffer_manager->add_vertices(instance, sampler_id);
-                    //}
-                    //else
-                    {
-                        log::error("Unable to generate sampler id for texture.");
-                        exit(EXIT_FAILURE);
-                    }
-                }
-                else
-                {
-                    m_buffer_manager->add_vertices(instance);
-                }
+                m_buffer_manager->add_vertices(instance);
 
                 GL_CALL(glBindVertexArray(0));
+            }
+
+            ~impl()
+            {
+                if (m_vao)
+                {
+                    GL_CALL(glDeleteVertexArrays(1, &m_vao));
+                }
             }
 
             //-------------------------------------------------------------------------
             void bind() const
             {
                 GL_CALL(glBindVertexArray(m_vao));
+
+                m_material_manager->bind();
             }
 
             //-------------------------------------------------------------------------
             void unbind() const
             {
+                m_material_manager->unbind();
+
                 GL_CALL(glBindVertexArray(0));
             }
 
@@ -300,6 +445,15 @@ namespace ppp
             void submit() const
             {
                 m_buffer_manager->submit();
+                m_material_manager->submit();
+            }
+
+            //-------------------------------------------------------------------------
+            void release()
+            {
+                GL_CALL(glDeleteVertexArrays(1, &m_vao));
+
+                m_vao = 0;
             }
 
             //-------------------------------------------------------------------------
@@ -324,17 +478,15 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void append(const std::vector<texture_id>& texture_ids, const glm::vec4& color, const glm::mat4& world)
+            void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
             {
-                if (texture_ids.empty() == false)
+                if (item->has_textures())
                 {
-                    assert(texture_ids.size() == 1 && "Currently only one texture per render item is supported");
-                
-                    s32 sampler_id = m_texture_registry->add_texture(texture_ids[0]);
+                    s32 material_id = m_material_manager->add_material_attributes(item);
 
-                    if (sampler_id != -1)
+                    if (material_id != -1)
                     {
-                        memcpy(internal::_intermediate_unlit_texture_buffer.data() + offsetof(internal::unlit_texture_instance_data, tex_id), &sampler_id, sizeof(s32));
+                        memcpy(internal::_intermediate_unlit_texture_buffer.data() + offsetof(internal::unlit_texture_instance_data, mat_id), &material_id, sizeof(s32));
                         memcpy(internal::_intermediate_unlit_texture_buffer.data() + offsetof(internal::unlit_texture_instance_data, world), &world, sizeof(glm::mat4));
                         memcpy(internal::_intermediate_unlit_texture_buffer.data() + offsetof(internal::unlit_texture_instance_data, color), &color, sizeof(glm::vec4));
 
@@ -352,9 +504,9 @@ namespace ppp
                 {
                     memcpy(internal::_intermediate_unlit_buffer.data() + offsetof(internal::unlit_instance_data, world), &world, sizeof(glm::mat4));
                     memcpy(internal::_intermediate_unlit_buffer.data() + offsetof(internal::unlit_instance_data, color), &color, sizeof(glm::vec4));
-                
+
                     m_buffer_manager->add_instance_data(internal::_intermediate_unlit_buffer.data());
-                
+
                     memset(internal::_intermediate_unlit_buffer.data(), 0, sizeof(internal::unlit_instance_data));
                 }
             }
@@ -363,15 +515,15 @@ namespace ppp
             s32 m_instance_count = 0;
 
             std::unique_ptr<instance_buffer_manager> m_buffer_manager;
-            std::unique_ptr<texture_registry> m_texture_registry;
+            std::unique_ptr<instance_material_manager> m_material_manager;
 
             u32 m_vao;
         };
 
         //-------------------------------------------------------------------------
         // Instance
-        instance::instance(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, s32 size_textures)
-            :m_pimpl(std::make_unique<impl>(instance, layouts, layout_count, instance_layouts, instance_layout_count, size_textures))
+        instance::instance(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+            :m_pimpl(std::make_unique<impl>(instance, layouts, layout_count, instance_layouts, instance_layout_count))
         {
 
         }
@@ -410,9 +562,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void instance::append(const std::vector<texture_id>& texture_ids, const glm::vec4& color, const glm::mat4& world)
+        void instance::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
         {
-            m_pimpl->append(texture_ids, color, world);
+            m_pimpl->append(item, color, world);
         }
         //-------------------------------------------------------------------------
         void instance::reset()
@@ -420,24 +572,20 @@ namespace ppp
             m_pimpl->m_instance_count = 0;
 
             m_pimpl->m_buffer_manager->reset();
-            m_pimpl->m_texture_registry->reset();
+            m_pimpl->m_material_manager->reset();
         }
         //-------------------------------------------------------------------------
         void instance::release()
         {
             m_pimpl->m_buffer_manager->release();
-            m_pimpl->m_texture_registry->release();
+            m_pimpl->m_material_manager->release();
+            m_pimpl->release();
         }
 
         //-------------------------------------------------------------------------
         bool instance::has_data() const
         {
-            return m_pimpl->m_buffer_manager->has_data() || (m_pimpl->m_texture_registry->has_reserved_texture_space() && m_pimpl->m_texture_registry->has_data());
-        }
-        //-------------------------------------------------------------------------
-        bool instance::has_reserved_texture_space() const 
-        {
-            return m_pimpl->m_texture_registry->has_reserved_texture_space(); 
+            return m_pimpl->m_buffer_manager->has_data();
         }
 
         //-------------------------------------------------------------------------
@@ -450,19 +598,11 @@ namespace ppp
         const void* instance::vertices() const { return m_pimpl->m_buffer_manager->vertices(); }
         //-------------------------------------------------------------------------
         const void* instance::indices() const { return m_pimpl->m_buffer_manager->indices(); }
-        //-------------------------------------------------------------------------
-        const s32* instance::samplers() const { return has_reserved_texture_space() ? m_pimpl->m_texture_registry->samplers().data() : nullptr; }
-        //-------------------------------------------------------------------------
-        const u32* instance::textures() const { return has_reserved_texture_space() ? m_pimpl->m_texture_registry->textures().data() : nullptr; }
 
         //-------------------------------------------------------------------------
         u32 instance::active_vertex_count() const { return m_pimpl->m_buffer_manager->active_vertex_count(); }
         //-------------------------------------------------------------------------
         u32 instance::active_index_count() const { return m_pimpl->m_buffer_manager->active_index_count(); }
-        //-------------------------------------------------------------------------
-        u32 instance::active_sampler_count() const { return m_pimpl->m_texture_registry->active_sampler_count(); }
-        //-------------------------------------------------------------------------
-        u32 instance::active_texture_count() const { return m_pimpl->m_texture_registry->active_texture_count(); }
 
         //-------------------------------------------------------------------------
         u64 instance::vertex_buffer_byte_size() const { return m_pimpl->m_buffer_manager->active_vertices_byte_size(); }
@@ -473,14 +613,13 @@ namespace ppp
         // Instance Drawing Data Impl
         struct instance_drawing_data::impl
         {
-            impl(s32 size_textures, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
+            impl(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
                 : instances()
                 , buffer_policy(render_buffer_policy)
                 , layouts(layouts)
                 , layout_count(layout_count)
                 , instance_layouts(instance_layouts)
                 , instance_layout_count(instance_layout_count)
-                , max_textures(size_textures)
             {
 
             }
@@ -494,17 +633,12 @@ namespace ppp
             const u64                   instance_layout_count     = 0;
 
             s32                         draw_instance             = 0;
-            s32                         max_textures              = -1;
         };
 
         //-------------------------------------------------------------------------
         // Instance Drawing Data
         instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
-            : instance_drawing_data(-1, layouts, layout_count, instance_layouts, instance_layout_count, render_buffer_policy)
-        {
-        }
-        instance_drawing_data::instance_drawing_data(s32 size_textures, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
-            : m_pimpl(std::make_unique<impl>(size_textures, layouts, layout_count, instance_layouts, instance_layout_count, render_buffer_policy))
+            : m_pimpl(std::make_unique<impl>(layouts, layout_count, instance_layouts, instance_layout_count, render_buffer_policy))
         {
             assert(layouts != nullptr);
             assert(layout_count > 0);
@@ -533,7 +667,7 @@ namespace ppp
 
             if (it == std::cend(m_pimpl->instances))
             {
-                instance& inst = m_pimpl->instances.emplace_back(item, m_pimpl->layouts, m_pimpl->layout_count, m_pimpl->instance_layouts, m_pimpl->instance_layout_count, m_pimpl->max_textures);
+                instance& inst = m_pimpl->instances.emplace_back(item, m_pimpl->layouts, m_pimpl->layout_count, m_pimpl->instance_layouts, m_pimpl->instance_layout_count);
                 
                 new_instance = &inst;
             }
@@ -543,8 +677,7 @@ namespace ppp
             }
 
             new_instance->increment_instance_count();
-            //new_instance->append(item->texture_ids(), color, world);
-            new_instance->append({}, color, world);
+            new_instance->append(item, color, world);
         }
 
         //-------------------------------------------------------------------------

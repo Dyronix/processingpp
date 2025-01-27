@@ -39,6 +39,12 @@ namespace ppp
             //-------------------------------------------------------------------------
             void set_attribute_data(vertex_attribute_addition_scope& vaas, attribute_type type, const void* data_ptr)
             {
+                if (data_ptr == nullptr)
+                {
+                    log::warn("trying to copy an null-data");
+                    return;
+                }
+
                 vertex_buffer& vb = vaas.get_vertex_buffer();
                 const attribute_layout* element_layout = vb.find_layout(type);
                 if (!element_layout)

@@ -74,6 +74,8 @@ namespace ppp
         _material_cyber_ocean.set_uniform("u_periodic_scale_z", _periodic_scale_z);
         _material_cyber_ocean.set_uniform("u_total_time", environment::total_time());
         _material_cyber_ocean.set_uniform("u_cube_size", 20.0f);
+
+        material::shader("cyber_ocean");
     }
 
     void create_cyber_ocean_geometry()
@@ -156,7 +158,6 @@ namespace ppp
         shapes::enable_solid_mode(true);
 
         load_cyber_ocean_shader();
-
         create_cyber_ocean_geometry();
 
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);

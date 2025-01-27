@@ -108,6 +108,8 @@ namespace ppp
         _model_id = model::create_model(crystal_string, model::model_file_type::OBJ);
 
         structure::on_draw_end(end_draw);
+
+        material::shader(material::tags::unlit_texture());
     }
 
     void draw()

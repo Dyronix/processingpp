@@ -109,6 +109,8 @@ namespace ppp
         _model_firetruck = model::load_model("local:content/models/firetruck.obj");
 
         structure::on_draw_end(end_draw);
+
+        material::shader(material::tags::unlit_texture());
     }
 
     void draw()
@@ -124,8 +126,6 @@ namespace ppp
         options.max_zoom = 600.0f;
 
         camera::orbit_control(options);
-
-        color::fill({ 255,0,0,255 });
 
         material::reset_textures();
         material::texture(_image_color_map.id);

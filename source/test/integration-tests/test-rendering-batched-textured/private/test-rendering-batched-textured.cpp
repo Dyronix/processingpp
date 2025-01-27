@@ -103,6 +103,8 @@ namespace ppp
         structure::on_draw_end(end_draw);
 
         rendering::enable_batched_draw_mode();
+
+        material::shader(material::tags::unlit_texture());
     }
 
     void draw()
@@ -118,8 +120,6 @@ namespace ppp
         options.max_zoom = 600.0f;
 
         camera::orbit_control(options);
-
-        color::fill({ 255,0,0,255 });
 
         int grid_width = 5;
         int grid_height = 3;

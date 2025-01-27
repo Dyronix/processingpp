@@ -144,8 +144,10 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void shader(const std::string& tag)
+        std::string shader(const std::string& tag)
         {
+            std::string previous_active_tag = internal::_active_shader_tag;
+
             internal::_active_shader_tag = tag;
 
             auto it = internal::_shader_tag_vertex_type_map.find(tag);
@@ -154,6 +156,8 @@ namespace ppp
                 : it->second;
 
             render::push_active_shader(tag, vertex_type);
+
+            return previous_active_tag;
         }
 
         //-------------------------------------------------------------------------

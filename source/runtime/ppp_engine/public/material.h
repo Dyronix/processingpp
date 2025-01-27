@@ -41,7 +41,7 @@ namespace ppp
         void texture(unsigned int image_id);
         void reset_textures();
 
-        void shader(const std::string& tag);
+        std::string shader(const std::string& tag);
 
         shader_program normal_material();
         shader_program specular_material();

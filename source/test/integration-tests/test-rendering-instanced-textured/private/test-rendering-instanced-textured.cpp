@@ -103,6 +103,8 @@ namespace ppp
         structure::on_draw_end(end_draw);
 
         rendering::enable_instance_draw_mode();
+
+        material::shader(material::tags::unlit_texture());
     }
 
     void draw()
@@ -119,7 +121,6 @@ namespace ppp
 
         camera::orbit_control(options);
 
-        color::fill({ 255,0,0,255 });
 
         int grid_width = 5;
         int grid_height = 3;
