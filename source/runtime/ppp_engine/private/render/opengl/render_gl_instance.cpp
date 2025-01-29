@@ -21,6 +21,7 @@
 #include "util/pointer_math.h"
 
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp >
 
 #include <numeric>
 
@@ -201,9 +202,38 @@ namespace ppp
             {
                 vertex_buffer_ops::vertex_attribute_addition_scope vaas(m_vertex_buffer, item->vertex_count());
 
-                if (m_vertex_buffer.has_layout(attribute_type::POSITION)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::POSITION, item->vertex_positions().data());
-                if (m_vertex_buffer.has_layout(attribute_type::NORMAL)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::NORMAL, item->vertex_normals().data());
-                if (m_vertex_buffer.has_layout(attribute_type::TEXCOORD)) vertex_buffer_ops::set_attribute_data(vaas, attribute_type::TEXCOORD, item->vertex_uvs().data());
+                if (m_vertex_buffer.has_layout(attribute_type::POSITION))
+                {
+                    assert(item->vertex_positions().empty() == false);
+
+                    vertex_buffer_ops::set_attribute_data(vaas, attribute_type::POSITION, item->vertex_positions().data());
+                }
+
+                if (m_vertex_buffer.has_layout(attribute_type::NORMAL))
+                {
+                    if (item->vertex_normals().empty() == false)
+                    {
+                        vertex_buffer_ops::set_attribute_data(vaas, attribute_type::NORMAL, item->vertex_normals().data());
+                    }
+                    else
+                    {
+                        glm::vec3 zero_normal(0.0f, 0.0f, 0.0f);
+                        vertex_buffer_ops::set_attribute_data(vaas, attribute_type::NORMAL, glm::value_ptr(zero_normal));
+                    }
+                }
+
+                if (m_vertex_buffer.has_layout(attribute_type::TEXCOORD))
+                {
+                    if (item->vertex_uvs().empty() == false)
+                    {
+                        vertex_buffer_ops::set_attribute_data(vaas, attribute_type::TEXCOORD, item->vertex_uvs().data());
+                    }
+                    else
+                    {
+                        glm::vec2 zero_uv(0.0f, 0.0f);
+                        vertex_buffer_ops::set_attribute_data(vaas, attribute_type::TEXCOORD, glm::value_ptr(zero_uv));
+                    }
+                }
             }
             //-------------------------------------------------------------------------
             void copy_index_data(const irender_item* item)

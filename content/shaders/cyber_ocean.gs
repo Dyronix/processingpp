@@ -14,7 +14,10 @@ uniform float u_periodic_scale_z;
 uniform float u_total_time;
 uniform float u_cube_size;
 
+in vec2 v_texcoord[];
+in vec3 v_normal[];
 in vec4 v_color[];
+
 out vec4 v_frag_color;
 
 void create_vertex(vec3 offset)
