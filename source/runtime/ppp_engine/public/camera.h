@@ -2,16 +2,18 @@
 
 #include <glm/glm.hpp>
 
+#include <string>
+
 namespace ppp
 {
     namespace camera
     {
-        enum class scene_camera_mode
+        namespace tags
         {
-            CAMERA_PERSPECTIVE,
-            CAMERA_ORTHOGRAPHIC,
-            CAMERA_FONT
-        };
+            const std::string& perspective();
+            const std::string& orthographic();
+            const std::string& font();
+        }
 
         struct scene_camera
         {
@@ -21,9 +23,9 @@ namespace ppp
             float centerx, centery, centerz;
             float upx, upy, upz;
 
-            float radius;   // Distance from camera to target
-            float azimuth;  // Horizontal angle
-            float polar;    // Vertical angle (default at 45 degrees)
+            float radius = 0.0f;   // Distance from camera to target
+            float azimuth = 0.0f;  // Horizontal angle
+            float polar = 0.0f;    // Vertical angle (default at 45 degrees)
 
             void set_position(float x, float y, float z);
             void set_center(float centerx, float centery, float centerz);
@@ -44,16 +46,16 @@ namespace ppp
         glm::vec3 active_camera_target();
         glm::vec3 active_camera_up();
 
-        scene_camera create_camera();
+        scene_camera create_camera(const std::string& camera_tag = {});
 
-        void set_scene_camera(scene_camera c);
-        void set_scene_camera(float eyex, float eyey, float eyez = 800.0f, float centerx = 0.0f, float centery = 0.0f, float centerz = 0.0f, float upx = 0.0f, float upy = 1.0f, float upz = 0.0f);
+        void set_scene_camera(scene_camera c, const std::string& camera_tag = {});
+        void set_scene_camera(float eyex, float eyey, float eyez = 800.0f, float centerx = 0.0f, float centery = 0.0f, float centerz = 0.0f, float upx = 0.0f, float upy = 1.0f, float upz = 0.0f, const std::string& camera_tag = {});
 
-        void set_scene_camera_mode(scene_camera_mode m);
+        void activate_camera(const std::string& camera_tag);
 
-        void ortho(float left, float right, float bottom, float top, float near, float far);
-        void perspective(float fovy, float aspect, float near, float far);
+        void ortho(float left, float right, float bottom, float top, float near, float far, const std::string& camera_tag = {});
+        void perspective(float fovy, float aspect, float near, float far, const std::string& camera_tag = {});
 
-        void orbit_control(orbit_scene_camera_options options = {});
+        void orbit_control(orbit_scene_camera_options options = {}, const std::string& camera_tag = {});
     }
 }

@@ -20,6 +20,9 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material_pool.cpp
+    # camera
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/camera/camera_manager.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/camera/camera_manager.h
     # device
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/glfw/device_glfw.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/device/glfw/device_glfw_input.cpp

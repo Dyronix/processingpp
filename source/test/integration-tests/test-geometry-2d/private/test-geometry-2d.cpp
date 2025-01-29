@@ -92,8 +92,8 @@ namespace ppp
         app_params.window_height = 720;
 
         _generate_new_data = has_argument(argc, argv, "--generate-new-data");
-        _no_close_after_x_frames = has_argument(argc, argv, "--no_close");
-        _no_testing = has_argument(argc, argv, "--no_testing");
+        _no_close_after_x_frames = has_argument(argc, argv, "--no-close");
+        _no_testing = has_argument(argc, argv, "--no-testing");
 
         return app_params;
     }
@@ -114,9 +114,9 @@ namespace ppp
         _image_container = image::load("local:content/t_container.jpg");
         _image_wall = image::load("local:content/t_wall.jpg");
 
-        structure::on_draw_end(end_draw);
-        
-        camera::set_scene_camera_mode(camera::scene_camera_mode::CAMERA_ORTHOGRAPHIC);
+        structure::on_draw_end(end_draw);      
+
+        camera::activate_camera(camera::tags::orthographic());
     }
 
     void draw()

@@ -40,23 +40,6 @@ namespace ppp
             std::vector<std::function<void()>> _draw_end_subs;
 
             //-------------------------------------------------------------------------
-            struct camera
-            {
-                glm::vec3 eye;
-                glm::vec3 center;
-                glm::vec3 up;
-
-                glm::mat4 proj;
-            };
-
-            camera_mode _active_camera_mode = camera_mode::CAMERA_PERSPECTIVE;
-
-            camera _active_camera = {};
-            camera _persp_camera = {};
-            camera _ortho_camera = {};
-            camera _font_camera = {};
-
-            //-------------------------------------------------------------------------
             s32 _scissor_x = -1;
             s32 _scissor_y = -1;
             s32 _scissor_width = -1;
@@ -255,23 +238,6 @@ namespace ppp
             internal::_scissor_height = h;
             internal::_scissor_enable = false;
 
-            internal::_persp_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
-            internal::_persp_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
-            internal::_persp_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-            internal::_persp_camera.proj = glm::perspective(glm::radians(55.0f), (f32)w / (f32)h, 0.1f, 100.0f);
-
-            internal::_ortho_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
-            internal::_ortho_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
-            internal::_ortho_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-            internal::_ortho_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
-
-            internal::_font_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
-            internal::_font_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
-            internal::_font_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-            internal::_font_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
-
-            push_active_camera_mode(camera_mode::CAMERA_PERSPECTIVE);
-
             internal::create_frame_buffer();
 
             internal::_font_renderer = std::make_unique<texture_batch_renderer>(pos_tex_col_layout().data(), pos_tex_col_layout().size(), shader_pool::tags::unlit_font);
@@ -351,7 +317,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void render()
+        void render(const render_context& context)
         {
             f32 w = static_cast<f32>(internal::_frame_buffer_width);
             f32 h = static_cast<f32>(internal::_frame_buffer_height);
@@ -364,14 +330,14 @@ namespace ppp
             GL_CALL(glCullFace(GL_BACK));
             GL_CALL(glDepthFunc(GL_LESS));
 
-            glm::mat4 cam_font_p = internal::_font_camera.proj;
-            glm::mat4 cam_font_v = glm::lookAt(internal::_font_camera.eye, internal::_font_camera.center, internal::_font_camera.up);
+            const glm::mat4& cam_font_p = context.mat_proj_font;
+            const glm::mat4& cam_font_v = context.mat_view_font;
             glm::mat4 cam_font_vp = cam_font_p * cam_font_v;
 
             internal::_font_renderer->render(cam_font_vp);
 
-            glm::mat4 cam_active_p = internal::_active_camera.proj;
-            glm::mat4 cam_active_v = glm::lookAt(internal::_active_camera.eye, internal::_active_camera.center, internal::_active_camera.up);
+            const glm::mat4& cam_active_p = context.mat_proj_active;
+            const glm::mat4& cam_active_v = context.mat_view_active;
             glm::mat4 cam_active_vp = cam_active_p * cam_active_v;
 
             for (auto& pair : internal::_batch_renderers)
@@ -441,50 +407,6 @@ namespace ppp
         void end_geometry_builder()
         {
             internal::_geometry_builder.deactivate();
-        }
-
-        //-------------------------------------------------------------------------
-        void push_camera(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj)
-        {
-            switch (internal::_active_camera_mode)
-            {
-            case camera_mode::CAMERA_ORTHOGRAPHIC: 
-                internal::_ortho_camera.eye = eye;
-                internal::_ortho_camera.center = center;
-                internal::_ortho_camera.up = up;
-
-                internal::_ortho_camera.proj = proj;
-                break;
-            case camera_mode::CAMERA_PERSPECTIVE: 
-                internal::_persp_camera.eye = eye;
-                internal::_persp_camera.center = center;
-                internal::_persp_camera.up = up;
-
-                internal::_persp_camera.proj = proj;
-                break;
-            case camera_mode::CAMERA_FONT: 
-                internal::_font_camera.eye = eye;
-                internal::_font_camera.center = center;
-                internal::_font_camera.up = up;
-
-                internal::_font_camera.proj = proj;
-                break;
-            }
-
-            push_active_camera_mode(internal::_active_camera_mode);
-        }
-
-        //-------------------------------------------------------------------------
-        void push_active_camera_mode(camera_mode mode)
-        {
-            switch (mode)
-            {
-            case camera_mode::CAMERA_ORTHOGRAPHIC: internal::_active_camera = internal::_ortho_camera; break;
-            case camera_mode::CAMERA_PERSPECTIVE: internal::_active_camera = internal::_persp_camera; break;
-            case camera_mode::CAMERA_FONT: internal::_active_camera = internal::_font_camera; break;
-            }
-
-            internal::_active_camera_mode = mode;
         }
 
         //-------------------------------------------------------------------------

@@ -128,8 +128,8 @@ namespace ppp
         app_params.window_height = _window_height;
 
         _generate_new_data = has_argument(argc, argv, "--generate-new-data");
-        _no_close_after_x_frames = has_argument(argc, argv, "--no_close");
-        _no_testing = has_argument(argc, argv, "--no_testing");
+        _no_close_after_x_frames = has_argument(argc, argv, "--no-close");
+        _no_testing = has_argument(argc, argv, "--no-testing");
 
         return app_params;
     }

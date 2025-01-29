@@ -34,11 +34,20 @@ namespace ppp
             s32 h;
         };
 
+        struct render_context
+        {
+            glm::mat4 mat_view_font;
+            glm::mat4 mat_proj_font;
+
+            glm::mat4 mat_view_active;
+            glm::mat4 mat_proj_active;
+        };
+
         bool initialize(s32 w, s32 h, void* user_data);
         void terminate();
 
         void begin();
-        void render();
+        void render(const render_context& context);
         void end();
         
         // Drawing mode (BATCHED | INSTANCING)
@@ -54,10 +63,6 @@ namespace ppp
         // Geometry Builder
         void begin_geometry_builder(const std::string& tag);
         void end_geometry_builder();
-
-        // Camera
-        void push_camera(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj);
-        void push_active_camera_mode(camera_mode mode);
 
         // Rasterization
         void push_solid_rendering(bool enable);
