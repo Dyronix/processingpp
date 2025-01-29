@@ -212,9 +212,9 @@ namespace ppp
                     }
                 }
 
-                if (m_vertex_buffer.has_layout(attribute_type::DIFFUSE_TEXTURE_INDEX) && material_id != -1)
+                if (m_vertex_buffer.has_layout(attribute_type::MATERIAL_INDEX) && material_id != -1)
                 {
-                    vertex_buffer_ops::map_attribute_data(vaas, attribute_type::DIFFUSE_TEXTURE_INDEX, (void*)&material_id);
+                    vertex_buffer_ops::map_attribute_data(vaas, attribute_type::MATERIAL_INDEX, (void*)&material_id);
                 }
 
                 vertex_buffer_ops::map_attribute_data(vaas, attribute_type::COLOR, (void*)&color[0]);
@@ -256,7 +256,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 sampler_id)
             {
-                vertex_buffer_ops::transform_attribute_data<s32>(m_vertex_buffer, attribute_type::DIFFUSE_TEXTURE_INDEX, start_index, end_index, [&](s32& id)
+                vertex_buffer_ops::transform_attribute_data<s32>(m_vertex_buffer, attribute_type::MATERIAL_INDEX, start_index, end_index, [&](s32& id)
                 {
                     id = sampler_id;
                 });

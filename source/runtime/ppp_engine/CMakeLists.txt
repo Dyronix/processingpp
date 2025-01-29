@@ -72,6 +72,10 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_storage_buffer_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_texture_registry.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_texture_registry.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_vertex_layouts.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_vertex_layouts.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_instance_layouts.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_instance_layouts.h
     # geometry
     # 3d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h

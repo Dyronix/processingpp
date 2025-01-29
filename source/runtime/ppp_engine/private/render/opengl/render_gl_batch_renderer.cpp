@@ -249,7 +249,7 @@ namespace ppp
 
         // Primitive Batch Renderer
         //-------------------------------------------------------------------------
-        primitive_batch_renderer::primitive_batch_renderer(attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
+        primitive_batch_renderer::primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
             :batch_renderer(layouts, layout_cout, shader_tag)
         {
 
@@ -278,7 +278,7 @@ namespace ppp
 
         // Texture Batch Renderer
         //-------------------------------------------------------------------------
-        texture_batch_renderer::texture_batch_renderer(attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
+        texture_batch_renderer::texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
             :batch_renderer(layouts, layout_cout, shader_tag)
         {
 

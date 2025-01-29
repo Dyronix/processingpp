@@ -58,7 +58,7 @@ namespace ppp
         class primitive_batch_renderer : public batch_renderer
         {
         public:
-            primitive_batch_renderer(attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag);
+            primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag);
             ~primitive_batch_renderer() override;
 
             void on_render(topology_type topology, batch_drawing_data& drawing_data) override;
@@ -67,7 +67,7 @@ namespace ppp
         class texture_batch_renderer : public batch_renderer
         {
         public:
-            texture_batch_renderer(attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag);
+            texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag);
             ~texture_batch_renderer() override;
 
             void on_render(topology_type topology, batch_drawing_data& drawing_data) override;

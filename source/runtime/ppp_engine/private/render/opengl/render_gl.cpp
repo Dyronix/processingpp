@@ -4,6 +4,9 @@
 #include "render/render_batch_renderer.h"
 #include "render/render_instance_renderer.h"
 
+#include "render/helpers/render_vertex_layouts.h"
+#include "render/helpers/render_instance_layouts.h"
+
 #include "render/opengl/render_gl_error.h"
 
 #include "resources/shader_pool.h"
@@ -61,418 +64,6 @@ namespace ppp
             bool _scissor_enable = false;
 
             //-------------------------------------------------------------------------
-            // VERTEX LAYOUTs
-            struct pos_format
-            {
-                glm::vec3 position;
-            };
-            //-------------------------------------------------------------------------
-            struct pos_norm_format
-            {
-                glm::vec3 position;
-                glm::vec3 normal;
-            };
-            //-------------------------------------------------------------------------
-            struct pos_norm_color_format
-            {
-                glm::vec3 position;
-                glm::vec3 normal;
-                glm::vec4 color;
-            };
-            //-------------------------------------------------------------------------
-            struct pos_tex_format
-            {
-                glm::vec3 position;
-                glm::vec2 texcoord;
-            };
-            //-------------------------------------------------------------------------
-            struct pos_tex_norm_format
-            {
-                glm::vec3 position;
-                glm::vec2 texcoord;
-                glm::vec3 normal;
-            };
-            //-------------------------------------------------------------------------
-            struct pos_col_format
-            {
-                glm::vec3 position;
-                glm::vec4 color;
-            };
-            //-------------------------------------------------------------------------
-            struct pos_tex_col_format
-            {
-                glm::vec3 position;
-                glm::vec2 texcoord;
-                glm::vec4 color;
-                s32       texture_idx;
-            };
-            //-------------------------------------------------------------------------
-            struct pos_tex_col_norm_format
-            {
-                glm::vec3 position;
-                glm::vec2 texcoord;
-                glm::vec3 normal;
-                glm::vec4 color;
-                s32       texture_idx;
-            };
-
-            //-------------------------------------------------------------------------
-            // INSTANCE LAYOUTS
-            struct world_color_format
-            {
-                glm::mat4 world;
-                glm::vec4 color;
-            };
-            //-------------------------------------------------------------------------
-            struct world_color_texid_format
-            {
-                glm::mat4 world;
-                glm::vec4 color;
-                s32       texture_idx;
-            };
-
-            //-------------------------------------------------------------------------
-            // VERTEX LAYOUTS
-            std::array<attribute_layout, 1> _pos_layout
-            {
-                attribute_layout{
-                    attribute_type::POSITION,
-                    attribute_data_type::FLOAT,
-
-                    0,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_format),
-                    0
-                }
-            };
-            //-------------------------------------------------------------------------
-            std::array<attribute_layout, 2> _pos_norm_layout
-            {
-                attribute_layout{
-                    attribute_type::POSITION,
-                    attribute_data_type::FLOAT,
-
-                    0,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_norm_format),
-                    0
-                },
-                attribute_layout{
-                    attribute_type::NORMAL,
-                    attribute_data_type::FLOAT,
-
-                    1,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_norm_format),
-                    3 * sizeof(float)
-                }
-            };
-            //-------------------------------------------------------------------------
-            std::array<attribute_layout, 3> _pos_norm_col_layout
-            {
-                attribute_layout{
-                    attribute_type::POSITION,
-                    attribute_data_type::FLOAT,
-
-                    0,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_norm_color_format),
-                    0
-                },
-                attribute_layout{
-                    attribute_type::NORMAL,
-                    attribute_data_type::FLOAT,
-
-                    1,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_norm_color_format),
-                    3 * sizeof(float)
-                },
-                attribute_layout{
-                    attribute_type::COLOR,
-                    attribute_data_type::FLOAT,
-
-                    1,
-                    4,
-                    1,
-                    false,
-                    sizeof(pos_norm_color_format),
-                    3 * sizeof(float) + 3 * sizeof(float)
-                }
-            };
-            //-------------------------------------------------------------------------
-            std::array<attribute_layout, 2> _pos_col_layout
-            {
-                attribute_layout{
-                    attribute_type::POSITION,
-                    attribute_data_type::FLOAT,
-
-                    0,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_col_format),
-                    0
-                },
-                attribute_layout{
-                    attribute_type::COLOR,
-                    attribute_data_type::FLOAT,
-
-                    1,
-                    4,
-                    1,
-                    false,
-                    sizeof(pos_col_format),
-                    3 * sizeof(float)
-                }
-            };
-            //-------------------------------------------------------------------------
-            std::array<attribute_layout, 2> _pos_tex_layout
-            {
-                attribute_layout{
-                    attribute_type::POSITION,
-                    attribute_data_type::FLOAT,
-
-                    0,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_tex_format),
-                    0
-                },
-                attribute_layout{
-                    attribute_type::TEXCOORD,
-                    attribute_data_type::FLOAT,
-
-                    1,
-                    2,
-                    1,
-                    false,
-                    sizeof(pos_tex_format),
-                    3 * sizeof(float)
-                }
-            };
-            //-------------------------------------------------------------------------
-            std::array<attribute_layout, 3> _pos_tex_norm_layout
-            {
-                attribute_layout{
-                    attribute_type::POSITION,
-                    attribute_data_type::FLOAT,
-
-                    0,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_tex_norm_format),
-                    0
-                },
-                attribute_layout{
-                    attribute_type::TEXCOORD,
-                    attribute_data_type::FLOAT,
-
-                    1,
-                    2,
-                    1,
-                    false,
-                    sizeof(pos_tex_norm_format),
-                    3 * sizeof(float)
-                },
-                attribute_layout{
-                    attribute_type::NORMAL,
-                    attribute_data_type::FLOAT,
-
-                    2,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_tex_norm_format),
-                    3 * sizeof(float) + 2 * sizeof(float)
-                }
-            };
-            //-------------------------------------------------------------------------
-            std::array<attribute_layout, 4> _pos_tex_col_layout
-            {
-                attribute_layout{
-                    attribute_type::POSITION,
-                    attribute_data_type::FLOAT,
-
-                    0,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_tex_col_format),
-                    0
-                },
-                attribute_layout{
-                    attribute_type::TEXCOORD,
-                    attribute_data_type::FLOAT,
-
-                    1,
-                    2,
-                    1,
-                    false,
-                    sizeof(pos_tex_col_format),
-                    3 * sizeof(float)
-                },
-                attribute_layout{
-                    attribute_type::COLOR,
-                    attribute_data_type::FLOAT,
-
-                    2,
-                    4,
-                    1,
-                    false,
-                    sizeof(pos_tex_col_format),
-                    3 * sizeof(float) + 2 * sizeof(float)
-                },
-                attribute_layout{
-                    attribute_type::DIFFUSE_TEXTURE_INDEX,
-                    attribute_data_type::INT,
-
-                    3,
-                    1,
-                    1,
-                    false,
-                    sizeof(pos_tex_col_format),
-                    3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
-                }
-            };
-            //-------------------------------------------------------------------------
-            std::array<attribute_layout, 5> _pos_tex_col_norm_layout
-            {
-                attribute_layout{
-                    attribute_type::POSITION,
-                    attribute_data_type::FLOAT,
-
-                    0,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_tex_col_norm_format),
-                    0
-                },
-                attribute_layout{
-                    attribute_type::TEXCOORD,
-                    attribute_data_type::FLOAT,
-
-                    1,
-                    2,
-                    1,
-                    false,
-                    sizeof(pos_tex_col_norm_format),
-                    3 * sizeof(float)
-                },
-                attribute_layout{
-                    attribute_type::NORMAL,
-                    attribute_data_type::FLOAT,
-
-                    2,
-                    3,
-                    1,
-                    false,
-                    sizeof(pos_tex_col_norm_format),
-                    3 * sizeof(float) + 2 * sizeof(float)
-                },
-                attribute_layout{
-                    attribute_type::COLOR,
-                    attribute_data_type::FLOAT,
-
-                    3,
-                    4,
-                    1,
-                    false,
-                    sizeof(pos_tex_col_norm_format),
-                    3 * sizeof(float) + 3 * sizeof(float) + 2 * sizeof(float)
-                },
-                attribute_layout{
-                    attribute_type::DIFFUSE_TEXTURE_INDEX,
-                    attribute_data_type::INT,
-
-                    4,
-                    1,
-                    1,
-                    false,
-                    sizeof(pos_tex_col_norm_format),
-                    3 * sizeof(float) + 3 * sizeof(float) + 2 * sizeof(float) + 4 * sizeof(float)
-                }
-            };
-
-            //-------------------------------------------------------------------------
-            // INSTANCE LAYOUTS
-            std::array<attribute_layout, 2> _color_world_layout
-            {
-                attribute_layout{
-                    attribute_type::WORLD_MATRIX,
-                    attribute_data_type::FLOAT,
-
-                    0,
-                    4,
-                    4,
-                    false,
-                    sizeof(world_color_format),
-                    0
-                },
-                attribute_layout{
-                    attribute_type::COLOR,
-                    attribute_data_type::FLOAT,
-
-                    1,
-                    4,
-                    1,
-                    false,
-                    sizeof(world_color_format),
-                    4 * 4 * sizeof(float)
-                }
-            };
-            //-------------------------------------------------------------------------
-            std::array<attribute_layout, 3> _color_world_texid_layout
-            {
-                attribute_layout{
-                    attribute_type::DIFFUSE_TEXTURE_INDEX,
-                    attribute_data_type::INT,
-
-                    0,
-                    1,
-                    1,
-                    false,
-                    sizeof(world_color_texid_format),
-                    0
-                },
-                attribute_layout{
-                    attribute_type::WORLD_MATRIX,
-                    attribute_data_type::FLOAT,
-
-                    1,
-                    4,
-                    4,
-                    false,
-                    sizeof(world_color_texid_format),
-                    sizeof(s32)
-                },
-                attribute_layout{
-                    attribute_type::COLOR,
-                    attribute_data_type::FLOAT,
-
-                    2,
-                    4,
-                    1,
-                    false,
-                    sizeof(world_color_texid_format),
-                    sizeof(s32) + 4 * 4 * sizeof(float)
-                }
-            };
-
-            //-------------------------------------------------------------------------
             constexpr s32 _min_frame_buffer_width = 32;
             constexpr s32 _min_frame_buffer_height = 32;
 
@@ -490,44 +81,6 @@ namespace ppp
             std::string _stroke_user_shader = {};
 
             vertex_type _fill_user_vertex_type = vertex_type::POSITION_TEXCOORD_NORMAL_COLOR;
-
-            //-------------------------------------------------------------------------
-            attribute_layout* fill_user_layout(vertex_type type)
-            {
-                switch (type)
-                {
-                case vertex_type::POSITION: return _pos_layout.data();
-                case vertex_type::POSITION_NORMAL: return _pos_norm_layout.data();
-                case vertex_type::POSITION_NORMAL_COLOR: return _pos_norm_col_layout.data();
-                case vertex_type::POSITION_TEXCOORD: return _pos_tex_layout.data();
-                case vertex_type::POSITION_TEXCOORD_NORMAL: return _pos_tex_norm_layout.data();
-                case vertex_type::POSITION_COLOR: return _pos_col_layout.data();
-                case vertex_type::POSITION_TEXCOORD_COLOR: return _pos_tex_col_layout.data();
-                case vertex_type::POSITION_TEXCOORD_NORMAL_COLOR: return _pos_tex_col_norm_layout.data();
-                }
-
-                log::error("Unsupported vertex type");
-                return nullptr;
-            }
-
-            //-------------------------------------------------------------------------
-            u64 fill_user_layout_count(vertex_type type)
-            {
-                switch (type)
-                {
-                case vertex_type::POSITION: return _pos_layout.size();
-                case vertex_type::POSITION_NORMAL: return _pos_norm_layout.size();
-                case vertex_type::POSITION_NORMAL_COLOR: return _pos_norm_col_layout.size();
-                case vertex_type::POSITION_TEXCOORD: return _pos_tex_layout.size();
-                case vertex_type::POSITION_TEXCOORD_NORMAL: return _pos_tex_norm_layout.size();
-                case vertex_type::POSITION_COLOR: return _pos_col_layout.size();
-                case vertex_type::POSITION_TEXCOORD_COLOR: return _pos_tex_col_layout.size();
-                case vertex_type::POSITION_TEXCOORD_NORMAL_COLOR: return _pos_tex_col_norm_layout.size();
-                }
-
-                log::error("Unsupported vertex type");
-                return 0;
-            }
 
             //-------------------------------------------------------------------------
             void create_frame_buffer()
@@ -620,15 +173,15 @@ namespace ppp
                         if (item->has_textures() == false)
                         {
                             renderer = std::make_unique<primitive_batch_renderer>(
-                                _fill_user_shader.empty() ? internal::_pos_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                                _fill_user_shader.empty() ? internal::_pos_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                _fill_user_shader.empty() ? pos_col_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.empty() ? pos_col_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
                                 shader_tag);
                         }
                         else
                         {
                             renderer = std::make_unique<texture_batch_renderer>(
-                                _fill_user_shader.empty() ? internal::_pos_tex_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                                _fill_user_shader.empty() ? internal::_pos_tex_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                _fill_user_shader.empty() ? pos_tex_col_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.empty() ? pos_tex_col_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
                                 shader_tag);
                         }
 
@@ -651,19 +204,19 @@ namespace ppp
                         if (item->has_textures() == false)
                         {
                             renderer = std::make_unique<primitive_instance_renderer>(
-                                _fill_user_shader.empty() ? internal::_pos_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                                _fill_user_shader.empty() ? internal::_pos_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                                _color_world_layout.data(),
-                                _color_world_layout.size(),
+                                _fill_user_shader.empty() ? pos_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.empty() ? pos_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                color_world_layout().data(),
+                                color_world_layout().size(),
                                 shader_tag);
                         }
                         else
                         {
                             renderer = std::make_unique<texture_instance_renderer>(
-                                _fill_user_shader.empty() ? internal::_pos_tex_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                                _fill_user_shader.empty() ? internal::_pos_tex_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                                _color_world_texid_layout.data(),
-                                _color_world_texid_layout.size(),
+                                _fill_user_shader.empty() ? pos_tex_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.empty() ? pos_tex_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                color_world_matid_layout().data(),
+                                color_world_matid_layout().size(),
                                 shader_tag);
                         }
 
@@ -721,8 +274,7 @@ namespace ppp
 
             internal::create_frame_buffer();
 
-            // Font renderers
-            internal::_font_renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_font);
+            internal::_font_renderer = std::make_unique<texture_batch_renderer>(pos_tex_col_layout().data(), pos_tex_col_layout().size(), shader_pool::tags::unlit_font);
 
             return true;
         }
