@@ -10,6 +10,8 @@ target_include_directories(test-rendering-instanced PRIVATE ${SOURCE_RUNTIME_DIR
 
 target_link_libraries(test-rendering-instanced processing_engine)
 
+target_compile_definitions(test-rendering-instanced PRIVATE TEST_PROJECT_NAME=\"test-rendering-instanced\")
+
 # Target properties
 set_target_properties(test-rendering-instanced PROPERTIES
                       FOLDER "test/integration")

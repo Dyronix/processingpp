@@ -1,5 +1,7 @@
 #include "engine.h"
 
+#include <sstream>
+
 namespace ppp
 {
     bool _generate_new_data = false;
@@ -108,15 +110,21 @@ namespace ppp
     {
         if (environment::frame_count() == 5)
         {
+            std::stringstream stream;
+
+            stream << "local:/";
+            stream << TEST_PROJECT_NAME;
+            stream << ".png";
+
             if (_generate_new_data)
             {
                 image::load_pixels(0, 0, _window_width, _window_height);
-                image::save_pixels("local:/test-shader-specular-batched.png", _window_width, _window_height);
+                image::save_pixels(stream.str(), _window_width, _window_height);
             }
 
             if (!_no_testing)
             {
-                auto test_frame = image::load("local:/test-shader-specular-batched.png");
+                auto test_frame = image::load(stream.str());
                 auto test_frame_pixels = image::load_pixels(test_frame.id);
 
                 size_t total_size = test_frame.width * test_frame.height * test_frame.channels;

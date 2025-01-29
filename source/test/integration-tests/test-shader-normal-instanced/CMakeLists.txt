@@ -10,6 +10,8 @@ target_include_directories(test-shader-normal-instanced PRIVATE ${SOURCE_RUNTIME
 
 target_link_libraries(test-shader-normal-instanced processing_engine)
 
+target_compile_definitions(test-shader-normal-instanced PRIVATE TEST_PROJECT_NAME=\"test-shader-normal-instanced\")
+
 # Target properties
 set_target_properties(test-shader-normal-instanced PROPERTIES
                       FOLDER "test/integration")

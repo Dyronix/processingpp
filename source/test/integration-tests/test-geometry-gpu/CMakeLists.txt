@@ -10,6 +10,8 @@ target_include_directories(test-geometry-gpu PRIVATE ${SOURCE_RUNTIME_DIRECTORY}
 
 target_link_libraries(test-geometry-gpu processing_engine)
 
+target_compile_definitions(test-geometry-gpu PRIVATE TEST_PROJECT_NAME=\"test-geometry-gpu\")
+
 # Target properties
 set_target_properties(test-geometry-gpu PROPERTIES
                       FOLDER "test/integration")

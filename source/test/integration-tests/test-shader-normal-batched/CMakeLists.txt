@@ -10,6 +10,8 @@ target_include_directories(test-shader-normal-batched PRIVATE ${SOURCE_RUNTIME_D
 
 target_link_libraries(test-shader-normal-batched processing_engine)
 
+target_compile_definitions(test-shader-normal-batched PRIVATE TEST_PROJECT_NAME=\"test-shader-normal-batched\")
+
 # Target properties
 set_target_properties(test-shader-normal-batched PROPERTIES
                       FOLDER "test/integration")

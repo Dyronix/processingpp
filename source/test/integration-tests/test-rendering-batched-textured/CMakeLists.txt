@@ -10,6 +10,8 @@ target_include_directories(test-rendering-batched-textured PRIVATE ${SOURCE_RUNT
 
 target_link_libraries(test-rendering-batched-textured processing_engine)
 
+target_compile_definitions(test-rendering-batched-textured PRIVATE TEST_PROJECT_NAME=\"test-rendering-batched-textured\")
+
 # Target properties
 set_target_properties(test-rendering-batched-textured PROPERTIES
                       FOLDER "test/integration")

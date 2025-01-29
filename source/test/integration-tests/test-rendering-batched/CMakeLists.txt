@@ -10,6 +10,8 @@ target_include_directories(test-rendering-batched PRIVATE ${SOURCE_RUNTIME_DIREC
 
 target_link_libraries(test-rendering-batched processing_engine)
 
+target_compile_definitions(test-rendering-batched PRIVATE TEST_PROJECT_NAME=\"test-rendering-batched\")
+
 # Target properties
 set_target_properties(test-rendering-batched PROPERTIES
                       FOLDER "test/integration")

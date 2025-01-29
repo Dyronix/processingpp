@@ -10,6 +10,8 @@ target_include_directories(test-shader-specular-instanced PRIVATE ${SOURCE_RUNTI
 
 target_link_libraries(test-shader-specular-instanced processing_engine)
 
+target_compile_definitions(test-shader-specular-instanced PRIVATE TEST_PROJECT_NAME=\"test-shader-specular-instanced\")
+
 # Target properties
 set_target_properties(test-shader-specular-instanced PROPERTIES
                       FOLDER "test/integration")

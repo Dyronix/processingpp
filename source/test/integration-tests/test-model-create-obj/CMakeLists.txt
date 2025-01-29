@@ -11,6 +11,8 @@ target_include_directories(test-model-create-obj PRIVATE ${SOURCE_RUNTIME_DIRECT
 
 target_link_libraries(test-model-create-obj processing_engine)
 
+target_compile_definitions(test-model-create-obj PRIVATE TEST_PROJECT_NAME=\"test-model-create-obj\")
+
 # Target properties
 set_target_properties(test-model-create-obj PROPERTIES
                       FOLDER "test/integration")
