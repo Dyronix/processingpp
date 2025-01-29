@@ -116,7 +116,7 @@ namespace ppp
 
         structure::on_draw_end(end_draw);
         
-        camera::set_scene_camera_mode(camera::scene_camera_mode::CAMERA_IMAGE);
+        camera::set_scene_camera_mode(camera::scene_camera_mode::CAMERA_ORTHOGRAPHIC);
     }
 
     void draw()

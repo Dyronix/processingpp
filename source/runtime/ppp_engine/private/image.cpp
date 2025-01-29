@@ -275,7 +275,7 @@ namespace ppp
 
             transform_stack::scale(glm::vec2(width, height));
 
-            render::submit_image_item(&image_render_item);
+            render::submit_render_item(render::topology_type::TRIANGLES, &image_render_item);
 
             glm::mat4& world = transform_stack::active_world();
 
@@ -291,7 +291,7 @@ namespace ppp
                 geometry::geometry* stroke_geom = internal::extrude_image(world, image_geom, render::brush::stroke_width());
                 internal::image_item stroke_item = internal::image_item(stroke_geom, mat_unlit_col);
 
-                render::submit_stroke_image_item(&stroke_item, outer_stroke);
+                render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_item, outer_stroke);
             }
 
             if (render::brush::inner_stroke_enabled())
@@ -301,7 +301,7 @@ namespace ppp
                 geometry::geometry* stroke_geom = internal::extrude_image(world, image_geom, -render::brush::stroke_width());
                 internal::image_item stroke_item = internal::image_item(stroke_geom, mat_unlit_col);
 
-                render::submit_stroke_image_item(&stroke_item, outer_stroke);
+                render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_item, outer_stroke);
             }
 
             material::shader(prev_shader);

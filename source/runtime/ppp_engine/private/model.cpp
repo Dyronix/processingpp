@@ -173,7 +173,7 @@ namespace ppp
         {
             model m = create_model(geometry_pool::get_geometry(model_id));
 
-            render::submit_3d_render_item(render::topology_type::TRIANGLES, &m);
+            render::submit_render_item(render::topology_type::TRIANGLES, &m);
         }
     }
 }

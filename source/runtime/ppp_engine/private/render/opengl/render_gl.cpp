@@ -46,12 +46,11 @@ namespace ppp
                 glm::mat4 proj;
             };
 
-            camera_mode _active_camera_mode = camera_mode::CAMERA_3D;
+            camera_mode _active_camera_mode = camera_mode::CAMERA_PERSPECTIVE;
 
             camera _active_camera = {};
-            camera _3d_camera = {};
-            camera _2d_camera = {};
-            camera _image_camera = {};
+            camera _persp_camera = {};
+            camera _ortho_camera = {};
             camera _font_camera = {};
 
             //-------------------------------------------------------------------------
@@ -492,6 +491,7 @@ namespace ppp
 
             vertex_type _fill_user_vertex_type = vertex_type::POSITION_TEXCOORD_NORMAL_COLOR;
 
+            //-------------------------------------------------------------------------
             attribute_layout* fill_user_layout(vertex_type type)
             {
                 switch (type)
@@ -510,6 +510,7 @@ namespace ppp
                 return nullptr;
             }
 
+            //-------------------------------------------------------------------------
             u64 fill_user_layout_count(vertex_type type)
             {
                 switch (type)
@@ -560,25 +561,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            std::unique_ptr<instance_renderer> _2d_primitive_instance_renderer;
-            std::unique_ptr<instance_renderer> _2d_primitive_stroke_instance_renderer;
-            std::unique_ptr<instance_renderer> _image_instance_renderer;
-            std::unique_ptr<instance_renderer> _image_stroke_instance_renderer;
-
-            std::unique_ptr<instance_renderer> _3d_primitive_instance_renderer;
-            std::unique_ptr<instance_renderer> _3d_textured_instance_renderer;
-
             std::unordered_map<std::string, std::unique_ptr<instance_renderer>> _custom_geometry_instance_renderers;
-
-            //-------------------------------------------------------------------------
-            std::unique_ptr<batch_renderer> _2d_primitive_batch_renderer;
-            std::unique_ptr<batch_renderer> _2d_primitive_stroke_batch_renderer;
-            std::unique_ptr<batch_renderer> _image_batch_renderer;
-            std::unique_ptr<batch_renderer> _image_stroke_batch_renderer;
-
-            std::unique_ptr<batch_renderer> _3d_primitive_batch_renderer;
-            std::unique_ptr<batch_renderer> _3d_textured_batch_renderer;
-
             std::unordered_map<std::string, std::unique_ptr<batch_renderer>> _custom_geometry_batch_renderers;
 
             //-------------------------------------------------------------------------
@@ -618,7 +601,7 @@ namespace ppp
             geometry_builder _geometry_builder;
 
             //-------------------------------------------------------------------------
-            void submit_custom_render_item(topology_type topology, const irender_item* item)
+            void submit_custom_render_item(topology_type topology, const irender_item* item, const glm::vec4& color)
             {
                 if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false && brush::fill_enabled() == false)
                 {
@@ -658,7 +641,7 @@ namespace ppp
                         internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
                     }
 
-                    internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
+                    internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
                 }
                 else
                 {
@@ -694,55 +677,7 @@ namespace ppp
                         internal::_custom_geometry_instance_renderers.emplace(shader_tag, std::move(renderer));
                     }
 
-                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
-                }
-            }
-            //-------------------------------------------------------------------------
-            void submit_custom_textured_item(const irender_item* item)
-            {
-                const std::string& shader_tag = _fill_user_shader.empty() ? _geometry_builder.shader_tag() : _fill_user_shader;
-
-                if (internal::_draw_mode == render_draw_mode::BATCHED)
-                {
-                    if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
-                    {
-                        auto renderer = std::make_unique<texture_batch_renderer>(
-                            _fill_user_shader.empty() ? internal::_pos_tex_col_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                            _fill_user_shader.empty() ? internal::_pos_tex_col_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                            shader_tag);
-
-                        if (_geometry_builder.is_active())
-                        {
-                            renderer->buffer_policy(render_buffer_policy::RETAINED);
-                        }
-
-                        renderer->draw_policy(render_draw_policy::CUSTOM);
-                        internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
-                    }
-
-                    internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform_stack::active_world());
-                }
-                else
-                {
-                    if (internal::_custom_geometry_instance_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_instance_renderers))
-                    {
-                        auto renderer = std::make_unique<texture_instance_renderer>(
-                            _fill_user_shader.empty() ? internal::_pos_tex_layout.data() : fill_user_layout(internal::_fill_user_vertex_type),
-                            _fill_user_shader.empty() ? internal::_pos_tex_layout.size() : fill_user_layout_count(internal::_fill_user_vertex_type),
-                            _color_world_texid_layout.data(),
-                            _color_world_texid_layout.size(),
-                            shader_tag);
-
-                        if (_geometry_builder.is_active())
-                        {
-                            renderer->buffer_policy(render_buffer_policy::RETAINED);
-                        }
-
-                        renderer->draw_policy(render_draw_policy::CUSTOM);
-                        internal::_custom_geometry_instance_renderers.emplace(shader_tag, std::move(renderer));
-                    }
-
-                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform_stack::active_world());
+                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
                 }
             }
         }
@@ -767,45 +702,24 @@ namespace ppp
             internal::_scissor_height = h;
             internal::_scissor_enable = false;
 
-            internal::_3d_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
-            internal::_3d_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
-            internal::_3d_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-            internal::_3d_camera.proj = glm::perspective(glm::radians(55.0f), (f32)w / (f32)h, 0.1f, 100.0f);
+            internal::_persp_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
+            internal::_persp_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
+            internal::_persp_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
+            internal::_persp_camera.proj = glm::perspective(glm::radians(55.0f), (f32)w / (f32)h, 0.1f, 100.0f);
 
-            internal::_2d_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
-            internal::_2d_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
-            internal::_2d_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-            internal::_2d_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
-
-            internal::_image_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
-            internal::_image_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
-            internal::_image_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-            internal::_image_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
+            internal::_ortho_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
+            internal::_ortho_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
+            internal::_ortho_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
+            internal::_ortho_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
 
             internal::_font_camera.eye = glm::vec3(0.0f, 0.0f, 10.0f);
             internal::_font_camera.center = glm::vec3(0.0f, 0.0f, 0.0f);
             internal::_font_camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
             internal::_font_camera.proj = glm::ortho(0.0f, (f32)w, 0.0f, (f32)h, -100.0f, 100.0f);
 
-            push_active_camera_mode(camera_mode::CAMERA_3D);
+            push_active_camera_mode(camera_mode::CAMERA_PERSPECTIVE);
 
             internal::create_frame_buffer();
-
-            // Instance renderers
-            internal::_2d_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_color);
-            internal::_2d_primitive_stroke_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_color);
-            internal::_image_instance_renderer = std::make_unique<texture_instance_renderer>(internal::_pos_tex_layout.data(), internal::_pos_tex_layout.size(), internal::_color_world_texid_layout.data(), internal::_color_world_texid_layout.size(), shader_pool::tags::instance_unlit_texture);
-            internal::_image_stroke_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_color);
-            internal::_3d_primitive_instance_renderer = std::make_unique<primitive_instance_renderer>(internal::_pos_layout.data(), internal::_pos_layout.size(), internal::_color_world_layout.data(), internal::_color_world_layout.size(), shader_pool::tags::instance_unlit_color);
-            internal::_3d_textured_instance_renderer = std::make_unique<texture_instance_renderer>(internal::_pos_tex_layout.data(), internal::_pos_tex_layout.size(), internal::_color_world_texid_layout.data(), internal::_color_world_texid_layout.size(), shader_pool::tags::instance_unlit_texture);
-
-            // Batch renderers
-            internal::_2d_primitive_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
-            internal::_2d_primitive_stroke_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
-            internal::_image_batch_renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_texture);
-            internal::_image_stroke_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
-            internal::_3d_primitive_batch_renderer = std::make_unique<primitive_batch_renderer>(internal::_pos_col_layout.data(), internal::_pos_col_layout.size(), shader_pool::tags::unlit_color);
-            internal::_3d_textured_batch_renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_texture);
 
             // Font renderers
             internal::_font_batch_renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_font);
@@ -816,22 +730,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         void terminate()
         {
-            // Instance
-            internal::_2d_primitive_instance_renderer->terminate();
-            internal::_2d_primitive_stroke_instance_renderer->terminate();
-            internal::_image_instance_renderer->terminate();
-            internal::_image_stroke_instance_renderer->terminate();
-            internal::_3d_primitive_instance_renderer->terminate();
-            internal::_3d_textured_instance_renderer->terminate();
-            // Batch
-            internal::_image_batch_renderer->terminate();
-            internal::_image_stroke_batch_renderer->terminate();
-            internal::_2d_primitive_batch_renderer->terminate();
-            internal::_2d_primitive_stroke_batch_renderer->terminate();
-            internal::_3d_primitive_batch_renderer->terminate();
-            internal::_3d_textured_batch_renderer->terminate();
             // Font
             internal::_font_batch_renderer->terminate();
+
             // Custom
             for (auto& pair : internal::_custom_geometry_batch_renderers)
             {
@@ -846,22 +747,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         void begin()
         {
-            // Instance
-            internal::_2d_primitive_instance_renderer->begin();
-            internal::_2d_primitive_stroke_instance_renderer->begin();
-            internal::_image_instance_renderer->begin();
-            internal::_image_stroke_instance_renderer->begin();
-            internal::_3d_primitive_instance_renderer->begin();
-            internal::_3d_textured_instance_renderer->begin();
-            // Batch
-            internal::_image_batch_renderer->begin();
-            internal::_image_stroke_batch_renderer->begin();
-            internal::_2d_primitive_batch_renderer->begin();
-            internal::_2d_primitive_stroke_batch_renderer->begin();
-            internal::_3d_primitive_batch_renderer->begin();
-            internal::_3d_textured_batch_renderer->begin();
             // Font
             internal::_font_batch_renderer->begin();
+
             // Custom
             for (auto& pair : internal::_custom_geometry_batch_renderers)
             {
@@ -923,36 +811,6 @@ namespace ppp
             GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
             GL_CALL(glCullFace(GL_BACK));
             GL_CALL(glDepthFunc(GL_LESS));
-
-            glm::mat4 cam_3d_p = internal::_3d_camera.proj;
-            glm::mat4 cam_3d_v = glm::lookAt(internal::_3d_camera.eye, internal::_3d_camera.center, internal::_3d_camera.up);
-            glm::mat4 cam_3d_vp = cam_3d_p * cam_3d_v;
-
-            internal::_3d_primitive_instance_renderer->render(cam_3d_vp);
-            internal::_3d_textured_instance_renderer->render(cam_3d_vp);
-
-            internal::_3d_primitive_batch_renderer->render(cam_3d_vp);
-            internal::_3d_textured_batch_renderer->render(cam_3d_vp);
-
-            glm::mat4 cam_2d_p = internal::_2d_camera.proj;
-            glm::mat4 cam_2d_v = glm::lookAt(internal::_2d_camera.eye, internal::_2d_camera.center, internal::_2d_camera.up);
-            glm::mat4 cam_2d_vp = cam_2d_p * cam_2d_v;
-
-            internal::_2d_primitive_instance_renderer->render(cam_2d_vp);
-            internal::_2d_primitive_stroke_instance_renderer->render(cam_2d_vp);
-
-            internal::_2d_primitive_batch_renderer->render(cam_2d_vp);
-            internal::_2d_primitive_stroke_batch_renderer->render(cam_2d_vp);
-
-            glm::mat4 cam_image_p = internal::_image_camera.proj;
-            glm::mat4 cam_image_v = glm::lookAt(internal::_image_camera.eye, internal::_image_camera.center, internal::_image_camera.up);
-            glm::mat4 cam_image_vp = cam_image_p * cam_image_v;
-
-            internal::_image_instance_renderer->render(cam_image_vp);
-            internal::_image_stroke_instance_renderer->render(cam_image_vp);
-
-            internal::_image_batch_renderer->render(cam_image_vp);
-            internal::_image_stroke_batch_renderer->render(cam_image_vp);
 
             glm::mat4 cam_font_p = internal::_font_camera.proj;
             glm::mat4 cam_font_v = glm::lookAt(internal::_font_camera.eye, internal::_font_camera.center, internal::_font_camera.up);
@@ -1038,26 +896,19 @@ namespace ppp
         {
             switch (internal::_active_camera_mode)
             {
-            case camera_mode::CAMERA_2D: 
-                internal::_2d_camera.eye = eye;
-                internal::_2d_camera.center = center;
-                internal::_2d_camera.up = up;
+            case camera_mode::CAMERA_ORTHOGRAPHIC: 
+                internal::_ortho_camera.eye = eye;
+                internal::_ortho_camera.center = center;
+                internal::_ortho_camera.up = up;
 
-                internal::_2d_camera.proj = proj;
+                internal::_ortho_camera.proj = proj;
                 break;
-            case camera_mode::CAMERA_3D: 
-                internal::_3d_camera.eye = eye;
-                internal::_3d_camera.center = center;
-                internal::_3d_camera.up = up;
+            case camera_mode::CAMERA_PERSPECTIVE: 
+                internal::_persp_camera.eye = eye;
+                internal::_persp_camera.center = center;
+                internal::_persp_camera.up = up;
 
-                internal::_3d_camera.proj = proj;
-                break;
-            case camera_mode::CAMERA_IMAGE: 
-                internal::_image_camera.eye = eye;
-                internal::_image_camera.center = center;
-                internal::_image_camera.up = up;
-
-                internal::_image_camera.proj = proj;
+                internal::_persp_camera.proj = proj;
                 break;
             case camera_mode::CAMERA_FONT: 
                 internal::_font_camera.eye = eye;
@@ -1076,9 +927,8 @@ namespace ppp
         {
             switch (mode)
             {
-            case camera_mode::CAMERA_2D: internal::_active_camera = internal::_2d_camera; break;
-            case camera_mode::CAMERA_3D: internal::_active_camera = internal::_3d_camera; break;
-            case camera_mode::CAMERA_IMAGE: internal::_active_camera = internal::_image_camera; break;
+            case camera_mode::CAMERA_ORTHOGRAPHIC: internal::_active_camera = internal::_ortho_camera; break;
+            case camera_mode::CAMERA_PERSPECTIVE: internal::_active_camera = internal::_persp_camera; break;
             case camera_mode::CAMERA_FONT: internal::_active_camera = internal::_font_camera; break;
             }
 
@@ -1088,22 +938,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         void push_solid_rendering(bool enable)
         {
-            // Instance
-            internal::_2d_primitive_instance_renderer->enable_solid_rendering(enable);
-            internal::_2d_primitive_stroke_instance_renderer->enable_solid_rendering(enable);
-            internal::_image_instance_renderer->enable_solid_rendering(enable);
-            internal::_image_stroke_instance_renderer->enable_solid_rendering(enable);
-            internal::_3d_primitive_instance_renderer->enable_solid_rendering(enable);
-            internal::_3d_textured_instance_renderer->enable_solid_rendering(enable);
-            // Batch
-            internal::_image_batch_renderer->enable_solid_rendering(enable);
-            internal::_image_stroke_batch_renderer->enable_solid_rendering(enable);
-            internal::_2d_primitive_batch_renderer->enable_solid_rendering(enable);
-            internal::_2d_primitive_stroke_batch_renderer->enable_solid_rendering(enable);
-            internal::_3d_primitive_batch_renderer->enable_solid_rendering(enable);
-            internal::_3d_textured_batch_renderer->enable_solid_rendering(enable);
             // Font
             internal::_font_batch_renderer->enable_solid_rendering(enable);
+
             // Custom
             for (auto& pair : internal::_custom_geometry_batch_renderers)
             {
@@ -1118,22 +955,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         void push_wireframe_rendering(bool enable)
         {
-            // Instance
-            internal::_2d_primitive_instance_renderer->enable_wireframe_rendering(enable);
-            internal::_2d_primitive_stroke_instance_renderer->enable_wireframe_rendering(enable);
-            internal::_image_instance_renderer->enable_wireframe_rendering(enable);
-            internal::_image_stroke_instance_renderer->enable_wireframe_rendering(enable);
-            internal::_3d_primitive_instance_renderer->enable_wireframe_rendering(enable);
-            internal::_3d_textured_instance_renderer->enable_wireframe_rendering(enable);
-            // Batch
-            internal::_image_batch_renderer->enable_wireframe_rendering(enable);
-            internal::_image_stroke_batch_renderer->enable_wireframe_rendering(enable);
-            internal::_2d_primitive_batch_renderer->enable_wireframe_rendering(enable);
-            internal::_2d_primitive_stroke_batch_renderer->enable_wireframe_rendering(enable);
-            internal::_3d_primitive_batch_renderer->enable_wireframe_rendering(enable);
-            internal::_3d_textured_batch_renderer->enable_wireframe_rendering(enable);
             // Font
             internal::_font_batch_renderer->enable_wireframe_rendering(enable);
+
             // Custom
             for (auto& pair : internal::_custom_geometry_batch_renderers)
             {
@@ -1150,12 +974,14 @@ namespace ppp
         void push_wireframe_linewidth(f32 line_width)
         {
             batch_renderer::set_wireframe_linewidth(line_width);
+            instance_renderer::set_wireframe_linewidth(line_width);
         }
 
         //-------------------------------------------------------------------------
         void push_wireframe_color(const glm::vec4& color)
         {
             batch_renderer::set_wireframe_linecolor(color::convert_color(color));
+            instance_renderer::set_wireframe_linewidth(color::convert_color(color));
         }
 
         //-------------------------------------------------------------------------
@@ -1291,225 +1117,36 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void submit_2d_render_item(topology_type topology, const irender_item* item)
+        void submit_render_item(topology_type topology, const irender_item* item)
         {
-            if (internal::_draw_mode == render_draw_mode::BATCHED)
-            {
-                if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
-                {
-                    internal::submit_custom_render_item(topology, item);
-                }
-                else
-                {
-                    if (brush::fill_enabled() == false)
-                    {
-                        // When there is no "stroke" and there is no "fill" the object would be invisible.
-                        // So we don't add anything to the drawing list.
-                        return;
-                    }
-
-                    if (item->has_textures() == false)
-                    {
-                        internal::_2d_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
-                    }
-                    else
-                    {
-                        internal::_image_batch_renderer->append_drawing_data(topology, item, brush::tint(), transform_stack::active_world());
-                    }
-                }
-            }
-            else
-            {
-                if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
-                {
-                    internal::submit_custom_render_item(topology, item);
-                }
-                else
-                {
-                    if (brush::fill_enabled() == false)
-                    {
-                        // When there is no "stroke" and there is no "fill" the object would be invisible.
-                        // So we don't add anything to the drawing list.
-                        return;
-                    }
-
-                    if (item->has_textures() == false)
-                    {
-                        internal::_2d_primitive_instance_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
-                    }
-                    else
-                    {
-                        internal::_image_instance_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
-                    }
-                }
-            }
+            internal::submit_custom_render_item(topology, item, item->has_textures() ? brush::tint() : brush::fill());
         }
 
         //-------------------------------------------------------------------------
-        void submit_stroke_2d_render_item(topology_type topology, const irender_item* item, bool outer)
+        void submit_stroke_render_item(topology_type topology, const irender_item* item, bool outer)
         {
-            if (internal::_draw_mode == render_draw_mode::BATCHED)
+            if (internal::_geometry_builder.is_active())
             {
-                if (internal::_geometry_builder.is_active())
-                {
-                    log::warn("Stroking custom geometry is currently not supported");
-                    return;
-                }
-
-                if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false)
-                {
-                    // When there is no "stroke" and there is no "fill" the object would be invisible.
-                    // So we don't add anything to the drawing list.
-                    return;
-                }
-
-                glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
-
-                internal::_2d_primitive_stroke_batch_renderer->append_drawing_data(topology, item, stroke_color, transform_stack::active_world());
+                log::warn("Stroking custom geometry is currently not supported");
+                return;
             }
-            else
+
+            if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false)
             {
-                if (internal::_geometry_builder.is_active())
-                {
-                    log::warn("Stroking custom geometry is currently not supported");
-                    return;
-                }
-
-                if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false)
-                {
-                    // When there is no "stroke" and there is no "fill" the object would be invisible.
-                    // So we don't add anything to the drawing list.
-                    return;
-                }
-
-                glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
-
-                internal::_2d_primitive_stroke_instance_renderer->append_drawing_data(topology, item, stroke_color, transform_stack::active_world());
+                // When there is no "stroke" and there is no "fill" the object would be invisible.
+                // So we don't add anything to the drawing list.
+                return;
             }
-        }
 
-        //-------------------------------------------------------------------------
-        void submit_3d_render_item(topology_type topology, const irender_item* item)
-        {
-            if (internal::_draw_mode == render_draw_mode::BATCHED)
-            {
-                if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
-                {
-                    internal::submit_custom_render_item(topology, item);
-                }
-                else
-                {
-                    if (brush::fill_enabled() == false)
-                    {
-                        // When there is no "stroke" and there is no "fill" the object would be invisible.
-                        // So we don't add anything to the drawing list.
-                        return;
-                    }
+            glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
 
-                    if (item->has_textures() == false)
-                    {
-                        internal::_3d_primitive_batch_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
-                    }
-                    else
-                    {
-                        internal::_3d_textured_batch_renderer->append_drawing_data(topology, item, brush::tint(), transform_stack::active_world());
-                    }
-                }
-            }
-            else
-            {
-                if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
-                {
-                    internal::submit_custom_render_item(topology, item);
-                }
-                else
-                {
-                    if (brush::fill_enabled() == false)
-                    {
-                        // When there is no "stroke" and there is no "fill" the object would be invisible.
-                        // So we don't add anything to the drawing list.
-                        return;
-                    }
-
-                    if (item->has_textures() == false)
-                    {
-                        internal::_3d_primitive_instance_renderer->append_drawing_data(topology, item, brush::fill(), transform_stack::active_world());
-                    }
-                    else
-                    {
-                        internal::_3d_textured_instance_renderer->append_drawing_data(topology, item, brush::tint(), transform_stack::active_world());
-                    }
-                }
-            }
+            internal::submit_custom_render_item(topology, item, stroke_color);
         }
 
         //-------------------------------------------------------------------------
         void submit_font_item(const irender_item* item)
         {
             internal::_font_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
-        }
-
-        //-------------------------------------------------------------------------
-        void submit_image_item(const irender_item* item)
-        {
-            if (internal::_draw_mode == render_draw_mode::BATCHED)
-            {
-                if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
-                {
-                    internal::submit_custom_textured_item(item);
-                }
-                else
-                {
-                    internal::_image_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::tint(), transform_stack::active_world());
-                }
-            }
-            else
-            {
-                if (internal::_geometry_builder.is_active() || !internal::_fill_user_shader.empty())
-                {
-                    internal::submit_custom_render_item(topology_type::TRIANGLES, item);
-                }
-                else
-                {
-                    if (brush::fill_enabled() == false)
-                    {
-                        // When there is no "stroke" and there is no "fill" the object would be invisible.
-                        // So we don't add anything to the drawing list.
-                        return;
-                    }
-
-                    internal::_image_instance_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
-                }
-            }
-        }
-
-        //-------------------------------------------------------------------------
-        void submit_stroke_image_item(const irender_item* item, bool outer)
-        {
-            if (internal::_draw_mode == render_draw_mode::BATCHED)
-            {
-                if (internal::_geometry_builder.is_active())
-                {
-                    log::warn("Stroking custom image geometry is currently not supported");
-                    return;
-                }
-
-                glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
-
-                internal::_image_stroke_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, stroke_color, transform_stack::active_world());
-            }
-            else
-            {
-                if (internal::_geometry_builder.is_active())
-                {
-                    log::warn("Stroking custom image geometry is currently not supported");
-                    return;
-                }
-
-                glm::vec4 stroke_color = outer ? brush::stroke() : brush::inner_stroke();
-
-                internal::_image_stroke_instance_renderer->append_drawing_data(topology_type::TRIANGLES, item, stroke_color, transform_stack::active_world());
-            }
         }
 
         //-------------------------------------------------------------------------

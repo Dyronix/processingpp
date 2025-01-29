@@ -8,9 +8,8 @@ namespace ppp
     {
         enum class scene_camera_mode
         {
-            CAMERA_3D,
-            CAMERA_2D,
-            CAMERA_IMAGE,
+            CAMERA_PERSPECTIVE,
+            CAMERA_ORTHOGRAPHIC,
             CAMERA_FONT
         };
 

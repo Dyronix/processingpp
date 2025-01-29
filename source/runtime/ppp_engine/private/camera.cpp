@@ -36,7 +36,7 @@ namespace ppp
             bool        _active_projection_is_ortho = true;
             
             scene_camera _active_camera = {};
-            scene_camera_mode _active_camera_mode = scene_camera_mode::CAMERA_2D;
+            scene_camera_mode _active_camera_mode = scene_camera_mode::CAMERA_ORTHOGRAPHIC;
 
             void push_active_camera()
             {
@@ -159,13 +159,12 @@ namespace ppp
 
         void set_scene_camera_mode(scene_camera_mode m)
         {
-            render::camera_mode mode = render::camera_mode::CAMERA_2D;
+            render::camera_mode mode = render::camera_mode::CAMERA_ORTHOGRAPHIC;
 
             switch (m)
             {
-            case scene_camera_mode::CAMERA_3D: mode = render::camera_mode::CAMERA_3D; break;
-            case scene_camera_mode::CAMERA_2D: mode = render::camera_mode::CAMERA_2D; break;
-            case scene_camera_mode::CAMERA_IMAGE: mode = render::camera_mode::CAMERA_IMAGE; break;
+            case scene_camera_mode::CAMERA_PERSPECTIVE: mode = render::camera_mode::CAMERA_PERSPECTIVE; break;
+            case scene_camera_mode::CAMERA_ORTHOGRAPHIC: mode = render::camera_mode::CAMERA_ORTHOGRAPHIC; break;
             case scene_camera_mode::CAMERA_FONT: mode = render::camera_mode::CAMERA_FONT; break;
             }
 
