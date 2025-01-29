@@ -561,11 +561,11 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            std::unordered_map<std::string, std::unique_ptr<instance_renderer>> _custom_geometry_instance_renderers;
-            std::unordered_map<std::string, std::unique_ptr<batch_renderer>> _custom_geometry_batch_renderers;
+            std::unordered_map<std::string, std::unique_ptr<instance_renderer>> _instance_renderers;
+            std::unordered_map<std::string, std::unique_ptr<batch_renderer>> _batch_renderers;
 
             //-------------------------------------------------------------------------
-            std::unique_ptr<batch_renderer> _font_batch_renderer;
+            std::unique_ptr<batch_renderer> _font_renderer;
 
             //-------------------------------------------------------------------------
             class geometry_builder
@@ -614,7 +614,7 @@ namespace ppp
 
                 if (internal::_draw_mode == render_draw_mode::BATCHED)
                 {
-                    if (internal::_custom_geometry_batch_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_batch_renderers))
+                    if (internal::_batch_renderers.find(shader_tag) == std::cend(internal::_batch_renderers))
                     {
                         std::unique_ptr<batch_renderer> renderer = nullptr;
                         if (item->has_textures() == false)
@@ -638,14 +638,14 @@ namespace ppp
                         }
 
                         renderer->draw_policy(render_draw_policy::CUSTOM);
-                        internal::_custom_geometry_batch_renderers.emplace(shader_tag, std::move(renderer));
+                        internal::_batch_renderers.emplace(shader_tag, std::move(renderer));
                     }
 
-                    internal::_custom_geometry_batch_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
+                    internal::_batch_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
                 }
                 else
                 {
-                    if (internal::_custom_geometry_instance_renderers.find(shader_tag) == std::cend(internal::_custom_geometry_instance_renderers))
+                    if (internal::_instance_renderers.find(shader_tag) == std::cend(internal::_instance_renderers))
                     {
                         std::unique_ptr<instance_renderer> renderer = nullptr;
                         if (item->has_textures() == false)
@@ -674,10 +674,10 @@ namespace ppp
 
                         renderer->draw_policy(render_draw_policy::CUSTOM);
 
-                        internal::_custom_geometry_instance_renderers.emplace(shader_tag, std::move(renderer));
+                        internal::_instance_renderers.emplace(shader_tag, std::move(renderer));
                     }
 
-                    internal::_custom_geometry_instance_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
+                    internal::_instance_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
                 }
             }
         }
@@ -722,7 +722,7 @@ namespace ppp
             internal::create_frame_buffer();
 
             // Font renderers
-            internal::_font_batch_renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_font);
+            internal::_font_renderer = std::make_unique<texture_batch_renderer>(internal::_pos_tex_col_layout.data(), internal::_pos_tex_col_layout.size(), shader_pool::tags::unlit_font);
 
             return true;
         }
@@ -731,14 +731,14 @@ namespace ppp
         void terminate()
         {
             // Font
-            internal::_font_batch_renderer->terminate();
+            internal::_font_renderer->terminate();
 
             // Custom
-            for (auto& pair : internal::_custom_geometry_batch_renderers)
+            for (auto& pair : internal::_batch_renderers)
             {
                 pair.second->terminate();
             }
-            for (auto& pair : internal::_custom_geometry_instance_renderers)
+            for (auto& pair : internal::_instance_renderers)
             {
                 pair.second->terminate();
             }
@@ -748,14 +748,14 @@ namespace ppp
         void begin()
         {
             // Font
-            internal::_font_batch_renderer->begin();
+            internal::_font_renderer->begin();
 
             // Custom
-            for (auto& pair : internal::_custom_geometry_batch_renderers)
+            for (auto& pair : internal::_batch_renderers)
             {
                 pair.second->begin();
             }
-            for (auto& pair : internal::_custom_geometry_instance_renderers)
+            for (auto& pair : internal::_instance_renderers)
             {
                 pair.second->begin();
             }
@@ -816,18 +816,18 @@ namespace ppp
             glm::mat4 cam_font_v = glm::lookAt(internal::_font_camera.eye, internal::_font_camera.center, internal::_font_camera.up);
             glm::mat4 cam_font_vp = cam_font_p * cam_font_v;
 
-            internal::_font_batch_renderer->render(cam_font_vp);
+            internal::_font_renderer->render(cam_font_vp);
 
             glm::mat4 cam_active_p = internal::_active_camera.proj;
             glm::mat4 cam_active_v = glm::lookAt(internal::_active_camera.eye, internal::_active_camera.center, internal::_active_camera.up);
             glm::mat4 cam_active_vp = cam_active_p * cam_active_v;
 
-            for (auto& pair : internal::_custom_geometry_batch_renderers)
+            for (auto& pair : internal::_batch_renderers)
             {
                 pair.second->render(cam_active_vp);
             }
 
-            for (auto& pair : internal::_custom_geometry_instance_renderers)
+            for (auto& pair : internal::_instance_renderers)
             {
                 pair.second->render(cam_active_vp);
             }
@@ -939,14 +939,14 @@ namespace ppp
         void push_solid_rendering(bool enable)
         {
             // Font
-            internal::_font_batch_renderer->enable_solid_rendering(enable);
+            internal::_font_renderer->enable_solid_rendering(enable);
 
             // Custom
-            for (auto& pair : internal::_custom_geometry_batch_renderers)
+            for (auto& pair : internal::_batch_renderers)
             {
                 pair.second->enable_solid_rendering(enable);
             }
-            for (auto& pair : internal::_custom_geometry_instance_renderers)
+            for (auto& pair : internal::_instance_renderers)
             {
                 pair.second->enable_solid_rendering(enable);
             }
@@ -956,15 +956,15 @@ namespace ppp
         void push_wireframe_rendering(bool enable)
         {
             // Font
-            internal::_font_batch_renderer->enable_wireframe_rendering(enable);
+            internal::_font_renderer->enable_wireframe_rendering(enable);
 
             // Custom
-            for (auto& pair : internal::_custom_geometry_batch_renderers)
+            for (auto& pair : internal::_batch_renderers)
             {
                 pair.second->enable_wireframe_rendering(enable);
             }
 
-            for (auto& pair : internal::_custom_geometry_instance_renderers)
+            for (auto& pair : internal::_instance_renderers)
             {
                 pair.second->enable_wireframe_rendering(enable);
             }
@@ -1146,7 +1146,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void submit_font_item(const irender_item* item)
         {
-            internal::_font_batch_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
+            internal::_font_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
         }
 
         //-------------------------------------------------------------------------
