@@ -12,6 +12,7 @@
 #include "resources/shader_pool.h"
 #include "resources/material_pool.h"
 #include "resources/geometry_pool.h"
+#include "resources/framebuffer_pool.h"
 
 #include "fileio/fileio.h"
 
@@ -58,6 +59,12 @@ namespace ppp
         if (!camera_manager::initialize((f32)app_params.window_width, (f32)app_params.window_height))
         {
             log::error("Failed to initialize camera manager"); 
+            return -1;
+        }
+
+        if (!framebuffer_pool::initialize(app_params.window_width, app_params.window_height))
+        {
+            log::error("Failed to initialize framebuffer pool");
             return -1;
         }
 
@@ -136,6 +143,7 @@ namespace ppp
         shader_pool::terminate();
         font_pool::terminate();
         texture_pool::terminate();
+        framebuffer_pool::terminate();
         camera_manager::terminate();
         render::terminate();
         device::terminate();

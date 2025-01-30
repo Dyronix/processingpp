@@ -93,9 +93,5 @@ namespace ppp
         // Clear 
         void clear_color(f32 r, f32 g, f32 b, f32 a);
         void clear(u32 flags);
-
-        // Events
-        void register_on_draw_begin(std::function<void()> draw_begin);
-        void register_on_draw_end(std::function<void()> draw_end);
     }
 }

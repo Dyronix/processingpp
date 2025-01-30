@@ -20,6 +20,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/material_pool.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/framebuffer_pool.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/framebuffer_pool.cpp
     # camera
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/camera/camera_manager.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/camera/camera_manager.h
@@ -46,6 +48,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_index_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_features.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_framebuffer.h
     ## render-opengl
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_storage_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_vertex_buffer.cpp
@@ -64,6 +67,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_error.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_error.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_features.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_framebuffer.cpp
     ## render-helpers
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.cpp
@@ -79,6 +83,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_vertex_layouts.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_instance_layouts.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_instance_layouts.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_event_dispatcher.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_event_dispatcher.h
     # geometry
     # 3d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h

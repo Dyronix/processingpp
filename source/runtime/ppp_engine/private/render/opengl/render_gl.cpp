@@ -6,10 +6,12 @@
 
 #include "render/helpers/render_vertex_layouts.h"
 #include "render/helpers/render_instance_layouts.h"
+#include "render/helpers/render_event_dispatcher.h"
 
 #include "render/opengl/render_gl_error.h"
 
 #include "resources/shader_pool.h"
+#include "resources/framebuffer_pool.h"
 
 #include "util/log.h"
 #include "util/color_ops.h"
@@ -36,10 +38,6 @@ namespace ppp
             render_draw_mode _draw_mode = render_draw_mode::BATCHED;
 
             //-------------------------------------------------------------------------
-            std::vector<std::function<void()>> _draw_begin_subs;
-            std::vector<std::function<void()>> _draw_end_subs;
-
-            //-------------------------------------------------------------------------
             s32 _scissor_x = -1;
             s32 _scissor_y = -1;
             s32 _scissor_width = -1;
@@ -51,50 +49,13 @@ namespace ppp
             constexpr s32 _min_frame_buffer_height = 32;
 
             //-------------------------------------------------------------------------
-            s32 _frame_buffer_width = -1;
-            s32 _frame_buffer_height = -1;
-
-            //-------------------------------------------------------------------------
-            u32 _render_fbo;
-            u32 _render_depth_rbo;
-            u32 _render_texture;
+            const std::string _main_frame_buffer_tag = "main";
 
             //-------------------------------------------------------------------------
             std::string _fill_user_shader = {};
             std::string _stroke_user_shader = {};
 
             vertex_type _fill_user_vertex_type = vertex_type::POSITION_TEXCOORD_NORMAL_COLOR;
-
-            //-------------------------------------------------------------------------
-            void create_frame_buffer()
-            {
-                GL_CALL(glGenFramebuffers(1, &_render_fbo));
-                GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _render_fbo));
-
-                GL_CALL(glGenTextures(1, &_render_texture));
-                GL_CALL(glBindTexture(GL_TEXTURE_2D, _render_texture));
-
-                GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _frame_buffer_width, _frame_buffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL));
-                GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-                GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-                GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _render_texture, 0));
-
-                GL_CALL(glGenRenderbuffers(1, &_render_depth_rbo));
-                GL_CALL(glBindRenderbuffer(GL_RENDERBUFFER, _render_depth_rbo));
-                GL_CALL(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, _frame_buffer_width, _frame_buffer_height));
-                GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _render_depth_rbo));
-
-                u32 attachments[1] = { GL_COLOR_ATTACHMENT0 };
-                GL_CALL(glDrawBuffers(1, attachments));
-
-                if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-                {
-                    log::error("FramebufferStatus != FRAMEBUFFER_COMPLETE");
-                    return;
-                }
-
-                GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-            }
 
             //-------------------------------------------------------------------------
             std::unordered_map<std::string, std::unique_ptr<instance_renderer>> _instance_renderers;
@@ -229,16 +190,11 @@ namespace ppp
                 return false;
             }
 
-            internal::_frame_buffer_width = w;
-            internal::_frame_buffer_height = h;
-
             internal::_scissor_x = 0;
             internal::_scissor_y = 0;
             internal::_scissor_width = w;
             internal::_scissor_height = h;
             internal::_scissor_enable = false;
-
-            internal::create_frame_buffer();
 
             internal::_font_renderer = std::make_unique<texture_batch_renderer>(pos_tex_col_layout().data(), pos_tex_col_layout().size(), shader_pool::tags::unlit_font);
 
@@ -248,6 +204,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         void terminate()
         {
+            // Release the framebuffer
+            framebuffer_pool::release({ internal::_main_frame_buffer_tag, true });
+
             // Font
             internal::_font_renderer->terminate();
 
@@ -278,10 +237,10 @@ namespace ppp
                 pair.second->begin();
             }
 
-            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, internal::_render_fbo));
+            auto framebuffer = framebuffer_pool::bind({ internal::_main_frame_buffer_tag, true });
 
             // Clear the background to black
-            GL_CALL(glViewport(0, 0, internal::_frame_buffer_width, internal::_frame_buffer_height));
+            GL_CALL(glViewport(0, 0, framebuffer->width(), framebuffer->height()));
 
             GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
             GL_CALL(glClearDepth(1.0));
@@ -295,10 +254,10 @@ namespace ppp
             {
                 GL_CALL(glEnable(GL_SCISSOR_TEST));
                 GL_CALL(glScissor(
-                    std::clamp(internal::_scissor_x, 0, internal::_frame_buffer_width),
-                    std::clamp(internal::_scissor_y, 0, internal::_frame_buffer_height),
-                    std::clamp(internal::_scissor_width, internal::_min_frame_buffer_width, internal::_frame_buffer_width),
-                    std::clamp(internal::_scissor_height, internal::_min_frame_buffer_height, internal::_frame_buffer_height)));
+                    std::clamp(internal::_scissor_x, 0, framebuffer->width()),
+                    std::clamp(internal::_scissor_y, 0, framebuffer->height()),
+                    std::clamp(internal::_scissor_width, internal::_min_frame_buffer_width, framebuffer->width()),
+                    std::clamp(internal::_scissor_height, internal::_min_frame_buffer_height, framebuffer->height())));
             }
             else
             {
@@ -307,20 +266,17 @@ namespace ppp
 
             GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-            if (internal::_draw_begin_subs.empty() == false)
-            {
-                for (auto& fn : internal::_draw_begin_subs)
-                {
-                    fn();
-                }
-            }
+            broadcast_on_draw_begin();
         }
 
         //-------------------------------------------------------------------------
         void render(const render_context& context)
         {
-            f32 w = static_cast<f32>(internal::_frame_buffer_width);
-            f32 h = static_cast<f32>(internal::_frame_buffer_height);
+            auto system_framebuffer = framebuffer_pool::get_system();
+            auto target_framebuffer = framebuffer_pool::get({ internal::_main_frame_buffer_tag, true });
+
+            f32 w = static_cast<f32>(target_framebuffer->width());
+            f32 h = static_cast<f32>(target_framebuffer->height());
 
             GL_CALL(glDisable(GL_BLEND));
             GL_CALL(glEnable(GL_CULL_FACE));
@@ -350,24 +306,32 @@ namespace ppp
                 pair.second->render(cam_active_vp);
             }
 
-            GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, internal::_render_fbo));
-            GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
-            GL_CALL(glBlitFramebuffer(0, 0, internal::_frame_buffer_width, internal::_frame_buffer_height, 0, 0, internal::_frame_buffer_width, internal::_frame_buffer_height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
-            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+            target_framebuffer->bind(framebuffer_bound_target::READ);
+            system_framebuffer->bind(framebuffer_bound_target::WRITE);
+
+            GL_CALL(glBlitFramebuffer(
+                0, 
+                0, 
+                target_framebuffer->width(), 
+                target_framebuffer->height(), 
+                
+                0, 
+                0, 
+                system_framebuffer->width(), 
+                system_framebuffer->height(), 
+                
+                GL_COLOR_BUFFER_BIT, 
+                GL_NEAREST));
+            
+            system_framebuffer->bind();
         }
 
         //-------------------------------------------------------------------------
         void end()
         {
-            if (internal::_draw_end_subs.empty() == false)
-            {
-                for (auto& fn : internal::_draw_end_subs)
-                {
-                    fn();
-                }
-            }
+            broadcast_on_draw_end();
 
-            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+            framebuffer_pool::unbind({ internal::_main_frame_buffer_tag, true });
         }
 
         //-------------------------------------------------------------------------
@@ -471,6 +435,18 @@ namespace ppp
         void push_scissor_enable(bool enable)
         {
             internal::_scissor_enable = enable;
+        }
+
+        //-------------------------------------------------------------------------
+        bool scissor_enabled()
+        {
+            return internal::_scissor_enable;
+        }
+
+        //-------------------------------------------------------------------------
+        scissor_rect scissor()
+        {
+            return { internal::_scissor_x, internal::_scissor_y, internal::_scissor_width, internal::_scissor_height };
         }
 
         //-------------------------------------------------------------------------
@@ -635,30 +611,6 @@ namespace ppp
         void clear(u32 flags)
         {
             GL_CALL(glClear(flags));
-        }
-
-        //-------------------------------------------------------------------------
-        void register_on_draw_begin(std::function<void()> draw_begin)
-        {
-            internal::_draw_begin_subs.push_back(draw_begin);
-        }
-
-        //-------------------------------------------------------------------------
-        void register_on_draw_end(std::function<void()> draw_end)
-        {
-            internal::_draw_end_subs.push_back(draw_end);
-        }
-
-        //-------------------------------------------------------------------------
-        bool scissor_enabled()
-        {
-            return internal::_scissor_enable;
-        }
-        
-        //-------------------------------------------------------------------------
-        scissor_rect scissor()
-        {
-            return { internal::_scissor_x, internal::_scissor_y, internal::_scissor_width, internal::_scissor_height };
         }
     }
 }

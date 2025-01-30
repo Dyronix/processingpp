@@ -1,5 +1,5 @@
 #include "structure.h"
-#include "render/render.h"
+#include "render/helpers/render_event_dispatcher.h"
 #include "device/device.h"
 
 namespace ppp
