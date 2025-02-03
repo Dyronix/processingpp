@@ -15,18 +15,18 @@ namespace ppp
 {
     namespace model
     {
-        geometry::geometry* parse_obj(geometry::geometry* geom, const frame_vector<std::string_view>& buffer)
+        geometry::geometry* parse_obj(geometry::geometry* geom, const temp_vector<std::string_view>& buffer)
         {
-            frame_hash_map<std::string_view, frame_hash_map<std::string_view, s32>> used_verts;
+            temp_hash_map<pool_string, temp_hash_map<pool_string, s32>> used_verts;
 
-            frame_hash_map<std::string_view, frame_vector<glm::vec3>> loaded_verts;
-            frame_hash_map<std::string_view, frame_vector<glm::vec2>> loaded_tex;
+            temp_hash_map<pool_string, temp_vector<glm::vec3>> loaded_verts;
+            temp_hash_map<pool_string, temp_vector<glm::vec2>> loaded_tex;
 
-            frame_string current_material;
+            pool_string current_material;
 
             for (std::string_view line : buffer) 
             {
-                auto tokens = string::split_string<memory::tags::frame>(line, " \t\n\r\f\v");
+                auto tokens = string::split_string(line, pool_string(" \t\n\r\f\v"));
 
                 if (tokens.empty())
                 {
@@ -56,15 +56,15 @@ namespace ppp
                 {
                     for (u64 tri = 3; tri < tokens.size(); ++tri) 
                     {
-                        frame_vector<u32> face;
-                        frame_vector<u64> vertex_tokens = { 1, tri - 1, tri };
+                        temp_vector<u32> face;
+                        temp_vector<u64> vertex_tokens = { 1, tri - 1, tri };
 
                         for (const auto& token_index : vertex_tokens) 
                         {
-                            std::string_view vert_string = tokens[token_index];
+                            pool_string vert_string = tokens[token_index];
 
-                            auto vert_parts_s = string::split_string<memory::tags::frame>(vert_string, "/");
-                            auto vert_parts = frame_vector<s32>{};
+                            auto vert_parts_s = string::split_string(vert_string, pool_string("/"));
+                            auto vert_parts = temp_vector<s32>{};
 
                             for(const auto& part_s : vert_parts_s)
                             {

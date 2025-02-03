@@ -9,11 +9,13 @@ namespace ppp
 {
     namespace memory
     {
+        class heap;
+
         using tagged_heap_blocks = std::vector<tagged_heap_block>;
         class tagged_heap
         {
         public:
-            tagged_heap(memory_size block_size, s32 block_count);
+            tagged_heap(heap* heap, memory_size block_size, s32 block_count);
             ~tagged_heap();
 
             void* allocate(u32 tag, memory_size size);

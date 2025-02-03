@@ -11,20 +11,15 @@ namespace ppp
 {
     namespace string
     {
-        template <u32 allocator_tag>
-        std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, allocator_tag>>
-            string_replace(
-                const std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, allocator_tag>>& subject,
-                const std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, allocator_tag>>& search,
-                const std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, allocator_tag>>& replace)
+        //-----------------------------------------------------------------------------
+        template <typename T>
+        T string_replace(const T& subject, const T& search,const T& replace)
         {
-            using string_type = std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, allocator_tag>>;
-
-            string_type result(subject);
+            T result(subject);
 
             size_t pos = 0;
 
-            while ((pos = subject.find(search, pos)) != string_type::npos)
+            while ((pos = subject.find(search, pos)) != T::npos)
             {
                 result.replace(pos, search.length(), replace);
                 pos += search.length();
@@ -33,19 +28,16 @@ namespace ppp
             return result;
         }
 
-        template <u32 allocator_tag>
-        std::vector<std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, allocator_tag>>>
-            split_string(
-                const std::basic_string_view<char>& str,
-                const std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, allocator_tag>>& delimiters)
+        //-----------------------------------------------------------------------------
+        template <typename T>
+        temp_vector<T> split_string(const std::string_view& str, const T& delimiters)
         {
-            using string_type = std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, allocator_tag>>;
+            temp_vector<T> tokens;
 
-            std::vector<string_type> tokens;
-            string_type token;
+            T token;
 
             // Create a set of delimiters (we assume the delimiter characters are always plain 'char's)
-            std::unordered_set<char, std::hash<char>, std::equal_to<char>, memory::tagged_allocator<char, allocator_tag>> delimiter_set(delimiters.begin(), delimiters.end());
+            temp_set<char> delimiter_set(delimiters.begin(), delimiters.end());
 
             for (char ch : str)
             {
@@ -79,92 +71,81 @@ namespace ppp
             //-----------------------------------------------------------------------------
             // Internal: Convert an unsigned integer into characters in a buffer.
             // The conversion writes digits backwards into the provided buffer.
-            template <typename CharT, typename UIntTy>
-            CharT* u_integral_to_buffer(CharT* r_next, UIntTy u_val) 
+            template <typename TUnsignedInt>
+            char* u_integral_to_buffer(char* r_next, TUnsignedInt u_val)
             {
-                static_assert(std::is_unsigned_v<UIntTy>, "UIntTy must be unsigned");
+                static_assert(std::is_unsigned_v<TUnsignedInt>, "TUnsignedInt must be unsigned");
 
 #ifdef _WIN64
                 auto u_val_trunc = u_val;
 #else
-                // On non‐WIN64 platforms, if the unsigned type is “big” (more than 32 bits),
-                // convert it in chunks (to avoid 64‐bit divisions).
-                if constexpr (sizeof(UIntTy) > 4) {
-                    while (u_val > 0xFFFFFFFFU) {
-                        auto chunk = static_cast<unsigned long>(u_val % 1000000000);
-                        u_val /= 1000000000;
-                        for (int idx = 0; idx < 9; ++idx) {
-                            *--r_next = static_cast<CharT>('0' + (chunk % 10));
-                            chunk /= 10;
-                        }
-                    }
-                }
-                auto u_val_trunc = static_cast<unsigned long>(u_val);
+                assert(sizeof(TUnsignedInt) <= 4);
 #endif
 
-                do {
-                    *--r_next = static_cast<CharT>('0' + (u_val_trunc % 10));
+                do 
+                {
+                    *--r_next = static_cast<char>('0' + (u_val_trunc % 10));
                     u_val_trunc /= 10;
                 } while (u_val_trunc != 0);
 
                 return r_next;
             }
 
-            template <typename CharT, u32 allocator_tag, typename T>
-            std::basic_string<CharT, std::char_traits<CharT>, memory::tagged_allocator<CharT, allocator_tag>>
-                integral_to_string(T val) 
+            //-----------------------------------------------------------------------------
+            template <typename TString, typename TConvert>
+            TString integral_to_string(TConvert val)
             {
-                static_assert(std::is_integral_v<T>, "T must be integral");
+                static_assert(std::is_integral_v<TConvert>, "T must be integral");
 
-                using string_type = std::basic_string<CharT, std::char_traits<CharT>, memory::tagged_allocator<CharT, allocator_tag>>;
-                using UnsignedT = std::make_unsigned_t<T>;
+                using TUnsigned = std::make_unsigned_t<TConvert>;
 
                 // Buffer large enough for 64-bit values (and a sign) plus the terminating null.
-                CharT buffer[21];
-                CharT* const buffer_end = std::end(buffer);
-                CharT* r_next = buffer_end;
-                UnsignedT u_val = static_cast<UnsignedT>(val);
+                char buffer[21];
+                char* const buffer_end = std::end(buffer);
+                char* r_next = buffer_end;
+                TUnsigned u_val = static_cast<TUnsigned>(val);
 
-                if (val < 0) {
+                if (val < 0) 
+                {
                     // Convert the absolute value then add the '-' sign.
-                    r_next = u_integral_to_buffer(r_next, static_cast<UnsignedT>(0) - u_val);
+                    r_next = u_integral_to_buffer(r_next, static_cast<TUnsigned>(0) - u_val);
                     *--r_next = '-';
                 }
-                else {
+                else 
+                {
                     r_next = u_integral_to_buffer(r_next, u_val);
                 }
 
-                return string_type(r_next, buffer_end);
+                return TString(r_next, buffer_end);
             }
 
-            template <typename CharT, u32 allocator_tag, typename T>
-            std::basic_string<CharT, std::char_traits<CharT>, memory::tagged_allocator<CharT, allocator_tag>>
-                u_integral_to_string(T val) 
+            //-----------------------------------------------------------------------------
+            template <typename TString, typename TConvert>
+            TString u_integral_to_string(TConvert val) 
             {
-                static_assert(std::is_integral_v<T>, "T must be integral");
-                static_assert(std::is_unsigned_v<T>, "T must be unsigned");
-                using string_type = std::basic_string<CharT, std::char_traits<CharT>, memory::tagged_allocator<CharT, allocator_tag>>;
+                static_assert(std::is_integral_v<TConvert>, "TConvert must be integral");
+                static_assert(std::is_unsigned_v<TConvert>, "TConvert must be unsigned");
+                
+                char buffer[21];
+                char* const buffer_end = std::end(buffer);
+                char* r_next = u_integral_to_buffer(buffer_end, val);
 
-                CharT buffer[21];
-                CharT* const buffer_end = std::end(buffer);
-                CharT* r_next = u_integral_to_buffer(buffer_end, val);
-
-                return string_type(r_next, buffer_end);
+                return TString(r_next, buffer_end);
             }
         }
 
-        template <u32 allocator_tag>
-        std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, allocator_tag>>
-            to_string(int val)
+        //-----------------------------------------------------------------------------
+        template <typename TString>
+        TString to_string(int val)
         {
-            return internal::integral_to_string<char, allocator_tag>(val);
+            return internal::integral_to_string<TString, int>(val);
         }
 
-        template <u32 allocator_tag>
-        std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, allocator_tag>>
-            to_string(unsigned int val)
+        //-----------------------------------------------------------------------------
+        template <typename TString>
+        TString to_string(unsigned int val)
         {
-            return internal::u_integral_to_string<char, allocator_tag>(val);
+            return internal::u_integral_to_string<TString, unsigned int>(val);
         }
     }
 }

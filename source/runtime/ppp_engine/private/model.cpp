@@ -126,11 +126,11 @@ namespace ppp
         {
             static int s_model_counter = 0;
 
-            frame_stringstream stream;
+            pool_stringstream stream;
 
             stream << conversions::to_string(file_type);
             stream << "|";
-            stream << string::to_string<memory::tags::frame>(s_model_counter++);
+            stream << string::to_string<pool_string>(s_model_counter++);
 
             if (!geometry_pool::has_geometry(stream.str()))
             {
@@ -141,7 +141,7 @@ namespace ppp
                 case model_file_type::OBJ:
                     create_geom_fn = [model_string](geometry::geometry* self)
                     {
-                        frame_vector<std::string_view> lines;
+                        temp_vector<std::string_view> lines;
 
                         size_t pos = 0, prev = 0;
                         while ((pos = model_string.find('\n', prev)) != std::string::npos)

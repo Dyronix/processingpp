@@ -12,7 +12,7 @@ namespace ppp
     {
         struct Image
         {
-            global_string   file_path = {};
+            pool_string   file_path = {};
 
             s32             image_id = -1;
 

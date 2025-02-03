@@ -15,7 +15,7 @@ namespace ppp
         {
             namespace internal
             {
-                global_hash_map<u32, global_vector<keyboard::key_callback>>       _key_callbacks;
+                global_hash_map<u32, global_vector<keyboard::key_callback>>         _key_callbacks;
 
                 void key_callback(GLFWwindow* window, s32 key, s32 scancode, s32 action, s32 mods)
                 {
@@ -25,10 +25,10 @@ namespace ppp
                     }
                 }
 
-                global_vector<mouse::mouse_pos_callback>                        _mouse_pos_callbacks;
-                global_vector<mouse::mouse_button_scroll_callback>              _mouse_scroll_callbacks;
+                global_vector<mouse::mouse_pos_callback>                            _mouse_pos_callbacks;
+                global_vector<mouse::mouse_button_scroll_callback>                  _mouse_scroll_callbacks;
 
-                global_hash_map<u32, global_vector<mouse::mouse_button_callback>> _mouse_button_callbacks;
+                global_hash_map<u32, global_vector<mouse::mouse_button_callback>>   _mouse_button_callbacks;
 
                 void mouse_pos_callback(GLFWwindow* window, f64 xpos, f64 ypos)
                 {

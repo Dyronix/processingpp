@@ -13,6 +13,16 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_allocator.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap_tags.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_types.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/string_pool.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/string_pool.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/string_pool_allocator.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/free_list_heap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/free_list_heap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/scratch_pool.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/scratch_pool.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/scratch_pool_allocator.h
     # fileio
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.cpp
@@ -150,7 +160,6 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/color_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/color_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/string_ops.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/string_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/types.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/perlin_noise.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/perlin_noise.cpp

@@ -46,7 +46,7 @@ namespace ppp
 
     namespace wildcards
     {
-        static fileio_string wildcard_local = "local:";
+        static pool_string wildcard_local = "local:";
     }
 
     //-------------------------------------------------------------------------
@@ -85,7 +85,7 @@ namespace ppp
 
         material::shader(shader_pool::tags::unlit_texture);
 
-        fileio::add_wildcard(wildcards::wildcard_local, fileio_string(internal::get_working_directory(executable_path)));
+        fileio::add_wildcard(wildcards::wildcard_local, pool_string(internal::get_working_directory(executable_path)));
 
         color::background(1.0f, 1.0f, 1.0f, 1.0f);
 

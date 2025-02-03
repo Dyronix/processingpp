@@ -1,4 +1,5 @@
 #include "memory/tagged_heap.h"
+#include "memory/heap.h"
 
 #include <assert.h>
 
@@ -7,13 +8,11 @@ namespace ppp
     namespace memory
     {
         //-------------------------------------------------------------------------
-        tagged_heap::tagged_heap(memory_size block_size, s32 block_count)
+        tagged_heap::tagged_heap(heap* heap, memory_size block_size, s32 block_count)
             :m_block_size(block_size)
             ,m_block_count(block_count)
         {
-            m_base_memory = static_cast<u8*>(std::malloc(block_size * block_count));
-            
-            std::memset(m_base_memory, 0, block_size * block_count);
+            m_base_memory = static_cast<u8*>(heap->allocate(block_size * block_count));
 
             assert(m_base_memory && "Memory allocation failed");
 
@@ -28,10 +27,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         tagged_heap::~tagged_heap()
         {
-            if (m_base_memory != nullptr)
-            {
-                std::free(m_base_memory);
-            }
+            // No need to free m_base_memory here because its lifetime is managed by the heap.
         }
 
         //-------------------------------------------------------------------------
@@ -69,8 +65,6 @@ namespace ppp
                 block.free();
             }
 
-            std::free(m_base_memory);
-
             m_base_memory = nullptr;
         }
 
@@ -80,7 +74,7 @@ namespace ppp
             constexpr memory_size block_size = 500_kb;
             constexpr s32 block_count = 10;
 
-            static tagged_heap s_tagged_heap(block_size, block_count);
+            static tagged_heap s_tagged_heap(get_heap(), block_size, block_count);
 
             return &s_tagged_heap;
         }

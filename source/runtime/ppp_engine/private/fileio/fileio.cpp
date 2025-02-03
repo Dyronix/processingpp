@@ -12,7 +12,7 @@ namespace ppp
     {
 		namespace internal
 		{
-			fileio_hash_map<fileio_string, fileio_string> _wildcards;
+			fileio_hash_map<pool_string, pool_string> _wildcards;
 
 			class Path
 			{
@@ -37,19 +37,19 @@ namespace ppp
 				}
 
 				// Method to get the complete path as a string, including filename with extension
-				fileio_string str() const
+				pool_string str() const
 				{
-					fileio_string full_path = ensure_trailing_separator(_path) + _filename + _extension;;
+					pool_string full_path = ensure_trailing_separator(_path) + _filename + _extension;;
 
-					return string::string_replace(full_path, fileio_string("\\"), fileio_string("/"));
+					return string::string_replace(full_path, pool_string("\\"), pool_string("/"));
 				}
 
 			private:
-				fileio_string _path;	
-				fileio_string _filename;
-				fileio_string _extension;
+				pool_string _path;	
+				pool_string _filename;
+				pool_string _extension;
 
-				fileio_string ensure_trailing_separator(const fileio_string& path) const
+				pool_string ensure_trailing_separator(const pool_string& path) const
 				{
 					char separator = get_separator();
 
@@ -67,7 +67,7 @@ namespace ppp
 				}
 			};
 
-			fileio_string get_path(std::string_view filename)
+			pool_string get_path(std::string_view filename)
 			{
 				Path full_path(filename);
 
@@ -83,21 +83,21 @@ namespace ppp
 			}
 		}
 
-		void add_wildcard(const fileio_string& wildcard, const fileio_string& value)
+		void add_wildcard(const pool_string& wildcard, const pool_string& value)
 		{
 			log::info("adding wildcard {} | {}", wildcard, value);
 
 			internal::_wildcards[wildcard] = value;
 		}
 
-		fileio_string resolve_path(std::string_view filename)
+		pool_string resolve_path(std::string_view filename)
 		{
 			return internal::get_path(filename);
 		}
 
 		bool exists(std::string_view filename)
 		{
-			const fileio_string path = internal::get_path(filename);
+			const pool_string path = internal::get_path(filename);
 
 			std::ifstream f(path.c_str());
 			bool good = f.good();
@@ -109,7 +109,7 @@ namespace ppp
 		fileio_blob read_binary_file(std::string_view filename)
 		{
 			// Load file from disk
-			const fileio_string path = internal::get_path(filename);
+			const pool_string path = internal::get_path(filename);
 
 			std::ifstream file(path.c_str(), std::ios::binary | std::ios::ate);
 			if (!file.is_open())
@@ -138,7 +138,7 @@ namespace ppp
 		fileio_string read_text_file(std::string_view filename)
 		{
 			// Load file from disk
-			const fileio_string path = internal::get_path(filename);
+			const pool_string path = internal::get_path(filename);
 
 			std::ifstream file(path.c_str(), std::ios::binary | std::ios::ate);
 			if (!file.is_open())

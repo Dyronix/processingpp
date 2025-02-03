@@ -1,0 +1,36 @@
+#pragma once
+
+#include "memory/memory_size.h"
+
+#include "util/types.h"
+
+namespace ppp
+{
+    namespace memory
+    {
+        class heap;
+
+        class free_list_heap
+        {
+        public:
+            free_list_heap(heap* heap, memory_size size);
+            ~free_list_heap();
+
+            void* allocate(memory_size size);
+            void deallocate(void* ptr);
+
+        private:
+            struct block_header
+            {
+                u64 size;
+                block_header* next;
+            };
+
+            heap* m_heap;
+            u8* m_pool_memory;
+            block_header* m_free_list;
+            memory_size m_total_memory_size;
+            memory_size m_current_memory_size;
+        };
+    }
+}

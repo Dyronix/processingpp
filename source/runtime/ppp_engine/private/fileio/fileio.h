@@ -10,9 +10,9 @@ namespace ppp
 {
     namespace fileio
     {
-        void add_wildcard(const fileio_string& wildcard, const fileio_string& value);
+        void add_wildcard(const pool_string& wildcard, const pool_string& value);
 
-        fileio_string resolve_path(std::string_view filename);
+        pool_string resolve_path(std::string_view filename);
 
         bool exists(std::string_view filename);
 
