@@ -30,6 +30,19 @@ namespace ppp
     template <typename T>
     using global_vector = std::vector<T, memory::tagged_allocator<T, memory::tags::global>>;
 
+    // Type alias for a vector that uses the 'geometry' tag
+    using geometry_blob = std::vector<std::byte, memory::tagged_allocator<std::byte, memory::tags::geometry>>;
+    // Type alias for a vector that uses the 'graphics' tag
+    using graphics_blob = std::vector<std::byte, memory::tagged_allocator<std::byte, memory::tags::graphics>>;
+    // Type alias for a vector that uses the 'frame' tag
+    using frame_blob = std::vector<std::byte, memory::tagged_allocator<std::byte, memory::tags::frame>>;
+    // Type alias for a vector that uses the 'fileio' tag
+    using fileio_blob = std::vector<std::byte, memory::tagged_allocator<std::byte, memory::tags::fileio>>;
+    // Type alias for a vector that uses the 'resources' tag
+    using resources_blob = std::vector<std::byte, memory::tagged_allocator<std::byte, memory::tags::resources>>;
+    // Type alias for a vector that uses the 'global' tag
+    using global_blob = std::vector<std::byte, memory::tagged_allocator<std::byte, memory::tags::global>>;
+
     // Hash maps
     // Type alias for a unordered_map that uses the 'geometry' tag
     template<typename TKey, typename TValue, typename THasher = std::hash<TKey>>
@@ -50,6 +63,7 @@ namespace ppp
     template<typename TKey, typename TValue, typename THasher = std::hash<TKey>>
     using global_hash_map = std::unordered_map<TKey, TValue, THasher, std::equal_to<TKey>, memory::tagged_allocator<std::pair<const TKey, TValue>, memory::tags::global>>;
 
+    // String Streams
     // Type alias for a basic_ostringstream that uses the 'geometry' tag
     using geometry_ostringstream = std::basic_ostringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::geometry>>;
     // Type alias for a basic_ostringstream that uses the 'graphics' tag
@@ -63,6 +77,33 @@ namespace ppp
     // Type alias for a basic_ostringstream that uses the 'global' tag
     using global_ostringstream = std::basic_ostringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::global>>;
 
+    // Type alias for a basic_ostringstream that uses the 'geometry' tag
+    using geometry_istringstream = std::basic_istringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::geometry>>;
+    // Type alias for a basic_ostringstream that uses the 'graphics' tag
+    using graphics_istringstream = std::basic_istringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::graphics>>;
+    // Type alias for a basic_ostringstream that uses the 'frame' tag
+    using frame_istringstream = std::basic_istringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::frame>>;
+    // Type alias for a basic_ostringstream that uses the 'fileio' tag
+    using fileio_istringstream = std::basic_istringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::fileio>>;
+    // Type alias for a basic_ostringstream that uses the 'resources' tag
+    using resources_istringstream = std::basic_istringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::resources>>;
+    // Type alias for a basic_ostringstream that uses the 'global' tag
+    using global_istringstream = std::basic_istringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::global>>;
+
+    // Type alias for a basic_ostringstream that uses the 'geometry' tag
+    using geometry_stringstream = std::basic_stringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::geometry>>;
+    // Type alias for a basic_ostringstream that uses the 'graphics' tag
+    using graphics_stringstream = std::basic_stringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::graphics>>;
+    // Type alias for a basic_ostringstream that uses the 'frame' tag
+    using frame_stringstream = std::basic_stringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::frame>>;
+    // Type alias for a basic_ostringstream that uses the 'fileio' tag
+    using fileio_stringstream = std::basic_stringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::fileio>>;
+    // Type alias for a basic_ostringstream that uses the 'resources' tag
+    using resources_stringstream = std::basic_stringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::resources>>;
+    // Type alias for a basic_ostringstream that uses the 'global' tag
+    using global_stringstream = std::basic_stringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::global>>;
+
+    // Strings
     // Type alias for a basic_string that uses the 'geometry' tag
     using geometry_string = std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::geometry>>;
     // Type alias for a basic_string that uses the 'graphics' tag

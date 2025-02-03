@@ -8,7 +8,6 @@
 
 #include "util/string_ops.h"
 
-#include <unordered_map>
 #include <fstream>
 #include <sstream>
 
@@ -16,18 +15,18 @@ namespace ppp
 {
     namespace model
     {
-        geometry::geometry* parse_obj(geometry::geometry* geom, const std::vector<std::string> buffer)
+        geometry::geometry* parse_obj(geometry::geometry* geom, const frame_vector<std::string_view>& buffer)
         {
-            std::unordered_map<std::string, std::unordered_map<std::string, s32>> used_verts;
+            frame_hash_map<std::string_view, frame_hash_map<std::string_view, s32>> used_verts;
 
-            std::unordered_map<std::string, std::vector<glm::vec3>> loaded_verts;
-            std::unordered_map<std::string, std::vector<glm::vec2>> loaded_tex;
+            frame_hash_map<std::string_view, frame_vector<glm::vec3>> loaded_verts;
+            frame_hash_map<std::string_view, frame_vector<glm::vec2>> loaded_tex;
 
-            std::string current_material;
+            frame_string current_material;
 
-            for (const auto& line : buffer) 
+            for (std::string_view line : buffer) 
             {
-                std::vector<std::string> tokens = string::split_string(line, " \t\n\r\f\v");
+                auto tokens = string::split_string<memory::tags::frame>(line, " \t\n\r\f\v");
 
                 if (tokens.empty())
                 {
@@ -40,16 +39,16 @@ namespace ppp
                 }
                 else if (tokens[0] == "v" || tokens[0] == "vn")
                 {
-                    f32 x = std::stof(tokens[1]);
-                    f32 y = std::stof(tokens[2]);
-                    f32 z = std::stof(tokens[3]);
+                    f32 x = std::stof(tokens[1].c_str());
+                    f32 y = std::stof(tokens[2].c_str());
+                    f32 z = std::stof(tokens[3].c_str());
 
                     loaded_verts[tokens[0]].emplace_back(x, y, z);
                 }
                 else if (tokens[0] == "vt")
                 {
-                    f32 u = std::stof(tokens[1]);
-                    f32 v = 1.0f - std::stof(tokens[2]);
+                    f32 u = std::stof(tokens[1].c_str());
+                    f32 v = 1.0f - std::stof(tokens[2].c_str());
 
                     loaded_tex[tokens[0]].emplace_back(u, v);
                 }
@@ -57,19 +56,19 @@ namespace ppp
                 {
                     for (u64 tri = 3; tri < tokens.size(); ++tri) 
                     {
-                        std::vector<u32> face;
-                        std::vector<u64> vertex_tokens = { 1, tri - 1, tri };
+                        frame_vector<u32> face;
+                        frame_vector<u64> vertex_tokens = { 1, tri - 1, tri };
 
                         for (const auto& token_index : vertex_tokens) 
                         {
-                            std::string vert_string = tokens[token_index];
+                            std::string_view vert_string = tokens[token_index];
 
-                            std::vector<std::string> vert_parts_s = string::split_string(vert_string, "/");
-                            std::vector<s32> vert_parts;
+                            auto vert_parts_s = string::split_string<memory::tags::frame>(vert_string, "/");
+                            auto vert_parts = frame_vector<s32>{};
 
                             for(const auto& part_s : vert_parts_s)
                             {
-                                vert_parts.push_back(part_s.empty() ? 0 : std::stoi(part_s) - 1);
+                                vert_parts.push_back(part_s.empty() ? 0 : std::stoi(part_s.c_str()) - 1);
                             }
 
                             if (used_verts[vert_string].find(current_material) == used_verts[vert_string].end()) 

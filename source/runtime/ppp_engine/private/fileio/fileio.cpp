@@ -106,7 +106,7 @@ namespace ppp
 			return good;
 		}
 
-		blob read_binary_file(std::string_view filename)
+		fileio_blob read_binary_file(std::string_view filename)
 		{
 			// Load file from disk
 			const fileio_string path = internal::get_path(filename);
@@ -125,7 +125,7 @@ namespace ppp
 			// Read file
 			const std::streamsize size = file.tellg();
 			file.seekg(0, std::ios::beg);
-			blob buffer(size);
+			fileio_blob buffer(size);
 			if (file.read((char*)buffer.data(), size))
 			{
 				return buffer;

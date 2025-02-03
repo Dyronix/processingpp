@@ -1,5 +1,7 @@
 #pragma once
 
+#include "memory/memory_types.h"
+
 #include "util/types.h"
 
 #include <string>
@@ -10,7 +12,7 @@ namespace ppp
     {
         struct Image
         {
-            std::string     file_path = {};
+            global_string   file_path = {};
 
             s32             image_id = -1;
 

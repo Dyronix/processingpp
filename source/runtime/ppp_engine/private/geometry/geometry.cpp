@@ -45,9 +45,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        geometry::geometry(const std::string& geometry_id, bool smooth_normals, const geometry_creation_fn& creation_fn)
+        geometry::geometry(std::string_view geometry_id, bool smooth_normals, const geometry_creation_fn& creation_fn)
             :m_smooth_normals(smooth_normals)
-            ,m_id(std::hash<std::string>{}(geometry_id))
+            ,m_id(std::hash<std::string_view>{}(geometry_id))
         {
             creation_fn(this);
         }

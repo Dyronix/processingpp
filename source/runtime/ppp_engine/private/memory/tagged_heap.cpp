@@ -1,5 +1,7 @@
 #include "memory/tagged_heap.h"
 
+#include <assert.h>
+
 namespace ppp
 {
     namespace memory
@@ -43,6 +45,7 @@ namespace ppp
                 }
             }
 
+            assert("Out of memory!");
             return nullptr; // Out of memory
         }
 

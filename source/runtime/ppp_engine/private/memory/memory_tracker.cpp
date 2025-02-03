@@ -2,6 +2,8 @@
 
 #include "util/log.h"
 
+#define PRINT_WARN_WITHIN_SAME_FRAME 0
+
 namespace ppp
 {
     namespace memory
@@ -104,7 +106,10 @@ namespace ppp
                 {
                     if (it->second == m_active_frame && m_frame_allocations[p] > 0)
                     {
-                        //std::cout << "Allocation and deallocation within the same frame" << std::endl;
+#if PRINT_WARN_WITHIN_SAME_FRAME
+                        log::warn("Allocation and deallocation within the same frame");
+#endif
+
                         m_frame_alloc_and_dealloc += m_frame_allocations[p];
                     }
 

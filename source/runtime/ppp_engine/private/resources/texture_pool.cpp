@@ -75,7 +75,7 @@ namespace ppp
 
         void add_new_image(const Image& image)
         {
-            internal::_images.insert(std::make_pair(image.file_path, image));
+            internal::_images.emplace(image.file_path, image);
         }
 
         u8* load_active_pixels(s32 id)

@@ -2,6 +2,8 @@
 
 #include "util/types.h"
 
+#include "memory/memory_types.h"
+
 #include <glm/glm.hpp>
 
 #include <string>
@@ -17,6 +19,6 @@ namespace ppp
 
     namespace model
     {
-        geometry::geometry* parse_obj(geometry::geometry* geom, const std::vector<std::string> buffer);
+        geometry::geometry* parse_obj(geometry::geometry* geom, const frame_vector<std::string_view>& buffer);
     }
 }

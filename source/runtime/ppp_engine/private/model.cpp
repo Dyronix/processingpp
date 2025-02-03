@@ -14,7 +14,10 @@
 #include "resources/geometry_pool.h"
 #include "resources/material_pool.h"
 
+#include "memory/memory_types.h"
+
 #include "util/log.h"
+#include "util/string_ops.h"
 
 namespace ppp
 {
@@ -22,12 +25,14 @@ namespace ppp
     {
         namespace conversions
         {
+            static const std::string s_obj_extension_type = "obj";
+
             //-------------------------------------------------------------------------
-            std::string to_string(model_file_type file_type)
+            std::string_view to_string(model_file_type file_type)
             {
                 switch (file_type)
                 {
-                case ppp::model::model_file_type::OBJ: return "obj";
+                case ppp::model::model_file_type::OBJ: return s_obj_extension_type;
                     break;
                 default:
                     log::error("Trying to parse unknown type, exiting program");
@@ -121,9 +126,13 @@ namespace ppp
         {
             static int s_model_counter = 0;
 
-            const std::string gid = conversions::to_string(file_type) + "|" + std::to_string(s_model_counter++);
+            frame_stringstream stream;
 
-            if (!geometry_pool::has_geometry(gid))
+            stream << conversions::to_string(file_type);
+            stream << "|";
+            stream << string::to_string<memory::tags::frame>(s_model_counter++);
+
+            if (!geometry_pool::has_geometry(stream.str()))
             {
                 std::function<void(geometry::geometry* self)> create_geom_fn = nullptr;
 
@@ -132,7 +141,7 @@ namespace ppp
                 case model_file_type::OBJ:
                     create_geom_fn = [model_string](geometry::geometry* self)
                     {
-                        std::vector<std::string> lines;
+                        frame_vector<std::string_view> lines;
 
                         size_t pos = 0, prev = 0;
                         while ((pos = model_string.find('\n', prev)) != std::string::npos)
@@ -154,13 +163,13 @@ namespace ppp
                     exit(EXIT_FAILURE);
                 }
 
-                geometry::geometry* geom = geometry_pool::add_new_geometry(geometry::geometry(gid, false, create_geom_fn));
+                geometry::geometry* geom = geometry_pool::add_new_geometry(geometry::geometry(stream.str(), false, create_geom_fn));
 
                 return geom->id();
             }
             else
             {
-                geometry::geometry* geom = geometry_pool::get_geometry(gid);
+                geometry::geometry* geom = geometry_pool::get_geometry(stream.str());
 
                 return geom->id();
             }

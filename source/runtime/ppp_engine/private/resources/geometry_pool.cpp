@@ -37,9 +37,9 @@ namespace ppp
             internal::get_geometry_map().clear();
         }
 
-        bool has_geometry(const std::string& geometry_id)
+        bool has_geometry(std::string_view geometry_id)
         {
-            return has_geometry(std::hash<std::string>{}(geometry_id));
+            return has_geometry(std::hash<std::string_view>{}(geometry_id));
         }
 
         bool has_geometry(u64 geometry_id)
@@ -57,9 +57,9 @@ namespace ppp
             return get_geometry(geom.id());
         }
 
-        geometry::geometry* get_geometry(const std::string& geometry_id)
+        geometry::geometry* get_geometry(std::string_view geometry_id)
         {
-            return get_geometry(std::hash<std::string>{}(geometry_id));
+            return get_geometry(std::hash<std::string_view>{}(geometry_id));
         }
 
         geometry::geometry* get_geometry(u64 geometry_id)

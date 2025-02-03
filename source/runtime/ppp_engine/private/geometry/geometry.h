@@ -17,7 +17,7 @@ namespace ppp
         class geometry
         {
         public:
-            geometry(const std::string& id, bool smooth_normals, const geometry_creation_fn& creation_fn);
+            geometry(std::string_view id, bool smooth_normals, const geometry_creation_fn& creation_fn);
 
             bool has_smooth_normals() const;
 
