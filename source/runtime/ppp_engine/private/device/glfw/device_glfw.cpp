@@ -329,7 +329,7 @@ namespace ppp
                 void add_mouse_horizontal_wheel_callback(const std::function<void(f32)>& callback)
                 {
                     add_mouse_scroll_callback(internal::_window,
-                        [callback](f32 xoffset, f32 yoffset)
+                        [&callback](f32 xoffset, f32 yoffset)
                     {
                         callback(xoffset);
                     });
@@ -338,7 +338,7 @@ namespace ppp
                 void add_mouse_vertical_wheel_callback(const std::function<void(f32)>& callback)
                 {
                     add_mouse_scroll_callback(internal::_window,
-                        [callback](f32 xoffset, f32 yoffset)
+                        [&callback](f32 xoffset, f32 yoffset)
                     {
                         callback(yoffset);
                     });

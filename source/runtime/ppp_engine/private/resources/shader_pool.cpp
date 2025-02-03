@@ -3,6 +3,8 @@
 #include "render/render_shader_library.h"
 #include "render/render_shader.h"
 
+#include "memory/memory_types.h"
+
 #include "util/log.h"
 
 #include <glad/glad.h>
@@ -15,9 +17,9 @@ namespace ppp
     {
         namespace internal
         {      
-            std::unordered_map<std::string, std::shared_ptr<render::shaders::shader_program>>& get_shader_program_map()
+            graphics_hash_map<std::string_view, std::shared_ptr<render::shaders::shader_program>>& get_shader_program_map()
             {
-                static std::unordered_map<std::string, std::shared_ptr<render::shaders::shader_program>> s_shader_program_map;
+                static graphics_hash_map<std::string_view, std::shared_ptr<render::shaders::shader_program>> s_shader_program_map;
 
                 return s_shader_program_map;
             }
@@ -47,13 +49,13 @@ namespace ppp
             internal::get_shader_program_map().clear();
         }
 
-        bool has_shader(const std::string& tag)
+        bool has_shader(std::string_view tag)
         {
             auto it = internal::get_shader_program_map().find(tag);
             return it != std::cend(internal::get_shader_program_map());
         }
 
-        u32 add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source)
+        u32 add_shader_program(std::string_view tag, std::string_view vs_source, std::string_view fs_source)
         {
             auto it = internal::get_shader_program_map().find(tag);
             if(it == std::cend(internal::get_shader_program_map()))
@@ -71,7 +73,7 @@ namespace ppp
             return -1;
         }
 
-        u32 add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source, const char* gs_source)
+        u32 add_shader_program(std::string_view tag, std::string_view vs_source, std::string_view fs_source, std::string_view gs_source)
         {
             auto it = internal::get_shader_program_map().find(tag);
             if (it == std::cend(internal::get_shader_program_map()))
@@ -91,13 +93,13 @@ namespace ppp
 
         u32 get_shader_program(std::string_view tag)
         {
-            auto it = internal::get_shader_program_map().find(tag.data());
+            auto it = internal::get_shader_program_map().find(tag);
             if (it != std::cend(internal::get_shader_program_map()))
             {
                 return it->second->id();
             }
 
-            log::error("Unable to find shader with tag: {}", tag.data());
+            log::error("Unable to find shader with tag: {}", tag);
             return 0;
         }
     }

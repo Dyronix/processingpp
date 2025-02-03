@@ -20,7 +20,7 @@ namespace ppp
         class base_renderer
         {
         public:
-            base_renderer(const attribute_layout* layouts, u64 layout_count, const std::string& shader_tag);
+            base_renderer(const attribute_layout* layouts, u64 layout_count, std::string_view shader_tag);
             virtual ~base_renderer();
 
         public:
@@ -33,7 +33,7 @@ namespace ppp
             void                        enable_solid_rendering(bool enable);
             void                        enable_wireframe_rendering(bool enable);
 
-            void                        user_shader_program(const std::string& tag);
+            void                        user_shader_program(std::string_view tag);
             void                        reset_user_shader_program();
 
         public:
@@ -52,8 +52,8 @@ namespace ppp
             u64                         layout_count() const { return m_layout_count; }
 
         private:
-            std::string                 m_user_shader_tag;
-            std::string                 m_shader_tag;
+            std::string_view            m_user_shader_tag;
+            std::string_view            m_shader_tag;
 
             s32                         m_rasterization_mode;
 

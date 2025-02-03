@@ -14,6 +14,7 @@ namespace ppp
         {
             namespace keyboard
             {
+                using key_callback = std::function<void(s32, s32, s32)>;
                 using key_pressed_callback = std::function<void(s32, s32, s32)>;
                 using key_released_callback = std::function<void(s32, s32, s32)>;
                 using key_down_callback = std::function<void(s32, s32, s32)>;
@@ -30,6 +31,7 @@ namespace ppp
             namespace mouse
             {
                 using mouse_pos_callback = std::function<void(f32, f32)>;
+                using mouse_button_callback = std::function<void(s32, s32)>;
                 using mouse_button_pressed_callback = std::function<void(s32, s32)>;
                 using mouse_button_released_callback = std::function<void(s32, s32)>;
                 using mouse_button_scroll_callback = std::function<void(f32, f32)>;

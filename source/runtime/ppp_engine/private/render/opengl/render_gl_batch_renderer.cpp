@@ -87,7 +87,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        batch_renderer::batch_renderer(const attribute_layout* layouts, u64 layout_count, const std::string& shader_tag)
+        batch_renderer::batch_renderer(const attribute_layout* layouts, u64 layout_count, std::string_view shader_tag)
             : base_renderer(layouts, layout_count, shader_tag)
             , m_drawing_data_map()
             , m_buffer_policy(render_buffer_policy::IMMEDIATE)
@@ -249,7 +249,7 @@ namespace ppp
 
         // Primitive Batch Renderer
         //-------------------------------------------------------------------------
-        primitive_batch_renderer::primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
+        primitive_batch_renderer::primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag)
             :batch_renderer(layouts, layout_cout, shader_tag)
         {
 
@@ -278,7 +278,7 @@ namespace ppp
 
         // Texture Batch Renderer
         //-------------------------------------------------------------------------
-        texture_batch_renderer::texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag)
+        texture_batch_renderer::texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag)
             :batch_renderer(layouts, layout_cout, shader_tag)
         {
 

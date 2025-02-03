@@ -10,15 +10,15 @@ namespace ppp
         namespace shaders
         {
             //-------------------------------------------------------------------------
-            shader_program::shader_program(const std::string& vs_source, const std::string& fs_source)
+            shader_program::shader_program(std::string_view vs_source, std::string_view fs_source)
             {
-                m_program_id = create_shader_program(vs_source.c_str(), fs_source.c_str());
+                m_program_id = create_shader_program(vs_source, fs_source);
             }
 
             //-------------------------------------------------------------------------
-            shader_program::shader_program(const std::string& vs_source, const std::string& fs_source, const std::string& geometry_source)
+            shader_program::shader_program(std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source)
             {
-                m_program_id = create_shader_program(vs_source.c_str(), fs_source.c_str(), geometry_source.c_str());
+                m_program_id = create_shader_program(vs_source, fs_source, geometry_source);
             }
 
             //-------------------------------------------------------------------------

@@ -14,7 +14,7 @@ namespace ppp
             static void set_wireframe_linecolor(s32 color);
 
         public:
-            instance_renderer(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, const std::string& shader_tag);
+            instance_renderer(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, std::string_view shader_tag);
             ~instance_renderer() override;
 
         public:
@@ -59,7 +59,7 @@ namespace ppp
         class primitive_instance_renderer : public instance_renderer
         {
         public:
-            primitive_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, const std::string& shader_tag);
+            primitive_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, std::string_view shader_tag);
             ~primitive_instance_renderer() override;
 
             void on_render(topology_type topology, instance_drawing_data& drawing_data) override;
@@ -68,7 +68,7 @@ namespace ppp
         class texture_instance_renderer : public instance_renderer
         {
         public:
-            texture_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, const std::string& shader_tag);
+            texture_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, std::string_view shader_tag);
             ~texture_instance_renderer() override;
 
             void on_render(topology_type topology, instance_drawing_data& drawing_data) override;

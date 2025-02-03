@@ -27,8 +27,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        base_renderer::base_renderer(const attribute_layout* layouts, u64 layout_count, const std::string& shader_tag)
-            : m_user_shader_tag({})
+        base_renderer::base_renderer(const attribute_layout* layouts, u64 layout_count, std::string_view shader_tag)
+            : m_user_shader_tag()
             , m_shader_tag(shader_tag)
             , m_rasterization_mode(internal::_solid)
             , m_layouts(layouts)
@@ -70,7 +70,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void base_renderer::user_shader_program(const std::string& tag)
+        void base_renderer::user_shader_program(std::string_view tag)
         {
             if (shader_pool::has_shader(tag))
             {

@@ -45,7 +45,7 @@ namespace ppp
             scene_camera _active_camera = {};
 
             //-------------------------------------------------------------------------
-            void push_active_camera(const std::string& camera_tag)
+            void push_active_camera(std::string_view camera_tag)
             {
                 glm::vec3 eye = { internal::_active_camera.eyex, internal::_active_camera.eyey, internal::_active_camera.eyez };
                 glm::vec3 center = { internal::_active_camera.centerx, internal::_active_camera.centery, internal::_active_camera.centerz };
@@ -140,7 +140,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        scene_camera create_camera(const std::string& camera_tag)
+        scene_camera create_camera(std::string_view camera_tag)
         {
             scene_camera c = scene_camera();
 
@@ -150,12 +150,12 @@ namespace ppp
         }
         
         //-------------------------------------------------------------------------
-        void set_scene_camera(scene_camera c, const std::string& camera_tag)
+        void set_scene_camera(scene_camera c, std::string_view camera_tag)
         {
             set_scene_camera(c.eyex, c.eyey, c.eyez, c.centerx, c.centery, c.centerz, c.upx, c.upy, c.upz, camera_tag);
         }
         //-------------------------------------------------------------------------
-        void set_scene_camera(float eyex, float eyey, float eyez, float centerx, float centery, float centerz, float upx, float upy, float upz, const std::string& camera_tag)
+        void set_scene_camera(float eyex, float eyey, float eyez, float centerx, float centery, float centerz, float upx, float upy, float upz, std::string_view camera_tag)
         {
             internal::_active_camera.set_position(eyex, eyey, eyez);
             internal::_active_camera.set_center(centerx, centery, centerz);
@@ -191,7 +191,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void activate_camera(const std::string& camera_tag)
+        void activate_camera(std::string_view camera_tag)
         {
             camera_manager::camera* c = camera_manager::camera_by_tag(camera_tag);
             if (c)
@@ -205,7 +205,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void ortho(float left, float right, float bottom, float top, float near, float far, const std::string& camera_tag)
+        void ortho(float left, float right, float bottom, float top, float near, float far, std::string_view camera_tag)
         {
             internal::_active_ortho.left = left;
             internal::_active_ortho.right = right;
@@ -226,7 +226,7 @@ namespace ppp
             internal::push_active_camera(camera_tag.empty() ? camera::tags::orthographic() : camera_tag);
         }
         //-------------------------------------------------------------------------
-        void perspective(float fovy, float aspect, float near, float far, const std::string& camera_tag)
+        void perspective(float fovy, float aspect, float near, float far, std::string_view camera_tag)
         {
             internal::_active_perspective.fovy = fovy;
             internal::_active_perspective.aspect = aspect;
@@ -244,7 +244,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void orbit_control(orbit_scene_camera_options options, const std::string& camera_tag)
+        void orbit_control(orbit_scene_camera_options options, std::string_view camera_tag)
         {
             f32 zs = options.zoom_sensitivity != 0.0f ? options.zoom_sensitivity : internal::_zoom_sensitivity;
             f32 rs = options.rotation_sensitivity != 0.0f ? options.rotation_sensitivity : internal::_rotate_sensitivity;

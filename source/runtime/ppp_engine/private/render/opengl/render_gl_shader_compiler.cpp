@@ -80,21 +80,21 @@ namespace ppp
                 }
             }
 
-            u32 create_shader_program(const char* vs_source, const char* fs_source)
+            u32 create_shader_program(std::string_view vs_source, std::string_view fs_source)
             {
                 GLuint vert_shader = 0;
                 GLuint frag_shader = 0;
 
                 GL_CALL(u32 shader_program = glCreateProgram());
 
-                GLboolean res = internal::compile_shader(&vert_shader, GL_VERTEX_SHADER, vs_source);
+                GLboolean res = internal::compile_shader(&vert_shader, GL_VERTEX_SHADER, vs_source.data());
                 if (!res)
                 {
                     log::error("Renderer failed to compile vertex shader");
                     return -1;
                 }
 
-                res = internal::compile_shader(&frag_shader, GL_FRAGMENT_SHADER, fs_source);
+                res = internal::compile_shader(&frag_shader, GL_FRAGMENT_SHADER, fs_source.data());
                 if (!res)
                 {
                     log::error("Renderer failed to compile fragment shader");
@@ -118,7 +118,7 @@ namespace ppp
 
                 return shader_program;
             }
-            u32 create_shader_program(const char* vs_source, const char* fs_source, const char* geometry_source)
+            u32 create_shader_program(std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source)
             {
                 GLuint vert_shader = 0;
                 GLuint geom_shader = 0;
@@ -126,21 +126,21 @@ namespace ppp
 
                 GL_CALL(u32 shader_program = glCreateProgram());
 
-                GLboolean res = internal::compile_shader(&vert_shader, GL_VERTEX_SHADER, vs_source);
+                GLboolean res = internal::compile_shader(&vert_shader, GL_VERTEX_SHADER, vs_source.data());
                 if (!res)
                 {
                     log::error("Renderer failed to compile vertex shader");
                     return -1;
                 }
 
-                res = internal::compile_shader(&geom_shader, GL_GEOMETRY_SHADER, geometry_source);
+                res = internal::compile_shader(&geom_shader, GL_GEOMETRY_SHADER, geometry_source.data());
                 if (!res)
                 {
                     log::error("Renderer failed to compile geometry shader");
                     return -1;
                 }
 
-                res = internal::compile_shader(&frag_shader, GL_FRAGMENT_SHADER, fs_source);
+                res = internal::compile_shader(&frag_shader, GL_FRAGMENT_SHADER, fs_source.data());
                 if (!res)
                 {
                     log::error("Renderer failed to compile fragment shader");

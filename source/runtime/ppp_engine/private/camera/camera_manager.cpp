@@ -10,7 +10,7 @@ namespace ppp
 {
     namespace camera_manager
     {
-        using camera_map = std::unordered_map<std::string, camera>;
+        using camera_map = std::unordered_map<std::string_view, camera>;
         using camera_tag = std::string;
                
         camera_map      _cameras;
@@ -50,7 +50,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        camera* set_camera(const std::string& camera_tag, const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj)
+        camera* set_camera(std::string_view camera_tag, const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj)
         {
             auto it = _cameras.find(camera_tag);
             if (it != std::cend(_cameras))
@@ -66,7 +66,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        camera* set_as_active_camera(const std::string& camera_tag)
+        camera* set_as_active_camera(std::string_view camera_tag)
         {
             if (_active_camera_tag != camera_tag)
             {
@@ -102,7 +102,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const glm::mat4& get_view(const std::string& camera_tag)
+        const glm::mat4& get_view(std::string_view camera_tag)
         {
             static glm::mat4 view = glm::mat4(1.0f);
 
@@ -138,7 +138,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const glm::mat4& get_proj(const std::string& camera_tag)
+        const glm::mat4& get_proj(std::string_view camera_tag)
         {
             static glm::mat4 proj = glm::mat4(1.0f);
 
@@ -157,7 +157,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        camera* camera_by_tag(const std::string& camera_tag)
+        camera* camera_by_tag(std::string_view camera_tag)
         {
             auto it = _cameras.find(camera_tag);
             if (it != std::cend(_cameras))

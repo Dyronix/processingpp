@@ -7,6 +7,10 @@
 #include "render/render.h"
 #include "camera/camera_manager.h"
 
+#include "memory/memory_tracker.h"
+#include "memory/tagged_heap.h"
+#include "memory/tagged_heap_tags.h"
+
 #include "resources/texture_pool.h"
 #include "resources/font_pool.h"
 #include "resources/shader_pool.h"
@@ -32,7 +36,7 @@ namespace ppp
     namespace internal
     {
         //-------------------------------------------------------------------------
-        std::string get_working_directory(const std::string& executable_path)
+        std::string_view get_working_directory(std::string_view executable_path)
         {
             size_t last_slash_pos = executable_path.find_last_of("/\\");
 
@@ -40,8 +44,13 @@ namespace ppp
         }
     }
 
+    namespace wildcards
+    {
+        static fileio_string wildcard_local = "local:";
+    }
+
     //-------------------------------------------------------------------------
-    s32 init(const app_params& app_params, const std::string& executable_path)
+    s32 init(const app_params& app_params, std::string_view executable_path)
     {
         if (!device::initialize(app_params.window_width, app_params.window_height))
         {
@@ -76,7 +85,7 @@ namespace ppp
 
         material::shader(shader_pool::tags::unlit_texture);
 
-        fileio::add_wildcard("local:", internal::get_working_directory(executable_path));
+        fileio::add_wildcard(wildcards::wildcard_local, fileio_string(internal::get_working_directory(executable_path)));
 
         color::background(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -89,8 +98,12 @@ namespace ppp
     {
         render::render_context context;
 
+        ppp::memory::peek();
+
         while (!device::should_close())
         {
+            memory::start_frame(device::current_frame_index());
+
             if (device::can_draw())
             {
                 context.mat_proj_font = camera_manager::get_proj(camera_manager::tags::font);
@@ -131,6 +144,9 @@ namespace ppp
                     clock::accurate_sleep_for(sleep_time);
                 }
             }
+
+            memory::get_tagged_heap()->free_blocks(memory::tags::frame);
+            memory::end_frame();
         }
 
         return 0;
@@ -147,6 +163,8 @@ namespace ppp
         camera_manager::terminate();
         render::terminate();
         device::terminate();
+
+        memory::get_tagged_heap()->free();
 
         return 0;
     }
@@ -198,6 +216,8 @@ int main(int argc, char** argv)
 
     s32 result = 0;
 
+    ppp::memory::enable_tracking();
+
     result = ppp::init(app_params, argv[0]);
     if (result != 0)
     {
@@ -216,6 +236,8 @@ int main(int argc, char** argv)
         ppp::log::error("Failed to quit app");
         return result;
     }
+
+    ppp::memory::disable_tracking();
 
     return result;
 }

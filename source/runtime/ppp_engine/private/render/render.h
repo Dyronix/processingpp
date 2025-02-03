@@ -56,12 +56,12 @@ namespace ppp
         render_draw_mode draw_mode();
 
         // Shader
-        void push_active_shader(const std::string& tag, vertex_type type);
+        void push_active_shader(std::string_view tag, vertex_type type);
 
-        const std::string& active_shader();
+        std::string_view active_shader();
 
         // Geometry Builder
-        void begin_geometry_builder(const std::string& tag);
+        void begin_geometry_builder(std::string_view tag);
         void end_geometry_builder();
 
         // Rasterization

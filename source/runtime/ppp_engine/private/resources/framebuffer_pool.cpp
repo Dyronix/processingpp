@@ -18,9 +18,9 @@ namespace ppp
             return s_framebuffers;
         }
         //-------------------------------------------------------------------------
-        std::unordered_map<std::string, render::framebuffer*>& active_framebuffers()
+        std::unordered_map<std::string_view, render::framebuffer*>& active_framebuffers()
         {
-            static std::unordered_map<std::string, render::framebuffer*> s_in_use;
+            static std::unordered_map<std::string_view, render::framebuffer*> s_in_use;
 
             return s_in_use;
         }        
@@ -33,6 +33,7 @@ namespace ppp
             constexpr bool with_depth = true;
             constexpr bool without_depth = false;
 
+            framebuffers().reserve(4);
             framebuffers().emplace_back(std::make_unique<render::framebuffer>(width, height, with_depth));
             framebuffers().emplace_back(std::make_unique<render::framebuffer>(width, height, with_depth));
             framebuffers().emplace_back(std::make_unique<render::framebuffer>(width, height, without_depth));

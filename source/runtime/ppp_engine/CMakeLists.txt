@@ -2,6 +2,17 @@ add_library(processing_engine STATIC)
 
 # Sources
 target_sources(processing_engine PRIVATE 
+    # memory
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_size.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_tracker.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_tracker.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap_block.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap_block.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_allocator.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap_tags.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_types.h
     # fileio
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.cpp

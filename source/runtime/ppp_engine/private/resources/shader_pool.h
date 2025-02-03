@@ -29,10 +29,10 @@ namespace ppp
         bool initialize();
         void terminate();
 
-        bool has_shader(const std::string& tag);
+        bool has_shader(std::string_view tag);
 
-        u32 add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source);
-        u32 add_shader_program(const std::string& tag, const char* vs_source, const char* fs_source, const char* gs_source);
+        u32 add_shader_program(std::string_view tag, std::string_view vs_source, std::string_view fs_source);
+        u32 add_shader_program(std::string_view tag, std::string_view vs_source, std::string_view fs_source, std::string_view gs_source);
 
         u32 get_shader_program(std::string_view tag);
     }

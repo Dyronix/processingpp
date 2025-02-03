@@ -8,13 +8,13 @@ namespace ppp
     {
         //-------------------------------------------------------------------------
         // Material
-        material::material(const std::string& shader_tag)
+        material::material(std::string_view shader_tag)
             : m_shader_tag(shader_tag)
             , m_ambient_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
             , m_diffuse_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
             , m_texture_registry(render::max_textures())
         {
-            m_id = std::hash<std::string>{}(shader_tag);
+            m_id = std::hash<std::string_view>{}(shader_tag);
         }
 
         //-------------------------------------------------------------------------
@@ -61,14 +61,17 @@ namespace ppp
         const texture_ids& material::textures() const { return m_texture_registry.textures(); }
 
         //-------------------------------------------------------------------------
-        const std::string& material::shader_tag() const { return m_shader_tag; }
+        std::string_view material::shader_tag() const { return m_shader_tag; }
 
 
         //-------------------------------------------------------------------------
         // Material Instance
-        material_instance::material_instance(imaterial* base_material)
+        material_instance::material_instance(imaterial* base_material, s32 size_textures)
             : m_base_material(base_material)
-        {}
+            , m_samplers()
+        {
+            m_samplers.reserve(size_textures);
+        }
 
         //-------------------------------------------------------------------------
         void material_instance::ambient_color(const glm::vec4& color) { m_ambient_color = color; }
@@ -118,6 +121,6 @@ namespace ppp
         const texture_ids& material_instance::textures() const { return m_base_material->textures(); }
 
         //-------------------------------------------------------------------------
-        const std::string& material_instance::shader_tag() const { return m_base_material->shader_tag(); }
+        std::string_view material_instance::shader_tag() const { return m_base_material->shader_tag(); }
     }
 }

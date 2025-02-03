@@ -10,8 +10,8 @@ namespace ppp
     {
         namespace shaders
         {       
-            u32 create_shader_program(const char* vs_source, const char* fs_source);
-            u32 create_shader_program(const char* vs_source, const char* fs_source, const char* geometry_source);
+            u32 create_shader_program(std::string_view vs_source, std::string_view fs_source);
+            u32 create_shader_program(std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source);
         }
     }
 }

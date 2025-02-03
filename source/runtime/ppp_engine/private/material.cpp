@@ -14,7 +14,7 @@ namespace ppp
         {
             std::string _active_shader_tag = {};
 
-            std::unordered_map<std::string, render::vertex_type> _shader_tag_vertex_type_map =
+            std::unordered_map<std::string_view, render::vertex_type> _shader_tag_vertex_type_map =
             {
                 {shader_pool::tags::unlit_color, render::vertex_type::POSITION_COLOR},
                 {shader_pool::tags::instance_unlit_color, render::vertex_type::POSITION},
@@ -36,26 +36,26 @@ namespace ppp
         {
             //-------------------------------------------------------------------------
             // batched
-            const std::string& unlit_color()
+            std::string_view unlit_color()
             {
                 return render::draw_mode() == render::render_draw_mode::BATCHED
                     ? shader_pool::tags::unlit_color
                     : shader_pool::tags::instance_unlit_color;
             }
             //-------------------------------------------------------------------------
-            const std::string& unlit_texture()
+            std::string_view unlit_texture()
             {
                 return render::draw_mode() == render::render_draw_mode::BATCHED
                     ? shader_pool::tags::unlit_texture
                     : shader_pool::tags::instance_unlit_texture;
             }
             //-------------------------------------------------------------------------
-            const std::string& unlit_font()
+            std::string_view unlit_font()
             {
                 return shader_pool::tags::unlit_font;
             }
             //-------------------------------------------------------------------------
-            const std::string& unlit_normal()
+            std::string_view unlit_normal()
             {
                 return render::draw_mode() == render::render_draw_mode::BATCHED
                     ? shader_pool::tags::unlit_normal
@@ -63,7 +63,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            const std::string& lit_specular()
+            std::string_view lit_specular()
             {
                 return render::draw_mode() == render::render_draw_mode::BATCHED
                     ? shader_pool::tags::lit_specular
@@ -144,10 +144,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        std::string shader(const std::string& tag)
+        void shader(std::string_view tag)
         {
-            std::string previous_active_tag = internal::_active_shader_tag;
-
             internal::_active_shader_tag = tag;
 
             auto it = internal::_shader_tag_vertex_type_map.find(tag);
@@ -156,8 +154,6 @@ namespace ppp
                 : it->second;
 
             render::push_active_shader(tag, vertex_type);
-
-            return previous_active_tag;
         }
 
         //-------------------------------------------------------------------------
@@ -189,9 +185,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        shader_program create_shader(const std::string& tag, const std::string& vertex_source, const std::string& fragment_source)
+        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source)
         {
-            u32 shader_program_id = shader_pool::add_shader_program(tag, vertex_source.c_str(), fragment_source.c_str());
+            u32 shader_program_id = shader_pool::add_shader_program(tag, vertex_source, fragment_source);
 
             material_pool::add_new_material(resources::material(tag));
 
@@ -199,9 +195,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        shader_program create_shader(const std::string& tag, const std::string& vertex_source, const std::string& fragment_source, const std::string& geometry_source)
+        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, std::string_view geometry_source)
         {
-            u32 shader_program_id = shader_pool::add_shader_program(tag, vertex_source.c_str(), fragment_source.c_str(), geometry_source.c_str());
+            u32 shader_program_id = shader_pool::add_shader_program(tag, vertex_source, fragment_source, geometry_source);
 
             material_pool::add_new_material(resources::material(tag));
 
@@ -209,7 +205,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        shader_program load_shader(const std::string& tag, const std::string& vertex_path, const std::string& fragment_path)
+        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path)
         {
             if (shader_pool::has_shader(tag))
             {
@@ -227,7 +223,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        shader_program load_shader(const std::string& tag, const std::string& vertex_path, const std::string& fragment_path, const std::string& geometry_path)
+        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, std::string_view geometry_path)
         {
             shader_program shader_program = get_shader(tag);
             if (shader_program.id != -1)
@@ -247,7 +243,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        shader_program get_shader(const std::string& tag)
+        shader_program get_shader(std::string_view tag)
         {
             if (material_pool::has_material(tag))
             {

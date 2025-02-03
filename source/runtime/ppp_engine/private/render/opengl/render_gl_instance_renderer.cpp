@@ -87,7 +87,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        instance_renderer::instance_renderer(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, const std::string& shader_tag)
+        instance_renderer::instance_renderer(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, std::string_view shader_tag)
             : base_renderer(layouts, layout_count, shader_tag)
             , m_instance_data_map()
             , m_instance_layouts(instance_layouts)
@@ -248,7 +248,7 @@ namespace ppp
 
         // Primitive Instance Renderer
         //-------------------------------------------------------------------------
-        primitive_instance_renderer::primitive_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, const std::string& shader_tag)
+        primitive_instance_renderer::primitive_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, std::string_view shader_tag)
             :instance_renderer(layouts, layout_cout, instance_layouts, instance_layout_count, shader_tag)
         {
 
@@ -277,7 +277,7 @@ namespace ppp
 
         // Texture Instance Renderer
         //-------------------------------------------------------------------------
-        texture_instance_renderer::texture_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, const std::string& shader_tag)
+        texture_instance_renderer::texture_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, std::string_view shader_tag)
             :instance_renderer(layouts, layout_cout, instance_layouts, instance_layout_count, shader_tag)
         {
 

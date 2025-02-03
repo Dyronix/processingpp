@@ -24,10 +24,10 @@ namespace ppp
         bool initialize();
         void terminate();
 
-        bool has_image(const std::string& file_path);
+        bool has_image(std::string_view file_path);
         bool has_image(s32 id);
 
-        const Image* image_at_path(const std::string& file_path);
+        const Image* image_at_path(std::string_view file_path);
         const Image* image_at_id(s32 id);
 
         void add_new_image(const Image& image);

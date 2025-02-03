@@ -109,17 +109,15 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        model_id load_model(const std::string& model_path)
+        model_id load_model(std::string_view model_path)
         {
-            const std::string gid = model_path;
-
             auto buffer = fileio::read_text_file(model_path);
 
             return create_model(buffer, model_file_type::OBJ);
         }
 
         //-------------------------------------------------------------------------
-        model_id create_model(const std::string& model_string, model_file_type file_type)
+        model_id create_model(std::string_view model_string, model_file_type file_type)
         {
             static int s_model_counter = 0;
 
@@ -132,7 +130,7 @@ namespace ppp
                 switch(file_type)
                 {
                 case model_file_type::OBJ:
-                    create_geom_fn = [&model_string](geometry::geometry* self)
+                    create_geom_fn = [model_string](geometry::geometry* self)
                     {
                         std::vector<std::string> lines;
 

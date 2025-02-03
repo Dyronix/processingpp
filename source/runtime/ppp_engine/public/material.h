@@ -10,12 +10,12 @@ namespace ppp
     {
         namespace tags
         {
-            const std::string& unlit_color();
-            const std::string& unlit_texture();
-            const std::string& unlit_font();
-            const std::string& unlit_normal();
+            std::string_view unlit_color();
+            std::string_view unlit_texture();
+            std::string_view unlit_font();
+            std::string_view unlit_normal();
 
-            const std::string& lit_specular();
+            std::string_view lit_specular();
         }
 
         using shader_program_id = unsigned int;
@@ -41,16 +41,16 @@ namespace ppp
         void texture(unsigned int image_id);
         void reset_textures();
 
-        std::string shader(const std::string& tag);
+        void shader(std::string_view tag);
 
         shader_program normal_material();
         shader_program specular_material();
 
-        shader_program create_shader(const std::string& tag, const std::string& vertex_source, const std::string& fragment_source);
-        shader_program create_shader(const std::string& tag, const std::string& vertex_source, const std::string& fragment_source, const std::string& geometry_source);
-        shader_program load_shader(const std::string& tag, const std::string& vertex_path, const std::string& fragment_path);
-        shader_program load_shader(const std::string& tag, const std::string& vertex_path, const std::string& fragment_path, const std::string& geometry_path);
+        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source);
+        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, std::string_view geometry_source);
+        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path);
+        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, std::string_view geometry_path);
         
-        shader_program get_shader(const std::string& tag);
+        shader_program get_shader(std::string_view tag);
     }
 }

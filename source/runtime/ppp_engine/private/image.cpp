@@ -150,9 +150,9 @@ namespace ppp
             texture_pool::update_active_pixels(id);
         }
 
-        void save_pixels(const std::string& output_name, unsigned char* data, int width, int height, int channels)
+        void save_pixels(std::string_view output_name, unsigned char* data, int width, int height, int channels)
         {
-            std::string path = fileio::resolve_path(output_name).c_str();
+            auto path = fileio::resolve_path(output_name);
 
             if (stbi_write_png(path.c_str(), width, height, channels, data, width * channels) == 0)
             {
@@ -160,9 +160,9 @@ namespace ppp
             }
         }
 
-        void save_pixels(const std::string& output_name, int width, int height)
+        void save_pixels(std::string_view output_name, int width, int height)
         {
-            std::string path = fileio::resolve_path(output_name).c_str();
+            auto path = fileio::resolve_path(output_name);
 
             if (stbi_write_png(path.c_str(), width, height, 4, texture_pool::active_pixels(), width * 4) == 0)
             {
@@ -170,9 +170,9 @@ namespace ppp
             }
         }
 
-        void save_pixels(const std::string& output_name, image_id id)
+        void save_pixels(std::string_view output_name, image_id id)
         {
-            std::string path = fileio::resolve_path(output_name).c_str();
+            auto path = fileio::resolve_path(output_name);
 
             const texture_pool::Image* img = texture_pool::image_at_id(id);
 
@@ -192,7 +192,7 @@ namespace ppp
             return (pixels_s32_ptr)texture_pool::active_pixels();
         }
 
-        image load(const std::string& file_path)
+        image load(std::string_view file_path)
         {
             // Find image first
             if (texture_pool::has_image(file_path))
@@ -253,7 +253,9 @@ namespace ppp
 
         void draw(image_id image_id, float x, float y, float width, float height)
         {
-            std::string prev_shader = material::shader(shader_pool::tags::unlit_texture);
+            std::string_view prev_shader = render::active_shader();
+
+            material::shader(shader_pool::tags::unlit_texture);
 
             material::reset_textures();
             material::texture(image_id);

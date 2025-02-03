@@ -1,6 +1,8 @@
 #include "device/device_input.h"
 #include "render/render.h"
 
+#include "memory/memory_types.h"
+
 #include <unordered_set>
 
 #include <GLFW/glfw3.h>
@@ -13,7 +15,7 @@ namespace ppp
         {
             namespace internal
             {
-                std::unordered_map<u32, std::vector<std::function<void(s32, s32, s32)>>> _key_callbacks;
+                global_hash_map<u32, global_vector<keyboard::key_callback>>       _key_callbacks;
 
                 void key_callback(GLFWwindow* window, s32 key, s32 scancode, s32 action, s32 mods)
                 {
@@ -23,9 +25,10 @@ namespace ppp
                     }
                 }
 
-                std::vector<std::function<void(f32, f32)>> _mouse_pos_callbacks;
-                std::unordered_map<u32, std::vector<std::function<void(s32, s32)>>> _mouse_button_callbacks;
-                std::vector<std::function<void(f32, f32)>> _mouse_scroll_callbacks;
+                global_vector<mouse::mouse_pos_callback>                        _mouse_pos_callbacks;
+                global_vector<mouse::mouse_button_scroll_callback>              _mouse_scroll_callbacks;
+
+                global_hash_map<u32, global_vector<mouse::mouse_button_callback>> _mouse_button_callbacks;
 
                 void mouse_pos_callback(GLFWwindow* window, f64 xpos, f64 ypos)
                 {

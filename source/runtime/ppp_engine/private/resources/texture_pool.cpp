@@ -8,7 +8,7 @@ namespace ppp
     {
         namespace internal
         {
-            std::unordered_map<std::string, Image> _images;
+            std::unordered_map<std::string_view, Image> _images;
 
             unsigned char* _active_pixels = nullptr;
         }
@@ -31,7 +31,7 @@ namespace ppp
             }
         }
 
-        bool has_image(const std::string& file_path)
+        bool has_image(std::string_view file_path)
         {
             return internal::_images.find(file_path) != internal::_images.cend();
         }
@@ -47,7 +47,7 @@ namespace ppp
             return it != internal::_images.cend();
         }
 
-        const Image* image_at_path(const std::string& file_path)
+        const Image* image_at_path(std::string_view file_path)
         {
             if (has_image(file_path))
             {

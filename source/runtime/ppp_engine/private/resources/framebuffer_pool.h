@@ -12,7 +12,7 @@ namespace ppp
     {
         struct framebuffer_description
         {
-            std::string tag;
+            std::string_view tag;
 
             bool require_depth;
 
@@ -50,7 +50,7 @@ namespace std
     {
         u64 operator()(const ppp::framebuffer_pool::framebuffer_description& s) const
         {
-            return std::hash<std::string>{}(s.tag);
+            return std::hash<std::string_view>{}(s.tag);
         }
     };
 }

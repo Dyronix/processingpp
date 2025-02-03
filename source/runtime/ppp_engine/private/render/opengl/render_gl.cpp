@@ -52,14 +52,14 @@ namespace ppp
             const std::string _main_frame_buffer_tag = "main";
 
             //-------------------------------------------------------------------------
-            std::string _fill_user_shader = {};
-            std::string _stroke_user_shader = {};
+            std::string_view _fill_user_shader = {};
+            std::string_view _stroke_user_shader = {};
 
             vertex_type _fill_user_vertex_type = vertex_type::POSITION_TEXCOORD_NORMAL_COLOR;
 
             //-------------------------------------------------------------------------
-            std::unordered_map<std::string, std::unique_ptr<instance_renderer>> _instance_renderers;
-            std::unordered_map<std::string, std::unique_ptr<batch_renderer>> _batch_renderers;
+            std::unordered_map<std::string_view, std::unique_ptr<instance_renderer>> _instance_renderers;
+            std::unordered_map<std::string_view, std::unique_ptr<batch_renderer>> _batch_renderers;
 
             //-------------------------------------------------------------------------
             std::unique_ptr<batch_renderer> _font_renderer;
@@ -68,7 +68,7 @@ namespace ppp
             class geometry_builder
             {
             public:
-                void activate(const std::string& tag)
+                void activate(std::string_view tag)
                 {
                     m_is_active = true;
                     m_shader_tag = tag;
@@ -77,7 +77,7 @@ namespace ppp
                 void deactivate()
                 {
                     m_is_active = false;
-                    m_shader_tag.clear();
+                    m_shader_tag = std::string_view();
                 }
 
                 bool is_active() const
@@ -85,14 +85,14 @@ namespace ppp
                     return m_is_active;
                 }
 
-                const std::string& shader_tag() const
+                std::string_view shader_tag() const
                 {
                     return m_shader_tag;
                 }
 
             private:
                 bool m_is_active = false;
-                std::string m_shader_tag;
+                std::string_view m_shader_tag;
             };
 
             geometry_builder _geometry_builder;
@@ -107,7 +107,7 @@ namespace ppp
                     return;
                 }
 
-                const std::string& shader_tag = _fill_user_shader.empty() ? _geometry_builder.shader_tag() : _fill_user_shader;
+                std::string_view shader_tag = _fill_user_shader.empty() ? _geometry_builder.shader_tag() : _fill_user_shader;
 
                 if (internal::_draw_mode == render_draw_mode::BATCHED)
                 {
@@ -215,10 +215,13 @@ namespace ppp
             {
                 pair.second->terminate();
             }
+            internal::_batch_renderers.clear();
+
             for (auto& pair : internal::_instance_renderers)
             {
                 pair.second->terminate();
             }
+            internal::_instance_renderers.clear();
         }
 
         //-------------------------------------------------------------------------
@@ -347,20 +350,20 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void push_active_shader(const std::string& tag, vertex_type type)
+        void push_active_shader(std::string_view tag, vertex_type type)
         {
             internal::_fill_user_shader = tag;
             internal::_fill_user_vertex_type = type;
         }
 
         //-------------------------------------------------------------------------
-        const std::string& active_shader()
+        std::string_view active_shader()
         {
             return internal::_fill_user_shader;
         }
 
         //-------------------------------------------------------------------------
-        void begin_geometry_builder(const std::string& tag)
+        void begin_geometry_builder(std::string_view tag)
         {
             assert(!internal::_geometry_builder.is_active() && "Construction of previous shape has not been finished, call end_geometry_builder first");
 

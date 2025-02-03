@@ -38,14 +38,14 @@ namespace ppp
 
         void update_pixels(image_id id);
 
-        void save_pixels(const std::string& output_name, unsigned char* data, int width, int height, int channels);
-        void save_pixels(const std::string& output_name, int width, int height);
-        void save_pixels(const std::string& output_name, image_id id);
+        void save_pixels(std::string_view output_name, unsigned char* data, int width, int height, int channels);
+        void save_pixels(std::string_view output_name, int width, int height);
+        void save_pixels(std::string_view output_name, image_id id);
 
         pixels_u8_ptr pixels_as_u8();
         pixels_s32_ptr pixels_as_u32();
 
-        image load(const std::string& image);
+        image load(std::string_view image);
         image create(float width, float height, int channels, pixels_u8_ptr data);
 
         void draw(image_id image_id, float x, float y, float width, float height);

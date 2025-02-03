@@ -1,8 +1,7 @@
 #include "fileio/fileio.h"
 #include "util/string_ops.h"
 #include "util/log.h"
-
-#include <unordered_map>
+	
 #include <fstream>
 
 #include <assert.h>
@@ -13,12 +12,12 @@ namespace ppp
     {
 		namespace internal
 		{
-			std::unordered_map<std::string, std::string> _wildcards;
+			fileio_hash_map<fileio_string, fileio_string> _wildcards;
 
 			class Path
 			{
 			public:
-				Path(const std::string& full_path = "")
+				Path(std::string_view full_path = "")
 				{
 					u64 dot_pos = full_path.find_last_of('.');
 
@@ -31,26 +30,26 @@ namespace ppp
 					_path = ensure_trailing_separator(_path);
 				}
 
-				void append(const std::string& component)
+				void append(std::string_view component)
 				{
 					_path = ensure_trailing_separator(_path);
 					_path += component;
 				}
 
 				// Method to get the complete path as a string, including filename with extension
-				std::string str() const
+				fileio_string str() const
 				{
-					std::string full_path = ensure_trailing_separator(_path) + _filename + _extension;;
+					fileio_string full_path = ensure_trailing_separator(_path) + _filename + _extension;;
 
-					return string::string_replace(full_path, "\\", "/");
+					return string::string_replace(full_path, fileio_string("\\"), fileio_string("/"));
 				}
 
 			private:
-				std::string _path;	
-				std::string _filename;
-				std::string _extension;
+				fileio_string _path;	
+				fileio_string _filename;
+				fileio_string _extension;
 
-				std::string ensure_trailing_separator(const std::string& path) const
+				fileio_string ensure_trailing_separator(const fileio_string& path) const
 				{
 					char separator = get_separator();
 
@@ -68,7 +67,7 @@ namespace ppp
 				}
 			};
 
-			std::string get_path(const std::string& filename)
+			fileio_string get_path(std::string_view filename)
 			{
 				Path full_path(filename);
 
@@ -84,21 +83,21 @@ namespace ppp
 			}
 		}
 
-		void add_wildcard(const std::string& wildcard, const std::string& value)
+		void add_wildcard(const fileio_string& wildcard, const fileio_string& value)
 		{
 			log::info("adding wildcard {} | {}", wildcard, value);
 
 			internal::_wildcards[wildcard] = value;
 		}
 
-		std::string resolve_path(const std::string& filename)
+		fileio_string resolve_path(std::string_view filename)
 		{
 			return internal::get_path(filename);
 		}
 
-		bool exists(const std::string& filename)
+		bool exists(std::string_view filename)
 		{
-			const std::string path = internal::get_path(filename);
+			const fileio_string path = internal::get_path(filename);
 
 			std::ifstream f(path.c_str());
 			bool good = f.good();
@@ -107,11 +106,12 @@ namespace ppp
 			return good;
 		}
 
-		blob read_binary_file(const std::string& filename)
+		blob read_binary_file(std::string_view filename)
 		{
 			// Load file from disk
-			const std::string path = internal::get_path(filename);
-			std::ifstream file(path, std::ios::binary | std::ios::ate);
+			const fileio_string path = internal::get_path(filename);
+
+			std::ifstream file(path.c_str(), std::ios::binary | std::ios::ate);
 			if (!file.is_open())
 			{
 				log::error("File {} with full path {} was not found!", filename, path);
@@ -135,11 +135,12 @@ namespace ppp
 			return {};
 		}
 
-		std::string read_text_file(const std::string& filename)
+		fileio_string read_text_file(std::string_view filename)
 		{
 			// Load file from disk
-			const std::string path = internal::get_path(filename);
-			std::ifstream file(path, std::ios::binary | std::ios::ate);
+			const fileio_string path = internal::get_path(filename);
+
+			std::ifstream file(path.c_str(), std::ios::binary | std::ios::ate);
 			if (!file.is_open())
 			{
 				log::error("File {} with full path {} was not found!", filename, path);
@@ -149,7 +150,7 @@ namespace ppp
 			// Read file
 			file.seekg(0, std::ios::end);
 			const u64 size = file.tellg();
-			std::string buffer(size, '\0');
+			fileio_string buffer(size, '\0');
 			file.seekg(0);
 			if (file.read(&buffer[0], size))
 			{

@@ -26,14 +26,14 @@ namespace ppp
         bool initialize(f32 frustum_width, f32 frustum_height);
         void terminate();
 
-        camera* set_camera(const std::string& camera_tag, const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj);
-        camera* set_as_active_camera(const std::string& camera_tag);
+        camera* set_camera(std::string_view camera_tag, const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj);
+        camera* set_as_active_camera(std::string_view camera_tag);
 
         const glm::mat4& get_view();
-        const glm::mat4& get_view(const std::string& camera_tag);
+        const glm::mat4& get_view(std::string_view camera_tag);
         const glm::mat4& get_proj();
-        const glm::mat4& get_proj(const std::string& camera_tag);
+        const glm::mat4& get_proj(std::string_view camera_tag);
 
-        camera* camera_by_tag(const std::string& camera_tag);
+        camera* camera_by_tag(std::string_view camera_tag);
     }
 }

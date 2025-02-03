@@ -2,6 +2,8 @@
 
 #include "util/types.h"
 
+#include "memory/memory_types.h"
+
 #include <memory>
 
 namespace ppp
@@ -13,8 +15,8 @@ namespace ppp
             class shader_program
             {
             public:
-                shader_program(const std::string& vs_source, const std::string& fs_source);
-                shader_program(const std::string& vs_source, const std::string& fs_source, const std::string& geometry_source);
+                shader_program(std::string_view vs_source, std::string_view fs_source);
+                shader_program(std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source);
                 ~shader_program();
 
                 void bind() const;

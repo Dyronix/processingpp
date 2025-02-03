@@ -1,6 +1,8 @@
 #include "render/render_shader_library.h"
 #include "render/render_features.h"
 
+#include "util/string_ops.h"
+
 namespace ppp
 {
     namespace render
@@ -18,7 +20,7 @@ namespace ppp
                 }
 
                 //-------------------------------------------------------------------------
-                shader_builder& add_struct(const std::string& name, const std::vector<std::pair<std::string, std::string>>& members)
+                shader_builder& add_struct(const frame_string& name, const frame_vector<std::pair<frame_string, frame_string>>& members)
                 {
                     m_shader_code << "struct " << name << "\n{\n";
                     for (const auto& member : members)
@@ -30,7 +32,7 @@ namespace ppp
                 }
 
                 //-------------------------------------------------------------------------
-                shader_builder& add_ssbo(const std::string& name, const std::string& struct_name, const std::string& variable_name, s32 binding, bool is_array = false)
+                shader_builder& add_ssbo(const frame_string& name, const frame_string& struct_name, const frame_string& variable_name, s32 binding, bool is_array = false)
                 {
                     m_shader_code << "layout (std430, binding = " << binding << ") buffer " << name << "\n{\n";
                     m_shader_code << "    " << struct_name << " " << variable_name;
@@ -49,61 +51,61 @@ namespace ppp
                 }
 
                 //-------------------------------------------------------------------------
-                shader_builder& add_attribute(const std::string& type, const std::string& name, s32 location)
+                shader_builder& add_attribute(const frame_string& type, const frame_string& name, s32 location)
                 {
                     m_shader_code << "layout (location = " << location << ") in " << type << " " << name << ";\n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_input(const std::string& type, const std::string& name, bool is_flat = false)
+                shader_builder& add_input(const frame_string& type, const frame_string& name, bool is_flat = false)
                 {
                     if(is_flat) m_shader_code << "flat ";
                     m_shader_code << "in " << type << " " << name << ";\n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_output(const std::string& type, const std::string& name, bool is_flat = false)
+                shader_builder& add_output(const frame_string& type, const frame_string& name, bool is_flat = false)
                 {
                     if (is_flat) m_shader_code << "flat ";
                     m_shader_code << "out " << type << " " << name << ";\n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_uniform(const std::string& type, const std::string& name)
+                shader_builder& add_uniform(const frame_string& type, const frame_string& name)
                 {
                     m_shader_code << "uniform " << type << " " << name << ";\n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_uniform_array(const std::string& type, const std::string& name, s32 size)
+                shader_builder& add_uniform_array(const frame_string& type, const frame_string& name, s32 size)
                 {
                     m_shader_code << "uniform " << type << " " << name << "[" << size << "]; \n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_function(const std::string& function_code)
+                shader_builder& add_function(const frame_string& function_code)
                 {
                     m_shader_code << function_code << "\n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& set_main_function_body(const std::string& main_code)
+                shader_builder& set_main_function_body(const frame_string& main_code)
                 {
                     m_shader_code << "void main() {\n" << main_code << "\n}\n";
                     return *this;
                 }
 
                 //-------------------------------------------------------------------------
-                std::string build() const
+                frame_string build() const
                 {
                     return m_shader_code.str();
                 }
 
             private:
-                std::ostringstream m_shader_code;
+                frame_ostringstream m_shader_code;
             };
 
-            std::string unlit_color_vertex_shader_code()
+            frame_string unlit_color_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -124,7 +126,7 @@ namespace ppp
                         gl_Position = u_view_proj * vec4(a_position, 1.0);
                     )").build();
             }
-            std::string unlit_color_pixel_shader_code()
+            frame_string unlit_color_pixel_shader_code()
             {
                 shader_builder builder;
 
@@ -138,7 +140,7 @@ namespace ppp
                     )").build();
             }
 
-            std::string instance_unlit_color_vertex_shader_code()
+            frame_string instance_unlit_color_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -161,7 +163,7 @@ namespace ppp
                     )").build();
             }
 
-            std::string unlit_texture_vertex_shader_code()
+            frame_string unlit_texture_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -189,7 +191,7 @@ namespace ppp
                     )").build();
             }
 
-            std::string unlit_texture_pixel_shader_code()
+            frame_string unlit_texture_pixel_shader_code()
             {
                 shader_builder builder;
 
@@ -199,7 +201,7 @@ namespace ppp
                     .add_struct(
                         "material_attributes",
                         {
-                            {"int", "sampler_indices[" + std::to_string(render::max_textures()) + "]"},
+                            {"int", "sampler_indices[" + string::to_string<memory::tags::frame>(render::max_textures()) + "]"},
                             {"int", "sampler_count"},
                             {"vec4", "ambient_color"},
                             {"vec4", "diffuse_color"}
@@ -219,7 +221,7 @@ namespace ppp
                     )").build();
             }
 
-            std::string instance_unlit_texture_vertex_shader_code()
+            frame_string instance_unlit_texture_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -248,7 +250,7 @@ namespace ppp
                     )").build();
             }
 
-            std::string unlit_font_vertex_shader_code()
+            frame_string unlit_font_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -275,7 +277,7 @@ namespace ppp
                         gl_Position = u_view_proj * vec4(a_position, 1.0);
                     )").build();
             }
-            std::string unlit_font_pixel_shader_code()
+            frame_string unlit_font_pixel_shader_code()
             {
                 shader_builder builder;
 
@@ -296,7 +298,7 @@ namespace ppp
                     )").build();
             }
 
-            std::string unlit_normal_vertex_shader_code()
+            frame_string unlit_normal_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -318,7 +320,7 @@ namespace ppp
                         gl_Position = u_view_proj * vec4(a_position, 1.0);
                     )").build();
             }
-            std::string unlit_normal_pixel_shader_code()
+            frame_string unlit_normal_pixel_shader_code()
             {
                 shader_builder builder;
 
@@ -339,7 +341,7 @@ namespace ppp
                     )").build();
             }
 
-            std::string instance_unlit_normal_vertex_shader_code()
+            frame_string instance_unlit_normal_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -363,7 +365,7 @@ namespace ppp
                     )").build();
             }
 
-            std::string specular_vertex_shader_code()
+            frame_string specular_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -388,7 +390,7 @@ namespace ppp
                     )").build();
             }
 
-            std::string specular_pixel_shader_code()
+            frame_string specular_pixel_shader_code()
             {
                 shader_builder builder;
 
@@ -430,7 +432,7 @@ namespace ppp
                     )").build();
             }
 
-            std::string instance_specular_vertex_shader_code()
+            frame_string instance_specular_vertex_shader_code()
             {
                 shader_builder builder;
 

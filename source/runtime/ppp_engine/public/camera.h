@@ -46,16 +46,16 @@ namespace ppp
         glm::vec3 active_camera_target();
         glm::vec3 active_camera_up();
 
-        scene_camera create_camera(const std::string& camera_tag = {});
+        scene_camera create_camera(std::string_view camera_tag = {});
 
-        void set_scene_camera(scene_camera c, const std::string& camera_tag = {});
-        void set_scene_camera(float eyex, float eyey, float eyez = 800.0f, float centerx = 0.0f, float centery = 0.0f, float centerz = 0.0f, float upx = 0.0f, float upy = 1.0f, float upz = 0.0f, const std::string& camera_tag = {});
+        void set_scene_camera(scene_camera c, std::string_view camera_tag = {});
+        void set_scene_camera(float eyex, float eyey, float eyez = 800.0f, float centerx = 0.0f, float centery = 0.0f, float centerz = 0.0f, float upx = 0.0f, float upy = 1.0f, float upz = 0.0f, std::string_view camera_tag = {});
 
-        void activate_camera(const std::string& camera_tag);
+        void activate_camera(std::string_view camera_tag);
 
-        void ortho(float left, float right, float bottom, float top, float near, float far, const std::string& camera_tag = {});
-        void perspective(float fovy, float aspect, float near, float far, const std::string& camera_tag = {});
+        void ortho(float left, float right, float bottom, float top, float near, float far, std::string_view camera_tag = {});
+        void perspective(float fovy, float aspect, float near, float far, std::string_view camera_tag = {});
 
-        void orbit_control(orbit_scene_camera_options options = {}, const std::string& camera_tag = {});
+        void orbit_control(orbit_scene_camera_options options = {}, std::string_view camera_tag = {});
     }
 }

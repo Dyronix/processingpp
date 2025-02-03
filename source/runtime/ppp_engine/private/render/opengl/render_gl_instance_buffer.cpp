@@ -2,6 +2,8 @@
 
 #include "render/opengl/render_gl_error.h"
 
+#include "memory/memory_types.h"
+
 #include <glad/glad.h>
 
 namespace ppp
@@ -128,7 +130,7 @@ namespace ppp
             u64                             current_instance_count;
             u64                             max_elements_to_set;
 
-            std::vector<u8>                 buffer;
+            graphics_vector<u8>             buffer;
 
             u32                             ibo;
         };

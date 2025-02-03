@@ -3,6 +3,8 @@
 #include "render/render_base_renderer.h"
 #include "render/render_batch.h"
 
+#include "memory/memory_types.h"
+
 namespace ppp
 {
     namespace render
@@ -16,7 +18,7 @@ namespace ppp
             static void set_wireframe_linecolor(s32 color);
 
         public:
-            batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag);
+            batch_renderer(const attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag);
             ~batch_renderer() override;
 
         public:
@@ -45,20 +47,20 @@ namespace ppp
             void wireframe_render(topology_type topology, batch_drawing_data& drawing_data);
 
         private:
-            using drawing_data_map = std::unordered_map<topology_type, batch_drawing_data>;
+            using drawing_data_map = graphics_hash_map<topology_type, batch_drawing_data>;
 
             drawing_data_map m_drawing_data_map;
 
             render_buffer_policy m_buffer_policy;
             render_draw_policy m_render_policy;
             
-            std::vector<std::function<void(topology_type, batch_drawing_data&)>> m_render_fns;
+            graphics_vector<std::function<void(topology_type, batch_drawing_data&)>> m_render_fns;
         };
 
         class primitive_batch_renderer : public batch_renderer
         {
         public:
-            primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag);
+            primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag);
             ~primitive_batch_renderer() override;
 
             void on_render(topology_type topology, batch_drawing_data& drawing_data) override;
@@ -67,7 +69,7 @@ namespace ppp
         class texture_batch_renderer : public batch_renderer
         {
         public:
-            texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, const std::string& shader_tag);
+            texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag);
             ~texture_batch_renderer() override;
 
             void on_render(topology_type topology, batch_drawing_data& drawing_data) override;

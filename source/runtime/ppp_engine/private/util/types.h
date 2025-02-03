@@ -135,6 +135,12 @@ namespace ppp
         inline u32 f32_to_uint8(f32 val) { return (u32)(internal::saturate(val) * 255.0f + 0.5f); }
     }
 
+    // store a single bit in an unsigned integer
+    constexpr u32 BIT(u32 x)
+    {
+        return 1u << x;
+    }
+
     // Alias for the type used to represent unique object type IDs.
     using object_type_tag = u64;
 
