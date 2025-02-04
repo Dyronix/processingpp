@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <xutility>
 
 namespace ppp
 {
@@ -146,6 +147,50 @@ namespace ppp
         TString to_string(unsigned int val)
         {
             return internal::u_integral_to_string<TString, unsigned int>(val);
+        }
+
+        inline float stof(const std::string_view& _Str, size_t* _Idx = nullptr) {
+            int& _Errno_ref = errno; // Nonzero cost, pay it once
+            const char* _Ptr = _Str.data();
+            char* _Eptr;
+            _Errno_ref = 0;
+            const float _Ans = _CSTD strtof(_Ptr, &_Eptr);
+
+            if (_Ptr == _Eptr) {
+                std::_Xinvalid_argument("invalid stof argument");
+            }
+
+            if (_Errno_ref == ERANGE) {
+                std::_Xout_of_range("stof argument out of range");
+            }
+
+            if (_Idx) {
+                *_Idx = static_cast<size_t>(_Eptr - _Ptr);
+            }
+
+            return _Ans;
+        }
+
+        inline int stoi(const std::string_view& _Str, size_t* _Idx = nullptr, int _Base = 10) {
+            int& _Errno_ref = errno; // Nonzero cost, pay it once
+            const char* _Ptr = _Str.data();
+            char* _Eptr;
+            _Errno_ref = 0;
+            const long _Ans = _CSTD strtol(_Ptr, &_Eptr, _Base);
+
+            if (_Ptr == _Eptr) {
+                std::_Xinvalid_argument("invalid stoi argument");
+            }
+
+            if (_Errno_ref == ERANGE) {
+                std::_Xout_of_range("stoi argument out of range");
+            }
+
+            if (_Idx) {
+                *_Idx = static_cast<size_t>(_Eptr - _Ptr);
+            }
+
+            return static_cast<int>(_Ans);
         }
     }
 }

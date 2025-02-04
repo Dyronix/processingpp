@@ -19,6 +19,14 @@ namespace ppp
             void* allocate(memory_size size);
             void deallocate(void* ptr);
 
+            void free();
+
+        public:
+            bool can_alloc(memory_size size) const; 
+
+            memory_size current_size() const { return m_current_memory_size; }
+            memory_size total_size() const { return m_total_memory_size; }
+
         private:
             struct block_header
             {

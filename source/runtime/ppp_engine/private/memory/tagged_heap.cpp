@@ -12,15 +12,11 @@ namespace ppp
             :m_block_size(block_size)
             ,m_block_count(block_count)
         {
-            m_base_memory = static_cast<u8*>(heap->allocate(block_size * block_count));
-
-            assert(m_base_memory && "Memory allocation failed");
-
             m_blocks.reserve(block_count);
 
             for (s32 i = 0; i < block_count; ++i)
             {
-                m_blocks.push_back(tagged_heap_block(block_size, m_base_memory + (i * block_size.size_in_bytes())));
+                m_blocks.push_back(tagged_heap_block(heap, block_size));
             }
         }
 
@@ -35,7 +31,7 @@ namespace ppp
         {
             for (auto& block : m_blocks) 
             {
-                if ((block.tag() == tag || block.tag() == 0) && (block.offset() + size <= m_block_size)) 
+                if ((block.tag() == tag || block.tag() == 0) && (block.can_alloc(size))) 
                 {
                     return block.allocate(tag, size);
                 }
@@ -43,6 +39,18 @@ namespace ppp
 
             assert("Out of memory!");
             return nullptr; // Out of memory
+        }
+
+        //-------------------------------------------------------------------------
+        void tagged_heap::deallocate(u32 tag, void* ptr)
+        {
+            for (auto& block : m_blocks)
+            {
+                if (block.tag() == tag)
+                {
+                    block.deallocate(ptr);
+                }
+            }
         }
 
         //-------------------------------------------------------------------------

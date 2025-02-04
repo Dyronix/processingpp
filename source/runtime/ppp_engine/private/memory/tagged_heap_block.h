@@ -3,6 +3,7 @@
 #include "util/types.h"
 
 #include "memory/memory_size.h"
+#include "memory/free_list_heap.h"
 
 namespace ppp
 {
@@ -11,23 +12,24 @@ namespace ppp
         class tagged_heap_block
         {
         public:
-            tagged_heap_block(memory_size size, u8* memory);
+            tagged_heap_block(heap* heap, memory_size size);
 
             u8*             allocate(s32 tag, memory_size size);
+            void            deallocate(void* ptr);
 
             void            free();
 
         public:
-            memory_size     size() const { return m_size; }
             u32             tag() const { return m_tag; }
-            u64             offset() const { return m_offset; }
-            u8*             memory() const { return m_memory; }
+
+            memory_size     current_size() const { return m_free_list_heap.current_size(); }
+            memory_size     total_size() const { return m_free_list_heap.total_size(); }
+
+            bool            can_alloc(memory_size size) const { return m_free_list_heap.can_alloc(size); }
 
         private:
-            memory_size     m_size;
             u32             m_tag;
-            u64             m_offset;
-            u8*             m_memory;
+            free_list_heap  m_free_list_heap;
         };
     }
 }

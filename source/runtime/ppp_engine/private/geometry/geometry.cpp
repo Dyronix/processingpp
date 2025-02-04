@@ -10,7 +10,7 @@ namespace ppp
 {
     namespace geometry
     {
-        static glm::vec3 get_face_normal(const std::vector<glm::vec3>& vertices, const std::vector<render::face>& faces, s32 face_id) 
+        static glm::vec3 get_face_normal(const graphics_vector<glm::vec3>& vertices, const graphics_vector<render::face>& faces, s32 face_id) 
         {
             auto& face = faces[face_id];
 
@@ -82,8 +82,8 @@ namespace ppp
         {
             if (m_smooth_normals)
             {
-                std::unordered_map<std::string, s32> vertex_indices;
-                std::vector<glm::vec3> unique_vertices;
+                graphics_hash_map<std::string, s32> vertex_indices;
+                graphics_vector<glm::vec3> unique_vertices;
 
                 f32 power = std::pow(10.0f, round_to_precision);
 

@@ -27,15 +27,15 @@ namespace ppp
             shader_program();
             shader_program(shader_program_id in_id);
 
-            void set_uniform(const std::string& uniform_name, bool value);
-            void set_uniform(const std::string& uniform_name, int value);
-            void set_uniform(const std::string& uniform_name, float value);
-            void set_uniform(const std::string& uniform_name, const glm::vec2& value);
-            void set_uniform(const std::string& uniform_name, const glm::vec3& value);
-            void set_uniform(const std::string& uniform_name, const glm::vec4& value);
-            void set_uniform(const std::string& uniform_name, const glm::mat2& value);
-            void set_uniform(const std::string& uniform_name, const glm::mat3& value);
-            void set_uniform(const std::string& uniform_name, const glm::mat4& value);
+            void set_uniform(std::string_view uniform_name, bool value);
+            void set_uniform(std::string_view uniform_name, int value);
+            void set_uniform(std::string_view uniform_name, float value);
+            void set_uniform(std::string_view uniform_name, const glm::vec2& value);
+            void set_uniform(std::string_view uniform_name, const glm::vec3& value);
+            void set_uniform(std::string_view uniform_name, const glm::vec4& value);
+            void set_uniform(std::string_view uniform_name, const glm::mat2& value);
+            void set_uniform(std::string_view uniform_name, const glm::mat3& value);
+            void set_uniform(std::string_view uniform_name, const glm::mat4& value);
         };
 
         void texture(unsigned int image_id);

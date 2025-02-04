@@ -39,16 +39,16 @@ namespace ppp
                 }
                 else if (tokens[0] == "v" || tokens[0] == "vn")
                 {
-                    f32 x = std::stof(tokens[1].c_str());
-                    f32 y = std::stof(tokens[2].c_str());
-                    f32 z = std::stof(tokens[3].c_str());
+                    f32 x = string::stof(tokens[1]);
+                    f32 y = string::stof(tokens[2]);
+                    f32 z = string::stof(tokens[3]);
 
                     loaded_verts[tokens[0]].emplace_back(x, y, z);
                 }
                 else if (tokens[0] == "vt")
                 {
-                    f32 u = std::stof(tokens[1].c_str());
-                    f32 v = 1.0f - std::stof(tokens[2].c_str());
+                    f32 u = string::stof(tokens[1]);
+                    f32 v = 1.0f - string::stof(tokens[2]);
 
                     loaded_tex[tokens[0]].emplace_back(u, v);
                 }
@@ -68,7 +68,7 @@ namespace ppp
 
                             for(const auto& part_s : vert_parts_s)
                             {
-                                vert_parts.push_back(part_s.empty() ? 0 : std::stoi(part_s.c_str()) - 1);
+                                vert_parts.push_back(part_s.empty() ? 0 : string::stoi(part_s) - 1);
                             }
 
                             if (used_verts[vert_string].find(current_material) == used_verts[vert_string].end()) 

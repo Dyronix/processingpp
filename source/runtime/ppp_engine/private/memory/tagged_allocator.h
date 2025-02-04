@@ -32,9 +32,9 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void deallocate(T* p, u64 n) noexcept
+            void deallocate(value_type* p, u64 /*n*/) noexcept
             {
-                /* Nothing to implement, blocks of the heap will be deallocated all at once */
+                get_tagged_heap()->deallocate(allocator_tag, p);
             }
 
             /*

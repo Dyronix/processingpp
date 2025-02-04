@@ -75,20 +75,20 @@ namespace ppp
                 return m_geometry->index_count();
             }
 
-            const std::vector<glm::vec3>& vertex_positions() const override
+            const graphics_vector<glm::vec3>& vertex_positions() const override
             {
                 return m_geometry->vertex_positions();
             }
-            const std::vector<glm::vec3>& vertex_normals() const override
+            const graphics_vector<glm::vec3>& vertex_normals() const override
             {
                 return m_geometry->vertex_normals();
             }
-            const std::vector<glm::vec2>& vertex_uvs() const override
+            const graphics_vector<glm::vec2>& vertex_uvs() const override
             {
                 return m_geometry->vertex_uvs();
             }
 
-            const std::vector<render::face>& faces() const override
+            const graphics_vector<render::face>& faces() const override
             {
                 return m_geometry->faces();
             }

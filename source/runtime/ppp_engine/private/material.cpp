@@ -82,49 +82,49 @@ namespace ppp
         {}
 
         //-------------------------------------------------------------------------
-        void shader_program::set_uniform(const std::string& uniform_name, bool value)
+        void shader_program::set_uniform(std::string_view uniform_name, bool value)
         {
-            render::shaders::push_uniform(id, uniform_name, value);
+            render::shaders::push_uniform(id, uniform_name.data(), value);
         }
         //-------------------------------------------------------------------------
-        void shader_program::set_uniform(const std::string& uniform_name, int value)
+        void shader_program::set_uniform(std::string_view uniform_name, int value)
         {
-            render::shaders::push_uniform(id, uniform_name, value);
+            render::shaders::push_uniform(id, uniform_name.data(), value);
         }
         //-------------------------------------------------------------------------
-        void shader_program::set_uniform(const std::string& uniform_name, float value)
+        void shader_program::set_uniform(std::string_view uniform_name, float value)
         {
-            render::shaders::push_uniform(id, uniform_name, value);
+            render::shaders::push_uniform(id, uniform_name.data(), value);
         }
         //-------------------------------------------------------------------------
-        void shader_program::set_uniform(const std::string& uniform_name, const glm::vec2& value)
+        void shader_program::set_uniform(std::string_view uniform_name, const glm::vec2& value)
         {
-            render::shaders::push_uniform(id, uniform_name, value);
+            render::shaders::push_uniform(id, uniform_name.data(), value);
         }
         //-------------------------------------------------------------------------
-        void shader_program::set_uniform(const std::string& uniform_name, const glm::vec3& value)
+        void shader_program::set_uniform(std::string_view uniform_name, const glm::vec3& value)
         {
-            render::shaders::push_uniform(id, uniform_name, value);
+            render::shaders::push_uniform(id, uniform_name.data(), value);
         }
         //-------------------------------------------------------------------------
-        void shader_program::set_uniform(const std::string& uniform_name, const glm::vec4& value)
+        void shader_program::set_uniform(std::string_view uniform_name, const glm::vec4& value)
         {
-            render::shaders::push_uniform(id, uniform_name, value);
+            render::shaders::push_uniform(id, uniform_name.data(), value);
         }
         //-------------------------------------------------------------------------
-        void shader_program::set_uniform(const std::string& uniform_name, const glm::mat2& value)
+        void shader_program::set_uniform(std::string_view uniform_name, const glm::mat2& value)
         {
-            render::shaders::push_uniform(id, uniform_name, value);
+            render::shaders::push_uniform(id, uniform_name.data(), value);
         }
         //-------------------------------------------------------------------------
-        void shader_program::set_uniform(const std::string& uniform_name, const glm::mat3& value)
+        void shader_program::set_uniform(std::string_view uniform_name, const glm::mat3& value)
         {
-            render::shaders::push_uniform(id, uniform_name, value);
+            render::shaders::push_uniform(id, uniform_name.data(), value);
         }
         //-------------------------------------------------------------------------
-        void shader_program::set_uniform(const std::string& uniform_name, const glm::mat4& value)
+        void shader_program::set_uniform(std::string_view uniform_name, const glm::mat4& value)
         {
-            render::shaders::push_uniform(id, uniform_name, value);
+            render::shaders::push_uniform(id, uniform_name.data(), value);
         }
 
         //-------------------------------------------------------------------------

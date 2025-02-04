@@ -1,15 +1,15 @@
 #include "memory/tagged_heap_block.h"
 
+#include "util/pointer_math.h"
+
 namespace ppp
 {
     namespace memory
     {
         //-------------------------------------------------------------------------
-        tagged_heap_block::tagged_heap_block(memory_size size, u8* memory)
-            :m_size(size)
-            ,m_tag(0)
-            ,m_offset(0)
-            ,m_memory(memory)
+        tagged_heap_block::tagged_heap_block(heap* heap, memory_size size)
+            :m_tag(0)
+            ,m_free_list_heap(heap, size)
         {
 
         }
@@ -20,19 +20,26 @@ namespace ppp
             // Set block tag
             m_tag = tag;
 
-            // Allocate memory
-            u8* ptr = m_memory + m_offset;
+            return static_cast<u8*>(m_free_list_heap.allocate(size));
+        }
 
-            m_offset += size.size_in_bytes();
-            
-            return ptr;
+        //-------------------------------------------------------------------------
+        void tagged_heap_block::deallocate(void* ptr)
+        {
+            m_free_list_heap.deallocate(ptr);
+
+            if (m_free_list_heap.current_size() == 0)
+            {
+                m_tag = 0;
+            }
         }
 
         //-------------------------------------------------------------------------
         void tagged_heap_block::free()
         {
             m_tag = 0;
-            m_offset = 0;
+
+            m_free_list_heap.free();
         }
     }
 }

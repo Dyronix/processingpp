@@ -10,6 +10,7 @@
 #include "memory/memory_tracker.h"
 #include "memory/tagged_heap.h"
 #include "memory/tagged_heap_tags.h"
+#include "memory/heap.h"
 
 #include "resources/texture_pool.h"
 #include "resources/font_pool.h"
@@ -147,6 +148,12 @@ namespace ppp
 
             memory::get_tagged_heap()->free_blocks(memory::tags::frame);
             memory::end_frame();
+
+            auto scratch_pool = memory::get_scratch_pool();
+            auto string_pool = memory::get_string_pool();
+            auto tagged_heap = memory::get_tagged_heap();
+            auto heap = memory::get_heap();
+
         }
 
         return 0;

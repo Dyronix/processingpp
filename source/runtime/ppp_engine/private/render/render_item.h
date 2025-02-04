@@ -3,6 +3,8 @@
 #include "util/types.h"
 #include "util/log.h"
 
+#include "memory/memory_types.h"
+
 #include <glm/glm.hpp>
 
 #include <array>
@@ -105,11 +107,11 @@ namespace ppp
             virtual u64 vertex_count() const = 0;
             virtual u64 index_count() const = 0;
 
-            virtual const std::vector<glm::vec3>& vertex_positions() const = 0;
-            virtual const std::vector<glm::vec3>& vertex_normals() const = 0;
-            virtual const std::vector<glm::vec2>& vertex_uvs() const = 0;
+            virtual const graphics_vector<glm::vec3>& vertex_positions() const = 0;
+            virtual const graphics_vector<glm::vec3>& vertex_normals() const = 0;
+            virtual const graphics_vector<glm::vec2>& vertex_uvs() const = 0;
 
-            virtual const std::vector<face>& faces() const = 0;
+            virtual const graphics_vector<face>& faces() const = 0;
 
             virtual const u64 geometry_id() const = 0;
             virtual const u64 material_id() const = 0;
@@ -122,12 +124,12 @@ namespace ppp
             //-------------------------------------------------------------------------
             inline const char* to_string(attribute_type type)
             {
-                static const std::string s_attribute_type_position = "POSITION|VEC3";
-                static const std::string s_attribute_type_normal = "NORMAL|VEC3";
-                static const std::string s_attribute_type_texcoord = "TEXCOORD|VEC2";
-                static const std::string s_attribute_type_color = "COLOR|VEC4";
-                static const std::string s_attribute_type_MATERIAL_INDEX = "DIFFUSE TEXTURE INDEX|INT";
-                static const std::string s_attribute_type_world_matrix = "WORLD MATRIX|MAT4";
+                static const global_string s_attribute_type_position = "POSITION|VEC3";
+                static const global_string s_attribute_type_normal = "NORMAL|VEC3";
+                static const global_string s_attribute_type_texcoord = "TEXCOORD|VEC2";
+                static const global_string s_attribute_type_color = "COLOR|VEC4";
+                static const global_string s_attribute_type_MATERIAL_INDEX = "DIFFUSE TEXTURE INDEX|INT";
+                static const global_string s_attribute_type_world_matrix = "WORLD MATRIX|MAT4";
 
                 switch (type)
                 {
@@ -135,7 +137,7 @@ namespace ppp
                 case attribute_type::NORMAL:                   return s_attribute_type_normal.data();
                 case attribute_type::TEXCOORD:                 return s_attribute_type_texcoord.data();
                 case attribute_type::COLOR:                    return s_attribute_type_color.data();
-                case attribute_type::MATERIAL_INDEX:    return s_attribute_type_MATERIAL_INDEX.data();
+                case attribute_type::MATERIAL_INDEX:           return s_attribute_type_MATERIAL_INDEX.data();
                 case attribute_type::WORLD_MATRIX:             return s_attribute_type_world_matrix.data();
                 default:
                     assert(false && "Unknown attribute type");

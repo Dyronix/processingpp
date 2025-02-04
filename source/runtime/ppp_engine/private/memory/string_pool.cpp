@@ -8,7 +8,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         string_pool* get_string_pool()
         {
-            constexpr memory_size block_size = 2_mb;
+            constexpr memory_size block_size = 1_mb;
 
             static string_pool s_string_pool(get_heap(), block_size);
 

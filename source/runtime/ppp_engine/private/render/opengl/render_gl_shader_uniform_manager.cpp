@@ -31,7 +31,7 @@ namespace ppp
                     }
 
                     template<typename T>
-                    void push(const std::string& name, const T& value)
+                    void push(const pool_string& name, const T& value)
                     {
                         if (m_deferred_uniforms.find(name) != std::cend(m_deferred_uniforms))
                         {
@@ -44,7 +44,7 @@ namespace ppp
                     }
 
                     template<typename T>
-                    void push_array(const std::string& name, u64 count, const T* value)
+                    void push_array(const pool_string& name, u64 count, const T* value)
                     {
                         if (m_deferred_uniforms.find(name) != std::cend(m_deferred_uniforms))
                         {
@@ -106,7 +106,7 @@ namespace ppp
                     {
                     public:
                         template<typename T>
-                        shader_uniform(const std::string& name, const T& value, u64 count = 1)
+                        shader_uniform(const pool_string& name, const T& value, u64 count = 1)
                             : m_name(name)
                             , m_type_id(type_tag<T>::value())
                             , m_count(count)
@@ -119,7 +119,7 @@ namespace ppp
                         }
 
                         template<typename T>
-                        shader_uniform(const std::string& name, const T* value, u64 count = 1)
+                        shader_uniform(const pool_string& name, const T* value, u64 count = 1)
                             : m_name(name)
                             , m_type_id(type_tag<T*>::value())
                             , m_count(count)
@@ -131,7 +131,7 @@ namespace ppp
                             std::memcpy(m_data.data(), value, sizeof(value) * count);
                         }
 
-                        const std::string& name() const
+                        const pool_string& name() const
                         {
                             return m_name;
                         }
@@ -172,15 +172,15 @@ namespace ppp
                         }
 
                     private:
-                        std::string m_name;          // Name of the uniform
+                        pool_string m_name;          // Name of the uniform
                         object_type_tag m_type_id;   // Type identifier using type_tag
-                        std::vector<u8> m_data;      // Binary data for the value
+                        frame_vector<u8> m_data;      // Binary data for the value
                         u64 m_count;                 // Amount of elements in the array of elements
                         bool m_is_array;             // Is the uniform storing an array of elements
                     };
 
                 private:
-                    u32 find_and_cache_uniform_location(const std::string& uniform_name)
+                    u32 find_and_cache_uniform_location(const pool_string& uniform_name)
                     {
                         // Check if the uniform location is already cached
                         if (m_shader_uniform_locations.find(uniform_name) == m_shader_uniform_locations.end())
@@ -341,15 +341,16 @@ namespace ppp
                     }
 
                 private:
-                    std::unordered_map<std::string, shader_uniform> m_deferred_uniforms;
-                    std::unordered_map<std::string, u32> m_shader_uniform_locations;
+                    graphics_hash_map<pool_string, shader_uniform> m_deferred_uniforms;
+                    graphics_hash_map<pool_string, u32> m_shader_uniform_locations;
+
                     u32 m_shader_program_id;
                 };
 
-                std::unordered_map<u32, shader_uniform_manager> _shader_uniform_managers;
+                graphics_hash_map<u32, shader_uniform_manager> _shader_uniform_managers;
             }
 
-            void push_uniform(u32 shader_program_id, const std::string& uniform_name, bool value)
+            void push_uniform(u32 shader_program_id, const pool_string& uniform_name, bool value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -358,7 +359,7 @@ namespace ppp
 
                 internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
             }
-            void push_uniform(u32 shader_program_id, const std::string& uniform_name, s32 value)
+            void push_uniform(u32 shader_program_id, const pool_string& uniform_name, s32 value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -367,7 +368,7 @@ namespace ppp
 
                 internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
             }
-            void push_uniform(u32 shader_program_id, const std::string& uniform_name, f32 value)
+            void push_uniform(u32 shader_program_id, const pool_string& uniform_name, f32 value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -376,7 +377,7 @@ namespace ppp
 
                 internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
             }
-            void push_uniform(u32 shader_program_id, const std::string& uniform_name, const glm::vec2& value)
+            void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::vec2& value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -385,7 +386,7 @@ namespace ppp
 
                 internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
             }
-            void push_uniform(u32 shader_program_id, const std::string& uniform_name, const glm::vec3& value)
+            void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::vec3& value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -394,7 +395,7 @@ namespace ppp
 
                 internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
             }
-            void push_uniform(u32 shader_program_id, const std::string& uniform_name, const glm::vec4& value)
+            void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::vec4& value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -403,7 +404,7 @@ namespace ppp
 
                 internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
             }
-            void push_uniform(u32 shader_program_id, const std::string& uniform_name, const glm::mat2& value)
+            void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::mat2& value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -412,7 +413,7 @@ namespace ppp
 
                 internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
             }
-            void push_uniform(u32 shader_program_id, const std::string& uniform_name, const glm::mat3& value)
+            void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::mat3& value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -421,7 +422,7 @@ namespace ppp
 
                 internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
             }
-            void push_uniform(u32 shader_program_id, const std::string& uniform_name, const glm::mat4& value)
+            void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::mat4& value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -431,7 +432,7 @@ namespace ppp
                 internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
             }
 
-            void push_uniform_array(u32 shader_program_id, const std::string& uniform_name, u64 count, const s32* value)
+            void push_uniform_array(u32 shader_program_id, const pool_string& uniform_name, u64 count, const s32* value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -440,7 +441,7 @@ namespace ppp
 
                 internal::_shader_uniform_managers.at(shader_program_id).push_array(uniform_name, count, value);
             }
-            void push_uniform_array(u32 shader_program_id, const std::string& uniform_name, u64 count, const u32* value)
+            void push_uniform_array(u32 shader_program_id, const pool_string& uniform_name, u64 count, const u32* value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
@@ -449,7 +450,7 @@ namespace ppp
 
                 internal::_shader_uniform_managers.at(shader_program_id).push_array(uniform_name, count, value);
             }
-            void push_uniform_array(u32 shader_program_id, const std::string& uniform_name, u64 count, const f32* value)
+            void push_uniform_array(u32 shader_program_id, const pool_string& uniform_name, u64 count, const f32* value)
             {
                 if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
                 {
