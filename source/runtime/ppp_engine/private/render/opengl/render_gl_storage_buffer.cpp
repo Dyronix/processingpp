@@ -97,7 +97,7 @@ namespace ppp
 
         //------------------------------------------------------------------------
         storage_buffer::storage_buffer(u64 element_count, u64 element_size)
-            : m_pimpl(std::make_unique<impl>(element_count, element_size))
+            : m_pimpl(ppp::make_unique<impl>(element_count, element_size))
         {
 
         }

@@ -4,6 +4,8 @@
 
 #include "util/log.h"
 
+#include "memory/unique_ptr.h"
+
 #include <vector>
 #include <functional>
 
@@ -45,7 +47,7 @@ namespace ppp
 
         private:
             class impl;
-            std::unique_ptr<impl>           m_pimpl;
+            ppp::unique_ptr<impl>           m_pimpl;
         };
     }
 }

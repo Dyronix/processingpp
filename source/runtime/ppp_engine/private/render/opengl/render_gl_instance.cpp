@@ -16,6 +16,8 @@
 
 #include "resources/material_pool.h"
 
+#include "memory/unique_ptr.h"
+
 #include "util/types.h"
 #include "util/log.h"
 #include "util/pointer_math.h"
@@ -434,8 +436,8 @@ namespace ppp
                 GL_CALL(glGenVertexArrays(1, &m_vao));
                 GL_CALL(glBindVertexArray(m_vao));
 
-                m_buffer_manager = std::make_unique<instance_buffer_manager>(instance, layouts, layout_count, instance_layouts, instance_layout_count);
-                m_material_manager = std::make_unique<instance_material_manager>();
+                m_buffer_manager = ppp::make_unique<instance_buffer_manager>(instance, layouts, layout_count, instance_layouts, instance_layout_count);
+                m_material_manager = ppp::make_unique<instance_material_manager>();
 
                 if (instance->index_count() != 0)
                 {
@@ -544,8 +546,8 @@ namespace ppp
             u64 m_instance_id = 0;
             s32 m_instance_count = 0;
 
-            std::unique_ptr<instance_buffer_manager> m_buffer_manager;
-            std::unique_ptr<instance_material_manager> m_material_manager;
+            ppp::unique_ptr<instance_buffer_manager> m_buffer_manager;
+            ppp::unique_ptr<instance_material_manager> m_material_manager;
 
             u32 m_vao;
         };
@@ -553,7 +555,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         // Instance
         instance::instance(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
-            :m_pimpl(std::make_unique<impl>(instance, layouts, layout_count, instance_layouts, instance_layout_count))
+            :m_pimpl(ppp::make_unique<impl>(instance, layouts, layout_count, instance_layouts, instance_layout_count))
         {
 
         }
@@ -668,7 +670,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         // Instance Drawing Data
         instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
-            : m_pimpl(std::make_unique<impl>(layouts, layout_count, instance_layouts, instance_layout_count, render_buffer_policy))
+            : m_pimpl(ppp::make_unique<impl>(layouts, layout_count, instance_layouts, instance_layout_count, render_buffer_policy))
         {
             assert(layouts != nullptr);
             assert(layout_count > 0);

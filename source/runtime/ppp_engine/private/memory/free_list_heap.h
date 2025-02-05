@@ -38,7 +38,6 @@ namespace ppp
             u8* m_pool_memory;
             block_header* m_free_list;
             memory_size m_total_memory_size;
-            memory_size m_current_memory_size;
         };
     }
 }

@@ -11,7 +11,7 @@ namespace ppp
 {
     namespace environment
     {
-        fileio_string _cwd = {};
+        pool_string _cwd = {};
 
         void print(std::string_view message)
         {
@@ -103,7 +103,7 @@ namespace ppp
 
                 memory::disable_tracking();
 
-                _cwd = std::filesystem::current_path().string<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::fileio>>();
+                _cwd = std::filesystem::current_path().string<char, std::char_traits<char>, memory::string_pool_allocator<char>>();
 
                 memory::enable_tracking();
             }

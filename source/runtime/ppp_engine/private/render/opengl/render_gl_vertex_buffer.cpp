@@ -135,7 +135,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         vertex_buffer::vertex_buffer(u64 vertex_count, const attribute_layout* layouts, u64 layout_count, u64 layout_id_offset)
-            : m_pimpl(std::make_unique<impl>(vertex_count, layouts, layout_count, layout_id_offset))
+            : m_pimpl(ppp::make_unique<impl>(vertex_count, layouts, layout_count, layout_id_offset))
         {
 
         }

@@ -112,7 +112,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         framebuffer::framebuffer(s32 width, s32 height, bool with_depth)
-            :m_pimpl(std::make_unique<impl>(width, height, with_depth))
+            :m_pimpl(ppp::make_unique<impl>(width, height, with_depth))
         {
 
         }
@@ -190,7 +190,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         default_framebuffer::default_framebuffer(s32 width, s32 height)
-            :m_pimpl(std::make_unique<impl>(width, height))
+            :m_pimpl(ppp::make_unique<impl>(width, height))
         {
 
         }

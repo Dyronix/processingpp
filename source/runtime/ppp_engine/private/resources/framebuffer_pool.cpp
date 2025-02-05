@@ -3,6 +3,7 @@
 #include "util/log.h"
 
 #include "memory/memory_types.h"
+#include "memory/unique_ptr.h"
 
 #include <unordered_map>
 
@@ -10,12 +11,12 @@ namespace ppp
 {
     namespace framebuffer_pool
     {
-        std::unique_ptr<render::default_framebuffer> _default_framebuffer;
+        ppp::unique_ptr<render::default_framebuffer> _default_framebuffer;
 
         //-------------------------------------------------------------------------
-        graphics_vector<std::unique_ptr<render::framebuffer>>& framebuffers()
+        graphics_vector<ppp::unique_ptr<render::framebuffer>>& framebuffers()
         {
-            static graphics_vector<std::unique_ptr<render::framebuffer>> s_framebuffers;
+            static graphics_vector<ppp::unique_ptr<render::framebuffer>> s_framebuffers;
 
             return s_framebuffers;
         }
@@ -30,16 +31,16 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool initialize(s32 width, s32 height)
         {
-            _default_framebuffer = std::make_unique<render::default_framebuffer>(width, height);
+            _default_framebuffer = ppp::make_unique<render::default_framebuffer>(width, height);
 
             constexpr bool with_depth = true;
             constexpr bool without_depth = false;
 
             framebuffers().reserve(4);
-            framebuffers().emplace_back(std::make_unique<render::framebuffer>(width, height, with_depth));
-            framebuffers().emplace_back(std::make_unique<render::framebuffer>(width, height, with_depth));
-            framebuffers().emplace_back(std::make_unique<render::framebuffer>(width, height, without_depth));
-            framebuffers().emplace_back(std::make_unique<render::framebuffer>(width, height, without_depth));
+            framebuffers().emplace_back(ppp::make_unique<render::framebuffer>(width, height, with_depth));
+            framebuffers().emplace_back(ppp::make_unique<render::framebuffer>(width, height, with_depth));
+            framebuffers().emplace_back(ppp::make_unique<render::framebuffer>(width, height, without_depth));
+            framebuffers().emplace_back(ppp::make_unique<render::framebuffer>(width, height, without_depth));
 
             return true;
         }

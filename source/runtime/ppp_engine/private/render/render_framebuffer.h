@@ -2,6 +2,8 @@
 
 #include "util/types.h"
 
+#include "memory/unique_ptr.h"
+
 namespace ppp
 {
     namespace render
@@ -29,7 +31,7 @@ namespace ppp
 
         private:
             class impl;
-            std::unique_ptr<impl> m_pimpl;
+            ppp::unique_ptr<impl> m_pimpl;
         };
 
         class default_framebuffer
@@ -45,7 +47,7 @@ namespace ppp
 
         private:
             class impl;
-            std::unique_ptr<impl> m_pimpl;
+            ppp::unique_ptr<impl> m_pimpl;
         };
     }
 }

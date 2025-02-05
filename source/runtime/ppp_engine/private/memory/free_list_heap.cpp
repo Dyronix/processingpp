@@ -13,7 +13,6 @@ namespace ppp
             , m_pool_memory(nullptr)
             , m_free_list(nullptr)
             , m_total_memory_size(size)
-            , m_current_memory_size(0)
         {
             // Allocate a large contiguous block of memory from the heap.
             m_pool_memory = static_cast<u8*>(m_heap->allocate(size));
@@ -178,9 +177,6 @@ namespace ppp
             m_free_list = reinterpret_cast<block_header*>(m_pool_memory);
             m_free_list->size = m_total_memory_size.size_in_bytes();
             m_free_list->next = nullptr;
-
-            // Reset the current memory usage counter.
-            m_current_memory_size = memory_size(0);
         }
 
         //-------------------------------------------------------------------------
@@ -212,9 +208,16 @@ namespace ppp
         //-------------------------------------------------------------------------
         memory_size free_list_heap::current_size() const
         {
+            u64 free_memory = 0;
             block_header* curr = m_free_list;
 
-            return total_size().size_in_bytes() - curr->size;
+            while (curr != nullptr)
+            {
+                free_memory += curr->size;
+                curr = curr->next;
+            }
+
+            return m_total_memory_size.size_in_bytes() - free_memory;
         }
 
         //-------------------------------------------------------------------------

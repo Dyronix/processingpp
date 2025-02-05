@@ -4,6 +4,7 @@
 #include "render/render_types.h"
 
 #include "memory/memory_types.h"
+#include "memory/unique_ptr.h"
 
 #include <glm/glm.hpp>
 
@@ -57,7 +58,7 @@ namespace ppp
 
         private:
             class impl;
-            std::unique_ptr<impl> m_pimpl;
+            ppp::unique_ptr<impl> m_pimpl;
         };
 
         class batch_drawing_data
@@ -86,7 +87,7 @@ namespace ppp
 
         private:
             struct impl;
-            std::unique_ptr<impl> m_pimpl;
+            ppp::unique_ptr<impl> m_pimpl;
         };
     }
 }

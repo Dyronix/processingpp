@@ -5,6 +5,8 @@
 #include "render/render_index_buffer.h"
 #include "render/render_types.h"
 
+#include "memory/unique_ptr.h"
+
 #include <glm/glm.hpp>
 
 #include <memory>
@@ -56,7 +58,7 @@ namespace ppp
 
         private:
             class impl;
-            std::unique_ptr<impl> m_pimpl;
+            ppp::unique_ptr<impl> m_pimpl;
         };
 
         class instance_drawing_data
@@ -86,7 +88,7 @@ namespace ppp
 
         private:
             struct impl;
-            std::unique_ptr<impl> m_pimpl;
+            ppp::unique_ptr<impl> m_pimpl;
         };
     }
 }
