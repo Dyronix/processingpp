@@ -7,6 +7,9 @@
 
 #include <GLFW/glfw3.h>
 
+#define GLFW_MOUSE_SCROLL_X 0
+#define GLFW_MOUSE_SCROLL_Y 1
+
 namespace ppp
 {
     namespace device
@@ -15,7 +18,12 @@ namespace ppp
         {
             namespace internal
             {
-                global_hash_map<u32, global_vector<keyboard::key_callback>>         _key_callbacks;
+                global_hash_map<u32, global_vector<keyboard::key_callback>>                 _key_callbacks;
+
+                global_vector<mouse::mouse_pos_callback>                                    _mouse_pos_callbacks;
+
+                global_hash_map<u32, global_vector<mouse::mouse_button_scroll_callback>>    _mouse_scroll_callbacks;
+                global_hash_map<u32, global_vector<mouse::mouse_button_callback>>           _mouse_button_callbacks;
 
                 void key_callback(GLFWwindow* window, s32 key, s32 scancode, s32 action, s32 mods)
                 {
@@ -24,11 +32,6 @@ namespace ppp
                         c(key, scancode, mods);
                     }
                 }
-
-                global_vector<mouse::mouse_pos_callback>                            _mouse_pos_callbacks;
-                global_vector<mouse::mouse_button_scroll_callback>                  _mouse_scroll_callbacks;
-
-                global_hash_map<u32, global_vector<mouse::mouse_button_callback>>   _mouse_button_callbacks;
 
                 void mouse_pos_callback(GLFWwindow* window, f64 xpos, f64 ypos)
                 {
@@ -48,9 +51,20 @@ namespace ppp
 
                 void mouse_scroll_callback(GLFWwindow* window, f64 xoffset, f64 yoffset)
                 {
-                    for (const auto& c : _mouse_scroll_callbacks)
+                    if (xoffset != 0)
                     {
-                        c((f32)xoffset, (f32)yoffset);
+                        for (const auto& c : _mouse_scroll_callbacks[GLFW_MOUSE_SCROLL_X])
+                        {
+                            c((f32)xoffset);
+                        }
+                    }
+
+                    if (yoffset != 0)
+                    {
+                        for (const auto& c : _mouse_scroll_callbacks[GLFW_MOUSE_SCROLL_Y])
+                        {
+                            c((f32)yoffset);
+                        }
                     }
                 }
             }
@@ -202,13 +216,22 @@ namespace ppp
                     internal::_mouse_button_callbacks[GLFW_RELEASE].push_back(callback);
                 }
 
-                void add_mouse_scroll_callback(GLFWwindow* window, const mouse_button_scroll_callback& callback)
+                void add_mouse_scroll_x_callback(GLFWwindow* window, const mouse_button_scroll_x_callback& callback)
                 {
                     if (internal::_mouse_scroll_callbacks.empty())
                     {
                         glfwSetScrollCallback(window, internal::mouse_scroll_callback);
                     }
-                    internal::_mouse_scroll_callbacks.push_back(callback);
+                    internal::_mouse_scroll_callbacks[GLFW_MOUSE_SCROLL_X].push_back(callback);
+                }
+
+                void add_mouse_scroll_y_callback(GLFWwindow* window, const mouse_button_scroll_y_callback& callback)
+                {
+                    if (internal::_mouse_scroll_callbacks.empty())
+                    {
+                        glfwSetScrollCallback(window, internal::mouse_scroll_callback);
+                    }
+                    internal::_mouse_scroll_callbacks[GLFW_MOUSE_SCROLL_Y].push_back(callback);
                 }
             }
         }

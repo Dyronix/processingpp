@@ -2,6 +2,8 @@
 
 #include "util/log.h"
 
+#include "memory/memory_types.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <unordered_map>
@@ -10,8 +12,8 @@ namespace ppp
 {
     namespace camera_manager
     {
-        using camera_map = std::unordered_map<std::string_view, camera>;
-        using camera_tag = std::string;
+        using camera_map = global_hash_map<std::string_view, camera>;
+        using camera_tag = pool_string;
                
         camera_map      _cameras;
         camera*         _active_camera = nullptr;

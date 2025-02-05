@@ -1,5 +1,7 @@
 #include "render/helpers/render_event_dispatcher.h"
 
+#include "memory/memory_types.h"
+
 namespace ppp
 {
     namespace render
@@ -7,8 +9,8 @@ namespace ppp
         namespace internal
         {
             //-------------------------------------------------------------------------
-            std::vector<std::function<void()>> _draw_begin_subs;
-            std::vector<std::function<void()>> _draw_end_subs;
+            global_vector<std::function<void()>> _draw_begin_subs;
+            global_vector<std::function<void()>> _draw_end_subs;
         }
 
         //-------------------------------------------------------------------------

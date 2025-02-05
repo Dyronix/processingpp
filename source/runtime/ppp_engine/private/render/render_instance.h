@@ -82,7 +82,7 @@ namespace ppp
             bool has_drawing_data() const;
 
         private:
-            using instance_map = std::vector<instance>;
+            using instance_map = graphics_vector<instance>;
 
         private:
             struct impl;

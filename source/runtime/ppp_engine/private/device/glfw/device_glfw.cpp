@@ -5,6 +5,8 @@
 #include "util/types.h"
 #include "util/steady_clock.h"
 
+#include "memory/memory_types.h"
+
 #include <GLFW/glfw3.h>
 
 namespace ppp
@@ -28,9 +30,9 @@ namespace ppp
             clock::time_point _previous_frame_time;
             clock::milliseconds _delta_frame_time(0);
 
-            std::unordered_map<u32, bool> _key_pressed;
-            std::unordered_map<u32, bool> _key_down;
-            std::unordered_map<u32, bool> _key_released;
+            global_hash_map<u32, bool> _key_pressed;
+            global_hash_map<u32, bool> _key_down;
+            global_hash_map<u32, bool> _key_released;
 
             s32 _last_key_pressed = -1;
 
@@ -39,15 +41,15 @@ namespace ppp
             f32 _prev_mouse_y = -1;
             f32 _current_mouse_y = -1;
 
-            std::unordered_map<u32, bool> _mouse_button_pressed;
-            std::unordered_map<u32, bool> _mouse_button_released;
+            global_hash_map<u32, bool> _mouse_button_pressed;
+            global_hash_map<u32, bool> _mouse_button_released;
 
             s32 _last_mouse_button_pressed = -1;
 
             f32 _scroll_offset_x = 0.0f;
             f32 _scroll_offset_y = 0.0f;
 
-            std::vector<std::function<void(f32, f32)>> _dragging_callback;
+            global_vector<std::function<void(f32, f32)>> _dragging_callback;
 
             void center_window(GLFWwindow* window) 
             {
@@ -120,6 +122,14 @@ namespace ppp
         {
             namespace keyboard
             {
+                namespace callbacks
+                {
+                    void key_pressed_callback(s32 key, s32 scancode, s32 mods)
+                    {
+                        internal::_last_key_pressed = key;
+                    }
+                }
+
                 bool is_key_pressed(s32 code)
                 {
                     bool r = is_key_pressed(internal::_window, code);
@@ -203,6 +213,35 @@ namespace ppp
 
             namespace mouse
             {
+                namespace callbacks
+                {
+                    void mouse_pressed_callback(s32 mouse_button, s32 mods)
+                    {
+                        internal::_last_mouse_button_pressed = mouse_button;
+                    }
+
+                    void mouse_moved_callback(f32 xpos, f32 ypos)
+                    {
+                        if (input::mouse::is_any_mouse_button_pressed())
+                        {
+                            for (const auto& c : internal::_dragging_callback)
+                            {
+                                c(xpos, ypos);
+                            }
+                        }
+                    }
+
+                    void scroll_x_callback(f32 xoffset)
+                    {
+                        internal::_scroll_offset_x = xoffset;
+                    }
+
+                    void scroll_y_callback(f32 yoffset)
+                    {
+                        internal::_scroll_offset_y = yoffset;
+                    }
+                }
+
                 f32 moved_x()
                 {
                     if (prev_mouse_x() != -1.0f && mouse_x() != -1.0f)
@@ -328,20 +367,12 @@ namespace ppp
 
                 void add_mouse_horizontal_wheel_callback(const std::function<void(f32)>& callback)
                 {
-                    add_mouse_scroll_callback(internal::_window,
-                        [&callback](f32 xoffset, f32 yoffset)
-                    {
-                        callback(xoffset);
-                    });
+                    add_mouse_scroll_x_callback(internal::_window, callback);
                 }
 
                 void add_mouse_vertical_wheel_callback(const std::function<void(f32)>& callback)
                 {
-                    add_mouse_scroll_callback(internal::_window,
-                        [&callback](f32 xoffset, f32 yoffset)
-                    {
-                        callback(yoffset);
-                    });
+                    add_mouse_scroll_y_callback(internal::_window, callback);
                 }
 
                 void request_pointer_lock()
@@ -395,43 +426,17 @@ namespace ppp
             glfwSwapInterval(1);
 
             // Register the key pressed callback so we can cache the last key that was pressed
-            input::keyboard::add_key_pressed_callback(
-                [](s32 key, s32 scancode, s32 mods) 
-            { 
-                internal::_last_key_pressed = key; 
-            });
+            input::keyboard::add_key_pressed_callback(input::keyboard::callbacks::key_pressed_callback);
 
             // Register the mouse button pressed callback so we can cache the last key that was pressed
-            input::mouse::add_mouse_pressed_callback(
-                [](s32 mouse_button, s32 mods)
-            {
-                internal::_last_mouse_button_pressed = mouse_button;
-            });
+            input::mouse::add_mouse_pressed_callback(input::mouse::callbacks::mouse_pressed_callback);
 
             // Register the mouse move callback so we can check if we are dragging along the screen
-            input::mouse::add_mouse_moved_callback(
-                [](f32 xpos, f32 ypos)
-            {
-                if (input::mouse::is_any_mouse_button_pressed())
-                {
-                    for (const auto& c : internal::_dragging_callback)
-                    {
-                        c(xpos, ypos);
-                    }
-                }
-            });
+            input::mouse::add_mouse_moved_callback(input::mouse::callbacks::mouse_moved_callback);
 
             // Register the mouse scroll callback so we can check if we are scrolling
-            input::mouse::add_mouse_horizontal_wheel_callback(
-                [](f32 xoffset)
-            {
-                internal::_scroll_offset_x = xoffset;
-            });
-            input::mouse::add_mouse_vertical_wheel_callback(
-                [](f32 yoffset)
-            {
-                internal::_scroll_offset_y = yoffset;
-            });
+            input::mouse::add_mouse_horizontal_wheel_callback(input::mouse::callbacks::scroll_x_callback);
+            input::mouse::add_mouse_vertical_wheel_callback(input::mouse::callbacks::scroll_y_callback);
 
             internal::center_window(internal::_window);
 

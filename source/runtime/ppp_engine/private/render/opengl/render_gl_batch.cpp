@@ -14,8 +14,6 @@
 
 #include "resources/material_pool.h"
 
-#include "memory/memory_types.h"
-
 #include "util/types.h"
 #include "util/log.h"
 #include "util/pointer_math.h"

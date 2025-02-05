@@ -58,8 +58,8 @@ namespace ppp
             vertex_type _fill_user_vertex_type = vertex_type::POSITION_TEXCOORD_NORMAL_COLOR;
 
             //-------------------------------------------------------------------------
-            std::unordered_map<std::string_view, std::unique_ptr<instance_renderer>> _instance_renderers;
-            std::unordered_map<std::string_view, std::unique_ptr<batch_renderer>> _batch_renderers;
+            graphics_hash_map<std::string_view, std::unique_ptr<instance_renderer>> _instance_renderers;
+            graphics_hash_map<std::string_view, std::unique_ptr<batch_renderer>> _batch_renderers;
 
             //-------------------------------------------------------------------------
             std::unique_ptr<batch_renderer> _font_renderer;

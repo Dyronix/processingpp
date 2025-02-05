@@ -18,7 +18,7 @@ namespace ppp
     {
         namespace internal
         {
-            using scene_camera_tag = std::string;
+            using scene_camera_tag = pool_string;
 
             // Constants for sensitivity
             const float _rotate_sensitivity = 0.05f;
@@ -59,19 +59,19 @@ namespace ppp
         namespace tags
         {
             //-------------------------------------------------------------------------
-            const std::string& perspective()
+            std::string_view perspective()
             {
                 return camera_manager::tags::perspective;
             }
 
             //-------------------------------------------------------------------------
-            const std::string& orthographic()
+            std::string_view orthographic()
             {
                 return camera_manager::tags::orthographic;
             }
 
             //-------------------------------------------------------------------------
-            const std::string& font()
+            std::string_view font()
             {
                 return camera_manager::tags::font;
             }

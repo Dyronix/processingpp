@@ -310,7 +310,7 @@ namespace ppp
         void add_key_pressed_callback(const std::function<void(key_code)>& callback)
         {
             device::input::keyboard::add_key_pressed_callback(
-                [&callback](int key, int scancode, int mods)
+                [callback](int key, int scancode, int mods)
             {
                 callback(internal::convert_key_to_ppp(key));
             });
@@ -319,7 +319,7 @@ namespace ppp
         void add_key_released_callback(const std::function<void(key_code)>& callback)
         {
             device::input::keyboard::add_key_released_callback(
-                [&callback](int key, int scancode, int mods)
+                [callback](int key, int scancode, int mods)
             {
                 callback(internal::convert_key_to_ppp(key));
             });
@@ -328,7 +328,7 @@ namespace ppp
         void add_key_down_callback(const std::function<void(key_code)>& callback)
         {
             device::input::keyboard::add_key_down_callback(
-                [&callback](int key, int scancode, int mods)
+                [callback](int key, int scancode, int mods)
             {
                 callback(internal::convert_key_to_ppp(key));
             });

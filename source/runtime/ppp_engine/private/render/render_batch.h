@@ -3,6 +3,8 @@
 #include "render/render_item.h"
 #include "render/render_types.h"
 
+#include "memory/memory_types.h"
+
 #include <glm/glm.hpp>
 
 #include <memory>
@@ -80,7 +82,7 @@ namespace ppp
             bool has_drawing_data() const;
 
         private:
-            using batch_arr = std::vector<batch>;
+            using batch_arr = graphics_vector<batch>;
 
         private:
             struct impl;

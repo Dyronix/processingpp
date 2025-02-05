@@ -1,5 +1,7 @@
 #include "util/transform_stack.h"
 
+#include "memory/memory_types.h"
+
 #include <glm/ext/matrix_transform.hpp>
 
 namespace ppp
@@ -8,7 +10,7 @@ namespace ppp
     {
         namespace internal
         {
-            std::vector<glm::mat4> _model_matrices;
+            global_vector<glm::mat4> _model_matrices;
         }
 
         void push()

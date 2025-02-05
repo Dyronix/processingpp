@@ -5,6 +5,7 @@
 #include "resources/shader_pool.h"
 #include "resources/material_pool.h"
 #include "util/log.h"
+#include "memory/memory_types.h"
 
 namespace ppp
 {
@@ -14,7 +15,7 @@ namespace ppp
         {
             std::string _active_shader_tag = {};
 
-            std::unordered_map<std::string_view, render::vertex_type> _shader_tag_vertex_type_map =
+            graphics_hash_map<std::string_view, render::vertex_type> _shader_tag_vertex_type_map =
             {
                 {shader_pool::tags::unlit_color, render::vertex_type::POSITION_COLOR},
                 {shader_pool::tags::instance_unlit_color, render::vertex_type::POSITION},

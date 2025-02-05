@@ -2,6 +2,8 @@
 
 #include "util/log.h"
 
+#include "memory/memory_types.h"
+
 #include <unordered_map>
 
 namespace ppp
@@ -11,16 +13,16 @@ namespace ppp
         std::unique_ptr<render::default_framebuffer> _default_framebuffer;
 
         //-------------------------------------------------------------------------
-        std::vector<std::unique_ptr<render::framebuffer>>& framebuffers()
+        graphics_vector<std::unique_ptr<render::framebuffer>>& framebuffers()
         {
-            static std::vector<std::unique_ptr<render::framebuffer>> s_framebuffers;
+            static graphics_vector<std::unique_ptr<render::framebuffer>> s_framebuffers;
 
             return s_framebuffers;
         }
         //-------------------------------------------------------------------------
-        std::unordered_map<std::string_view, render::framebuffer*>& active_framebuffers()
+        graphics_hash_map<std::string_view, render::framebuffer*>& active_framebuffers()
         {
-            static std::unordered_map<std::string_view, render::framebuffer*> s_in_use;
+            static graphics_hash_map<std::string_view, render::framebuffer*> s_in_use;
 
             return s_in_use;
         }        

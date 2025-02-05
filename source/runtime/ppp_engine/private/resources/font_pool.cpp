@@ -1,5 +1,7 @@
 #include "resources/font_pool.h"
 
+#include "memory/memory_types.h"
+
 #include <unordered_map>
 
 namespace ppp
@@ -8,7 +10,7 @@ namespace ppp
     {
         namespace internal
         {
-            std::unordered_map<std::string, Font> _fonts;
+            temp_hash_map<std::string, Font> _fonts;
 
             const Font* _active_font = nullptr;
         }

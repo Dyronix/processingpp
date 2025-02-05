@@ -11,7 +11,7 @@ namespace ppp
 {
     namespace environment
     {
-        std::string _cwd = {};
+        fileio_string _cwd = {};
 
         void print(std::string_view message)
         {

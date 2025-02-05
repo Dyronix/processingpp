@@ -343,7 +343,7 @@ namespace ppp
 
                 storage_buffer_ops::storage_data_addition_scope sdas(m_storage_buffer, 1);
 
-                std::vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
+                temp_vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
 
                 size_t offset = 0;
 

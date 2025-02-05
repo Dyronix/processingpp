@@ -1,5 +1,6 @@
 #include "resources/texture_pool.h"
 #include "render/render.h"
+#include "memory/memory_types.h"
 #include <unordered_map>
 
 namespace ppp
@@ -8,7 +9,7 @@ namespace ppp
     {
         namespace internal
         {
-            std::unordered_map<std::string_view, Image> _images;
+            temp_hash_map<std::string_view, Image> _images;
 
             unsigned char* _active_pixels = nullptr;
         }
