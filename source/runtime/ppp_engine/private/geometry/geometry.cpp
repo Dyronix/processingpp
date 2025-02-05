@@ -1,6 +1,7 @@
 #include "geometry.h"
 
 #include "util/log.h"
+#include "util/string_ops.h"
 
 #include <glm/gtc/epsilon.hpp>
 
@@ -82,7 +83,7 @@ namespace ppp
         {
             if (m_smooth_normals)
             {
-                graphics_hash_map<std::string, s32> vertex_indices;
+                graphics_hash_map<pool_string, s32> vertex_indices;
                 graphics_vector<glm::vec3> unique_vertices;
 
                 f32 power = std::pow(10.0f, round_to_precision);
@@ -90,13 +91,21 @@ namespace ppp
                 auto rounded = [power](f32 v) { return std::round(v * power) / power; };
                 auto get_key = [rounded](const glm::vec3& vert) 
                 {
-                    return std::to_string(rounded(vert.x)) + "," + std::to_string(rounded(vert.y)) + "," + std::to_string(rounded(vert.z));
+                    pool_stringstream stream;
+
+                    stream << rounded(vert.x);
+                    stream << ",";
+                    stream << rounded(vert.y);
+                    stream << ",";
+                    stream << rounded(vert.z);
+
+                    return stream.str();
                 };
 
                 // loop through each vertex and add unique_vertices
                 for (const auto& v : m_vertex_positions)
                 {
-                    std::string key = get_key(v);
+                    pool_string key = get_key(v);
                     if (vertex_indices.find(key) == std::cend(vertex_indices))
                     {
                         vertex_indices.emplace(key, (s32)unique_vertices.size());
@@ -109,7 +118,7 @@ namespace ppp
                 {
                     for (render::index& fv : face)
                     {
-                        std::string key = get_key(m_vertex_positions[fv]);
+                        pool_string key = get_key(m_vertex_positions[fv]);
                         fv = vertex_indices[key];
                     }
                 }

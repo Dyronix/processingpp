@@ -10,7 +10,7 @@ namespace ppp
     {
         namespace internal
         {
-            temp_hash_map<std::string, Font> _fonts;
+            temp_hash_map<pool_string, Font> _fonts;
 
             const Font* _active_font = nullptr;
         }
@@ -25,9 +25,9 @@ namespace ppp
             
         }
 
-        bool has_font(const std::string& file_path)
+        bool has_font(std::string_view file_path)
         {
-            return internal::_fonts.find(file_path) != internal::_fonts.cend();
+            return internal::_fonts.find(file_path.data()) != internal::_fonts.cend();
         }
 
         bool has_font(u32 id)
@@ -41,11 +41,11 @@ namespace ppp
             return it != internal::_fonts.cend();
         }
 
-        const Font* font_at_path(const std::string& file_path)
+        const Font* font_at_path(std::string_view file_path)
         {
             if (has_font(file_path))
             {
-                return &internal::_fonts.find(file_path)->second;
+                return &internal::_fonts.find(file_path.data())->second;
             }
 
             return nullptr;

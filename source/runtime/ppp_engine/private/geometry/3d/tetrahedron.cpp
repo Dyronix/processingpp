@@ -56,7 +56,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_tetrahedron(bool smooth_normals)
         {
-            const std::string gid = "tetrahedron|" + std::to_string(smooth_normals);
+            pool_stringstream stream;
+
+            stream << "tetrahedron|";
+            stream << smooth_normals;
+
+            const pool_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

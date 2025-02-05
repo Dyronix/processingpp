@@ -2,6 +2,8 @@
 
 #include "util/types.h"
 
+#include "memory/memory_types.h"
+
 #include <string>
 
 namespace ppp
@@ -11,19 +13,19 @@ namespace ppp
         namespace tags
         {
             // batched
-            static const std::string unlit_color = "unlit_color";
-            static const std::string unlit_texture = "unlit_texture";
-            static const std::string unlit_font = "unlit_font";
-            static const std::string unlit_normal = "unlit_normal";
+            static const pool_string unlit_color = "unlit_color";
+            static const pool_string unlit_texture = "unlit_texture";
+            static const pool_string unlit_font = "unlit_font";
+            static const pool_string unlit_normal = "unlit_normal";
 
-            static const std::string lit_specular = "lit_specular";
+            static const pool_string lit_specular = "lit_specular";
 
             // instanced
-            static const std::string instance_unlit_color = "instance_unlit_color";
-            static const std::string instance_unlit_texture = "instance_unlit_texture";
-            static const std::string instance_unlit_normal = "instance_unlit_normal";
-
-            static const std::string instance_lit_specular = "instance_lit_specular";
+            static const pool_string instance_unlit_color = "instance_unlit_color";
+            static const pool_string instance_unlit_texture = "instance_unlit_texture";
+            static const pool_string instance_unlit_normal = "instance_unlit_normal";
+                         
+            static const pool_string instance_lit_specular = "instance_lit_specular";
         }
 
         bool initialize();

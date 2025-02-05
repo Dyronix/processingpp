@@ -46,8 +46,8 @@ namespace ppp
                 glm::vec4   color;
             };
 
-            static std::vector<u8> _intermediate_unlit_buffer(sizeof(unlit_instance_data));
-            static std::vector<u8> _intermediate_unlit_texture_buffer(sizeof(unlit_texture_instance_data));
+            static frame_vector<u8> _intermediate_unlit_buffer(sizeof(unlit_instance_data));
+            static frame_vector<u8> _intermediate_unlit_texture_buffer(sizeof(unlit_texture_instance_data));
 
             //-------------------------------------------------------------------------
             static void check_drawing_type(u32 index_count, GLenum type)

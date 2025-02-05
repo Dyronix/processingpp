@@ -2,6 +2,8 @@
 
 #include "util/types.h"
 
+#include "memory/memory_types.h"
+
 #include <glm/glm.hpp>
 
 namespace ppp
@@ -10,9 +12,9 @@ namespace ppp
     {
         namespace tags
         {
-            static const std::string perspective = "perspective";
-            static const std::string orthographic = "orthographic";
-            static const std::string font = "font";
+            static const pool_string perspective = "perspective";
+            static const pool_string orthographic = "orthographic";
+            static const pool_string font = "font";
         }
 
         struct camera

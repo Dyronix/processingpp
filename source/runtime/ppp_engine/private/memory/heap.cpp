@@ -8,6 +8,7 @@ namespace ppp
         heap::heap(memory_size size)
             :m_base_memory(nullptr)
             ,m_offset(0)
+            ,m_total_size(size)
         {
             m_base_memory = static_cast<u8*>(std::malloc(size.size_in_bytes()));
 

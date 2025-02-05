@@ -525,7 +525,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void build_primitive_geometry(std::function<void()> callback)
         {
-            const std::string& tag = render::draw_mode() == render::render_draw_mode::BATCHED
+            std::string_view tag = render::draw_mode() == render::render_draw_mode::BATCHED
                 ? shader_pool::tags::unlit_color
                 : shader_pool::tags::instance_unlit_color;
 
@@ -539,7 +539,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void build_textured_geometry(std::function<void()> callback)
         {
-            const std::string& tag = render::draw_mode() == render::render_draw_mode::BATCHED
+            std::string_view tag = render::draw_mode() == render::render_draw_mode::BATCHED
                 ? shader_pool::tags::unlit_texture
                 : shader_pool::tags::instance_unlit_texture;
 
@@ -551,7 +551,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void build_custom_geometry(const std::string& tag, std::function<void()> callback)
+        void build_custom_geometry(std::string_view tag, std::function<void()> callback)
         {
             render::begin_geometry_builder(tag);
 

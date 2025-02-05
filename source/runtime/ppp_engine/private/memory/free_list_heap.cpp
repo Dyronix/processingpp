@@ -56,14 +56,6 @@ namespace ppp
                     // Check if the block is larger than needed so that it can be split.
                     if (curr->size - total_size > sizeof(block_header))
                     {
-                        // -----------------------------------------------------------
-                        // Block can be split.
-                        // The allocated block will be exactly total_size bytes.
-                        // Ensure we don't exceed the total available memory.
-                        //assert(m_current_memory_size.size_in_bytes() + total_size <= m_total_memory_size.size_in_bytes());
-                        //m_current_memory_size += total_size;
-                        // -----------------------------------------------------------
-
                         // Split the block:
                         // Create a new block header for the remaining free space.
                         block_header* new_block = reinterpret_cast<block_header*>(reinterpret_cast<u8*>(curr) + total_size);
@@ -89,13 +81,6 @@ namespace ppp
                         // -----------------------------------------------------------
                         // Block cannot be split (i.e., too small to hold another header).
                         // We'll allocate the entire block.
-                        // In this case, the allocated block is larger than total_size,
-                        // so update curr memory usage with the full block size.
-                        //assert(m_current_memory_size.size_in_bytes() + curr->size <= m_total_memory_size.size_in_bytes());
-                        //m_current_memory_size += curr->size;
-                        // Adjust total_size to reflect the actual allocated block size.
-                        total_size = curr->size;
-                        // -----------------------------------------------------------
 
                         if (prev == nullptr)
                         {
@@ -131,10 +116,6 @@ namespace ppp
 
             // Retrieve the block header. The header is located just before the pointer.
             block_header* block = reinterpret_cast<block_header*>(reinterpret_cast<u8*>(ptr) - sizeof(block_header));
-
-            //// Subtract the allocated block's size from the curr memory usage.
-            //m_current_memory_size -= block->size;
-            //assert(m_current_memory_size.size_in_bytes() >= 0);
 
             // ========================================================================
             // Insert the block into the free list in sorted order (by memory address)
@@ -226,6 +207,20 @@ namespace ppp
             }
 
             return false;
+        }
+
+        //-------------------------------------------------------------------------
+        memory_size free_list_heap::current_size() const
+        {
+            block_header* curr = m_free_list;
+
+            return total_size().size_in_bytes() - curr->size;
+        }
+
+        //-------------------------------------------------------------------------
+        memory_size free_list_heap::total_size() const
+        {
+            return m_total_memory_size;
         }
     }
 }

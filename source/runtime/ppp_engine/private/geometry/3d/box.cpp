@@ -104,7 +104,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_box(bool smooth_normals)
         {
-            const std::string gid = "box|" + std::to_string(smooth_normals);
+            pool_stringstream stream;
+
+            stream << "box|";
+            stream << smooth_normals;
+
+            const pool_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

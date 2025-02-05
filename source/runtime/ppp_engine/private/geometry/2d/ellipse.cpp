@@ -89,14 +89,14 @@ namespace ppp
         //-------------------O------------------------------------------------------
         geometry* extrude_ellipse(const glm::mat4& world, const geometry* in_geom, f32 extrusion_width)
         {
-            std::stringstream stream;
+            pool_stringstream stream;
 
             stream << (extrusion_width > 0 ? "elli_out_stroke|" : "elli_in_stroke|");
             stream << extrusion_width << "|";
             stream << glm::to_string(world) << "|";
             stream << in_geom;
 
-            const std::string gid = stream.str();
+            const pool_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {
@@ -119,7 +119,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_ellipse(s32 detail)
         {
-            const std::string gid = "ellipse|" + std::to_string(detail);
+            pool_stringstream stream;
+
+            stream << "ellipse|";
+            stream << detail;
+
+            const pool_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

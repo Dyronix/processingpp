@@ -49,6 +49,6 @@ namespace ppp
 
         void build_primitive_geometry(std::function<void()> callback);
         void build_textured_geometry(std::function<void()> callback);
-        void build_custom_geometry(const std::string& tag, std::function<void()> callback);
+        void build_custom_geometry(std::string_view tag, std::function<void()> callback);
     }
 }

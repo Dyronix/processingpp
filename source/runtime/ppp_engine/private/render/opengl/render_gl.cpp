@@ -49,7 +49,7 @@ namespace ppp
             constexpr s32 _min_frame_buffer_height = 32;
 
             //-------------------------------------------------------------------------
-            const std::string _main_frame_buffer_tag = "main";
+            const pool_string _main_frame_buffer_tag = "main";
 
             //-------------------------------------------------------------------------
             std::string_view _fill_user_shader = {};

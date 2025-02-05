@@ -10,6 +10,11 @@
 
 #include "memory/memory_tracker.h"
 
+#include "memory/heap.h"
+#include "memory/tagged_heap.h"
+#include "memory/scratch_pool.h"
+#include "memory/string_pool.h"
+
 #include "resources/texture_pool.h"
 #include "resources/font_pool.h"
 #include "resources/shader_pool.h"
@@ -155,6 +160,35 @@ namespace ppp
 
             memory::get_tagged_heap()->free_blocks(memory::tags::frame);
             memory::end_frame();
+
+            auto heap = memory::get_heap();
+            u64 total_memory_allocated_from_heap = heap->current_size();
+            u64 total_memory_avaialable_from_heap = heap->total_size();
+            log::info("total_memory_allocated_from_heap: {}", total_memory_allocated_from_heap);
+            log::info("total_memory_avaialable_from_heap: {}", total_memory_avaialable_from_heap);
+            log::info("");
+            auto scratch_pool = memory::get_scratch_pool();
+            u64 total_memory_allocated_scratch = scratch_pool->current_size();
+            u64 total_memory_available_scratch = scratch_pool->total_size();
+            log::info("total_memory_allocated_scratch: {}", total_memory_allocated_scratch);
+            log::info("total_memory_available_scratch: {}", total_memory_available_scratch);
+            log::info("");
+            auto string_pool = memory::get_string_pool();
+            u64 total_memory_allocated_string = string_pool->current_size();
+            u64 total_memory_available_string = string_pool->total_size();
+            log::info("total_memory_allocated_string: {}", total_memory_allocated_string);
+            log::info("total_memory_available_string: {}", total_memory_available_string);
+            log::info("");
+
+            auto tagged_heap = memory::get_tagged_heap();
+            for (s32 i = 0; i < tagged_heap->block_count(); ++i)
+            {
+                u64 total_memory_allocated_block = tagged_heap->current_size(i);
+                u64 total_memory_available_block = tagged_heap->total_size(i);
+                log::info("total_memory_allocated_block - tag {} | idx {}: {}", tagged_heap->block_tag(i), i, total_memory_allocated_block);
+                log::info("total_memory_available_block - tag {} | idx {}: {}", tagged_heap->block_tag(i), i, total_memory_available_block);
+                log::info("");
+            }
         }
 
         return 0;

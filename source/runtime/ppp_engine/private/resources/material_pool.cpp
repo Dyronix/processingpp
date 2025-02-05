@@ -54,7 +54,7 @@ namespace ppp
                 }
             }
 
-            const graphics_vector<render::texture_id>& images(const std::string& shader_tag)
+            const graphics_vector<render::texture_id>& images(std::string_view shader_tag)
             {
                 auto it = internal::_registered_images.find(shader_tag);
                 if (it != std::cend(internal::_registered_images))

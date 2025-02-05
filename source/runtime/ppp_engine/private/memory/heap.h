@@ -18,9 +18,15 @@ namespace ppp
 
             void free();
 
+        public:
+            memory_size current_size() const { return m_offset; }
+            memory_size total_size() const { return m_total_size; }
+
         private:
             u8* m_base_memory;
             u64 m_offset;
+
+            memory_size m_total_size;
         };
 
         heap* get_heap();

@@ -10,9 +10,9 @@ namespace ppp
     {
         namespace tags
         {
-            const std::string& perspective();
-            const std::string& orthographic();
-            const std::string& font();
+            std::string_view perspective();
+            std::string_view orthographic();
+            std::string_view font();
         }
 
         struct scene_camera

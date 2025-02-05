@@ -20,7 +20,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* extrude_point(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width)
         {
-            const std::string gid = (extrusion_width > 0 ? "point_out_stroke|" : "point_in_stroke") + std::to_string(extrusion_width);
+            pool_stringstream stream;
+
+            stream << (extrusion_width > 0 ? "point_out_stroke|" : "point_in_stroke");
+            stream << extrusion_width;
+
+            const pool_string gid = stream.str();
 
             geometry* geom = nullptr;
 
@@ -39,7 +44,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_2d_point()
         {
-            const std::string gid = "point_2d";
+            const pool_string gid = "point_2d";
 
             if (!geometry_pool::has_geometry(gid))
             {

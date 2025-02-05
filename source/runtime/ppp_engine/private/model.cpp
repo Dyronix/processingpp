@@ -25,7 +25,7 @@ namespace ppp
     {
         namespace conversions
         {
-            static const std::string s_obj_extension_type = "obj";
+            static const pool_string s_obj_extension_type = "obj";
 
             //-------------------------------------------------------------------------
             std::string_view to_string(model_file_type file_type)

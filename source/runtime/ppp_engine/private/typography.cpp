@@ -99,13 +99,13 @@ namespace ppp
             {
                 resources::imaterial* mat_font = material_pool::get_or_create_material_instance(shader_pool::tags::unlit_font);
 
-                std::stringstream stream;
+                pool_stringstream stream;
 
                 stream << "font_character_item|";
                 stream << character << "|";
                 stream << texture_id;
 
-                const std::string gid = stream.str();
+                const pool_string gid = stream.str();
 
                 if (!geometry_pool::has_geometry(gid))
                 {
@@ -151,7 +151,7 @@ namespace ppp
             }
         }
 
-        void text(const std::string &text, float x, float y)
+        void text(std::string_view text, float x, float y)
         {           
             const font_pool::Font* active_font = font_pool::active_font();
             if (active_font == nullptr)
@@ -162,7 +162,7 @@ namespace ppp
 
             f32 scale = 1.0f;
 
-            std::string::const_iterator it;
+            std::string_view::const_iterator it;
             for(it = std::cbegin(text); it != std::cend(text); ++it)
             {
                 const FontCharacter& ch = active_font->atlas.characters.at(*it);
@@ -204,7 +204,7 @@ namespace ppp
             internal::_text_mode = mode;
         }
 
-        font_id load_font(const std::string& path, unsigned int size, unsigned int characters_to_load)
+        font_id load_font(std::string_view path, unsigned int size, unsigned int characters_to_load)
         {
             if (font_pool::has_font(path))
             {

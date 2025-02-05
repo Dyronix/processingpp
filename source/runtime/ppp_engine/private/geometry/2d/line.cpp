@@ -24,7 +24,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* extrude_line(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width)
         {
-            const std::string gid = (extrusion_width > 0 ? "line_out_stroke|" : "line_in_stroke") + std::to_string(extrusion_width);
+            pool_stringstream stream;
+
+            stream << (extrusion_width > 0 ? "line_out_stroke|" : "line_in_stroke");
+            stream << extrusion_width;
+
+            const pool_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {
@@ -51,7 +56,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_line(f32 x1, f32 y1, f32 x2, f32 y2)
         {
-            std::stringstream stream;
+            pool_stringstream stream;
 
             stream << "line|";
             stream << x1 << "|";
@@ -59,7 +64,7 @@ namespace ppp
             stream << x2 << "|";
             stream << y2;
 
-            const std::string gid = stream.str();
+            const pool_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

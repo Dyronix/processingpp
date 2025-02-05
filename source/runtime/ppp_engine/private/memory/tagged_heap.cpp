@@ -77,6 +77,36 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        s32 tagged_heap::block_count() const
+        {
+            return m_block_count;
+        }
+
+        //-------------------------------------------------------------------------
+        u32 tagged_heap::block_tag(s32 block_index) const
+        {
+            assert(block_index < m_block_count);
+
+            return m_blocks[block_index].tag();
+        }
+
+        //-------------------------------------------------------------------------
+        memory_size tagged_heap::current_size(s32 block_index) const
+        {
+            assert(block_index < m_block_count);
+
+            return m_blocks[block_index].current_size();
+        }
+
+        //-------------------------------------------------------------------------
+        memory_size tagged_heap::total_size(s32 block_index) const
+        {
+            assert(block_index < m_block_count);
+
+            return m_blocks[block_index].total_size();
+        }
+
+        //-------------------------------------------------------------------------
         tagged_heap* get_tagged_heap()
         {
             constexpr memory_size block_size = 500_kb;

@@ -30,14 +30,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* extrude_polygon(const glm::mat4& world, const geometry* in_geom, f32 extrusion_width)
         {
-            std::stringstream stream;
+            pool_stringstream stream;
 
             stream << (extrusion_width > 0 ? "polygon_out_stroke|" : "polygon_in_stroke|");
             stream << extrusion_width << "|";
             stream << glm::to_string(world) << "|";
             stream << in_geom;
 
-            const std::string gid = stream.str();
+            const pool_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {
@@ -67,7 +67,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_polygon(f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3, f32 x4, f32 y4)
         {
-            std::stringstream stream;
+            pool_stringstream stream;
 
             stream << "polygon|";
             stream << x1 << "|";
@@ -79,7 +79,7 @@ namespace ppp
             stream << x4 << "|";
             stream << y4;
 
-            const std::string gid = stream.str();
+            const pool_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

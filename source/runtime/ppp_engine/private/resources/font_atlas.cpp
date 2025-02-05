@@ -157,7 +157,7 @@ namespace ppp
             atlas.texture_height = atlas_dimensions.height;
             atlas.characters = {};
 
-            std::vector<u8> atlas_buffer(atlas.texture_width * atlas.texture_height, 0);
+            temp_vector<u8> atlas_buffer(atlas.texture_width * atlas.texture_height, 0);
 
             u32 pen_x = 0;
             u32 pen_y = 0;

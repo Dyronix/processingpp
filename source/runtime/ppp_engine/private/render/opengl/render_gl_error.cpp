@@ -9,7 +9,7 @@ namespace ppp
     namespace render
     {
         //-------------------------------------------------------------------------
-        std::string gl_get_error_message(u32 error)
+        pool_string gl_get_error_message(u32 error)
         {
             switch (error)
             {

@@ -2,6 +2,8 @@
 
 #include "util/types.h"
 
+#include "memory/memory_types.h"
+
 #include <string>
 
 #pragma warning(push)
@@ -11,7 +13,7 @@ namespace ppp
 {
     namespace render
     {
-        std::string gl_get_error_message(u32 error);
+        pool_string gl_get_error_message(u32 error);
 
         u32         gl_check_error();
 

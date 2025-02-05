@@ -13,7 +13,7 @@ namespace ppp
     {
         namespace internal
         {
-            std::string _active_shader_tag = {};
+            pool_string _active_shader_tag = {};
 
             graphics_hash_map<std::string_view, render::vertex_type> _shader_tag_vertex_type_map =
             {
@@ -160,7 +160,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         shader_program normal_material()
         {
-            const std::string& tag = render::draw_mode() == render::render_draw_mode::BATCHED 
+            std::string_view tag = render::draw_mode() == render::render_draw_mode::BATCHED 
                 ? shader_pool::tags::unlit_normal 
                 : shader_pool::tags::instance_unlit_normal;
 
@@ -174,7 +174,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         shader_program specular_material()
         {
-            const std::string& tag = render::draw_mode() == render::render_draw_mode::BATCHED
+            std::string_view tag = render::draw_mode() == render::render_draw_mode::BATCHED
                 ? shader_pool::tags::lit_specular
                 : shader_pool::tags::instance_lit_specular;
 

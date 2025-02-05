@@ -2,6 +2,8 @@
 
 #include "util/types.h"
 
+#include "memory/memory_types.h"
+
 #include "resources/font_atlas.h"
 
 #include <glm/glm.hpp>
@@ -15,7 +17,7 @@ namespace ppp
     {
         struct Font
         {
-            std::string file_path = {};
+            pool_string file_path = {};
             u32 size = -1;
             typography::FontAtlas atlas;
         };
@@ -23,10 +25,10 @@ namespace ppp
         bool initialize();
         void terminate();
 
-        bool has_font(const std::string& file_path);
+        bool has_font(std::string_view file_path);
         bool has_font(u32 id);
 
-        const Font* font_at_path(const std::string& file_path);
+        const Font* font_at_path(std::string_view file_path);
         const Font* font_at_id(u32 id);
 
         void load_active_font(u32 id);
