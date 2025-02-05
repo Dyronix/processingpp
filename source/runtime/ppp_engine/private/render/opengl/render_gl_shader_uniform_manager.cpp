@@ -174,7 +174,7 @@ namespace ppp
                     private:
                         pool_string m_name;          // Name of the uniform
                         object_type_tag m_type_id;   // Type identifier using type_tag
-                        frame_vector<u8> m_data;      // Binary data for the value
+                        temp_vector<u8> m_data;      // Binary data for the value
                         u64 m_count;                 // Amount of elements in the array of elements
                         bool m_is_array;             // Is the uniform storing an array of elements
                     };

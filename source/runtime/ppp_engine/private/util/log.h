@@ -31,7 +31,7 @@ namespace ppp
 
 		template<typename FormatString, typename... Args>
 		void error(const FormatString& format, const Args&... args)
-		{
+		{	
 			printf("[%serror%s] ", red, reset);
 			fmt::print(fmt::runtime(format), args...);
 			printf("\n");

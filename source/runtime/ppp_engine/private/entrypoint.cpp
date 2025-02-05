@@ -2,15 +2,13 @@
 #include "environment.h"
 #include "color.h"
 #include "material.h"
+#include "events.h"
 
 #include "device/device.h"
 #include "render/render.h"
 #include "camera/camera_manager.h"
 
 #include "memory/memory_tracker.h"
-#include "memory/tagged_heap.h"
-#include "memory/tagged_heap_tags.h"
-#include "memory/heap.h"
 
 #include "resources/texture_pool.h"
 #include "resources/font_pool.h"
@@ -90,6 +88,17 @@ namespace ppp
 
         color::background(1.0f, 1.0f, 1.0f, 1.0f);
 
+#if _DEBUG
+        keyboard::add_key_pressed_callback(
+            [](keyboard::key_code key)
+            {
+                if (key == keyboard::key_code::KEY_F7)
+                {
+                    memory::peek();
+                }
+            });
+#endif
+
         setup();
 
         return 0;
@@ -98,8 +107,6 @@ namespace ppp
     s32 run(const app_params& app_params)
     {
         render::render_context context;
-
-        ppp::memory::peek();
 
         while (!device::should_close())
         {
@@ -148,12 +155,6 @@ namespace ppp
 
             memory::get_tagged_heap()->free_blocks(memory::tags::frame);
             memory::end_frame();
-
-            auto scratch_pool = memory::get_scratch_pool();
-            auto string_pool = memory::get_string_pool();
-            auto tagged_heap = memory::get_tagged_heap();
-            auto heap = memory::get_heap();
-
         }
 
         return 0;
@@ -214,6 +215,8 @@ namespace ppp
 
 int main(int argc, char** argv)
 {
+    ppp::memory::enable_tracking();
+
     for (int i = 0; i < argc; ++i)
     {
         ppp::log::info("Application argument: {}", argv[i]);
@@ -222,8 +225,6 @@ int main(int argc, char** argv)
     ppp::app_params app_params = ppp::entry(argc, argv);
 
     s32 result = 0;
-
-    ppp::memory::enable_tracking();
 
     result = ppp::init(app_params, argv[0]);
     if (result != 0)

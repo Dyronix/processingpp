@@ -1,6 +1,8 @@
 #include "environment.h"
 #include "device/device.h"
 #include "render/render.h"
+#include "memory/memory_types.h"
+#include "memory/memory_tracker.h"
 #include "util/log.h"
 #include "util/types.h"
 #include <filesystem>
@@ -9,7 +11,14 @@ namespace ppp
 {
     namespace environment
     {
-        void print(const std::string& message)
+        std::string _cwd = {};
+
+        void print(std::string_view message)
+        {
+            log::info(message);
+        }
+
+        void print(const char* message)
         {
             log::info(message);
         }
@@ -78,9 +87,28 @@ namespace ppp
             return window_height();
         }
 
-        std::string cwd()
+        std::string_view cwd()
         {
-            return std::filesystem::current_path().string();
+            if (_cwd.empty())
+            {
+                /*
+                Unlike some standard containers (like std::basic_string or std::vector), std::filesystem::path does not expose an interface that allows you to provide your own allocator.
+                You simply construct it from a std::string or other string types, and the conversion to the internal representation is handled internally.
+
+                If you have a particularly long path or if the implementation doesn’t use SSO, dynamic allocation might be used under the hood.
+                There is no way to avoid the allocation and deallocation here unless we write our own wrapper.
+
+                For this reason we disable the tracking here.
+                */
+
+                memory::disable_tracking();
+
+                _cwd = std::filesystem::current_path().string<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::fileio>>();
+
+                memory::enable_tracking();
+            }
+
+            return _cwd;
         }
     }
 }

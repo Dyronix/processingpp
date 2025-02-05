@@ -31,7 +31,7 @@ namespace ppp
                 // Vertical line
                 float size_percentage = random::random_value(_min_division, _max_division) / 100.0f;
 
-                environment::print("Vertical Line: " + std::to_string(size_percentage));
+                environment::print("Vertical Line: ", size_percentage);
 
                 // left rect
                 draw_rect(x, y, w * size_percentage, h, depth - 1);
@@ -43,7 +43,7 @@ namespace ppp
                 // Horizontal line
                 float size_percentage = random::random_value(_min_division, _max_division) / 100.0f;
 
-                environment::print("Horizontal Line: " + std::to_string(size_percentage));
+                environment::print("Horizontal Line: ", size_percentage);
 
                 // top rect
                 draw_rect(x, y, w, h * size_percentage, depth - 1);

@@ -4,6 +4,11 @@
 
 #define PRINT_WARN_WITHIN_SAME_FRAME 0
 
+#define PRINT_INFO_ALLOCATIONS_TOTAL 0
+#define PRINT_INFO_ALLOCATION_THIS_FRAME 0
+#define PRINT_INFO_ALLOCATION_AND_DEALLOCATIONS_THIS_FRAME 0
+#define PRINT_INFO_ALLOCATION_ADDRESS_AND_SIZE 0
+
 namespace ppp
 {
     namespace memory
@@ -63,7 +68,11 @@ namespace ppp
             //-------------------------------------------------------------------------
             void dump_memory_data()
             {
-                log::info("Frame nr: {} | Allocations: {}", m_active_frame, m_allocations.size());
+#if PRINT_INFO_ALLOCATIONS_TOTAL
+                log::info("Frame nr: {} | Total amount of allocations: {}", m_active_frame, m_allocations.size());
+#endif
+
+#if PRINT_INFO_ALLOCATION_ADDRESS_AND_SIZE
                 log::info("Objects that are still allocated at the end of the frame:");
 
                 bool printed = false;
@@ -80,9 +89,14 @@ namespace ppp
                 {
                     log::info("None");
                 }
+#endif
 
-                log::info("Total Bytes allocated: {}", m_total_alloc);
-                log::info("Total Bytes allocated and deallocated: {}", m_frame_alloc_and_dealloc);
+#if PRINT_INFO_ALLOCATION_THIS_FRAME
+                log::info("Total Bytes allocated this frame: {}", m_total_alloc);
+#endif
+#if PRINT_INFO_ALLOCATION_AND_DEALLOCATIONS_THIS_FRAME
+                log::info("Total Bytes allocated and deallocated this frame: {}", m_frame_alloc_and_dealloc);
+#endif
             }
 
             //-------------------------------------------------------------------------

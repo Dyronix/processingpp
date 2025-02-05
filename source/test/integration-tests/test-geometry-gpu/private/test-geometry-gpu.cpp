@@ -143,7 +143,7 @@ namespace ppp
 
     app_params entry(int argc, char** argv)
     {
-        environment::print("current working dir: " + environment::cwd());
+        environment::print("current working dir: ", environment::cwd());
 
         app_params app_params;
 
