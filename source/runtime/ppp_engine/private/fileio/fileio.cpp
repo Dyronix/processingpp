@@ -12,7 +12,7 @@ namespace ppp
     {
 		namespace internal
 		{
-			fileio_hash_map<pool_string, pool_string> _wildcards;
+			temp_hash_map<pool_string, pool_string> _wildcards;
 
 			class Path
 			{
@@ -106,7 +106,7 @@ namespace ppp
 			return good;
 		}
 
-		fileio_blob read_binary_file(std::string_view filename)
+		temp_blob read_binary_file(std::string_view filename)
 		{
 			// Load file from disk
 			const pool_string path = internal::get_path(filename);
@@ -125,7 +125,7 @@ namespace ppp
 			// Read file
 			const std::streamsize size = file.tellg();
 			file.seekg(0, std::ios::beg);
-			fileio_blob buffer(size);
+			temp_blob buffer(size);
 			if (file.read((char*)buffer.data(), size))
 			{
 				return buffer;
@@ -135,7 +135,7 @@ namespace ppp
 			return {};
 		}
 
-		fileio_string read_text_file(std::string_view filename)
+		pool_string read_text_file(std::string_view filename)
 		{
 			// Load file from disk
 			const pool_string path = internal::get_path(filename);
@@ -150,7 +150,7 @@ namespace ppp
 			// Read file
 			file.seekg(0, std::ios::end);
 			const u64 size = file.tellg();
-			fileio_string buffer(size, '\0');
+			pool_string buffer(size, '\0');
 			file.seekg(0);
 			if (file.read(&buffer[0], size))
 			{

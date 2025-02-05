@@ -16,7 +16,7 @@ namespace ppp
 
         bool exists(std::string_view filename);
 
-        fileio_blob read_binary_file(std::string_view filename);
-        fileio_string read_text_file(std::string_view filename);
+        temp_blob read_binary_file(std::string_view filename);
+        pool_string read_text_file(std::string_view filename);
     }
 }
