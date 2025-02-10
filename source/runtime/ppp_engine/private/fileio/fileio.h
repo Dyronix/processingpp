@@ -10,12 +10,6 @@ namespace ppp
 {
     namespace fileio
     {
-        void add_wildcard(const pool_string& wildcard, const pool_string& value);
-
-        pool_string resolve_path(std::string_view filename);
-
-        bool exists(std::string_view filename);
-
         fileio_blob read_binary_file(std::string_view filename);
         fileio_string read_text_file(std::string_view filename);
     }

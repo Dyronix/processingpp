@@ -13,24 +13,34 @@ namespace ppp
     {
         namespace internal
         {
-            pool_string _active_shader_tag = {};
-
-            graphics_hash_map<std::string_view, render::vertex_type> _shader_tag_vertex_type_map =
+            static pool_string& active_shader_tag()
             {
-                {shader_pool::tags::unlit_color, render::vertex_type::POSITION_COLOR},
-                {shader_pool::tags::instance_unlit_color, render::vertex_type::POSITION},
+                static pool_string s_active_shader_tag = {};
 
-                {shader_pool::tags::unlit_texture, render::vertex_type::POSITION_TEXCOORD_COLOR},
-                {shader_pool::tags::instance_unlit_texture, render::vertex_type::POSITION_TEXCOORD},
+                return s_active_shader_tag;
+            }
 
-                {shader_pool::tags::unlit_font, render::vertex_type::POSITION_TEXCOORD_COLOR},
+            static graphics_hash_map<std::string_view, render::vertex_type>& shader_tag_vertex_type_map()
+            {
+                static graphics_hash_map<std::string_view, render::vertex_type> s_shader_tag_vertex_type_map =
+                {
+                    {shader_pool::tags::unlit_color(), render::vertex_type::POSITION_COLOR},
+                    {shader_pool::tags::instance_unlit_color(), render::vertex_type::POSITION},
 
-                {shader_pool::tags::unlit_normal, render::vertex_type::POSITION_NORMAL_COLOR},
-                {shader_pool::tags::instance_unlit_normal, render::vertex_type::POSITION_NORMAL},
+                    {shader_pool::tags::unlit_texture(), render::vertex_type::POSITION_TEXCOORD_COLOR},
+                    {shader_pool::tags::instance_unlit_texture(), render::vertex_type::POSITION_TEXCOORD},
 
-                {shader_pool::tags::lit_specular, render::vertex_type::POSITION_NORMAL_COLOR},
-                {shader_pool::tags::instance_lit_specular, render::vertex_type::POSITION_NORMAL},
-            };
+                    {shader_pool::tags::unlit_font(), render::vertex_type::POSITION_TEXCOORD_COLOR},
+
+                    {shader_pool::tags::unlit_normal(), render::vertex_type::POSITION_NORMAL_COLOR},
+                    {shader_pool::tags::instance_unlit_normal(), render::vertex_type::POSITION_NORMAL},
+
+                    {shader_pool::tags::lit_specular(), render::vertex_type::POSITION_NORMAL_COLOR},
+                    {shader_pool::tags::instance_lit_specular(), render::vertex_type::POSITION_NORMAL}
+                };
+
+                return s_shader_tag_vertex_type_map;
+            }
         }
 
         namespace tags
@@ -40,35 +50,35 @@ namespace ppp
             std::string_view unlit_color()
             {
                 return render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::unlit_color
-                    : shader_pool::tags::instance_unlit_color;
+                    ? shader_pool::tags::unlit_color()
+                    : shader_pool::tags::instance_unlit_color();
             }
             //-------------------------------------------------------------------------
             std::string_view unlit_texture()
             {
                 return render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::unlit_texture
-                    : shader_pool::tags::instance_unlit_texture;
+                    ? shader_pool::tags::unlit_texture()
+                    : shader_pool::tags::instance_unlit_texture();
             }
             //-------------------------------------------------------------------------
             std::string_view unlit_font()
             {
-                return shader_pool::tags::unlit_font;
+                return shader_pool::tags::unlit_font();
             }
             //-------------------------------------------------------------------------
             std::string_view unlit_normal()
             {
                 return render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::unlit_normal
-                    : shader_pool::tags::instance_unlit_normal;
+                    ? shader_pool::tags::unlit_normal()
+                    : shader_pool::tags::instance_unlit_normal();
             }
 
             //-------------------------------------------------------------------------
             std::string_view lit_specular()
             {
                 return render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::lit_specular
-                    : shader_pool::tags::instance_lit_specular;
+                    ? shader_pool::tags::lit_specular()
+                    : shader_pool::tags::instance_lit_specular();
             }
         }
 
@@ -131,26 +141,26 @@ namespace ppp
         //-------------------------------------------------------------------------
         void texture(unsigned int image_id)
         {
-            assert(!internal::_active_shader_tag.empty());
+            assert(!internal::active_shader_tag().empty());
 
-            material_pool::texture_cache::add_image(internal::_active_shader_tag, image_id);
+            material_pool::texture_cache::add_image(internal::active_shader_tag(), image_id);
         }
 
         //-------------------------------------------------------------------------
         void reset_textures()
         {
-            assert(!internal::_active_shader_tag.empty());
+            assert(!internal::active_shader_tag().empty());
 
-            material_pool::texture_cache::reset_images(internal::_active_shader_tag);
+            material_pool::texture_cache::reset_images(internal::active_shader_tag());
         }
 
         //-------------------------------------------------------------------------
         void shader(std::string_view tag)
         {
-            internal::_active_shader_tag = tag;
+            internal::active_shader_tag() = tag;
 
-            auto it = internal::_shader_tag_vertex_type_map.find(tag);
-            auto vertex_type = it == std::cend(internal::_shader_tag_vertex_type_map)
+            auto it = internal::shader_tag_vertex_type_map().find(tag);
+            auto vertex_type = it == std::cend(internal::shader_tag_vertex_type_map())
                 ? render::vertex_type::POSITION_TEXCOORD_NORMAL_COLOR
                 : it->second;
 
@@ -161,12 +171,12 @@ namespace ppp
         shader_program normal_material()
         {
             std::string_view tag = render::draw_mode() == render::render_draw_mode::BATCHED 
-                ? shader_pool::tags::unlit_normal 
-                : shader_pool::tags::instance_unlit_normal;
+                ? shader_pool::tags::unlit_normal()
+                : shader_pool::tags::instance_unlit_normal();
 
-            internal::_active_shader_tag = tag;
+            internal::active_shader_tag() = tag;
 
-            render::push_active_shader(tag, internal::_shader_tag_vertex_type_map.at(tag));
+            render::push_active_shader(tag, internal::shader_tag_vertex_type_map().at(tag));
 
             return get_shader(tag);
         }
@@ -175,12 +185,12 @@ namespace ppp
         shader_program specular_material()
         {
             std::string_view tag = render::draw_mode() == render::render_draw_mode::BATCHED
-                ? shader_pool::tags::lit_specular
-                : shader_pool::tags::instance_lit_specular;
+                ? shader_pool::tags::lit_specular()
+                : shader_pool::tags::instance_lit_specular();
 
-            internal::_active_shader_tag = tag;
+            internal::active_shader_tag() = tag;
 
-            render::push_active_shader(tag, internal::_shader_tag_vertex_type_map.at(tag));
+            render::push_active_shader(tag, internal::shader_tag_vertex_type_map().at(tag));
             
             return get_shader(tag);
         }

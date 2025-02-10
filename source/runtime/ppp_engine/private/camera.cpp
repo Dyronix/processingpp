@@ -61,19 +61,19 @@ namespace ppp
             //-------------------------------------------------------------------------
             std::string_view perspective()
             {
-                return camera_manager::tags::perspective;
+                return camera_manager::tags::perspective();
             }
 
             //-------------------------------------------------------------------------
             std::string_view orthographic()
             {
-                return camera_manager::tags::orthographic;
+                return camera_manager::tags::orthographic();
             }
 
             //-------------------------------------------------------------------------
             std::string_view font()
             {
-                return camera_manager::tags::font;
+                return camera_manager::tags::font();
             }
         }
 

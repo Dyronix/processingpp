@@ -31,7 +31,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void* free_list_heap::allocate(memory_size size)
+        void* free_list_heap::allocate(memory_size size) noexcept
         {
             // Convert the memory_size to a raw size in bytes.
             // Determine the required alignment (typically the alignment of max_align_t).
@@ -105,7 +105,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void free_list_heap::deallocate(void* ptr)
+        void free_list_heap::deallocate(void* ptr) noexcept
         {
             // Ignore null pointers.
             if (ptr == nullptr)

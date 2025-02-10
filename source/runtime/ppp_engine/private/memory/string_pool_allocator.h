@@ -27,7 +27,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            T* allocate(u64 n)
+            T* allocate(u64 n) noexcept
             {
                 u64 total_size = n * sizeof(T);
 

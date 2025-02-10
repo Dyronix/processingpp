@@ -25,21 +25,86 @@ namespace ppp
             }
         }
 
+        namespace tags
+        {
+            // batched
+            const pool_string& unlit_color()
+            {
+                static const pool_string s_unlit_color = "unlit_color";
+
+                return s_unlit_color;
+            }
+            const pool_string& unlit_texture()
+            {
+                static const pool_string s_unlit_texture = "unlit_texture";
+
+                return s_unlit_texture;
+            }
+            const pool_string& unlit_font()
+            {
+                static const pool_string s_unlit_font = "unlit_font";
+
+                return s_unlit_font;
+            }
+            const pool_string& unlit_normal()
+            {
+                static const pool_string s_unlit_normal = "unlit_normal";
+
+                return s_unlit_normal;
+            }
+
+            const pool_string& lit_specular()
+            {
+                static const pool_string s_lit_specular = "lit_specular";
+
+                return s_lit_specular;
+            }
+
+            // instanced
+            const pool_string& instance_unlit_color()
+            {
+                static const pool_string s_instance_unlit_color = "instance_unlit_color";
+
+                return s_instance_unlit_color;
+            }
+            const pool_string& instance_unlit_texture()
+            {
+                static const pool_string s_instance_unlit_texture = "instance_unlit_texture";
+
+                return s_instance_unlit_texture;
+            }
+            const pool_string& instance_unlit_normal()
+            {
+                static const pool_string s_instance_unlit_normal = "instance_unlit_normal";
+
+                return s_instance_unlit_normal;
+            }
+
+            const pool_string& instance_lit_specular()
+            {
+                static const pool_string s_instance_lit_specular = "instance_lit_specular";
+
+                return s_instance_lit_specular;
+            }
+        }
+
         bool initialize()
         {
-            internal::get_shader_program_map().emplace(tags::unlit_color, std::make_shared<render::shaders::shader_program>(render::shaders::unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code()));
-            internal::get_shader_program_map().emplace(tags::instance_unlit_color, std::make_shared<render::shaders::shader_program>(render::shaders::instance_unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code()));
-            
-            internal::get_shader_program_map().emplace(tags::unlit_texture, std::make_shared<render::shaders::shader_program>(render::shaders::unlit_texture_vertex_shader_code(), render::shaders::unlit_texture_pixel_shader_code()));
-            internal::get_shader_program_map().emplace(tags::instance_unlit_texture, std::make_shared<render::shaders::shader_program>(render::shaders::instance_unlit_texture_vertex_shader_code(), render::shaders::unlit_texture_pixel_shader_code()));
+            memory::tagged_allocator<render::shaders::shader_program, memory::tags::graphics> graphics_allocator;
 
-            internal::get_shader_program_map().emplace(tags::unlit_font, std::make_shared<render::shaders::shader_program>(render::shaders::unlit_font_vertex_shader_code(), render::shaders::unlit_font_pixel_shader_code()));
-
-            internal::get_shader_program_map().emplace(tags::unlit_normal, std::make_shared<render::shaders::shader_program>(render::shaders::unlit_normal_vertex_shader_code(), render::shaders::unlit_normal_pixel_shader_code()));
-            internal::get_shader_program_map().emplace(tags::instance_unlit_normal, std::make_shared<render::shaders::shader_program>(render::shaders::instance_unlit_normal_vertex_shader_code(), render::shaders::unlit_normal_pixel_shader_code()));
+            internal::get_shader_program_map().emplace(tags::unlit_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code()));
+            internal::get_shader_program_map().emplace(tags::instance_unlit_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::instance_unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code()));
             
-            internal::get_shader_program_map().emplace(tags::lit_specular, std::make_shared<render::shaders::shader_program>(render::shaders::specular_vertex_shader_code(), render::shaders::specular_pixel_shader_code()));
-            internal::get_shader_program_map().emplace(tags::instance_lit_specular, std::make_shared<render::shaders::shader_program>(render::shaders::instance_specular_vertex_shader_code(), render::shaders::specular_pixel_shader_code()));
+            internal::get_shader_program_map().emplace(tags::unlit_texture(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit_texture_vertex_shader_code(), render::shaders::unlit_texture_pixel_shader_code()));
+            internal::get_shader_program_map().emplace(tags::instance_unlit_texture(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::instance_unlit_texture_vertex_shader_code(), render::shaders::unlit_texture_pixel_shader_code()));
+
+            internal::get_shader_program_map().emplace(tags::unlit_font(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit_font_vertex_shader_code(), render::shaders::unlit_font_pixel_shader_code()));
+
+            internal::get_shader_program_map().emplace(tags::unlit_normal(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit_normal_vertex_shader_code(), render::shaders::unlit_normal_pixel_shader_code()));
+            internal::get_shader_program_map().emplace(tags::instance_unlit_normal(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::instance_unlit_normal_vertex_shader_code(), render::shaders::unlit_normal_pixel_shader_code()));
+            
+            internal::get_shader_program_map().emplace(tags::lit_specular(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::specular_vertex_shader_code(), render::shaders::specular_pixel_shader_code()));
+            internal::get_shader_program_map().emplace(tags::instance_lit_specular(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::instance_specular_vertex_shader_code(), render::shaders::specular_pixel_shader_code()));
 
             return true;
         }

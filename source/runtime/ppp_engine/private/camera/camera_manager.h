@@ -12,9 +12,9 @@ namespace ppp
     {
         namespace tags
         {
-            static const pool_string perspective = "perspective";
-            static const pool_string orthographic = "orthographic";
-            static const pool_string font = "font";
+            const pool_string& perspective();
+            const pool_string& orthographic();
+            const pool_string& font();
         }
 
         struct camera

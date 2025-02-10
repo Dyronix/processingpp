@@ -1,4 +1,6 @@
 #include "memory/memory_tracker.h"
+#include "memory/tagged_heap.h"
+#include "memory/tagged_heap_tags.h"
 
 #include "util/log.h"
 
@@ -216,13 +218,18 @@ void* operator new(u64 size)
 {
     assert(size != 0);
 
-    void* p = malloc(size);
+    void* p = nullptr;
 
     if (ppp::memory::is_tracking_enabled() && ppp::memory::is_constructing_tracker() == false)
     {
         ppp::memory::disable_tracking();
         ppp::memory::track_allocation(p, size);
+        p = ppp::memory::get_tagged_heap()->allocate(ppp::memory::tags::global, size);
         ppp::memory::enable_tracking();
+    }
+    else
+    {
+        p = malloc(size);
     }
 
     return p;
@@ -235,8 +242,11 @@ void operator delete(void* p) noexcept
     {
         ppp::memory::disable_tracking();
         ppp::memory::track_deallocation(p);
+        ppp::memory::get_tagged_heap()->deallocate(ppp::memory::tags::global, p);
         ppp::memory::enable_tracking();
     }
-
-    free(p);
+    else
+    {
+        free(p);
+    }
 }

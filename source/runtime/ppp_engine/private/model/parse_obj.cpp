@@ -6,6 +6,8 @@
 
 #include "geometry/geometry.h"
 
+#include "memory/memory_tracker.h"
+
 #include "util/string_ops.h"
 
 #include <fstream>
@@ -15,12 +17,12 @@ namespace ppp
 {
     namespace model
     {
-        geometry::geometry* parse_obj(geometry::geometry* geom, const temp_vector<std::string_view>& buffer)
+        geometry::geometry* parse_obj(geometry::geometry* geom, const fileio_vector<std::string_view>& buffer)
         {
-            temp_hash_map<pool_string, temp_hash_map<pool_string, s32>> used_verts;
+            pool_hash_map<pool_string, pool_hash_map<pool_string, s32>> used_verts;
 
-            temp_hash_map<pool_string, temp_vector<glm::vec3>> loaded_verts;
-            temp_hash_map<pool_string, temp_vector<glm::vec2>> loaded_tex;
+            pool_hash_map<pool_string, pool_vector<glm::vec3>> loaded_verts;
+            pool_hash_map<pool_string, pool_vector<glm::vec2>> loaded_tex;
 
             pool_string current_material;
 
@@ -56,15 +58,15 @@ namespace ppp
                 {
                     for (u64 tri = 3; tri < tokens.size(); ++tri) 
                     {
-                        temp_vector<u32> face;
-                        temp_vector<u64> vertex_tokens = { 1, tri - 1, tri };
+                        pool_vector<u32> face;
+                        pool_vector<u64> vertex_tokens = { 1, tri - 1, tri };
 
                         for (const auto& token_index : vertex_tokens) 
                         {
                             pool_string vert_string = tokens[token_index];
 
-                            auto vert_parts_s = string::split_string(vert_string, pool_string("/"));
-                            auto vert_parts = temp_vector<s32>{};
+                            auto vert_parts_s = string::split_string(vert_string, fileio_string("/"));
+                            auto vert_parts = pool_vector<s32>{};
 
                             for(const auto& part_s : vert_parts_s)
                             {

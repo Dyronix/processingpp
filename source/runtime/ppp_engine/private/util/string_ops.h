@@ -31,14 +31,14 @@ namespace ppp
 
         //-----------------------------------------------------------------------------
         template <typename T>
-        temp_vector<T> split_string(const std::string_view& str, const T& delimiters)
+        pool_vector<T> split_string(const std::string_view& str, const T& delimiters)
         {
-            temp_vector<T> tokens;
+            pool_vector<T> tokens;
 
             T token;
 
             // Create a set of delimiters (we assume the delimiter characters are always plain 'char's)
-            temp_set<char> delimiter_set(delimiters.begin(), delimiters.end());
+            pool_set<char> delimiter_set(delimiters.begin(), delimiters.end());
 
             for (char ch : str)
             {

@@ -15,42 +15,6 @@ namespace ppp
     {
         namespace internal
         {
-            GLFWwindow* _window = nullptr;
-
-            bool _is_looping = true;
-
-            u64 _current_frame_idx = 0;
-            u64 _desired_frame_idx = 1;
-
-            u32 _target_frame_rate = 60;
-
-            constexpr s32 _total_avg_frames = 100;
-            f64 _frame_times[_total_avg_frames] = { 0.0 };
-
-            clock::time_point _previous_frame_time;
-            clock::milliseconds _delta_frame_time(0);
-
-            global_hash_map<u32, bool> _key_pressed;
-            global_hash_map<u32, bool> _key_down;
-            global_hash_map<u32, bool> _key_released;
-
-            s32 _last_key_pressed = -1;
-
-            f32 _prev_mouse_x = -1;
-            f32 _current_mouse_x = -1;
-            f32 _prev_mouse_y = -1;
-            f32 _current_mouse_y = -1;
-
-            global_hash_map<u32, bool> _mouse_button_pressed;
-            global_hash_map<u32, bool> _mouse_button_released;
-
-            s32 _last_mouse_button_pressed = -1;
-
-            f32 _scroll_offset_x = 0.0f;
-            f32 _scroll_offset_y = 0.0f;
-
-            global_vector<std::function<void(f32, f32)>> _dragging_callback;
-
             void center_window(GLFWwindow* window) 
             {
                 // Get window position and size
@@ -120,52 +84,99 @@ namespace ppp
 
         namespace input
         {
+            constexpr s32 _total_avg_frames = 100;
+
+            struct device_ctx
+            {
+                GLFWwindow* window = nullptr;
+
+                bool is_looping = true;
+
+                u64 current_frame_idx = 0;
+                u64 desired_frame_idx = 1;
+
+                u32 target_frame_rate = 60;
+
+                f64 frame_times[_total_avg_frames] = { 0.0 };
+
+                clock::time_point previous_frame_time;
+                clock::milliseconds delta_frame_time = { clock::milliseconds(0) };
+
+                pool_hash_map<u32, bool> key_pressed;
+                pool_hash_map<u32, bool> key_down;
+                pool_hash_map<u32, bool> key_released;
+
+                s32 last_key_pressed = -1;
+
+                f32 prev_mouse_x = -1;
+                f32 current_mouse_x = -1;
+                f32 prev_mouse_y = -1;
+                f32 current_mouse_y = -1;
+
+                pool_hash_map<u32, bool> mouse_button_pressed;
+                pool_hash_map<u32, bool> mouse_button_released;
+
+                s32 last_mouse_button_pressed = -1;
+
+                f32 scroll_offset_x = 0.0f;
+                f32 scroll_offset_y = 0.0f;
+
+                pool_vector<std::function<void(f32, f32)>> dragging_callback;
+            };
+
+            static device_ctx& ctx()
+            {
+                static device_ctx s_ctx;
+
+                return s_ctx;
+            }
+
             namespace keyboard
             {
                 namespace callbacks
                 {
                     void key_pressed_callback(s32 key, s32 scancode, s32 mods)
                     {
-                        internal::_last_key_pressed = key;
+                        ctx().last_key_pressed = key;
                     }
                 }
 
                 bool is_key_pressed(s32 code)
                 {
-                    bool r = is_key_pressed(internal::_window, code);
+                    bool r = is_key_pressed(ctx().window, code);
 
-                    internal::_key_pressed[code] = r;
-                    internal::_key_down[code] = false;
-                    internal::_key_released[code] = false;
+                    ctx().key_pressed[code] = r;
+                    ctx().key_down[code] = false;
+                    ctx().key_released[code] = false;
 
                     return r;
                 }
 
                 bool is_key_released(s32 code)
                 {
-                    bool r = is_key_released(internal::_window, code);
+                    bool r = is_key_released(ctx().window, code);
 
-                    internal::_key_pressed[code] = false;
-                    internal::_key_down[code] = false;
-                    internal::_key_released[code] = r;
+                    ctx().key_pressed[code] = false;
+                    ctx().key_down[code] = false;
+                    ctx().key_released[code] = r;
 
                     return r;
                 }
 
                 bool is_key_down(s32 code)
                 {
-                    bool r = is_key_down(internal::_window, code);
+                    bool r = is_key_down(ctx().window, code);
 
-                    internal::_key_pressed[code] = false;
-                    internal::_key_down[code] = r;
-                    internal::_key_released[code] = false;
+                    ctx().key_pressed[code] = false;
+                    ctx().key_down[code] = r;
+                    ctx().key_released[code] = false;
 
                     return r;
                 }
 
                 bool is_any_key_pressed()
                 {
-                    return std::any_of(internal::_key_pressed.begin(), internal::_key_pressed.end(),
+                    return std::any_of(ctx().key_pressed.begin(), ctx().key_pressed.end(),
                         [](const auto& pair)
                     {
                         return pair.second;
@@ -174,7 +185,7 @@ namespace ppp
 
                 bool is_any_key_released()
                 {
-                    return std::any_of(internal::_key_released.begin(), internal::_key_released.end(),
+                    return std::any_of(ctx().key_released.begin(), ctx().key_released.end(),
                         [](const auto& pair)
                     {
                         return pair.second;
@@ -183,7 +194,7 @@ namespace ppp
 
                 bool is_any_key_down()
                 {
-                    return std::any_of(internal::_key_down.begin(), internal::_key_down.end(),
+                    return std::any_of(ctx().key_down.begin(), ctx().key_down.end(),
                         [](const auto& pair)
                     {
                         return pair.second;
@@ -192,22 +203,22 @@ namespace ppp
 
                 s32 key()
                 {
-                    return internal::_last_key_pressed;
+                    return ctx().last_key_pressed;
                 }
 
                 void add_key_pressed_callback(const std::function<void(s32, s32, s32)>& callback)
                 {
-                    add_key_pressed_callback(internal::_window, callback);
+                    add_key_pressed_callback(ctx().window, callback);
                 }
 
                 void add_key_released_callback(const std::function<void(s32, s32, s32)>& callback)
                 {
-                    add_key_released_callback(internal::_window, callback);
+                    add_key_released_callback(ctx().window, callback);
                 }
 
                 void add_key_down_callback(const std::function<void(s32, s32, s32)>& callback)
                 {
-                    add_key_down_callback(internal::_window, callback);
+                    add_key_down_callback(ctx().window, callback);
                 }
             }
 
@@ -217,14 +228,14 @@ namespace ppp
                 {
                     void mouse_pressed_callback(s32 mouse_button, s32 mods)
                     {
-                        internal::_last_mouse_button_pressed = mouse_button;
+                        ctx().last_mouse_button_pressed = mouse_button;
                     }
 
                     void mouse_moved_callback(f32 xpos, f32 ypos)
                     {
                         if (input::mouse::is_any_mouse_button_pressed())
                         {
-                            for (const auto& c : internal::_dragging_callback)
+                            for (const auto& c : ctx().dragging_callback)
                             {
                                 c(xpos, ypos);
                             }
@@ -233,12 +244,12 @@ namespace ppp
 
                     void scroll_x_callback(f32 xoffset)
                     {
-                        internal::_scroll_offset_x = xoffset;
+                        ctx().scroll_offset_x = xoffset;
                     }
 
                     void scroll_y_callback(f32 yoffset)
                     {
-                        internal::_scroll_offset_y = yoffset;
+                        ctx().scroll_offset_y = yoffset;
                     }
                 }
 
@@ -264,72 +275,72 @@ namespace ppp
 
                 f32 mouse_x()
                 {
-                    return internal::_current_mouse_x;
+                    return ctx().current_mouse_x;
                 }
 
                 f32 mouse_y()
                 {
-                    return internal::_current_mouse_y;
+                    return ctx().current_mouse_y;
                 }
 
                 f32 prev_mouse_x()
                 {
-                    return internal::_prev_mouse_x;
+                    return ctx().prev_mouse_x;
                 }
 
                 f32 prev_mouse_y()
                 {
-                    return internal::_prev_mouse_y;
+                    return ctx().prev_mouse_y;
                 }
 
                 s32 mouse_button()
                 {
-                    return internal::_last_mouse_button_pressed;
+                    return ctx().last_mouse_button_pressed;
                 }
 
                 f32 scroll_offset_x()
                 {
-                    return internal::_scroll_offset_x;
+                    return ctx().scroll_offset_x;
                 }
 
                 f32 scroll_offset_y()
                 {
-                    return internal::_scroll_offset_y;
+                    return ctx().scroll_offset_y;
                 }
 
                 bool is_left_button_pressed()
                 {
-                    bool r = is_mouse_button_pressed(internal::_window, GLFW_MOUSE_BUTTON_LEFT);
+                    bool r = is_mouse_button_pressed(ctx().window, GLFW_MOUSE_BUTTON_LEFT);
 
-                    internal::_mouse_button_pressed[GLFW_MOUSE_BUTTON_LEFT] = r;
-                    internal::_mouse_button_released[GLFW_MOUSE_BUTTON_LEFT] = false;
+                    ctx().mouse_button_pressed[GLFW_MOUSE_BUTTON_LEFT] = r;
+                    ctx().mouse_button_released[GLFW_MOUSE_BUTTON_LEFT] = false;
 
                     return r;
                 }
 
                 bool is_right_button_pressed()
                 {
-                    bool r = is_mouse_button_pressed(internal::_window, GLFW_MOUSE_BUTTON_RIGHT);
+                    bool r = is_mouse_button_pressed(ctx().window, GLFW_MOUSE_BUTTON_RIGHT);
 
-                    internal::_mouse_button_pressed[GLFW_MOUSE_BUTTON_RIGHT] = r;
-                    internal::_mouse_button_released[GLFW_MOUSE_BUTTON_RIGHT] = false;
+                    ctx().mouse_button_pressed[GLFW_MOUSE_BUTTON_RIGHT] = r;
+                    ctx().mouse_button_released[GLFW_MOUSE_BUTTON_RIGHT] = false;
 
                     return r;
                 }
 
                 bool is_middle_button_pressed()
                 {
-                    bool r = is_mouse_button_pressed(internal::_window, GLFW_MOUSE_BUTTON_MIDDLE);
+                    bool r = is_mouse_button_pressed(ctx().window, GLFW_MOUSE_BUTTON_MIDDLE);
 
-                    internal::_mouse_button_pressed[GLFW_MOUSE_BUTTON_MIDDLE] = r;
-                    internal::_mouse_button_released[GLFW_MOUSE_BUTTON_MIDDLE] = false;
+                    ctx().mouse_button_pressed[GLFW_MOUSE_BUTTON_MIDDLE] = r;
+                    ctx().mouse_button_released[GLFW_MOUSE_BUTTON_MIDDLE] = false;
 
                     return r;
                 }
 
                 bool is_any_mouse_button_pressed()
                 {
-                    return std::any_of(internal::_mouse_button_pressed.begin(), internal::_mouse_button_pressed.end(),
+                    return std::any_of(ctx().mouse_button_pressed.begin(), ctx().mouse_button_pressed.end(),
                         [](const auto& pair)
                     {
                         return pair.second;
@@ -338,7 +349,7 @@ namespace ppp
 
                 bool is_any_mouse_button_released()
                 {
-                    return std::any_of(internal::_mouse_button_released.begin(), internal::_mouse_button_released.end(),
+                    return std::any_of(ctx().mouse_button_released.begin(), ctx().mouse_button_released.end(),
                         [](const auto& pair)
                     {
                         return pair.second;
@@ -347,52 +358,52 @@ namespace ppp
 
                 void add_mouse_moved_callback(const std::function<void(f32, f32)>& callback)
                 {
-                    add_mouse_pos_callback(internal::_window, callback);
+                    add_mouse_pos_callback(ctx().window, callback);
                 }
 
                 void add_mouse_dragged_callback(const std::function<void(f32, f32)>& callback)
                 {
-                    internal::_dragging_callback.push_back(callback);
+                    ctx().dragging_callback.push_back(callback);
                 }
 
                 void add_mouse_pressed_callback(const std::function<void(s32, s32)>& callback)
                 {
-                    add_mouse_button_pressed_callback(internal::_window, callback);
+                    add_mouse_button_pressed_callback(ctx().window, callback);
                 }
 
                 void add_mouse_released_callback(const std::function<void(s32, s32)>& callback)
                 {
-                    add_mouse_button_released_callback(internal::_window, callback);
+                    add_mouse_button_released_callback(ctx().window, callback);
                 }
 
                 void add_mouse_horizontal_wheel_callback(const std::function<void(f32)>& callback)
                 {
-                    add_mouse_scroll_x_callback(internal::_window, callback);
+                    add_mouse_scroll_x_callback(ctx().window, callback);
                 }
 
                 void add_mouse_vertical_wheel_callback(const std::function<void(f32)>& callback)
                 {
-                    add_mouse_scroll_y_callback(internal::_window, callback);
+                    add_mouse_scroll_y_callback(ctx().window, callback);
                 }
 
                 void request_pointer_lock()
                 {
-                    lock_cursor(internal::_window);
+                    lock_cursor(ctx().window);
                 }
 
                 void request_pointer_hide()
                 {
-                    hide_cursor(internal::_window);
+                    hide_cursor(ctx().window);
                 }
 
                 void request_pointer_unlock()
                 {
-                    unlock_cursor(internal::_window);
+                    unlock_cursor(ctx().window);
                 }
 
                 void request_pointer_show()
                 {
-                    show_cursor(internal::_window);
+                    show_cursor(ctx().window);
                 }
             }
         }
@@ -413,8 +424,8 @@ namespace ppp
 
             // glfw window creation
             // --------------------
-            internal::_window = glfwCreateWindow(w, h, "Processing", NULL, NULL);
-            if (internal::_window == NULL)
+            input::ctx().window = glfwCreateWindow(w, h, "Processing", NULL, NULL);
+            if (input::ctx().window == NULL)
             {
                 log::error("Failed to create GLFW window");
 
@@ -422,7 +433,7 @@ namespace ppp
                 return false;
             }
 
-            glfwMakeContextCurrent(internal::_window);
+            glfwMakeContextCurrent(input::ctx().window);
             glfwSwapInterval(1);
 
             // Register the key pressed callback so we can cache the last key that was pressed
@@ -438,10 +449,10 @@ namespace ppp
             input::mouse::add_mouse_horizontal_wheel_callback(input::mouse::callbacks::scroll_x_callback);
             input::mouse::add_mouse_vertical_wheel_callback(input::mouse::callbacks::scroll_y_callback);
 
-            internal::center_window(internal::_window);
+            internal::center_window(input::ctx().window);
 
             // Initialize frame time
-            internal::_previous_frame_time = clock::now();
+            input::ctx().previous_frame_time = clock::now();
 
             return true;
         }
@@ -454,68 +465,68 @@ namespace ppp
 
         void tick()
         {
-            internal::_prev_mouse_x = internal::_current_mouse_x;
-            internal::_prev_mouse_y = internal::_current_mouse_y;
-            internal::_current_mouse_x = input::mouse::mouse_x(internal::_window);
-            internal::_current_mouse_y = input::mouse::mouse_y(internal::_window);
+            input::ctx().prev_mouse_x = input::ctx().current_mouse_x;
+            input::ctx().prev_mouse_y = input::ctx().current_mouse_y;
+            input::ctx().current_mouse_x = input::mouse::mouse_x(input::ctx().window);
+            input::ctx().current_mouse_y = input::mouse::mouse_y(input::ctx().window);
 
-            internal::_scroll_offset_x = 0.0f;
-            internal::_scroll_offset_y = 0.0f;
+            input::ctx().scroll_offset_x = 0.0f;
+            input::ctx().scroll_offset_y = 0.0f;
 
             auto current_frame_time = clock::now();
 
-            internal::_delta_frame_time = clock::duration(internal::_previous_frame_time, current_frame_time);
-            internal::_previous_frame_time = current_frame_time;
+            input::ctx().delta_frame_time = clock::duration(input::ctx().previous_frame_time, current_frame_time);
+            input::ctx().previous_frame_time = current_frame_time;
 
-            if (internal::_is_looping)
+            if (input::ctx().is_looping)
             {
-                internal::_frame_times[current_frame_index() % internal::_total_avg_frames] = delta_time();
+                input::ctx().frame_times[current_frame_index() % input::_total_avg_frames] = delta_time();
             }
         }
 
         void window_width(s32* w)
         {
             s32 height = 0;
-            glfwGetWindowSize(internal::_window, w, &height);
+            glfwGetWindowSize(input::ctx().window, w, &height);
         }
         void window_height(s32* h)
         {
             s32 width = 0;
-            glfwGetWindowSize(internal::_window, &width, h);
+            glfwGetWindowSize(input::ctx().window, &width, h);
         }
 
         void loop()
         {
-            internal::_is_looping = true;
+            input::ctx().is_looping = true;
         }
 
         void no_loop()
         {
-            internal::_is_looping = false;
+            input::ctx().is_looping = false;
         }
 
         void redraw()
         {
-            --internal::_current_frame_idx;
+            --input::ctx().current_frame_idx;
         }
 
         void present()
         {
-            glfwSwapBuffers(internal::_window);
+            glfwSwapBuffers(input::ctx().window);
 
             // Make sure we don't overflow
             // Reset the frame indices to their initial value if we reach a certain threshold
-            if (internal::_desired_frame_idx + 1 > std::numeric_limits<u32>::max())
+            if (input::ctx().desired_frame_idx + 1 > std::numeric_limits<u32>::max())
             {
-                internal::_current_frame_idx = 0;
-                internal::_desired_frame_idx = 1;
+                input::ctx().current_frame_idx = 0;
+                input::ctx().desired_frame_idx = 1;
             }
 
-            internal::_current_frame_idx = internal::_desired_frame_idx;
+            input::ctx().current_frame_idx = input::ctx().desired_frame_idx;
 
             if (is_looping())
             {
-                ++internal::_desired_frame_idx;
+                ++input::ctx().desired_frame_idx;
             }
         }
 
@@ -526,42 +537,42 @@ namespace ppp
 
         void request_quit()
         {
-            glfwSetWindowShouldClose(internal::_window, true);
+            glfwSetWindowShouldClose(input::ctx().window, true);
         }
 
         void target_frame_rate(u32 rate)
         {
-            internal::_target_frame_rate = rate;
+            input::ctx().target_frame_rate = rate;
         }
 
         bool is_looping()
         {
-            return internal::_is_looping;
+            return input::ctx().is_looping;
         }
 
         bool can_draw()
         {
-            return is_looping() || internal::_current_frame_idx < internal::_desired_frame_idx;
+            return is_looping() || input::ctx().current_frame_idx < input::ctx().desired_frame_idx;
         }
 
         bool should_close()
         {
-            return glfwWindowShouldClose(internal::_window);
+            return glfwWindowShouldClose(input::ctx().window);
         }
 
         u32 current_frame_index()
         {
-            return internal::_current_frame_idx;
+            return input::ctx().current_frame_idx;
         }
 
         u32 desired_frame_index()
         {
-            return internal::_desired_frame_idx;
+            return input::ctx().desired_frame_idx;
         }
 
         u32 current_frame_rate()
         {
-            if (internal::_is_looping)
+            if (input::ctx().is_looping)
             {
                 return 1.0f / delta_time();
             }
@@ -572,14 +583,14 @@ namespace ppp
         u32 average_frame_rate()
         {
             f64 total_frame_time = 0.0;
-            for (s32 i = 0; i < internal::_total_avg_frames; ++i) 
+            for (s32 i = 0; i < input::_total_avg_frames; ++i)
             {
-                total_frame_time += internal::_frame_times[i];
+                total_frame_time += input::ctx().frame_times[i];
             }
 
             if (total_frame_time > 0.0) 
             {
-                auto fps = internal::_total_avg_frames / total_frame_time;
+                auto fps = input::_total_avg_frames / total_frame_time;
                 return fps;
             }
 
@@ -588,19 +599,19 @@ namespace ppp
 
         u32 target_frame_rate()
         {
-            return internal::_target_frame_rate;
+            return input::ctx().target_frame_rate;
         }
 
         f32 max_frame_time()
         {
-            return 1.0f / internal::_target_frame_rate;
+            return 1.0f / input::ctx().target_frame_rate;
         }
 
         f32 delta_time()
         {
-            if (internal::_is_looping)
+            if (input::ctx().is_looping)
             {
-                return std::chrono::duration<float>(internal::_delta_frame_time).count();
+                return std::chrono::duration<float>(input::ctx().delta_frame_time).count();
             }
             
             log::info("We specified that the app should not be looping, calling delta_time could result in weird results. returning 0");

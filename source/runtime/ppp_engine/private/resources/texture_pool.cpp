@@ -9,7 +9,7 @@ namespace ppp
     {
         namespace internal
         {
-            temp_hash_map<std::string_view, Image> _images;
+            pool_hash_map<std::string_view, Image> _images;
 
             unsigned char* _active_pixels = nullptr;
         }

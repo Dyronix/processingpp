@@ -27,7 +27,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void* tagged_heap::allocate(u32 tag, memory_size size)
+        void* tagged_heap::allocate(u32 tag, memory_size size) noexcept
         {
             for (auto& block : m_blocks) 
             {
@@ -42,7 +42,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void tagged_heap::deallocate(u32 tag, void* ptr)
+        void tagged_heap::deallocate(u32 tag, void* ptr) noexcept
         {
             for (auto& block : m_blocks)
             {
@@ -106,15 +106,15 @@ namespace ppp
             return m_blocks[block_index].total_size();
         }
 
+        constexpr memory_size _block_size = 500_kb;
+        constexpr s32 _block_count = 15;
+
+        tagged_heap _tagged_heap(get_heap(), _block_size, _block_count);
+
         //-------------------------------------------------------------------------
         tagged_heap* get_tagged_heap()
         {
-            constexpr memory_size block_size = 500_kb;
-            constexpr s32 block_count = 10;
-
-            static tagged_heap s_tagged_heap(get_heap(), block_size, block_count);
-
-            return &s_tagged_heap;
+            return &_tagged_heap;
         }
     }
 }

@@ -13,19 +13,19 @@ namespace ppp
         namespace tags
         {
             // batched
-            static const pool_string unlit_color = "unlit_color";
-            static const pool_string unlit_texture = "unlit_texture";
-            static const pool_string unlit_font = "unlit_font";
-            static const pool_string unlit_normal = "unlit_normal";
+            const pool_string& unlit_color();
+            const pool_string& unlit_texture();
+            const pool_string& unlit_font();
+            const pool_string& unlit_normal();
 
-            static const pool_string lit_specular = "lit_specular";
+            const pool_string& lit_specular();
 
             // instanced
-            static const pool_string instance_unlit_color = "instance_unlit_color";
-            static const pool_string instance_unlit_texture = "instance_unlit_texture";
-            static const pool_string instance_unlit_normal = "instance_unlit_normal";
-                         
-            static const pool_string instance_lit_specular = "instance_lit_specular";
+            const pool_string& instance_unlit_color();
+            const pool_string& instance_unlit_texture();
+            const pool_string& instance_unlit_normal();
+                  
+            const pool_string& instance_lit_specular();
         }
 
         bool initialize();

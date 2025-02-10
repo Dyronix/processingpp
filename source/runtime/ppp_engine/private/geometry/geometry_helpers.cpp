@@ -6,9 +6,9 @@ namespace ppp
     namespace geometry
     {
         //-------------------------------------------------------------------------
-        temp_vector<glm::vec3> compute_smooth_normals(const glm::vec3* vertices, u64 vertex_count, const u32* indices, u64 index_count)
+        pool_vector<glm::vec3> compute_smooth_normals(const glm::vec3* vertices, u64 vertex_count, const u32* indices, u64 index_count)
         {
-            temp_vector<glm::vec3> vertex_normals(vertex_count, glm::vec3(0.0f));
+            pool_vector<glm::vec3> vertex_normals(vertex_count, glm::vec3(0.0f));
 
             for (u64 i = 0; i < index_count; i += 3)
             {
@@ -43,9 +43,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        temp_vector<glm::vec3> compute_flat_normals(const glm::vec3* vertices, u64 vertex_count, const u32* indices, u64 index_count)
+        pool_vector<glm::vec3> compute_flat_normals(const glm::vec3* vertices, u64 vertex_count, const u32* indices, u64 index_count)
         {
-            temp_vector<glm::vec3> flat_normals;
+            pool_vector<glm::vec3> flat_normals;
             flat_normals.reserve(index_count); // 1 unique normal per index
 
             for (u64 i = 0; i < index_count; i += 3)
@@ -72,7 +72,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        temp_vector<glm::vec3> compute_normals(const glm::vec3* vertices, u64 vertex_count, const u32* indices, u64 index_count, bool smooth_normals)
+        pool_vector<glm::vec3> compute_normals(const glm::vec3* vertices, u64 vertex_count, const u32* indices, u64 index_count, bool smooth_normals)
         {
             if (smooth_normals)
             {

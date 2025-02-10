@@ -10,54 +10,59 @@ namespace ppp
     {
         namespace internal
         {
-            global_vector<glm::mat4> _model_matrices;
+            static pool_vector<glm::mat4>& model_matrices()
+            {
+                static pool_vector<glm::mat4> s_model_matrices;
+
+                return s_model_matrices;
+            }
         }
 
         void push()
         {
-            internal::_model_matrices.push_back(glm::identity<glm::mat4>());
+            internal::model_matrices().push_back(glm::identity<glm::mat4>());
         }
 
         void pop()
         {
-            internal::_model_matrices.pop_back();
+            internal::model_matrices().pop_back();
         }
 
         void rotate(f32 angle)
         {
-            internal::_model_matrices.back() = glm::rotate(internal::_model_matrices.back(), angle, glm::vec3(0.0f, 0.0f, 1.0f));
+            internal::model_matrices().back() = glm::rotate(internal::model_matrices().back(), angle, glm::vec3(0.0f, 0.0f, 1.0f));
         }
 
         void scale(const glm::vec2& scale)
         {
-            internal::_model_matrices.back() = glm::scale(internal::_model_matrices.back(), glm::vec3(scale, 1.0f));
+            internal::model_matrices().back() = glm::scale(internal::model_matrices().back(), glm::vec3(scale, 1.0f));
         }
 
         void scale(const glm::vec3& scale)
         {
-            internal::_model_matrices.back() = glm::scale(internal::_model_matrices.back(), scale);
+            internal::model_matrices().back() = glm::scale(internal::model_matrices().back(), scale);
         }
 
         void translate(const glm::vec2& translate)
         {
-            internal::_model_matrices.back() = glm::translate(internal::_model_matrices.back(), glm::vec3(translate, 1.0f));
+            internal::model_matrices().back() = glm::translate(internal::model_matrices().back(), glm::vec3(translate, 1.0f));
         }
 
         void translate(const glm::vec3& translate)
         {
-            internal::_model_matrices.back() = glm::translate(internal::_model_matrices.back(), translate);
+            internal::model_matrices().back() = glm::translate(internal::model_matrices().back(), translate);
         }
 
         glm::mat4 active_world()
         {
-            if (internal::_model_matrices.empty())
+            if (internal::model_matrices().empty())
             {
                 return glm::identity<glm::mat4>();
             }
 
             glm::mat4 world = glm::identity<glm::mat4>();
 
-            for (const glm::mat4& m : internal::_model_matrices)
+            for (const glm::mat4& m : internal::model_matrices())
             {
                 world *= m;
             }

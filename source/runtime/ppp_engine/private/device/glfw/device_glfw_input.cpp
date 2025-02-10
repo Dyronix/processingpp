@@ -18,16 +18,37 @@ namespace ppp
         {
             namespace internal
             {
-                global_hash_map<u32, global_vector<keyboard::key_callback>>                 _key_callbacks;
+                static pool_hash_map<u32, pool_vector<keyboard::key_callback>>& key_callbacks()
+                {
+                    static pool_hash_map<u32, pool_vector<keyboard::key_callback>> s_key_callbacks;
 
-                global_vector<mouse::mouse_pos_callback>                                    _mouse_pos_callbacks;
+                    return s_key_callbacks;
+                }
 
-                global_hash_map<u32, global_vector<mouse::mouse_button_scroll_callback>>    _mouse_scroll_callbacks;
-                global_hash_map<u32, global_vector<mouse::mouse_button_callback>>           _mouse_button_callbacks;
+                static pool_vector<mouse::mouse_pos_callback>& mouse_pos_callbacks()
+                {
+                    static pool_vector<mouse::mouse_pos_callback> s_mouse_pos_callbacks;
+
+                    return s_mouse_pos_callbacks;
+                }
+
+                static pool_hash_map<u32, pool_vector<mouse::mouse_button_scroll_callback>>& mouse_scroll_callbacks()
+                {
+                    static pool_hash_map<u32, pool_vector<mouse::mouse_button_scroll_callback>> s_mouse_scroll_callbacks;
+
+                    return s_mouse_scroll_callbacks;
+                }
+
+                static pool_hash_map<u32, pool_vector<mouse::mouse_button_callback>>& mouse_button_callbacks()
+                {
+                    static pool_hash_map<u32, pool_vector<mouse::mouse_button_callback>> s_mouse_button_callbacks;
+
+                    return s_mouse_button_callbacks;
+                }
 
                 void key_callback(GLFWwindow* window, s32 key, s32 scancode, s32 action, s32 mods)
                 {
-                    for (const auto& c : _key_callbacks[action])
+                    for (const auto& c : key_callbacks()[action])
                     {
                         c(key, scancode, mods);
                     }
@@ -35,7 +56,7 @@ namespace ppp
 
                 void mouse_pos_callback(GLFWwindow* window, f64 xpos, f64 ypos)
                 {
-                    for (const auto& c: _mouse_pos_callbacks)
+                    for (const auto& c: mouse_pos_callbacks())
                     {
                         c((f32)xpos, (f32)ypos);
                     }
@@ -43,7 +64,7 @@ namespace ppp
 
                 void mouse_button_callback(GLFWwindow* window, s32 button, s32 action, s32 mods)
                 {
-                    for (const auto& c : _mouse_button_callbacks[action])
+                    for (const auto& c : mouse_button_callbacks()[action])
                     {
                         c(button, mods);
                     }
@@ -53,7 +74,7 @@ namespace ppp
                 {
                     if (xoffset != 0)
                     {
-                        for (const auto& c : _mouse_scroll_callbacks[GLFW_MOUSE_SCROLL_X])
+                        for (const auto& c : mouse_scroll_callbacks()[GLFW_MOUSE_SCROLL_X])
                         {
                             c((f32)xoffset);
                         }
@@ -61,7 +82,7 @@ namespace ppp
 
                     if (yoffset != 0)
                     {
-                        for (const auto& c : _mouse_scroll_callbacks[GLFW_MOUSE_SCROLL_Y])
+                        for (const auto& c : mouse_scroll_callbacks()[GLFW_MOUSE_SCROLL_Y])
                         {
                             c((f32)yoffset);
                         }
@@ -88,29 +109,29 @@ namespace ppp
 
                 void add_key_pressed_callback(GLFWwindow* window, const key_pressed_callback& callback)
                 {
-                    if (internal::_key_callbacks.empty())
+                    if (internal::key_callbacks().empty())
                     {
                         glfwSetKeyCallback(window, internal::key_callback);
                     }
-                    internal::_key_callbacks[GLFW_PRESS].push_back(callback);
+                    internal::key_callbacks()[GLFW_PRESS].push_back(callback);
                 }
 
                 void add_key_released_callback(GLFWwindow* window, const key_released_callback& callback)
                 {
-                    if (internal::_key_callbacks.empty())
+                    if (internal::key_callbacks().empty())
                     {
                         glfwSetKeyCallback(window, internal::key_callback);
                     }
-                    internal::_key_callbacks[GLFW_RELEASE].push_back(callback);
+                    internal::key_callbacks()[GLFW_RELEASE].push_back(callback);
                 }
 
                 void add_key_down_callback(GLFWwindow* window, const key_down_callback& callback)
                 {
-                    if (internal::_key_callbacks.empty())
+                    if (internal::key_callbacks().empty())
                     {
                         glfwSetKeyCallback(window, internal::key_callback);
                     }
-                    internal::_key_callbacks[GLFW_REPEAT].push_back(callback);
+                    internal::key_callbacks()[GLFW_REPEAT].push_back(callback);
                 }
             }
 
@@ -191,8 +212,8 @@ namespace ppp
 
                 void add_mouse_pos_callback(GLFWwindow* window, const mouse_pos_callback& callback)
                 {
-                    internal::_mouse_pos_callbacks.push_back(callback);
-                    if (internal::_mouse_pos_callbacks.empty())
+                    internal::mouse_pos_callbacks().push_back(callback);
+                    if (internal::mouse_pos_callbacks().empty())
                     {
                         glfwSetCursorPosCallback(window, internal::mouse_pos_callback);
                     }
@@ -200,38 +221,38 @@ namespace ppp
 
                 void add_mouse_button_pressed_callback(GLFWwindow* window, const mouse_button_pressed_callback& callback)
                 {
-                    if (internal::_mouse_button_callbacks.empty())
+                    if (internal::mouse_button_callbacks().empty())
                     {
                         glfwSetMouseButtonCallback(window, internal::mouse_button_callback);
                     }
-                    internal::_mouse_button_callbacks[GLFW_PRESS].push_back(callback);
+                    internal::mouse_button_callbacks()[GLFW_PRESS].push_back(callback);
                 }
 
                 void add_mouse_button_released_callback(GLFWwindow* window, const mouse_button_released_callback& callback)
                 {
-                    if (internal::_mouse_button_callbacks.empty())
+                    if (internal::mouse_button_callbacks().empty())
                     {
                         glfwSetMouseButtonCallback(window, internal::mouse_button_callback);
                     }
-                    internal::_mouse_button_callbacks[GLFW_RELEASE].push_back(callback);
+                    internal::mouse_button_callbacks()[GLFW_RELEASE].push_back(callback);
                 }
 
                 void add_mouse_scroll_x_callback(GLFWwindow* window, const mouse_button_scroll_x_callback& callback)
                 {
-                    if (internal::_mouse_scroll_callbacks.empty())
+                    if (internal::mouse_scroll_callbacks().empty())
                     {
                         glfwSetScrollCallback(window, internal::mouse_scroll_callback);
                     }
-                    internal::_mouse_scroll_callbacks[GLFW_MOUSE_SCROLL_X].push_back(callback);
+                    internal::mouse_scroll_callbacks()[GLFW_MOUSE_SCROLL_X].push_back(callback);
                 }
 
                 void add_mouse_scroll_y_callback(GLFWwindow* window, const mouse_button_scroll_y_callback& callback)
                 {
-                    if (internal::_mouse_scroll_callbacks.empty())
+                    if (internal::mouse_scroll_callbacks().empty())
                     {
                         glfwSetScrollCallback(window, internal::mouse_scroll_callback);
                     }
-                    internal::_mouse_scroll_callbacks[GLFW_MOUSE_SCROLL_Y].push_back(callback);
+                    internal::mouse_scroll_callbacks()[GLFW_MOUSE_SCROLL_Y].push_back(callback);
                 }
             }
         }

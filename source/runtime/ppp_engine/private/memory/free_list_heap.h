@@ -16,8 +16,8 @@ namespace ppp
             free_list_heap(heap* heap, memory_size size);
             ~free_list_heap();
 
-            void* allocate(memory_size size);
-            void deallocate(void* ptr);
+            void* allocate(memory_size size) noexcept;
+            void deallocate(void* ptr) noexcept;
 
             void free();
 

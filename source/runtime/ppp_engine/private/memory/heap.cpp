@@ -46,7 +46,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         heap* get_heap()
         {
-            constexpr memory_size block_size = 10_mb;
+            constexpr memory_size block_size = 50_mb;
 
             static heap s_heap(block_size);
 

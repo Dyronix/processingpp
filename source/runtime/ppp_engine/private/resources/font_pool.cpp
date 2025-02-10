@@ -10,7 +10,7 @@ namespace ppp
     {
         namespace internal
         {
-            temp_hash_map<pool_string, Font> _fonts;
+            pool_hash_map<pool_string, Font> _fonts;
 
             const Font* _active_font = nullptr;
         }
