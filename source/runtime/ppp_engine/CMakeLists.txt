@@ -24,7 +24,6 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/scratch_pool.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/scratch_pool_allocator.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/unique_ptr.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/shared_ptr.h
     # fileio
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.cpp
