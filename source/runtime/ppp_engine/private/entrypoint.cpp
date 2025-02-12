@@ -13,7 +13,7 @@
 #include "memory/heap.h"
 #include "memory/tagged_heap.h"
 #include "memory/scratch_pool.h"
-#include "memory/string_pool.h"
+#include "memory/string_heap.h"
 
 #include "resources/texture_pool.h"
 #include "resources/font_pool.h"
@@ -171,9 +171,9 @@ namespace ppp
             log::info("total_memory_allocated_scratch: {}", total_memory_allocated_scratch);
             log::info("total_memory_available_scratch: {}", total_memory_available_scratch);
             log::info("");
-            auto string_pool = memory::get_string_pool();
-            u64 total_memory_allocated_string = string_pool->current_size();
-            u64 total_memory_available_string = string_pool->total_size();
+            auto string_heap = memory::get_string_heap();
+            u64 total_memory_allocated_string = string_heap->current_size();
+            u64 total_memory_available_string = string_heap->total_size();
             log::info("total_memory_allocated_string: {}", total_memory_allocated_string);
             log::info("total_memory_available_string: {}", total_memory_available_string);
             log::info("");
