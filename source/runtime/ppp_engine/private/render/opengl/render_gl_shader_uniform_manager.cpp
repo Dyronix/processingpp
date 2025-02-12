@@ -174,7 +174,7 @@ namespace ppp
                     private:
                         pool_string m_name;          // Name of the uniform
                         object_type_tag m_type_id;   // Type identifier using type_tag
-                        temp_vector<u8> m_data;      // Binary data for the value
+                        pool_vector<u8> m_data;      // Binary data for the value
                         u64 m_count;                 // Amount of elements in the array of elements
                         bool m_is_array;             // Is the uniform storing an array of elements
                     };
@@ -347,124 +347,129 @@ namespace ppp
                     u32 m_shader_program_id;
                 };
 
-                graphics_hash_map<u32, shader_uniform_manager> _shader_uniform_managers;
+                static graphics_hash_map<u32, shader_uniform_manager>& shader_uniform_managers()
+                {
+                    static graphics_hash_map<u32, shader_uniform_manager> s_shader_uniform_managers;
+
+                    return s_shader_uniform_managers;
+                }
             }
 
             void push_uniform(u32 shader_program_id, const pool_string& uniform_name, bool value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
+                internal::shader_uniform_managers().at(shader_program_id).push(uniform_name, value);
             }
             void push_uniform(u32 shader_program_id, const pool_string& uniform_name, s32 value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
+                internal::shader_uniform_managers().at(shader_program_id).push(uniform_name, value);
             }
             void push_uniform(u32 shader_program_id, const pool_string& uniform_name, f32 value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
+                internal::shader_uniform_managers().at(shader_program_id).push(uniform_name, value);
             }
             void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::vec2& value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
+                internal::shader_uniform_managers().at(shader_program_id).push(uniform_name, value);
             }
             void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::vec3& value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
+                internal::shader_uniform_managers().at(shader_program_id).push(uniform_name, value);
             }
             void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::vec4& value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
+                internal::shader_uniform_managers().at(shader_program_id).push(uniform_name, value);
             }
             void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::mat2& value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
+                internal::shader_uniform_managers().at(shader_program_id).push(uniform_name, value);
             }
             void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::mat3& value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
+                internal::shader_uniform_managers().at(shader_program_id).push(uniform_name, value);
             }
             void push_uniform(u32 shader_program_id, const pool_string& uniform_name, const glm::mat4& value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push(uniform_name, value);
+                internal::shader_uniform_managers().at(shader_program_id).push(uniform_name, value);
             }
 
             void push_uniform_array(u32 shader_program_id, const pool_string& uniform_name, u64 count, const s32* value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push_array(uniform_name, count, value);
+                internal::shader_uniform_managers().at(shader_program_id).push_array(uniform_name, count, value);
             }
             void push_uniform_array(u32 shader_program_id, const pool_string& uniform_name, u64 count, const u32* value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push_array(uniform_name, count, value);
+                internal::shader_uniform_managers().at(shader_program_id).push_array(uniform_name, count, value);
             }
             void push_uniform_array(u32 shader_program_id, const pool_string& uniform_name, u64 count, const f32* value)
             {
-                if (internal::_shader_uniform_managers.find(shader_program_id) == std::cend(internal::_shader_uniform_managers))
+                if (internal::shader_uniform_managers().find(shader_program_id) == std::cend(internal::shader_uniform_managers()))
                 {
-                    internal::_shader_uniform_managers.emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
+                    internal::shader_uniform_managers().emplace(shader_program_id, internal::shader_uniform_manager{ shader_program_id });
                 }
 
-                internal::_shader_uniform_managers.at(shader_program_id).push_array(uniform_name, count, value);
+                internal::shader_uniform_managers().at(shader_program_id).push_array(uniform_name, count, value);
             }
 
             void apply_uniforms(u32 shader_program_id)
             {
-                assert(internal::_shader_uniform_managers.find(shader_program_id) != std::cend(internal::_shader_uniform_managers));
+                assert(internal::shader_uniform_managers().find(shader_program_id) != std::cend(internal::shader_uniform_managers()));
 
-                internal::_shader_uniform_managers.at(shader_program_id).apply();
+                internal::shader_uniform_managers().at(shader_program_id).apply();
             }
         }
     }

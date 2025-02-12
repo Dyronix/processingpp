@@ -11,7 +11,15 @@ namespace ppp
 {
     namespace environment
     {
-        pool_string _cwd = {};
+        namespace internal
+        {
+            pool_string& cwd()
+            {
+                static pool_string s_cwd;
+
+                return s_cwd;
+            }
+        }
 
         void print(std::string_view message)
         {
@@ -89,7 +97,7 @@ namespace ppp
 
         std::string_view cwd()
         {
-            if (_cwd.empty())
+            if (internal::cwd().empty())
             {
                 /*
                 Unlike some standard containers (like std::basic_string or std::vector), std::filesystem::path does not expose an interface that allows you to provide your own allocator.
@@ -103,12 +111,12 @@ namespace ppp
 
                 memory::disable_tracking();
 
-                _cwd = std::filesystem::current_path().string<char, std::char_traits<char>, memory::string_pool_allocator<char>>();
+                internal::cwd() = std::filesystem::current_path().string<char, std::char_traits<char>, memory::string_pool_allocator<char>>();
 
                 memory::enable_tracking();
             }
 
-            return _cwd;
+            return internal::cwd();
         }
     }
 }

@@ -12,35 +12,75 @@ namespace ppp
 {
     namespace camera_manager
     {
-        using camera_map = global_hash_map<std::string_view, camera>;
+        namespace tags
+        {
+            //-------------------------------------------------------------------------
+            const pool_string& perspective()
+            {
+                static const pool_string s_perspective = "perspective";
+
+                return s_perspective;
+            }
+            //-------------------------------------------------------------------------
+            const pool_string& orthographic()
+            {
+                static const pool_string s_orthographic = "orthographic";
+
+                return s_orthographic;
+            }
+            //-------------------------------------------------------------------------
+            const pool_string& font()
+            {
+                static const pool_string s_font = "font";
+
+                return s_font;
+            }
+        }
+
+        using camera_map = pool_hash_map<std::string_view, camera>;
         using camera_tag = pool_string;
                
-        camera_map      _cameras;
-        camera*         _active_camera = nullptr;
-        camera_tag      _active_camera_tag = {};
+        static camera_map& cameras()
+        {
+            static camera_map s_camera_map;
+
+            return s_camera_map;
+        }
+        static camera*& active_camera ()
+        {
+            static camera* s_camera = nullptr;
+
+            return s_camera;
+        }
+        static camera_tag& active_camera_tag()
+        {
+            static camera_tag s_camera_tag = {};
+
+            return s_camera_tag;
+        }
 
         //-------------------------------------------------------------------------
         bool initialize(f32 frustum_width, f32 frustum_height)
         {
-            set_camera(tags::perspective,
+            set_camera(tags::perspective(),
                 glm::vec3(0.0f, 0.0f, 10.0f),
                 glm::vec3(0.0f, 0.0f, 0.0f),
                 glm::vec3(0.0f, 1.0f, 0.0f),
                 glm::perspective(glm::radians(55.0f), frustum_width / frustum_height, 0.1f, 100.0f));
 
-            set_camera(tags::orthographic,
+            set_camera(tags::orthographic(),
                 glm::vec3(0.0f, 0.0f, 10.0f),
                 glm::vec3(0.0f, 0.0f, 0.0f),
                 glm::vec3(0.0f, 1.0f, 0.0f),
                 glm::ortho(0.0f, frustum_width, 0.0f, frustum_height, -100.0f, 100.0f));
 
-            set_camera(tags::font,
+            set_camera(tags::font(),
                 glm::vec3(0.0f, 0.0f, 10.0f),
                 glm::vec3(0.0f, 0.0f, 0.0f),
                 glm::vec3(0.0f, 1.0f, 0.0f),
                 glm::ortho(0.0f, frustum_width, 0.0f, frustum_height, -100.0f, 100.0f));
 
-            set_as_active_camera(tags::perspective);
+            set_as_active_camera(tags::perspective());
 
             return true;
         }
@@ -48,42 +88,42 @@ namespace ppp
         //-------------------------------------------------------------------------
         void terminate()
         {
-            _cameras.clear();
+            cameras().clear();
         }
 
         //-------------------------------------------------------------------------
         camera* set_camera(std::string_view camera_tag, const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj)
         {
-            auto it = _cameras.find(camera_tag);
-            if (it != std::cend(_cameras))
+            auto it = cameras().find(camera_tag);
+            if (it != std::cend(cameras()))
             {
                 it->second = { eye, center, up, proj };
 
                 return &it->second;
             }
 
-            _cameras[camera_tag] = { eye, center, up, proj };
+            cameras()[camera_tag] = { eye, center, up, proj };
 
-            return &_cameras.at(camera_tag);
+            return &cameras().at(camera_tag);
         }
 
         //-------------------------------------------------------------------------
         camera* set_as_active_camera(std::string_view camera_tag)
         {
-            if (_active_camera_tag != camera_tag)
+            if (active_camera_tag() != camera_tag)
             {
                 camera* c = camera_by_tag(camera_tag);
 
                 if (c)
                 {
-                    _active_camera_tag = camera_tag;
-                    _active_camera = c;
+                    active_camera_tag() = camera_tag;
+                    active_camera() = c;
                 }
 
                 return c;
             }
 
-            return _active_camera;
+            return active_camera();
         }
 
         //-------------------------------------------------------------------------
@@ -91,9 +131,9 @@ namespace ppp
         {
             static glm::mat4 view = glm::mat4(1.0f);
 
-            if (_active_camera)
+            if (active_camera())
             {
-                view = glm::lookAt(_active_camera->eye, _active_camera->target, _active_camera->up);
+                view = glm::lookAt(active_camera()->eye, active_camera()->target, active_camera()->up);
             }
             else
             {
@@ -127,9 +167,9 @@ namespace ppp
         {
             static glm::mat4 proj = glm::mat4(1.0f);
             
-            if (_active_camera)
+            if (active_camera())
             {
-                proj = _active_camera->proj;
+                proj = active_camera()->proj;
             }
             else
             {
@@ -161,8 +201,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         camera* camera_by_tag(std::string_view camera_tag)
         {
-            auto it = _cameras.find(camera_tag);
-            if (it != std::cend(_cameras))
+            auto it = cameras().find(camera_tag);
+            if (it != std::cend(cameras()))
             {
                 return &it->second;
             }

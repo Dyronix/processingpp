@@ -48,8 +48,21 @@ namespace ppp
                 glm::vec4   color;
             };
 
-            static frame_vector<u8> _intermediate_unlit_buffer(sizeof(unlit_instance_data));
-            static frame_vector<u8> _intermediate_unlit_texture_buffer(sizeof(unlit_texture_instance_data));
+            //-------------------------------------------------------------------------
+            static frame_vector<u8> intermediate_unlit_buffer()
+            {
+                static frame_vector<u8> s_intermediate_unlit_buffer(sizeof(unlit_instance_data));
+
+                return s_intermediate_unlit_buffer;
+            }
+
+            //-------------------------------------------------------------------------
+            static frame_vector<u8> intermediate_unlit_texture_buffer()
+            {
+                static frame_vector<u8> s_intermediate_unlit_texture_buffer;
+
+                return s_intermediate_unlit_texture_buffer;
+            }
 
             //-------------------------------------------------------------------------
             static void check_drawing_type(u32 index_count, GLenum type)
@@ -345,7 +358,7 @@ namespace ppp
 
                 storage_buffer_ops::storage_data_addition_scope sdas(m_storage_buffer, 1);
 
-                temp_vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
+                pool_vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
 
                 size_t offset = 0;
 
@@ -518,13 +531,13 @@ namespace ppp
 
                     if (material_id != -1)
                     {
-                        memcpy(internal::_intermediate_unlit_texture_buffer.data() + offsetof(internal::unlit_texture_instance_data, mat_id), &material_id, sizeof(s32));
-                        memcpy(internal::_intermediate_unlit_texture_buffer.data() + offsetof(internal::unlit_texture_instance_data, world), &world, sizeof(glm::mat4));
-                        memcpy(internal::_intermediate_unlit_texture_buffer.data() + offsetof(internal::unlit_texture_instance_data, color), &color, sizeof(glm::vec4));
+                        memcpy(internal::intermediate_unlit_texture_buffer().data() + offsetof(internal::unlit_texture_instance_data, mat_id), &material_id, sizeof(s32));
+                        memcpy(internal::intermediate_unlit_texture_buffer().data() + offsetof(internal::unlit_texture_instance_data, world), &world, sizeof(glm::mat4));
+                        memcpy(internal::intermediate_unlit_texture_buffer().data() + offsetof(internal::unlit_texture_instance_data, color), &color, sizeof(glm::vec4));
 
-                        m_buffer_manager->add_instance_data(internal::_intermediate_unlit_texture_buffer.data());
+                        m_buffer_manager->add_instance_data(internal::intermediate_unlit_texture_buffer().data());
 
-                        memset(internal::_intermediate_unlit_texture_buffer.data(), 0, sizeof(internal::unlit_texture_instance_data));
+                        memset(internal::intermediate_unlit_texture_buffer().data(), 0, sizeof(internal::unlit_texture_instance_data));
                     }
                     else
                     {
@@ -534,12 +547,12 @@ namespace ppp
                 }
                 else
                 {
-                    memcpy(internal::_intermediate_unlit_buffer.data() + offsetof(internal::unlit_instance_data, world), &world, sizeof(glm::mat4));
-                    memcpy(internal::_intermediate_unlit_buffer.data() + offsetof(internal::unlit_instance_data, color), &color, sizeof(glm::vec4));
+                    memcpy(internal::intermediate_unlit_buffer().data() + offsetof(internal::unlit_instance_data, world), &world, sizeof(glm::mat4));
+                    memcpy(internal::intermediate_unlit_buffer().data() + offsetof(internal::unlit_instance_data, color), &color, sizeof(glm::vec4));
 
-                    m_buffer_manager->add_instance_data(internal::_intermediate_unlit_buffer.data());
+                    m_buffer_manager->add_instance_data(internal::intermediate_unlit_buffer().data());
 
-                    memset(internal::_intermediate_unlit_buffer.data(), 0, sizeof(internal::unlit_instance_data));
+                    memset(internal::intermediate_unlit_buffer().data(), 0, sizeof(internal::unlit_instance_data));
                 }
             }
 

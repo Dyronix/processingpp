@@ -25,11 +25,11 @@ namespace ppp
     {
         namespace conversions
         {
-            static const pool_string s_obj_extension_type = "obj";
-
             //-------------------------------------------------------------------------
             std::string_view to_string(model_file_type file_type)
             {
+                static const pool_string s_obj_extension_type = "obj";
+
                 switch (file_type)
                 {
                 case ppp::model::model_file_type::OBJ: return s_obj_extension_type;
@@ -126,11 +126,11 @@ namespace ppp
         {
             static int s_model_counter = 0;
 
-            pool_stringstream stream;
+            fileio_stringstream stream;
 
             stream << conversions::to_string(file_type);
             stream << "|";
-            stream << string::to_string<pool_string>(s_model_counter++);
+            stream << string::to_string<fileio_string>(s_model_counter++);
 
             if (!geometry_pool::has_geometry(stream.str()))
             {
@@ -141,7 +141,7 @@ namespace ppp
                 case model_file_type::OBJ:
                     create_geom_fn = [model_string](geometry::geometry* self)
                     {
-                        temp_vector<std::string_view> lines;
+                        fileio_vector<std::string_view> lines;
 
                         size_t pos = 0, prev = 0;
                         while ((pos = model_string.find('\n', prev)) != std::string::npos)

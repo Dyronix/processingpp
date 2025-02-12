@@ -15,7 +15,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        u8* tagged_heap_block::allocate(s32 tag, memory_size size)
+        u8* tagged_heap_block::allocate(s32 tag, memory_size size) noexcept
         {
             // Set block tag
             m_tag = tag;
@@ -24,7 +24,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void tagged_heap_block::deallocate(void* ptr)
+        void tagged_heap_block::deallocate(void* ptr) noexcept
         {
             m_free_list_heap.deallocate(ptr);
 

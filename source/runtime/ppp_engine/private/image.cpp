@@ -4,6 +4,7 @@
 #include "render/render.h"
 
 #include "fileio/fileio.h"
+#include "fileio/vfs.h"
 
 #include "resources/texture_pool.h"
 #include "resources/geometry_pool.h"
@@ -157,7 +158,7 @@ namespace ppp
 
         void save_pixels(std::string_view output_name, unsigned char* data, int width, int height, int channels)
         {
-            auto path = fileio::resolve_path(output_name);
+            auto path = vfs::resolve_path(output_name);
 
             if (stbi_write_png(path.c_str(), width, height, channels, data, width * channels) == 0)
             {
@@ -167,7 +168,7 @@ namespace ppp
 
         void save_pixels(std::string_view output_name, int width, int height)
         {
-            auto path = fileio::resolve_path(output_name);
+            auto path = vfs::resolve_path(output_name);
 
             if (stbi_write_png(path.c_str(), width, height, 4, texture_pool::active_pixels(), width * 4) == 0)
             {
@@ -177,7 +178,7 @@ namespace ppp
 
         void save_pixels(std::string_view output_name, image_id id)
         {
-            auto path = fileio::resolve_path(output_name);
+            auto path = vfs::resolve_path(output_name);
 
             const texture_pool::Image* img = texture_pool::image_at_id(id);
 
@@ -260,7 +261,7 @@ namespace ppp
         {
             std::string_view prev_shader = render::active_shader();
 
-            material::shader(shader_pool::tags::unlit_texture);
+            material::shader(shader_pool::tags::unlit_texture());
 
             material::reset_textures();
             material::texture(image_id);
@@ -288,7 +289,7 @@ namespace ppp
 
             transform_stack::pop();
 
-            material::shader(shader_pool::tags::unlit_color);
+            material::shader(shader_pool::tags::unlit_color());
             resources::imaterial* mat_unlit_col = material_pool::get_or_create_material_instance(render::active_shader());
 
             if (render::brush::stroke_enabled())

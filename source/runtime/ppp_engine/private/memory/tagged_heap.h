@@ -18,8 +18,8 @@ namespace ppp
             tagged_heap(heap* heap, memory_size block_size, s32 block_count);
             ~tagged_heap();
 
-            void* allocate(u32 tag, memory_size size);
-            void deallocate(u32 tag, void* ptr);
+            void* allocate(u32 tag, memory_size size) noexcept;
+            void deallocate(u32 tag, void* ptr) noexcept;
 
             void free_blocks(u32 tag);
             void free();

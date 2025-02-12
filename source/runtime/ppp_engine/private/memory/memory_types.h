@@ -35,7 +35,7 @@ namespace ppp
 
     // Type alias for a vector that uses the scratch memory pool
     template <typename T>
-    using temp_vector = std::vector<T, memory::scratch_pool_allocator<T>>;
+    using pool_vector = std::vector<T, memory::scratch_pool_allocator<T>>;
 
     // Type alias for a vector that uses the 'geometry' tag
     using geometry_blob = std::vector<std::byte, memory::tagged_allocator<std::byte, memory::tags::geometry>>;
@@ -51,7 +51,7 @@ namespace ppp
     using global_blob = std::vector<std::byte, memory::tagged_allocator<std::byte, memory::tags::global>>;
 
     // Type alias for a vector that uses the scratch memory pool
-    using temp_blob = std::vector<std::byte, memory::scratch_pool_allocator<std::byte>>;
+    using pool_blob = std::vector<std::byte, memory::scratch_pool_allocator<std::byte>>;
 
     // Hash maps
     // Type alias for a unordered_map that uses the 'geometry' tag
@@ -75,7 +75,7 @@ namespace ppp
 
     // Type alias for a unordered_map that uses the scratch memory pool
     template<typename TKey, typename TValue, typename THasher = std::hash<TKey>>
-    using temp_hash_map = std::unordered_map<TKey, TValue, THasher, std::equal_to<TKey>, memory::scratch_pool_allocator<std::pair<const TKey, TValue>>>;
+    using pool_hash_map = std::unordered_map<TKey, TValue, THasher, std::equal_to<TKey>, memory::scratch_pool_allocator<std::pair<const TKey, TValue>>>;
 
     // Sets
     // Type alias for a unordered_set that uses the 'geometry' tag
@@ -99,7 +99,7 @@ namespace ppp
 
     // Type alias for a unordered_set that uses the scratch memory pool
     template<typename TKey, typename THasher = std::hash<TKey>>
-    using temp_set = std::unordered_set<TKey, THasher, std::equal_to<TKey>, memory::scratch_pool_allocator<TKey>>;
+    using pool_set = std::unordered_set<TKey, THasher, std::equal_to<TKey>, memory::scratch_pool_allocator<TKey>>;
 
     // String Streams
     // Type alias for a basic_ostringstream that uses the 'geometry' tag

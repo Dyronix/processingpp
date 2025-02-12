@@ -19,9 +19,9 @@ namespace ppp
                 }
             };
 
-            temp_hash_map<u64, geometry::geometry, geometry_id_hasher>& get_geometry_map()
+            pool_hash_map<u64, geometry::geometry, geometry_id_hasher>& get_geometry_map()
             {
-                static temp_hash_map<u64, geometry::geometry, geometry_id_hasher> s_geometry_map;
+                static pool_hash_map<u64, geometry::geometry, geometry_id_hasher> s_geometry_map;
 
                 return s_geometry_map;
             }

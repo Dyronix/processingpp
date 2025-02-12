@@ -26,7 +26,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            value_type* allocate(u64 n)
+            value_type* allocate(u64 n) noexcept
             {
                 return static_cast<value_type*>(get_tagged_heap()->allocate(m_tag, n * sizeof(value_type)));
             }

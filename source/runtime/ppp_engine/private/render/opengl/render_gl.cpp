@@ -60,11 +60,26 @@ namespace ppp
             vertex_type _fill_user_vertex_type = vertex_type::POSITION_TEXCOORD_NORMAL_COLOR;
 
             //-------------------------------------------------------------------------
-            graphics_hash_map<std::string_view, ppp::unique_ptr<instance_renderer>> _instance_renderers;
-            graphics_hash_map<std::string_view, ppp::unique_ptr<batch_renderer>> _batch_renderers;
+            static graphics_hash_map<std::string_view, ppp::unique_ptr<instance_renderer>>& instance_renderers()
+            {
+                static graphics_hash_map<std::string_view, ppp::unique_ptr<instance_renderer>> s_instance_renderers;
+
+                return s_instance_renderers;
+            }
+            static graphics_hash_map<std::string_view, ppp::unique_ptr<batch_renderer>>& batch_renderers()
+            {
+                static graphics_hash_map<std::string_view, ppp::unique_ptr<batch_renderer>> s_batch_renderers;
+
+                return s_batch_renderers;
+            }
 
             //-------------------------------------------------------------------------
-            ppp::unique_ptr<batch_renderer> _font_renderer;
+            static ppp::unique_ptr<batch_renderer>& font_renderer()
+            {
+                static ppp::unique_ptr<batch_renderer> s_font_renderer;
+
+                return s_font_renderer;
+            }
 
             //-------------------------------------------------------------------------
             class geometry_builder
@@ -113,7 +128,7 @@ namespace ppp
 
                 if (internal::_draw_mode == render_draw_mode::BATCHED)
                 {
-                    if (internal::_batch_renderers.find(shader_tag) == std::cend(internal::_batch_renderers))
+                    if (internal::batch_renderers().find(shader_tag) == std::cend(internal::batch_renderers()))
                     {
                         ppp::unique_ptr<batch_renderer> renderer = nullptr;
                         if (item->has_textures() == false)
@@ -137,14 +152,14 @@ namespace ppp
                         }
 
                         renderer->draw_policy(render_draw_policy::CUSTOM);
-                        internal::_batch_renderers.emplace(shader_tag, std::move(renderer));
+                        internal::batch_renderers().emplace(shader_tag, std::move(renderer));
                     }
 
-                    internal::_batch_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
+                    internal::batch_renderers().at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
                 }
                 else
                 {
-                    if (internal::_instance_renderers.find(shader_tag) == std::cend(internal::_instance_renderers))
+                    if (internal::instance_renderers().find(shader_tag) == std::cend(internal::instance_renderers()))
                     {
                         ppp::unique_ptr<instance_renderer> renderer = nullptr;
                         if (item->has_textures() == false)
@@ -173,10 +188,10 @@ namespace ppp
 
                         renderer->draw_policy(render_draw_policy::CUSTOM);
 
-                        internal::_instance_renderers.emplace(shader_tag, std::move(renderer));
+                        internal::instance_renderers().emplace(shader_tag, std::move(renderer));
                     }
 
-                    internal::_instance_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
+                    internal::instance_renderers().at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
                 }
             }
         }
@@ -198,7 +213,7 @@ namespace ppp
             internal::_scissor_height = h;
             internal::_scissor_enable = false;
 
-            internal::_font_renderer = ppp::make_unique<texture_batch_renderer>(pos_tex_col_layout().data(), pos_tex_col_layout().size(), shader_pool::tags::unlit_font);
+            internal::font_renderer() = ppp::make_unique<texture_batch_renderer>(pos_tex_col_layout().data(), pos_tex_col_layout().size(), shader_pool::tags::unlit_font());
 
             return true;
         }
@@ -210,34 +225,34 @@ namespace ppp
             framebuffer_pool::release({ internal::_main_frame_buffer_tag, true });
 
             // Font
-            internal::_font_renderer->terminate();
+            internal::font_renderer()->terminate();
 
             // Custom
-            for (auto& pair : internal::_batch_renderers)
+            for (auto& pair : internal::batch_renderers())
             {
                 pair.second->terminate();
             }
-            internal::_batch_renderers.clear();
+            internal::batch_renderers().clear();
 
-            for (auto& pair : internal::_instance_renderers)
+            for (auto& pair : internal::instance_renderers())
             {
                 pair.second->terminate();
             }
-            internal::_instance_renderers.clear();
+            internal::instance_renderers().clear();
         }
 
         //-------------------------------------------------------------------------
         void begin()
         {
             // Font
-            internal::_font_renderer->begin();
+            internal::font_renderer()->begin();
 
             // Custom
-            for (auto& pair : internal::_batch_renderers)
+            for (auto& pair : internal::batch_renderers())
             {
                 pair.second->begin();
             }
-            for (auto& pair : internal::_instance_renderers)
+            for (auto& pair : internal::instance_renderers())
             {
                 pair.second->begin();
             }
@@ -295,18 +310,18 @@ namespace ppp
             const glm::mat4& cam_font_v = context.mat_view_font;
             glm::mat4 cam_font_vp = cam_font_p * cam_font_v;
 
-            internal::_font_renderer->render(cam_font_vp);
+            internal::font_renderer()->render(cam_font_vp);
 
             const glm::mat4& cam_active_p = context.mat_proj_active;
             const glm::mat4& cam_active_v = context.mat_view_active;
             glm::mat4 cam_active_vp = cam_active_p * cam_active_v;
 
-            for (auto& pair : internal::_batch_renderers)
+            for (auto& pair : internal::batch_renderers())
             {
                 pair.second->render(cam_active_vp);
             }
 
-            for (auto& pair : internal::_instance_renderers)
+            for (auto& pair : internal::instance_renderers())
             {
                 pair.second->render(cam_active_vp);
             }
@@ -382,14 +397,14 @@ namespace ppp
         void push_solid_rendering(bool enable)
         {
             // Font
-            internal::_font_renderer->enable_solid_rendering(enable);
+            internal::font_renderer()->enable_solid_rendering(enable);
 
             // Custom
-            for (auto& pair : internal::_batch_renderers)
+            for (auto& pair : internal::batch_renderers())
             {
                 pair.second->enable_solid_rendering(enable);
             }
-            for (auto& pair : internal::_instance_renderers)
+            for (auto& pair : internal::instance_renderers())
             {
                 pair.second->enable_solid_rendering(enable);
             }
@@ -399,15 +414,15 @@ namespace ppp
         void push_wireframe_rendering(bool enable)
         {
             // Font
-            internal::_font_renderer->enable_wireframe_rendering(enable);
+            internal::font_renderer()->enable_wireframe_rendering(enable);
 
             // Custom
-            for (auto& pair : internal::_batch_renderers)
+            for (auto& pair : internal::batch_renderers())
             {
                 pair.second->enable_wireframe_rendering(enable);
             }
 
-            for (auto& pair : internal::_instance_renderers)
+            for (auto& pair : internal::instance_renderers())
             {
                 pair.second->enable_wireframe_rendering(enable);
             }
@@ -601,7 +616,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void submit_font_item(const irender_item* item)
         {
-            internal::_font_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
+            internal::font_renderer()->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
         }
 
         //-------------------------------------------------------------------------

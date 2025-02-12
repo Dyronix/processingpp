@@ -20,7 +20,7 @@ namespace ppp
                 }
 
                 //-------------------------------------------------------------------------
-                shader_builder& add_struct(const pool_string& name, const temp_vector<std::pair<pool_string, pool_string>>& members)
+                shader_builder& add_struct(const pool_string& name, const pool_vector<std::pair<pool_string, pool_string>>& members)
                 {
                     m_shader_code << "struct " << name << "\n{\n";
                     for (const auto& member : members)

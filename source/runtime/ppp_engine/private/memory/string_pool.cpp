@@ -5,14 +5,14 @@ namespace ppp
 {
     namespace memory
     {
+        constexpr memory_size _block_size = 10_mb;
+
+        static string_pool _string_pool(get_heap(), _block_size);
+
         //-------------------------------------------------------------------------
         string_pool* get_string_pool()
         {
-            constexpr memory_size block_size = 1_mb;
-
-            static string_pool s_string_pool(get_heap(), block_size);
-
-            return &s_string_pool;
+            return &_string_pool;
         }
     }
 }

@@ -23,6 +23,7 @@
 #include "resources/framebuffer_pool.h"
 
 #include "fileio/fileio.h"
+#include "fileio/vfs.h"
 
 #include "util/log.h"
 #include "util/types.h"
@@ -46,11 +47,6 @@ namespace ppp
 
             return executable_path.substr(0, last_slash_pos + 1);
         }
-    }
-
-    namespace wildcards
-    {
-        static pool_string wildcard_local = "local:";
     }
 
     //-------------------------------------------------------------------------
@@ -87,9 +83,9 @@ namespace ppp
         if (!material_pool::initialize())   { log::error("Failed to initialize material pool");  return -1; }
         if (!geometry_pool::initialize())   { log::error("Failed to initialize geometry pool");  return -1; }      
 
-        material::shader(shader_pool::tags::unlit_texture);
+        material::shader(shader_pool::tags::unlit_texture());
 
-        fileio::add_wildcard(wildcards::wildcard_local, pool_string(internal::get_working_directory(executable_path)));
+        vfs::add_wildcard(pool_string("local:"), pool_string(internal::get_working_directory(executable_path)));
 
         color::background(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -106,6 +102,8 @@ namespace ppp
 
         setup();
 
+        memory::get_tagged_heap()->free_blocks(memory::tags::fileio);
+
         return 0;
     }
     //-------------------------------------------------------------------------
@@ -119,8 +117,8 @@ namespace ppp
 
             if (device::can_draw())
             {
-                context.mat_proj_font = camera_manager::get_proj(camera_manager::tags::font);
-                context.mat_view_font = camera_manager::get_view(camera_manager::tags::font);
+                context.mat_proj_font = camera_manager::get_proj(camera_manager::tags::font());
+                context.mat_view_font = camera_manager::get_view(camera_manager::tags::font());
                 context.mat_proj_active = camera_manager::get_proj();
                 context.mat_view_active = camera_manager::get_view();
 
