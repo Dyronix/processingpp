@@ -53,6 +53,13 @@ using f64 = double;
 static_assert(sizeof(f32) == 4, "float32 must be 4 bytes big"); // NOLINT
 static_assert(sizeof(f64) == 8, "float64 must be 8 bytes big"); // NOLINT
 
+using uptr = uintptr_t;
+using sptr = intptr_t;
+
+static_assert(sizeof(uptr) == sizeof(void*), "uptr must be the same size as a pointer"); // NOLINT
+static_assert(sizeof(sptr) == sizeof(void*), "sptr must be the same size as a pointer"); // NOLINT
+
+
 // allow single threaded platforms to avoid use of atomic
 #if PPP_WEB || PPP_WINDOWS
 #define PPP_SINGLE_THREADED 1
