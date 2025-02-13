@@ -7,6 +7,7 @@ namespace ppp
 {
     namespace memory
     {
+        //-------------------------------------------------------------------------
         circular_heap::circular_heap(heap* heap, memory_size size)
             :m_total_size(size)
             ,m_base_memory(nullptr)
@@ -16,6 +17,7 @@ namespace ppp
             m_base_memory = heap->allocate(size);
         }
 
+        //-------------------------------------------------------------------------
         void* circular_heap::allocate(memory_size size) noexcept
         {
             constexpr u64 alignment = alignof(std::max_align_t);
@@ -48,11 +50,13 @@ namespace ppp
             return ptr;
         }
 
+        //-------------------------------------------------------------------------
         void circular_heap::deallocate(void* ptr) noexcept
         {
             assert(false && "Circular allocators should free all their allocated memory all at once");
         }
 
+        //-------------------------------------------------------------------------
         void circular_heap::free()
         {
             m_head = 0;
@@ -74,6 +78,7 @@ namespace ppp
             return max - min;
         }
 
+        //-------------------------------------------------------------------------
         bool circular_heap::has_space(u64 allocation_start, u64 size) const
         {
             // There are two cases:
