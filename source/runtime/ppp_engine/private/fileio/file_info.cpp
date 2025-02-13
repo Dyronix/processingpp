@@ -1,6 +1,6 @@
 #include "fileio/file_info.h"
 
-#include "util/string_ops.h"
+#include "string/string_ops.h"
 
 namespace ppp
 {

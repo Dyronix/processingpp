@@ -16,8 +16,9 @@
 
 #include "memory/memory_types.h"
 
+#include "string/string_conversions.h"
+
 #include "util/log.h"
-#include "util/string_ops.h"
 
 namespace ppp
 {

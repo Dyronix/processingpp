@@ -3,7 +3,7 @@
 #include "util/types.h"
 
 #include "memory/memory_size.h"
-#include "memory/free_list_heap.h"
+#include "memory/linear_heap.h"
 
 namespace ppp
 {
@@ -22,14 +22,14 @@ namespace ppp
         public:
             u32             tag() const { return m_tag; }
 
-            memory_size     current_size() const { return m_free_list_heap.current_size(); }
-            memory_size     total_size() const { return m_free_list_heap.total_size(); }
+            memory_size     current_size() const { return m_linear_heap.current_memory(); }
+            memory_size     total_size() const { return m_linear_heap.total_memory(); }
 
-            bool            can_alloc(memory_size size) const { return m_free_list_heap.can_alloc(size); }
+            bool            can_alloc(memory_size size) const { return m_linear_heap.can_alloc(size); }
 
         private:
             u32             m_tag;
-            free_list_heap  m_free_list_heap;
+            linear_heap     m_linear_heap;
         };
     }
 }

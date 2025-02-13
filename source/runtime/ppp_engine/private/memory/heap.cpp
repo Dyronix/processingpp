@@ -44,6 +44,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        bool heap::can_alloc(memory_size size) const
+        {
+            // When the application is running we cannot request more memory
+            return false;
+        }
+
+        //-------------------------------------------------------------------------
         heap* get_heap()
         {
             constexpr memory_size block_size = 50_mb;

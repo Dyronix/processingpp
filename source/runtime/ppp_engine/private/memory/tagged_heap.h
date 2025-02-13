@@ -25,12 +25,14 @@ namespace ppp
             void free();
 
         public:
-            s32 block_count() const;
-            
-            u32 block_tag(s32 block_index) const;
+            bool can_alloc(memory_size size) const;
 
             memory_size current_size(s32 block_index) const;
             memory_size total_size(s32 block_index) const;
+
+        public:
+            s32 block_count() const;
+            u32 block_tag(s32 block_index) const;
 
         private:
             u8*                 m_base_memory;

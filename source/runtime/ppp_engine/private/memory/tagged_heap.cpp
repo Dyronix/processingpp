@@ -54,6 +54,20 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        bool tagged_heap::can_alloc(memory_size size) const
+        {
+            for (auto& block : m_blocks)
+            {
+                if (block.can_alloc(size))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        //-------------------------------------------------------------------------
         void tagged_heap::free_blocks(u32 tag)
         {
             for (auto& block : m_blocks)

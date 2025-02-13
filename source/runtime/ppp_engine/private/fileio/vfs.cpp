@@ -1,8 +1,9 @@
 #include "fileio/vfs.h"
 #include "fileio/file_info.h"
 
+#include "string/string_ops.h"
+
 #include "util/log.h"
-#include "util/string_ops.h"
 
 #include <fstream>
 

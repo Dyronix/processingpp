@@ -64,6 +64,17 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        bool circular_heap::can_alloc(memory_size size) const
+        {
+            constexpr u64 alignment = alignof(std::max_align_t);
+
+            u64 aligned_head = align_up(m_head, alignment);
+            u64 size_in_bytes = size.size_in_bytes();
+
+            return has_space(aligned_head, size.size_in_bytes());
+        }
+
+        //-------------------------------------------------------------------------
         memory_size circular_heap::total_memory() const
         {
             return m_total_size;

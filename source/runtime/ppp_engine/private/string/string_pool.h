@@ -6,16 +6,16 @@ namespace ppp
 {
     namespace string
     {
-        class StringEntry;
-        class StringID;
+        class string_entry;
+        class string_id;
 
         namespace string_pool
         {
-            std::string_view resolve(const StringID& entryID);
+            std::string_view resolve(const string_id& entryID);
 
-            const StringEntry& find(const StringID& entryID);
+            const string_entry& find(const string_id& entryID);
 
-            StringID make_and_store(std::string_view characters);
+            string_id make_and_store(std::string_view characters);
         }
     }
 }

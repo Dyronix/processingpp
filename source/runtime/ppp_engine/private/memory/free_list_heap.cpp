@@ -151,7 +151,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         // Splits the current free block and updates the free list.
-        void free_list_heap::split_memory_block(block_header* prev, block_header*& curr, memory_size size)
+        void free_list_heap::split_memory_block(block_header* prev, block_header*& curr, memory_size size) noexcept
         {
             // Calculate address of the new free block.
             block_header* new_block = reinterpret_cast<block_header*>(reinterpret_cast<u8*>(curr) + size.size_in_bytes());

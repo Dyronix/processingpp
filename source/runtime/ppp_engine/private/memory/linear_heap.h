@@ -20,6 +20,8 @@ namespace ppp
             void            free();
 
         public:
+            bool            can_alloc(memory_size size) const;
+
             memory_size     total_memory() const { return m_total_memory; }
             memory_size     current_memory() const { return m_offset; }
 

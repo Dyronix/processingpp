@@ -29,7 +29,7 @@ namespace ppp
             /**
              * Create an invalid string_id.
              */
-            static constexpr string_id create_invalid()
+            static string_id create_invalid()
             {
                 return string_id(s_none_state_hash_val);
             }
@@ -38,7 +38,7 @@ namespace ppp
             /**
              * Create an None string_id.
              */
-            constexpr string_id()
+            string_id()
                 : m_comparison_hash(create_invalid())
             {
             }
@@ -47,7 +47,7 @@ namespace ppp
             /**
              * Create a runtime generated string_id.
              */
-            constexpr explicit string_id(u64 entryID)
+            explicit string_id(u64 entryID)
                 : m_comparison_hash(entryID)
             {
             }
@@ -56,7 +56,7 @@ namespace ppp
             /**
              * Create an string_id with characters.
              */
-            constexpr explicit string_id(std::string_view stringView)
+            explicit string_id(std::string_view stringView)
                 : m_comparison_hash(std::hash<std::string_view> {}(stringView))
             {
             }
@@ -65,7 +65,7 @@ namespace ppp
             /**
              * Retrieve the hashed value as u32
              */
-            constexpr operator u32() const // NOLINT(google-explicit-constructor)
+            operator u32() const // NOLINT(google-explicit-constructor)
             {
                 return static_cast<u32>(m_comparison_hash);
             }
@@ -73,36 +73,36 @@ namespace ppp
             /**
              * Is the hash value valid
              */
-            constexpr explicit operator bool() const
+            explicit operator bool() const
             {
                 return is_none() == false; // NOLINT(readability-simplify-boolean-expr)
             }
 
             //-------------------------------------------------------------------------
-            constexpr bool operator<(const string_id& rhs) const
+            bool operator<(const string_id& rhs) const
             {
                 return m_comparison_hash < rhs.m_comparison_hash;
             }
             //-------------------------------------------------------------------------
-            constexpr bool operator>(const string_id& rhs) const
+            bool operator>(const string_id& rhs) const
             {
                 return rhs.m_comparison_hash < m_comparison_hash;
             }
 
             //-------------------------------------------------------------------------
-            constexpr bool operator==(const string_id& other) const
+            bool operator==(const string_id& other) const
             {
                 return m_comparison_hash == other.m_comparison_hash;
             }
             //-------------------------------------------------------------------------
-            constexpr bool operator!=(const string_id& other) const
+            bool operator!=(const string_id& other) const
             {
                 return !(*this == other);
             }
 
             //-------------------------------------------------------------------------
             /** True for string_id() and string_id("Invalid string_id") */
-            constexpr bool is_none() const
+            bool is_none() const
             {
                 return m_comparison_hash == s_none_state_hash_val;
             }
@@ -111,14 +111,14 @@ namespace ppp
             /**
              * Retrieve the hashed value
              */
-            constexpr u32 value() const
+            u32 value() const
             {
                 return static_cast<u32>(m_comparison_hash);
             }
 
         private:
             /** Hash for invalid string_id into string pool */
-            static constexpr u32 s_none_state_hash_val = 0;
+            static const u32 s_none_state_hash_val = 0;
 
             /** Hash into the string_id hash table */
             u64 m_comparison_hash;
@@ -134,7 +134,7 @@ namespace ppp
     }
 }
 
-constexpr ppp::string::string_id operator""_sid(const char* string, size_t size)
+ppp::string::string_id operator""_sid(const char* string, size_t size)
 {
     return ppp::string::string_id(std::string_view(string, static_cast<u32>(size))); // NOLINT(cppcoreguidelines-narrowing-conversions)
 }

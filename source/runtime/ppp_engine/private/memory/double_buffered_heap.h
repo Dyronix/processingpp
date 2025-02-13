@@ -21,6 +21,8 @@ namespace ppp
             void            free();
 
         public:
+            bool            can_alloc(memory_size size) const;
+
             memory_size     total_memory() const;
             memory_size     current_memory() const;
 

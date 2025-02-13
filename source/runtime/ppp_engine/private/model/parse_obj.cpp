@@ -8,7 +8,8 @@
 
 #include "memory/memory_tracker.h"
 
-#include "util/string_ops.h"
+#include "string/string_ops.h"
+#include "string/string_conversions.h"
 
 #include <fstream>
 #include <sstream>

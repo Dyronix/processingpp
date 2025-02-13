@@ -9,7 +9,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         tagged_heap_block::tagged_heap_block(heap* heap, memory_size size)
             :m_tag(0)
-            ,m_free_list_heap(heap, size)
+            ,m_linear_heap(heap, size)
         {
 
         }
@@ -20,26 +20,20 @@ namespace ppp
             // Set block tag
             m_tag = tag;
 
-            return static_cast<u8*>(m_free_list_heap.allocate(size));
+            return static_cast<u8*>(m_linear_heap.allocate(size));
         }
 
         //-------------------------------------------------------------------------
         void tagged_heap_block::deallocate(void* ptr) noexcept
         {
-            m_free_list_heap.deallocate(ptr);
-
-            if (m_free_list_heap.current_size() == 0)
-            {
-                m_tag = 0;
-            }
+            assert(false && "tagged heap blocks are instantly freed");
         }
 
         //-------------------------------------------------------------------------
         void tagged_heap_block::free()
         {
             m_tag = 0;
-
-            m_free_list_heap.free();
+            m_linear_heap.free();
         }
     }
 }

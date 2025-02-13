@@ -43,5 +43,21 @@ namespace ppp
         {
             m_offset = 0;
         }
+
+        //-------------------------------------------------------------------------
+        bool linear_heap::can_alloc(memory_size size) const noexcept
+        {
+            constexpr std::size_t alignment = alignof(std::max_align_t);
+
+            uptr raw_address = reinterpret_cast<uptr>(m_base_memory) + m_offset;
+            uptr aligned_address = align_up(raw_address, alignment);
+
+            // Calculate the required offset
+            memory_size required_offset = static_cast<memory_size>(aligned_address - reinterpret_cast<uptr>(m_base_memory));
+
+            // Check if the allocation fits within the remaining memory
+            return required_offset + size <= m_total_memory;
+        }
+
     }
 }

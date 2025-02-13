@@ -1,7 +1,8 @@
 #include "geometry.h"
 
+#include "string/string_ops.h"
+
 #include "util/log.h"
-#include "util/string_ops.h"
 
 #include <glm/gtc/epsilon.hpp>
 
