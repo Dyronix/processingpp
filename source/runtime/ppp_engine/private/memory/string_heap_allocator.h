@@ -1,6 +1,6 @@
 #pragma once
 
-#include "memory/string_pool.h"
+#include "memory/string_heap.h"
 #include "memory/memory_size.h"
 
 namespace ppp 
@@ -8,20 +8,20 @@ namespace ppp
     namespace memory 
     {
         template <typename T>
-        class string_pool_allocator 
+        class string_heap_allocator 
         {
         public:
             using value_type = T;
 
             //-------------------------------------------------------------------------
-            explicit string_pool_allocator() noexcept
-                : m_pool(get_string_pool())
+            explicit string_heap_allocator() noexcept
+                : m_pool(get_string_heap())
             {
             }
 
             //-------------------------------------------------------------------------
             template <typename U>
-            string_pool_allocator(const string_pool_allocator<U>& other) noexcept
+            string_heap_allocator(const string_heap_allocator<U>& other) noexcept
                 : m_pool(other.m_pool)
             {
             }
@@ -58,30 +58,30 @@ namespace ppp
             template <typename U>
             struct rebind 
             {
-                using other = string_pool_allocator<U>;
+                using other = string_heap_allocator<U>;
             };
 
         public:
-            const string_pool* pool() const noexcept { return m_pool; }
+            const string_heap* pool() const noexcept { return m_pool; }
 
         private:
-            // Allow other string_pool_allocator instantiations (with different types) access to m_pool.
+            // Allow other string_heap_allocator instantiations (with different types) access to m_pool.
             template <typename U>
-            friend class string_pool_allocator;
+            friend class string_heap_allocator;
 
-            string_pool* m_pool;
+            string_heap* m_pool;
         };
 
         // Equality comparison operators for the allocator.
         // These compare the underlying memory pool pointers.
         template <typename T, typename U>
-        bool operator==(const string_pool_allocator<T>& a, const string_pool_allocator<U>& b) noexcept 
+        bool operator==(const string_heap_allocator<T>& a, const string_heap_allocator<U>& b) noexcept 
         {
             return a.pool() == b.pool();
         }
 
         template <typename T, typename U>
-        bool operator!=(const string_pool_allocator<T>& a, const string_pool_allocator<U>& b) noexcept 
+        bool operator!=(const string_heap_allocator<T>& a, const string_heap_allocator<U>& b) noexcept 
         {
             return !(a == b);
         }

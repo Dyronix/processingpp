@@ -111,7 +111,7 @@ namespace ppp
 
                 memory::disable_tracking();
 
-                internal::cwd() = std::filesystem::current_path().string<char, std::char_traits<char>, memory::string_pool_allocator<char>>();
+                internal::cwd() = std::filesystem::current_path().string<char, std::char_traits<char>, memory::string_heap_allocator<char>>();
 
                 memory::enable_tracking();
             }

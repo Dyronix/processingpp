@@ -17,7 +17,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void* double_buffered_heap::allocate(memory_size size) noexcept
         {
-            m_active_linear_heap->allocate(size);
+            return m_active_linear_heap->allocate(size);
         }
 
         //-------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "memory/scratch_pool_allocator.h"
-#include "memory/string_pool_allocator.h"
+#include "memory/string_heap_allocator.h"
 #include "memory/tagged_allocator.h"
 #include "memory/tagged_heap_tags.h"
 
@@ -116,7 +116,7 @@ namespace ppp
     using global_ostringstream = std::basic_ostringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::global>>;
 
     // Type alias for a basic_ostringstream that uses the string pool
-    using pool_ostringstream = std::basic_ostringstream<char, std::char_traits<char>, memory::string_pool_allocator<char>>;
+    using pool_ostringstream = std::basic_ostringstream<char, std::char_traits<char>, memory::string_heap_allocator<char>>;
 
     // Type alias for a basic_ostringstream that uses the 'geometry' tag
     using geometry_istringstream = std::basic_istringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::geometry>>;
@@ -132,7 +132,7 @@ namespace ppp
     using global_istringstream = std::basic_istringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::global>>;
 
     // Type alias for a basic_istringstream that uses the string pool
-    using pool_istringstream = std::basic_istringstream<char, std::char_traits<char>, memory::string_pool_allocator<char>>;
+    using pool_istringstream = std::basic_istringstream<char, std::char_traits<char>, memory::string_heap_allocator<char>>;
 
     // Type alias for a basic_ostringstream that uses the 'geometry' tag
     using geometry_stringstream = std::basic_stringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::geometry>>;
@@ -148,7 +148,7 @@ namespace ppp
     using global_stringstream = std::basic_stringstream<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::global>>;
 
     // Type alias for a basic_ostringstream that uses the string pool
-    using pool_stringstream = std::basic_stringstream<char, std::char_traits<char>, memory::string_pool_allocator<char>>;
+    using pool_stringstream = std::basic_stringstream<char, std::char_traits<char>, memory::string_heap_allocator<char>>;
 
     // Strings
     // Type alias for a basic_string that uses the 'geometry' tag
@@ -165,5 +165,5 @@ namespace ppp
     using global_string = std::basic_string<char, std::char_traits<char>, memory::tagged_allocator<char, memory::tags::global>>;
 
     // Type alias for a basic_string that uses the string pool
-    using pool_string = std::basic_string<char, std::char_traits<char>, memory::string_pool_allocator<char>>;
+    using pool_string = std::basic_string<char, std::char_traits<char>, memory::string_heap_allocator<char>>;
 }
