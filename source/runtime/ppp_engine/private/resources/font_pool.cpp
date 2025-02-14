@@ -1,7 +1,5 @@
 #include "resources/font_pool.h"
-
 #include "memory/memory_types.h"
-
 #include <unordered_map>
 
 namespace ppp
@@ -10,9 +8,14 @@ namespace ppp
     {
         namespace internal
         {
-            pool_hash_map<pool_string, Font> _fonts;
+            static global_hash_map<string::string_id, font>& fonts()
+            {
+                static global_hash_map<string::string_id, font> s_fonts;
 
-            const Font* _active_font = nullptr;
+                return s_fonts;
+            }
+
+            const font* _active_font = nullptr;
         }
 
         bool initialize()
@@ -22,40 +25,42 @@ namespace ppp
 
         void terminate()
         {
-            
+            internal::fonts().clear();
+
+            internal::_active_font = nullptr;
         }
 
-        bool has_font(std::string_view file_path)
+        bool has_font(string::string_id file_path)
         {
-            return internal::_fonts.find(file_path.data()) != internal::_fonts.cend();
+            return internal::fonts().find(file_path) != internal::fonts().cend();
         }
 
         bool has_font(u32 id)
         {
-            auto it = std::find_if(std::cbegin(internal::_fonts), std::cend(internal::_fonts),
+            auto it = std::find_if(std::cbegin(internal::fonts()), std::cend(internal::fonts()),
                 [id](const auto& pair)
             {
                 return pair.second.atlas.texture_id == id;
             });
 
-            return it != internal::_fonts.cend();
+            return it != internal::fonts().cend();
         }
 
-        const Font* font_at_path(std::string_view file_path)
+        const font* font_at_path(string::string_id file_path)
         {
             if (has_font(file_path))
             {
-                return &internal::_fonts.find(file_path.data())->second;
+                return &internal::fonts().find(file_path)->second;
             }
 
             return nullptr;
         }
 
-        const Font* font_at_id(u32 id)
+        const font* font_at_id(u32 id)
         {
             if (has_font(id))
             {
-                auto it = std::find_if(std::cbegin(internal::_fonts), std::cend(internal::_fonts),
+                auto it = std::find_if(std::cbegin(internal::fonts()), std::cend(internal::fonts()),
                     [id](const auto& pair)
                 {
                     return pair.second.atlas.texture_id == id;
@@ -69,7 +74,7 @@ namespace ppp
 
         void load_active_font(u32 id)
         {
-            const Font* font = font_at_id(id);
+            const font* font = font_at_id(id);
 
             if (font != nullptr)
             {
@@ -77,12 +82,12 @@ namespace ppp
             }
         }
 
-        void add_new_font(const Font& font)
+        void add_new_font(const font& font)
         {
-            internal::_fonts.insert(std::make_pair(font.file_path, font));
+            internal::fonts().insert(std::make_pair(font.file_path, font));
         }
 
-        const Font* active_font()
+        const font* active_font()
         {
             return internal::_active_font;
         }

@@ -82,7 +82,7 @@ namespace ppp
 
                 const u64 material_id() const override
                 {
-                    return m_material->id();
+                    return m_material->shader_tag();
                 }
 
                 const resources::imaterial* material() const override
@@ -99,13 +99,13 @@ namespace ppp
             {
                 resources::imaterial* mat_font = material_pool::get_or_create_material_instance(shader_pool::tags::unlit_font());
 
-                pool_stringstream stream;
+                temp_stringstream stream;
 
                 stream << "font_character_item|";
                 stream << character << "|";
                 stream << texture_id;
 
-                const pool_string gid = stream.str();
+                const temp_string gid = stream.str();
 
                 if (!geometry_pool::has_geometry(gid))
                 {
@@ -139,7 +139,7 @@ namespace ppp
 
         void text_size(unsigned int size)
         {
-            const font_pool::Font* active_font = font_pool::active_font();
+            const font_pool::font* active_font = font_pool::active_font();
 
             if (active_font->size * 0.5f > size || active_font->size * 2.0f < size)
             {
@@ -153,7 +153,7 @@ namespace ppp
 
         void text(std::string_view text, float x, float y)
         {           
-            const font_pool::Font* active_font = font_pool::active_font();
+            const font_pool::font* active_font = font_pool::active_font();
             if (active_font == nullptr)
             {
                 log::warn("No font specified as active font, please call typography::text_font");
@@ -165,7 +165,7 @@ namespace ppp
             std::string_view::const_iterator it;
             for(it = std::cbegin(text); it != std::cend(text); ++it)
             {
-                const FontCharacter& ch = active_font->atlas.characters.at(*it);
+                const font_character& ch = active_font->atlas.characters.at(*it);
 
                 f32 xpos = x + ch.bearing.x * scale;
                 f32 ypos = y - (ch.size.y - ch.bearing.y) * scale;
@@ -206,9 +206,10 @@ namespace ppp
 
         font_id load_font(std::string_view path, unsigned int size, unsigned int characters_to_load)
         {
-            if (font_pool::has_font(path))
+            string::string_id sid_path = string::string_id(path);
+            if (font_pool::has_font(sid_path))
             {
-                const font_pool::Font* font = font_pool::font_at_path(path);
+                const font_pool::font* font = font_pool::font_at_path(sid_path);
                 return font->atlas.texture_id;
             }
 
@@ -231,9 +232,9 @@ namespace ppp
             // set size to load glyphs as
             FT_Set_Pixel_Sizes(face, 0, size);
 
-            font_pool::Font font;
+            font_pool::font font;
 
-            font.file_path = path;
+            font.file_path = sid_path;
             font.size = size;
             font.atlas = make_font_atlas(face, characters_to_load);
 

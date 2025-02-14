@@ -6,6 +6,8 @@
 #include "render/render_item.h"
 #include "render/render_types.h"
 
+#include "string/string_id.h"
+
 #include <glm/glm.hpp>
 
 #include <vector>
@@ -56,12 +58,12 @@ namespace ppp
         render_draw_mode draw_mode();
 
         // Shader
-        void push_active_shader(std::string_view tag, vertex_type type);
+        void push_active_shader(string::string_id tag, vertex_type type);
 
-        std::string_view active_shader();
+        string::string_id active_shader();
 
         // Geometry Builder
-        void begin_geometry_builder(std::string_view tag);
+        void begin_geometry_builder(string::string_id tag);
         void end_geometry_builder();
 
         // Rasterization

@@ -16,7 +16,7 @@ namespace ppp
 		fileio_blob read_binary_file(std::string_view filename)
 		{
 			// Load file from disk
-			const pool_string path = vfs::resolve_path(filename);
+			const temp_string path = vfs::resolve_path(filename);
 
 			std::ifstream file(path.c_str(), std::ios::binary | std::ios::ate);
 			if (!file.is_open())
@@ -45,7 +45,7 @@ namespace ppp
 		fileio_string read_text_file(std::string_view filename)
 		{
 			// Load file from disk
-			const pool_string path = vfs::resolve_path(filename);
+			const temp_string path = vfs::resolve_path(filename);
 
 			std::ifstream file(path.c_str(), std::ios::binary | std::ios::ate);
 			if (!file.is_open())

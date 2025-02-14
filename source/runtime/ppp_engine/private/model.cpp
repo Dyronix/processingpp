@@ -27,13 +27,11 @@ namespace ppp
         namespace conversions
         {
             //-------------------------------------------------------------------------
-            std::string_view to_string(model_file_type file_type)
+            string::string_id to_string(model_file_type file_type)
             {
-                static const pool_string s_obj_extension_type = "obj";
-
                 switch (file_type)
                 {
-                case ppp::model::model_file_type::OBJ: return s_obj_extension_type;
+                case ppp::model::model_file_type::OBJ: return string::store_sid("obj");
                     break;
                 default:
                     log::error("Trying to parse unknown type, exiting program");
@@ -95,7 +93,7 @@ namespace ppp
             }
             const u64 material_id() const override
             {
-                return m_material->id();
+                return m_material->shader_tag();
             }
 
             const resources::imaterial* material() const override
@@ -127,13 +125,15 @@ namespace ppp
         {
             static int s_model_counter = 0;
 
-            fileio_stringstream stream;
+            temp_stringstream stream;
 
             stream << conversions::to_string(file_type);
             stream << "|";
-            stream << string::to_string<fileio_string>(s_model_counter++);
+            stream << string::to_string<temp_string>(s_model_counter++);
 
-            if (!geometry_pool::has_geometry(stream.str()))
+            const temp_string gid = stream.str();
+
+            if (!geometry_pool::has_geometry(gid))
             {
                 std::function<void(geometry::geometry* self)> create_geom_fn = nullptr;
 
@@ -142,7 +142,7 @@ namespace ppp
                 case model_file_type::OBJ:
                     create_geom_fn = [model_string](geometry::geometry* self)
                     {
-                        fileio_vector<std::string_view> lines;
+                        init_vector<std::string_view> lines;
 
                         size_t pos = 0, prev = 0;
                         while ((pos = model_string.find('\n', prev)) != std::string::npos)

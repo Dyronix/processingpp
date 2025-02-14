@@ -1,4 +1,4 @@
-#include "memory/heap.h"
+#include "memory/heaps/heap.h"
 
 namespace ppp
 {
@@ -20,12 +20,12 @@ namespace ppp
         {
             if (m_base_memory != nullptr)
             {
-                std::free(m_base_memory);
+                free();
             }
         }
 
         //-------------------------------------------------------------------------
-        void* heap::allocate(memory_size size)
+        void* heap::allocate(memory_size size) noexcept
         {
             void* memory = m_base_memory + m_offset;
 
@@ -35,7 +35,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void heap::free()
+        void heap::deallocate(void* ptr) noexcept
+        {
+            assert(false && "Heap allocators should free all their allocated memory all at once");
+        }
+
+        //-------------------------------------------------------------------------
+        void heap::free() noexcept
         {
             std::free(m_base_memory);
 

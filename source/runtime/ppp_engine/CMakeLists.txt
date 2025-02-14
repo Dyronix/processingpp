@@ -2,34 +2,37 @@ add_library(processing_engine STATIC)
 
 # Sources
 target_sources(processing_engine PRIVATE 
-    # memory
+    # memory   
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_size.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_tracker.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_tracker.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap_block.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap_block.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_allocator.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/tagged_heap_tags.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_types.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/string_heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/string_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/string_heap_allocator.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/free_list_heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/free_list_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/scratch_pool.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/scratch_pool.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/scratch_pool_allocator.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_tags.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/unique_ptr.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/linear_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/linear_heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/double_buffered_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/double_buffered_heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/circular_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/circular_heap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_manager.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_manager.cpp
+    # memory-heaps
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap_block.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap_block.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/iheap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/iheap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/heap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/heap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/free_list_heap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/free_list_heap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/linear_heap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/linear_heap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/double_buffered_heap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/double_buffered_heap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/circular_heap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/circular_heap.h
+    # memory-allocators
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/frame_heap_allocator.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/scratch_heap_allocator.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/tagged_heap_allocator.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/global_heap_allocator.h
     # fileio
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.cpp
@@ -118,7 +121,11 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_event_dispatcher.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_event_dispatcher.h
     # geometry
-    # 3d
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.cpp
+    # geometry-3d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.cpp   
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/plane.h
@@ -139,7 +146,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/cylinder.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/point.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/point.cpp
-    # 2d
+    # geometry-2d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/point.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/point.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/2d/line.h
@@ -156,11 +163,6 @@ target_sources(processing_engine PRIVATE
     # model
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model/parse_obj.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model/parse_obj.cpp
-
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.cpp
     # string
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/string/string_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/string/string_conversions.h
@@ -260,3 +262,8 @@ endif()
 # Target properties
 set_target_properties(processing_engine PROPERTIES
                       FOLDER "engine")
+
+if(MSVC)
+    message(STATUS "${CMAKE_SOURCE_DIR}/natvis/string_id.natvis")
+    target_sources(processing_engine PRIVATE "${CMAKE_SOURCE_DIR}/natvis/string_id.natvis")
+endif()

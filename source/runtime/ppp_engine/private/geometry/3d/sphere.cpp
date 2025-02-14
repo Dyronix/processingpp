@@ -108,14 +108,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_sphere(bool smooth_normals, s32 detail_x, s32 detail_y)
         {
-            pool_stringstream stream;
+            temp_stringstream stream;
 
             stream << "sphere|";
             stream << smooth_normals << "|";
             stream << detail_x << "|";
             stream << detail_y;
 
-            const pool_string gid = stream.str();
+            const temp_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

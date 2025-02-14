@@ -1,29 +1,27 @@
 #pragma once
 
-#include "memory/memory_size.h"
+#include "memory/heaps/iheap.h"
 
 namespace ppp
 {
     namespace memory
     {
-        class heap;
-
-        class circular_heap
+        class circular_heap : public iheap
         {
         public:
-            circular_heap(heap* heap, memory_size size);
+            circular_heap(iheap* heap, memory_size size);
 
         public:
-            void*           allocate(memory_size size) noexcept;
-            void            deallocate(void* ptr) noexcept;
+            void*           allocate(memory_size size) noexcept override;
+            void            deallocate(void* ptr) noexcept override;
 
-            void            free();
+            void            free() noexcept override;
 
         public:
-            bool            can_alloc(memory_size size) const;
+            bool            can_alloc(memory_size size) const override;
 
-            memory_size     total_memory() const;
-            memory_size     current_memory() const;
+            memory_size     total_memory() const override;
+            memory_size     current_memory() const override;
 
         private:
             bool            has_space(u64 allocation_start, u64 size) const;

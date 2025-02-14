@@ -99,7 +99,7 @@ namespace ppp
             }
             const u64 material_id() const override
             {
-                return m_material->id();
+                return m_material->shader_tag();
             }
 
             const resources::imaterial* material() const override
@@ -525,7 +525,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void build_primitive_geometry(std::function<void()> callback)
         {
-            std::string_view tag = render::draw_mode() == render::render_draw_mode::BATCHED
+            string::string_id tag = render::draw_mode() == render::render_draw_mode::BATCHED
                 ? shader_pool::tags::unlit_color()
                 : shader_pool::tags::instance_unlit_color();
 
@@ -539,7 +539,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void build_textured_geometry(std::function<void()> callback)
         {
-            std::string_view tag = render::draw_mode() == render::render_draw_mode::BATCHED
+            string::string_id tag = render::draw_mode() == render::render_draw_mode::BATCHED
                 ? shader_pool::tags::unlit_texture()
                 : shader_pool::tags::instance_unlit_texture();
 
@@ -553,7 +553,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void build_custom_geometry(std::string_view tag, std::function<void()> callback)
         {
-            render::begin_geometry_builder(tag);
+            render::begin_geometry_builder(string::string_id(tag));
 
             callback();
 

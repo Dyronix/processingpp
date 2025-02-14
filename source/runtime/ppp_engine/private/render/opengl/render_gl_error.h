@@ -13,7 +13,7 @@ namespace ppp
 {
     namespace render
     {
-        pool_string gl_get_error_message(u32 error);
+        temp_string gl_get_error_message(u32 error);
 
         u32         gl_check_error();
 

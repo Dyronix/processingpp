@@ -18,8 +18,6 @@ namespace ppp
     {
         namespace internal
         {
-            using scene_camera_tag = pool_string;
-
             // Constants for sensitivity
             const float _rotate_sensitivity = 0.05f;
             const float _zoom_sensitivity = 1.0f;
@@ -51,8 +49,8 @@ namespace ppp
                 glm::vec3 center = { internal::_active_camera.centerx, internal::_active_camera.centery, internal::_active_camera.centerz };
                 glm::vec3 up = { internal::_active_camera.upx, internal::_active_camera.upy, internal::_active_camera.upz };
 
-                camera_manager::set_camera(camera_tag, eye, center, up, _active_projection);
-                camera_manager::set_as_active_camera(camera_tag);
+                camera_manager::set_camera(string::string_id(camera_tag), eye, center, up, _active_projection);
+                camera_manager::set_as_active_camera(string::string_id(camera_tag));
             }
         }
 
@@ -61,19 +59,19 @@ namespace ppp
             //-------------------------------------------------------------------------
             std::string_view perspective()
             {
-                return camera_manager::tags::perspective();
+                return string::restore_sid(camera_manager::tags::perspective());
             }
 
             //-------------------------------------------------------------------------
             std::string_view orthographic()
             {
-                return camera_manager::tags::orthographic();
+                return string::restore_sid(camera_manager::tags::orthographic());
             }
 
             //-------------------------------------------------------------------------
             std::string_view font()
             {
-                return camera_manager::tags::font();
+                return string::restore_sid(camera_manager::tags::font());
             }
         }
 
@@ -193,10 +191,10 @@ namespace ppp
         //-------------------------------------------------------------------------
         void activate_camera(std::string_view camera_tag)
         {
-            camera_manager::camera* c = camera_manager::camera_by_tag(camera_tag);
+            camera_manager::camera* c = camera_manager::camera_by_tag(string::string_id(camera_tag));
             if (c)
             {
-                camera_manager::set_as_active_camera(camera_tag);
+                camera_manager::set_as_active_camera(string::string_id(camera_tag));
 
                 internal::_active_camera.eyex = c->eye.x; internal::_active_camera.eyey = c->eye.y; internal::_active_camera.eyez = c->eye.z;
                 internal::_active_camera.centerx = c->target.x; internal::_active_camera.centery = c->target.y; internal::_active_camera.centerz = c->target.z;

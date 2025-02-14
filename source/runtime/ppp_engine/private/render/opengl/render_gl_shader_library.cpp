@@ -20,7 +20,7 @@ namespace ppp
                 }
 
                 //-------------------------------------------------------------------------
-                shader_builder& add_struct(const pool_string& name, const pool_vector<std::pair<pool_string, pool_string>>& members)
+                shader_builder& add_struct(const temp_string& name, const temp_vector<std::pair<temp_string, temp_string>>& members)
                 {
                     m_shader_code << "struct " << name << "\n{\n";
                     for (const auto& member : members)
@@ -32,7 +32,7 @@ namespace ppp
                 }
 
                 //-------------------------------------------------------------------------
-                shader_builder& add_ssbo(const pool_string& name, const pool_string& struct_name, const pool_string& variable_name, s32 binding, bool is_array = false)
+                shader_builder& add_ssbo(const temp_string& name, const temp_string& struct_name, const temp_string& variable_name, s32 binding, bool is_array = false)
                 {
                     m_shader_code << "layout (std430, binding = " << binding << ") buffer " << name << "\n{\n";
                     m_shader_code << "    " << struct_name << " " << variable_name;
@@ -51,61 +51,61 @@ namespace ppp
                 }
 
                 //-------------------------------------------------------------------------
-                shader_builder& add_attribute(const pool_string& type, const pool_string& name, s32 location)
+                shader_builder& add_attribute(const temp_string& type, const temp_string& name, s32 location)
                 {
                     m_shader_code << "layout (location = " << location << ") in " << type << " " << name << ";\n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_input(const pool_string& type, const pool_string& name, bool is_flat = false)
+                shader_builder& add_input(const temp_string& type, const temp_string& name, bool is_flat = false)
                 {
                     if(is_flat) m_shader_code << "flat ";
                     m_shader_code << "in " << type << " " << name << ";\n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_output(const pool_string& type, const pool_string& name, bool is_flat = false)
+                shader_builder& add_output(const temp_string& type, const temp_string& name, bool is_flat = false)
                 {
                     if (is_flat) m_shader_code << "flat ";
                     m_shader_code << "out " << type << " " << name << ";\n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_uniform(const pool_string& type, const pool_string& name)
+                shader_builder& add_uniform(const temp_string& type, const temp_string& name)
                 {
                     m_shader_code << "uniform " << type << " " << name << ";\n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_uniform_array(const pool_string& type, const pool_string& name, s32 size)
+                shader_builder& add_uniform_array(const temp_string& type, const temp_string& name, s32 size)
                 {
                     m_shader_code << "uniform " << type << " " << name << "[" << size << "]; \n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_function(const pool_string& function_code)
+                shader_builder& add_function(const temp_string& function_code)
                 {
                     m_shader_code << function_code << "\n";
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& set_main_function_body(const pool_string& main_code)
+                shader_builder& set_main_function_body(const temp_string& main_code)
                 {
                     m_shader_code << "void main() {\n" << main_code << "\n}\n";
                     return *this;
                 }
 
                 //-------------------------------------------------------------------------
-                pool_string build() const
+                temp_string build() const
                 {
                     return m_shader_code.str();
                 }
 
             private:
-                pool_ostringstream m_shader_code;
+                temp_ostringstream m_shader_code;
             };
 
-            pool_string unlit_color_vertex_shader_code()
+            temp_string unlit_color_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -126,7 +126,7 @@ namespace ppp
                         gl_Position = u_view_proj * vec4(a_position, 1.0);
                     )").build();
             }
-            pool_string unlit_color_pixel_shader_code()
+            temp_string unlit_color_pixel_shader_code()
             {
                 shader_builder builder;
 
@@ -140,7 +140,7 @@ namespace ppp
                     )").build();
             }
 
-            pool_string instance_unlit_color_vertex_shader_code()
+            temp_string instance_unlit_color_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -163,7 +163,7 @@ namespace ppp
                     )").build();
             }
 
-            pool_string unlit_texture_vertex_shader_code()
+            temp_string unlit_texture_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -191,7 +191,7 @@ namespace ppp
                     )").build();
             }
 
-            pool_string unlit_texture_pixel_shader_code()
+            temp_string unlit_texture_pixel_shader_code()
             {
                 shader_builder builder;
 
@@ -201,7 +201,7 @@ namespace ppp
                     .add_struct(
                         "material_attributes",
                         {
-                            {"int", "sampler_indices[" + string::to_string<pool_string>(render::max_textures()) + "]"},
+                            {"int", "sampler_indices[" + string::to_string<temp_string>(render::max_textures()) + "]"},
                             {"int", "sampler_count"},
                             {"vec4", "ambient_color"},
                             {"vec4", "diffuse_color"}
@@ -221,7 +221,7 @@ namespace ppp
                     )").build();
             }
 
-            pool_string instance_unlit_texture_vertex_shader_code()
+            temp_string instance_unlit_texture_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -250,7 +250,7 @@ namespace ppp
                     )").build();
             }
 
-            pool_string unlit_font_vertex_shader_code()
+            temp_string unlit_font_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -277,7 +277,7 @@ namespace ppp
                         gl_Position = u_view_proj * vec4(a_position, 1.0);
                     )").build();
             }
-            pool_string unlit_font_pixel_shader_code()
+            temp_string unlit_font_pixel_shader_code()
             {
                 shader_builder builder;
 
@@ -298,7 +298,7 @@ namespace ppp
                     )").build();
             }
 
-            pool_string unlit_normal_vertex_shader_code()
+            temp_string unlit_normal_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -320,7 +320,7 @@ namespace ppp
                         gl_Position = u_view_proj * vec4(a_position, 1.0);
                     )").build();
             }
-            pool_string unlit_normal_pixel_shader_code()
+            temp_string unlit_normal_pixel_shader_code()
             {
                 shader_builder builder;
 
@@ -341,7 +341,7 @@ namespace ppp
                     )").build();
             }
 
-            pool_string instance_unlit_normal_vertex_shader_code()
+            temp_string instance_unlit_normal_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -365,7 +365,7 @@ namespace ppp
                     )").build();
             }
 
-            pool_string specular_vertex_shader_code()
+            temp_string specular_vertex_shader_code()
             {
                 shader_builder builder;
 
@@ -390,7 +390,7 @@ namespace ppp
                     )").build();
             }
 
-            pool_string specular_pixel_shader_code()
+            temp_string specular_pixel_shader_code()
             {
                 shader_builder builder;
 
@@ -432,7 +432,7 @@ namespace ppp
                     )").build();
             }
 
-            pool_string instance_specular_vertex_shader_code()
+            temp_string instance_specular_vertex_shader_code()
             {
                 shader_builder builder;
 

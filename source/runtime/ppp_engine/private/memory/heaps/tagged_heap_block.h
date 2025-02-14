@@ -3,16 +3,18 @@
 #include "util/types.h"
 
 #include "memory/memory_size.h"
-#include "memory/linear_heap.h"
+#include "memory/heaps/linear_heap.h"
 
 namespace ppp
 {
     namespace memory
     {
+        class iheap;
+
         class tagged_heap_block
         {
         public:
-            tagged_heap_block(heap* heap, memory_size size);
+            tagged_heap_block(iheap* heap, memory_size size);
 
             u8*             allocate(s32 tag, memory_size size) noexcept;
             void            deallocate(void* ptr) noexcept;

@@ -87,7 +87,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        batch_renderer::batch_renderer(const attribute_layout* layouts, u64 layout_count, std::string_view shader_tag)
+        batch_renderer::batch_renderer(const attribute_layout* layouts, u64 layout_count, string::string_id shader_tag)
             : base_renderer(layouts, layout_count, shader_tag)
             , m_drawing_data_map()
             , m_buffer_policy(render_buffer_policy::IMMEDIATE)
@@ -119,7 +119,7 @@ namespace ppp
 
             GL_CALL(glUseProgram(shader_program()));
 
-            shaders::push_uniform(shader_program(), "u_view_proj", vp);
+            shaders::push_uniform(shader_program(), string::store_sid("u_view_proj"), vp);
 
             for (auto& pair : m_drawing_data_map)
             {
@@ -230,7 +230,7 @@ namespace ppp
         {
             GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 
-            shaders::push_uniform(shader_program(), "u_wireframe", GL_FALSE);
+            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe"), GL_FALSE);
 
             on_render(topology, drawing_data);
         }
@@ -241,15 +241,15 @@ namespace ppp
             GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
             GL_CALL(glLineWidth(internal::_wireframe_linewidth));
 
-            shaders::push_uniform(shader_program(), "u_wireframe", GL_TRUE);
-            shaders::push_uniform(shader_program(), "u_wireframe_color", color::convert_color(internal::_wireframe_linecolor));
+            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe"), GL_TRUE);
+            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe_color"), color::convert_color(internal::_wireframe_linecolor));
 
             on_render(topology, drawing_data);
         }
 
         // Primitive Batch Renderer
         //-------------------------------------------------------------------------
-        primitive_batch_renderer::primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag)
+        primitive_batch_renderer::primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, string::string_id shader_tag)
             :batch_renderer(layouts, layout_cout, shader_tag)
         {
 
@@ -278,7 +278,7 @@ namespace ppp
 
         // Texture Batch Renderer
         //-------------------------------------------------------------------------
-        texture_batch_renderer::texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag)
+        texture_batch_renderer::texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, string::string_id shader_tag)
             :batch_renderer(layouts, layout_cout, shader_tag)
         {
 
@@ -300,7 +300,7 @@ namespace ppp
                 {
                     batch->bind();
 
-                    shaders::push_uniform_array(shader_program(), "s_images", samplers.size(), samplers.data());
+                    shaders::push_uniform_array(shader_program(), string::store_sid("s_images"), samplers.size(), samplers.data());
 
                     s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;

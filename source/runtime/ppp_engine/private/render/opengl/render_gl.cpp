@@ -51,24 +51,29 @@ namespace ppp
             constexpr s32 _min_frame_buffer_height = 32;
 
             //-------------------------------------------------------------------------
-            const pool_string _main_frame_buffer_tag = "main";
-
-            //-------------------------------------------------------------------------
-            std::string_view _fill_user_shader = {};
-            std::string_view _stroke_user_shader = {};
+            string::string_id _fill_user_shader = string::string_id::create_invalid();
+            string::string_id _stroke_user_shader = string::string_id::create_invalid();
 
             vertex_type _fill_user_vertex_type = vertex_type::POSITION_TEXCOORD_NORMAL_COLOR;
 
             //-------------------------------------------------------------------------
-            static graphics_hash_map<std::string_view, ppp::unique_ptr<instance_renderer>>& instance_renderers()
+            static string::string_id main_frame_buffer_tag()
             {
-                static graphics_hash_map<std::string_view, ppp::unique_ptr<instance_renderer>> s_instance_renderers;
+                static const string::string_id s_main_frame_buffer_tag = string::store_sid("main");
+
+                return s_main_frame_buffer_tag;
+            }
+
+            //-------------------------------------------------------------------------
+            static graphics_hash_map<string::string_id, ppp::unique_ptr<instance_renderer>>& instance_renderers()
+            {
+                static graphics_hash_map<string::string_id, ppp::unique_ptr<instance_renderer>> s_instance_renderers;
 
                 return s_instance_renderers;
             }
-            static graphics_hash_map<std::string_view, ppp::unique_ptr<batch_renderer>>& batch_renderers()
+            static graphics_hash_map<string::string_id, ppp::unique_ptr<batch_renderer>>& batch_renderers()
             {
-                static graphics_hash_map<std::string_view, ppp::unique_ptr<batch_renderer>> s_batch_renderers;
+                static graphics_hash_map<string::string_id, ppp::unique_ptr<batch_renderer>> s_batch_renderers;
 
                 return s_batch_renderers;
             }
@@ -85,7 +90,7 @@ namespace ppp
             class geometry_builder
             {
             public:
-                void activate(std::string_view tag)
+                void activate(string::string_id tag)
                 {
                     m_is_active = true;
                     m_shader_tag = tag;
@@ -94,7 +99,7 @@ namespace ppp
                 void deactivate()
                 {
                     m_is_active = false;
-                    m_shader_tag = std::string_view();
+                    m_shader_tag = string::string_id::create_invalid();
                 }
 
                 bool is_active() const
@@ -102,14 +107,14 @@ namespace ppp
                     return m_is_active;
                 }
 
-                std::string_view shader_tag() const
+                string::string_id shader_tag() const
                 {
                     return m_shader_tag;
                 }
 
             private:
                 bool m_is_active = false;
-                std::string_view m_shader_tag;
+                string::string_id m_shader_tag;
             };
 
             geometry_builder _geometry_builder;
@@ -124,7 +129,7 @@ namespace ppp
                     return;
                 }
 
-                std::string_view shader_tag = _fill_user_shader.empty() ? _geometry_builder.shader_tag() : _fill_user_shader;
+                string::string_id shader_tag = _fill_user_shader.is_none() ? _geometry_builder.shader_tag() : _fill_user_shader;
 
                 if (internal::_draw_mode == render_draw_mode::BATCHED)
                 {
@@ -134,15 +139,15 @@ namespace ppp
                         if (item->has_textures() == false)
                         {
                             renderer = ppp::make_unique<primitive_batch_renderer>(
-                                _fill_user_shader.empty() ? pos_col_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
-                                _fill_user_shader.empty() ? pos_col_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                _fill_user_shader.is_none() ? pos_col_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.is_none() ? pos_col_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
                                 shader_tag);
                         }
                         else
                         {
                             renderer = ppp::make_unique<texture_batch_renderer>(
-                                _fill_user_shader.empty() ? pos_tex_col_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
-                                _fill_user_shader.empty() ? pos_tex_col_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                _fill_user_shader.is_none() ? pos_tex_col_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.is_none() ? pos_tex_col_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
                                 shader_tag);
                         }
 
@@ -165,8 +170,8 @@ namespace ppp
                         if (item->has_textures() == false)
                         {
                             renderer = ppp::make_unique<primitive_instance_renderer>(
-                                _fill_user_shader.empty() ? pos_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
-                                _fill_user_shader.empty() ? pos_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                _fill_user_shader.is_none() ? pos_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.is_none() ? pos_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
                                 color_world_layout().data(),
                                 color_world_layout().size(),
                                 shader_tag);
@@ -174,8 +179,8 @@ namespace ppp
                         else
                         {
                             renderer = ppp::make_unique<texture_instance_renderer>(
-                                _fill_user_shader.empty() ? pos_tex_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
-                                _fill_user_shader.empty() ? pos_tex_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
+                                _fill_user_shader.is_none() ? pos_tex_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
+                                _fill_user_shader.is_none() ? pos_tex_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
                                 color_world_matid_layout().data(),
                                 color_world_matid_layout().size(),
                                 shader_tag);
@@ -222,7 +227,7 @@ namespace ppp
         void terminate()
         {
             // Release the framebuffer
-            framebuffer_pool::release({ internal::_main_frame_buffer_tag, true });
+            framebuffer_pool::release({ internal::main_frame_buffer_tag(), true});
 
             // Font
             internal::font_renderer()->terminate();
@@ -257,7 +262,7 @@ namespace ppp
                 pair.second->begin();
             }
 
-            auto framebuffer = framebuffer_pool::bind({ internal::_main_frame_buffer_tag, true });
+            auto framebuffer = framebuffer_pool::bind({ internal::main_frame_buffer_tag(), true });
 
             // Clear the background to black
             GL_CALL(glViewport(0, 0, framebuffer->width(), framebuffer->height()));
@@ -293,7 +298,7 @@ namespace ppp
         void render(const render_context& context)
         {
             auto system_framebuffer = framebuffer_pool::get_system();
-            auto target_framebuffer = framebuffer_pool::get({ internal::_main_frame_buffer_tag, true });
+            auto target_framebuffer = framebuffer_pool::get({ internal::main_frame_buffer_tag(), true });
 
             f32 w = static_cast<f32>(target_framebuffer->width());
             f32 h = static_cast<f32>(target_framebuffer->height());
@@ -351,7 +356,7 @@ namespace ppp
         {
             broadcast_on_draw_end();
 
-            framebuffer_pool::unbind({ internal::_main_frame_buffer_tag, true });
+            framebuffer_pool::unbind({ internal::main_frame_buffer_tag(), true });
         }
 
         //-------------------------------------------------------------------------
@@ -367,20 +372,20 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void push_active_shader(std::string_view tag, vertex_type type)
+        void push_active_shader(string::string_id tag, vertex_type type)
         {
             internal::_fill_user_shader = tag;
             internal::_fill_user_vertex_type = type;
         }
 
         //-------------------------------------------------------------------------
-        std::string_view active_shader()
+        string::string_id active_shader()
         {
             return internal::_fill_user_shader;
         }
 
         //-------------------------------------------------------------------------
-        void begin_geometry_builder(std::string_view tag)
+        void begin_geometry_builder(string::string_id tag)
         {
             assert(!internal::_geometry_builder.is_active() && "Construction of previous shape has not been finished, call end_geometry_builder first");
 

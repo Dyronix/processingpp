@@ -17,14 +17,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* extrude_rectangle(const glm::mat4& world, const geometry* in_geom, f32 extrusion_width)
         {
-            pool_stringstream stream;
+            temp_stringstream stream;
 
             stream << (extrusion_width > 0 ? "rect_out_stroke|" : "rect_in_stroke|");
             stream << extrusion_width << "|";
             stream << glm::to_string(world) << "|";
             stream << in_geom;
 
-            const pool_string gid = stream.str();
+            const temp_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {
@@ -54,7 +54,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_rectangle()
         {
-            const pool_string gid = "rect";
+            const temp_string gid = "rect";
 
             if (!geometry_pool::has_geometry(gid))
             {

@@ -87,7 +87,7 @@ namespace ppp
                 }
                 const u64 material_id() const override
                 {
-                    return m_material->id();
+                    return m_material->shader_tag().value();
                 }
 
                 const resources::imaterial* material() const override
@@ -107,12 +107,12 @@ namespace ppp
 
             geometry::geometry* make_image(u32 image_id)
             {
-                pool_stringstream stream;
+                temp_stringstream stream;
 
                 stream << "image|";
                 stream << image_id;
 
-                const pool_string gid = stream.str();
+                const temp_string gid = stream.str();
 
                 if (!geometry_pool::has_geometry(gid))
                 {
@@ -180,7 +180,7 @@ namespace ppp
         {
             auto path = vfs::resolve_path(output_name);
 
-            const texture_pool::Image* img = texture_pool::image_at_id(id);
+            const texture_pool::image* img = texture_pool::image_at_id(id);
 
             if (stbi_write_png(path.c_str(), img->width, img->height, img->channels, img->data, img->width * img->channels) == 0)
             {
@@ -200,17 +200,19 @@ namespace ppp
 
         image load(std::string_view file_path)
         {
+            auto sid = string::string_id(file_path);
+
             // Find image first
-            if (texture_pool::has_image(file_path))
+            if (texture_pool::has_image(sid))
             {
-                const texture_pool::Image* img = texture_pool::image_at_path(file_path);
+                const texture_pool::image* img = texture_pool::image_at_path(sid);
                 return { (image_id)img->image_id, img->width, img->height, img->channels };
             }
 
             auto buffer = fileio::read_binary_file(file_path);
             
-            texture_pool::Image img;
-            img.file_path = file_path;
+            texture_pool::image img;
+            img.file_path = string::string_id(file_path);
             img.data = stbi_load_from_memory(
                 reinterpret_cast<pixels_u8_ptr>(buffer.data()),
                 static_cast<int>(buffer.size()),
@@ -234,7 +236,7 @@ namespace ppp
 
         image create(float width, float height, int channels, pixels_u8_ptr data)
         {
-            texture_pool::Image img;
+            texture_pool::image img;
 
             img.width = width;
             img.height = height;
@@ -259,9 +261,10 @@ namespace ppp
 
         void draw(image_id image_id, float x, float y, float width, float height)
         {
-            std::string_view prev_shader = render::active_shader();
+            auto prev_shader = render::active_shader();
+            auto curr_shader = shader_pool::tags::unlit_texture();
 
-            material::shader(shader_pool::tags::unlit_texture());
+            material::shader(string::restore_sid(curr_shader));
 
             material::reset_textures();
             material::texture(image_id);
@@ -289,7 +292,10 @@ namespace ppp
 
             transform_stack::pop();
 
-            material::shader(shader_pool::tags::unlit_color());
+            curr_shader = shader_pool::tags::unlit_color();
+
+            material::shader(string::restore_sid(curr_shader));
+
             resources::imaterial* mat_unlit_col = material_pool::get_or_create_material_instance(render::active_shader());
 
             if (render::brush::stroke_enabled())
@@ -312,7 +318,7 @@ namespace ppp
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_item, outer_stroke);
             }
 
-            material::shader(prev_shader);
+            material::shader(string::restore_sid(prev_shader));
         }
 
         void no_tint() 

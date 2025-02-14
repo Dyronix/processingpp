@@ -1,5 +1,4 @@
-#include "memory/circular_heap.h"
-#include "memory/heap.h"
+#include "memory/heaps/circular_heap.h"
 
 #include "util/pointer_math.h"
 
@@ -8,7 +7,7 @@ namespace ppp
     namespace memory
     {
         //-------------------------------------------------------------------------
-        circular_heap::circular_heap(heap* heap, memory_size size)
+        circular_heap::circular_heap(iheap* heap, memory_size size)
             :m_total_size(size)
             ,m_base_memory(nullptr)
             ,m_tail(0)
@@ -57,7 +56,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void circular_heap::free()
+        void circular_heap::free() noexcept
         {
             m_head = 0;
             m_tail = 0;

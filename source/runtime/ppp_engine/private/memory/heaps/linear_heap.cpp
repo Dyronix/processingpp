@@ -1,7 +1,5 @@
-#include "memory/linear_heap.h"
-#include "memory/heap.h"
+#include "memory/heaps/linear_heap.h"
 
-#include "util/types.h"
 #include "util/pointer_math.h"
 
 namespace ppp
@@ -9,7 +7,7 @@ namespace ppp
     namespace memory
     {
         //-------------------------------------------------------------------------
-        linear_heap::linear_heap(heap* heap, memory_size size)
+        linear_heap::linear_heap(iheap* heap, memory_size size)
             :m_total_memory(size)
             ,m_base_memory(nullptr)
             ,m_offset(0)
@@ -39,13 +37,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void linear_heap::free()
+        void linear_heap::free() noexcept
         {
             m_offset = 0;
         }
 
         //-------------------------------------------------------------------------
-        bool linear_heap::can_alloc(memory_size size) const noexcept
+        bool linear_heap::can_alloc(memory_size size) const
         {
             constexpr std::size_t alignment = alignof(std::max_align_t);
 

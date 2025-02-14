@@ -87,7 +87,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        instance_renderer::instance_renderer(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, std::string_view shader_tag)
+        instance_renderer::instance_renderer(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
             : base_renderer(layouts, layout_count, shader_tag)
             , m_instance_data_map()
             , m_instance_layouts(instance_layouts)
@@ -121,7 +121,7 @@ namespace ppp
 
             GL_CALL(glUseProgram(shader_program()));
 
-            shaders::push_uniform(shader_program(), "u_view_proj", vp);
+            shaders::push_uniform(shader_program(), string::store_sid("u_view_proj"), vp);
 
             for (auto& pair : m_instance_data_map)
             {
@@ -229,7 +229,7 @@ namespace ppp
         {
             GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 
-            shaders::push_uniform(shader_program(), "u_wireframe", GL_FALSE);
+            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe"), GL_FALSE);
 
             on_render(topology, drawing_data);
         }
@@ -240,15 +240,15 @@ namespace ppp
             GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
             GL_CALL(glLineWidth(internal::_wireframe_linewidth));
 
-            shaders::push_uniform(shader_program(), "u_wireframe", GL_TRUE);
-            shaders::push_uniform(shader_program(), "u_wireframe_color", color::convert_color(internal::_wireframe_linecolor));
+            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe"), GL_TRUE);
+            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe_color"), color::convert_color(internal::_wireframe_linecolor));
 
             on_render(topology, drawing_data);
         }
 
         // Primitive Instance Renderer
         //-------------------------------------------------------------------------
-        primitive_instance_renderer::primitive_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, std::string_view shader_tag)
+        primitive_instance_renderer::primitive_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
             :instance_renderer(layouts, layout_cout, instance_layouts, instance_layout_count, shader_tag)
         {
 
@@ -277,7 +277,7 @@ namespace ppp
 
         // Texture Instance Renderer
         //-------------------------------------------------------------------------
-        texture_instance_renderer::texture_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, std::string_view shader_tag)
+        texture_instance_renderer::texture_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
             :instance_renderer(layouts, layout_cout, instance_layouts, instance_layout_count, shader_tag)
         {
 
@@ -299,7 +299,7 @@ namespace ppp
                 {
                     inst->bind();
 
-                    shaders::push_uniform_array(shader_program(), "s_images", samplers.size(), samplers.data());
+                    shaders::push_uniform_array(shader_program(), string::store_sid("s_images"), samplers.size(), samplers.data());
 
                     s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;

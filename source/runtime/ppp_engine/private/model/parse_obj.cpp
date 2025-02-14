@@ -7,6 +7,8 @@
 #include "geometry/geometry.h"
 
 #include "memory/memory_tracker.h"
+#include "memory/heaps/linear_heap.h"
+#include "memory/heaps/heap.h"
 
 #include "string/string_ops.h"
 #include "string/string_conversions.h"
@@ -18,18 +20,18 @@ namespace ppp
 {
     namespace model
     {
-        geometry::geometry* parse_obj(geometry::geometry* geom, const fileio_vector<std::string_view>& buffer)
+        geometry::geometry* parse_obj(geometry::geometry* geom, const init_vector<std::string_view>& buffer)
         {
-            pool_hash_map<pool_string, pool_hash_map<pool_string, s32>> used_verts;
+            init_hash_map<init_string, init_hash_map<init_string, s32>> used_verts;
 
-            pool_hash_map<pool_string, pool_vector<glm::vec3>> loaded_verts;
-            pool_hash_map<pool_string, pool_vector<glm::vec2>> loaded_tex;
+            init_hash_map<init_string, init_vector<glm::vec3>> loaded_verts;
+            init_hash_map<init_string, init_vector<glm::vec2>> loaded_tex;
 
-            pool_string current_material;
+            init_string current_material;
 
             for (std::string_view line : buffer) 
             {
-                auto tokens = string::split_string(line, pool_string(" \t\n\r\f\v"));
+                auto tokens = string::split_string<init_string>(line, " \t\n\r\f\v");
 
                 if (tokens.empty())
                 {
@@ -59,15 +61,15 @@ namespace ppp
                 {
                     for (u64 tri = 3; tri < tokens.size(); ++tri) 
                     {
-                        pool_vector<u32> face;
-                        pool_vector<u64> vertex_tokens = { 1, tri - 1, tri };
+                        init_vector<u32> face;
+                        init_vector<u64> vertex_tokens = { 1, tri - 1, tri };
 
                         for (const auto& token_index : vertex_tokens) 
                         {
-                            pool_string vert_string = tokens[token_index];
+                            init_string vert_string = tokens[token_index];
 
-                            auto vert_parts_s = string::split_string(vert_string, fileio_string("/"));
-                            auto vert_parts = pool_vector<s32>{};
+                            auto vert_parts_s = string::split_string<init_string>(vert_string, "/");
+                            auto vert_parts = init_vector<s32>{};
 
                             for(const auto& part_s : vert_parts_s)
                             {

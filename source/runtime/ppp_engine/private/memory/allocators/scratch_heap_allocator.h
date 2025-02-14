@@ -1,29 +1,28 @@
 #pragma once
 
-#include "memory/scratch_pool.h"
 #include "memory/memory_size.h"
+#include "memory/memory_manager.h"
 
 namespace ppp
 {
     namespace memory
     {
         template <typename T>
-        class scratch_pool_allocator
+        class scratch_heap_allocator
         {
         public:
             using value_type = T;
 
             //-------------------------------------------------------------------------
-            explicit scratch_pool_allocator() noexcept
-                : m_pool(get_scratch_pool())
+            explicit scratch_heap_allocator() noexcept
             {
             }
 
             //-------------------------------------------------------------------------
             template <typename U>
-            scratch_pool_allocator(const scratch_pool_allocator<U>& other) noexcept
-                : m_pool(other.m_pool)
+            scratch_heap_allocator(const scratch_heap_allocator<U>& other) noexcept
             {
+                // Nothing to implement
             }
 
             //-------------------------------------------------------------------------
@@ -31,13 +30,13 @@ namespace ppp
             {
                 u64 total_size = n * sizeof(T);
 
-                return static_cast<T*>(m_pool->allocate(memory_size(total_size)));
+                return static_cast<T*>(heap()->allocate(memory_size(total_size)));
             }
 
             //-------------------------------------------------------------------------
             void deallocate(T* p, u64 /*n*/) noexcept
             {
-                m_pool->deallocate(static_cast<void*>(p));
+                // Is a rotating heap
             }
 
             //-------------------------------------------------------------------------
@@ -58,30 +57,28 @@ namespace ppp
             template <typename U>
             struct rebind
             {
-                using other = scratch_pool_allocator<U>;
+                using other = scratch_heap_allocator<U>;
             };
 
         public:
-            const scratch_pool* pool() const noexcept { return m_pool; }
+            iheap* heap() noexcept { return memory_manager::instance().get_scratch_heap(); }
 
         private:
-            // Allow other scratch_pool_allocator instantiations (with different types) access to m_pool.
+            // Allow other scratch_heap_allocator instantiations (with different types) access to m_heap.
             template <typename U>
-            friend class scratch_pool_allocator;
-
-            scratch_pool* m_pool;
+            friend class scratch_heap_allocator;
         };
 
         // Equality comparison operators for the allocator.
         // These compare the underlying memory pool pointers.
         template <typename T, typename U>
-        bool operator==(const scratch_pool_allocator<T>& a, const scratch_pool_allocator<U>& b) noexcept
+        bool operator==(const scratch_heap_allocator<T>& a, const scratch_heap_allocator<U>& b) noexcept
         {
             return a.pool() == b.pool();
         }
 
         template <typename T, typename U>
-        bool operator!=(const scratch_pool_allocator<T>& a, const scratch_pool_allocator<U>& b) noexcept
+        bool operator!=(const scratch_heap_allocator<T>& a, const scratch_heap_allocator<U>& b) noexcept
         {
             return !(a == b);
         }

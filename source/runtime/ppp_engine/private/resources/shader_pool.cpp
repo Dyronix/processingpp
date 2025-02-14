@@ -17,9 +17,9 @@ namespace ppp
     {
         namespace internal
         {      
-            graphics_hash_map<std::string_view, std::shared_ptr<render::shaders::shader_program>>& get_shader_program_map()
+            graphics_hash_map<string::string_id, std::shared_ptr<render::shaders::shader_program>>& get_shader_program_map()
             {
-                static graphics_hash_map<std::string_view, std::shared_ptr<render::shaders::shader_program>> s_shader_program_map;
+                static graphics_hash_map<string::string_id, std::shared_ptr<render::shaders::shader_program>> s_shader_program_map;
 
                 return s_shader_program_map;
             }
@@ -28,61 +28,61 @@ namespace ppp
         namespace tags
         {
             // batched
-            const pool_string& unlit_color()
+            string::string_id unlit_color()
             {
-                static const pool_string s_unlit_color = "unlit_color";
+                static const string::string_id s_unlit_color = string::store_sid("unlit_color");
 
                 return s_unlit_color;
             }
-            const pool_string& unlit_texture()
+            string::string_id unlit_texture()
             {
-                static const pool_string s_unlit_texture = "unlit_texture";
+                static const string::string_id s_unlit_texture = string::store_sid("unlit_texture");
 
                 return s_unlit_texture;
             }
-            const pool_string& unlit_font()
+            string::string_id unlit_font()
             {
-                static const pool_string s_unlit_font = "unlit_font";
+                static const string::string_id s_unlit_font = string::store_sid("unlit_font");
 
                 return s_unlit_font;
             }
-            const pool_string& unlit_normal()
+            string::string_id unlit_normal()
             {
-                static const pool_string s_unlit_normal = "unlit_normal";
+                static const string::string_id s_unlit_normal = string::store_sid("unlit_normal");
 
                 return s_unlit_normal;
             }
 
-            const pool_string& lit_specular()
+            string::string_id lit_specular()
             {
-                static const pool_string s_lit_specular = "lit_specular";
+                static const string::string_id s_lit_specular = string::store_sid("lit_specular");
 
                 return s_lit_specular;
             }
 
             // instanced
-            const pool_string& instance_unlit_color()
+            string::string_id instance_unlit_color()
             {
-                static const pool_string s_instance_unlit_color = "instance_unlit_color";
+                static const string::string_id s_instance_unlit_color = string::store_sid("instance_unlit_color");
 
                 return s_instance_unlit_color;
             }
-            const pool_string& instance_unlit_texture()
+            string::string_id instance_unlit_texture()
             {
-                static const pool_string s_instance_unlit_texture = "instance_unlit_texture";
+                static const string::string_id s_instance_unlit_texture = string::store_sid("instance_unlit_texture");
 
                 return s_instance_unlit_texture;
             }
-            const pool_string& instance_unlit_normal()
+            string::string_id instance_unlit_normal()
             {
-                static const pool_string s_instance_unlit_normal = "instance_unlit_normal";
+                static const string::string_id s_instance_unlit_normal = string::store_sid("instance_unlit_normal");
 
                 return s_instance_unlit_normal;
             }
 
-            const pool_string& instance_lit_specular()
+            string::string_id instance_lit_specular()
             {
-                static const pool_string s_instance_lit_specular = "instance_lit_specular";
+                static const string::string_id s_instance_lit_specular = string::store_sid("instance_lit_specular");
 
                 return s_instance_lit_specular;
             }
@@ -90,7 +90,7 @@ namespace ppp
 
         bool initialize()
         {
-            memory::tagged_allocator<render::shaders::shader_program, memory::tags::graphics> graphics_allocator;
+            memory::tagged_heap_allocator<render::shaders::shader_program, memory::tags::graphics> graphics_allocator;
 
             internal::get_shader_program_map().emplace(tags::unlit_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code()));
             internal::get_shader_program_map().emplace(tags::instance_unlit_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::instance_unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code()));
@@ -114,13 +114,13 @@ namespace ppp
             internal::get_shader_program_map().clear();
         }
 
-        bool has_shader(std::string_view tag)
+        bool has_shader(string::string_id tag)
         {
             auto it = internal::get_shader_program_map().find(tag);
             return it != std::cend(internal::get_shader_program_map());
         }
 
-        u32 add_shader_program(std::string_view tag, std::string_view vs_source, std::string_view fs_source)
+        u32 add_shader_program(string::string_id tag, std::string_view vs_source, std::string_view fs_source)
         {
             auto it = internal::get_shader_program_map().find(tag);
             if(it == std::cend(internal::get_shader_program_map()))
@@ -132,13 +132,13 @@ namespace ppp
             }
             else
             {
-                log::warn("shader tag {} already exists", tag);
+                log::warn("shader tag {} already exists", string::restore_sid(tag));
             }
 
             return -1;
         }
 
-        u32 add_shader_program(std::string_view tag, std::string_view vs_source, std::string_view fs_source, std::string_view gs_source)
+        u32 add_shader_program(string::string_id tag, std::string_view vs_source, std::string_view fs_source, std::string_view gs_source)
         {
             auto it = internal::get_shader_program_map().find(tag);
             if (it == std::cend(internal::get_shader_program_map()))
@@ -150,13 +150,13 @@ namespace ppp
             }
             else
             {
-                log::warn("shader tag {} already exists", tag);
+                log::warn("shader tag {} already exists", string::restore_sid(tag));
             }
 
             return -1;
         }
 
-        u32 get_shader_program(std::string_view tag)
+        u32 get_shader_program(string::string_id tag)
         {
             auto it = internal::get_shader_program_map().find(tag);
             if (it != std::cend(internal::get_shader_program_map()))
@@ -164,7 +164,7 @@ namespace ppp
                 return it->second->id();
             }
 
-            log::error("Unable to find shader with tag: {}", tag);
+            log::error("Unable to find shader with tag: {}", string::restore_sid(tag));
             return 0;
         }
     }

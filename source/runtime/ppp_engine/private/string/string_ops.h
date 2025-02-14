@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include "memory/tagged_allocator.h"
-#include "memory/tagged_heap_tags.h"
-
 #include <string>
 #include <vector>
 #include <unordered_set>
@@ -15,7 +12,7 @@ namespace ppp
     {
         //-----------------------------------------------------------------------------
         template <typename TString>
-        auto string_replace(const TString& subject, const TString& search, const TString& replace) -> TString
+        auto string_replace(std::string_view subject, std::string_view search, std::string_view replace) -> TString
         {
             typedef typename TString::allocator_type TAllocator;
 
@@ -34,18 +31,21 @@ namespace ppp
 
         //-----------------------------------------------------------------------------
         template <typename TString>
-        auto split_string(const std::string_view& str, const TString& delimiters) -> std::vector<TString, typename TString::allocator_type>
+        auto split_string(std::string_view str, std::string_view delimiters)
+            -> std::vector<TString, typename std::allocator_traits<typename TString::allocator_type>::template rebind_alloc<TString>>
         {
-            typedef typename TString::value_type TChar;
-            typedef typename TString::allocator_type TAllocator;
+            using TChar             = typename TString::value_type;
+            using TAllocator        = typename TString::allocator_type;
 
-            typedef std::vector<TString, TAllocator> TVector;
-            typedef std::unordered_set<TChar, std::less<TChar>, TAllocator> TUnorderedSet;
+            using TAllocForTString  = typename std::allocator_traits<TAllocator>::template rebind_alloc<TString>;
 
-            TVector tokens(TAllocator{});
-            TUnorderedSet delimiter_set(delimiters.begin(), delimiters.end(), TAllocator{});
+            using TVector           = std::vector<TString, TAllocForTString>;
+            using TUnorderedSet     = std::unordered_set<TChar, std::hash<TChar>, std::equal_to<TChar>, TAllocator>;
+            
+            TVector         tokens(TAllocForTString{});
+            TUnorderedSet   delimiter_set(delimiters.begin(), delimiters.end(), delimiters.size());
 
-            TString token(TAllocator{});
+            TString         token(TAllocator{});
 
             for (TChar ch : str)
             {

@@ -1,6 +1,8 @@
 #include "memory/memory_tracker.h"
-#include "memory/tagged_heap.h"
-#include "memory/tagged_heap_tags.h"
+
+#include "memory/heaps/tagged_heap.h"
+#include "memory/memory_tags.h"
+#include "memory/memory_manager.h"
 
 #include "util/log.h"
 
@@ -224,7 +226,7 @@ void* operator new(u64 size)
     {
         ppp::memory::disable_tracking();
         ppp::memory::track_allocation(p, size);
-        p = ppp::memory::get_tagged_heap()->allocate(ppp::memory::tags::global, size);
+        p = ppp::memory::memory_manager::instance().get_scratch_heap()->allocate(size);
         ppp::memory::enable_tracking();
     }
     else
@@ -242,7 +244,8 @@ void operator delete(void* p) noexcept
     {
         ppp::memory::disable_tracking();
         ppp::memory::track_deallocation(p);
-        ppp::memory::get_tagged_heap()->deallocate(ppp::memory::tags::global, p);
+        // scratch memory should free their memory all at once
+        // ppp::memory::memory_manager::instance().get_scratch_heap()->deallocate(p);
         ppp::memory::enable_tracking();
     }
     else

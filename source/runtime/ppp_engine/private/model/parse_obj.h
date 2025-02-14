@@ -19,6 +19,6 @@ namespace ppp
 
     namespace model
     {
-        geometry::geometry* parse_obj(geometry::geometry* geom, const fileio_vector<std::string_view>& buffer);
+        geometry::geometry* parse_obj(geometry::geometry* geom, const init_vector<std::string_view>& buffer);
     }
 }

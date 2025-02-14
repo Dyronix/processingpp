@@ -1,5 +1,4 @@
-#include "memory/free_list_heap.h"
-#include "memory/heap.h"
+#include "memory/heaps/free_list_heap.h"
 
 #include "util/pointer_math.h"
 
@@ -8,14 +7,13 @@ namespace ppp
     namespace memory
     {
         //-------------------------------------------------------------------------
-        free_list_heap::free_list_heap(heap* heap, memory_size size)
-            : m_heap(heap)
-            , m_base_memory(nullptr)
+        free_list_heap::free_list_heap(iheap* heap, memory_size size)
+            : m_base_memory(nullptr)
             , m_free_list(nullptr)
             , m_total_memory_size(size)
         {
             // Allocate a large contiguous block of memory from the heap.
-            m_base_memory = static_cast<u8*>(m_heap->allocate(size));
+            m_base_memory = static_cast<u8*>(heap->allocate(size));
 
             // Initialize the free list:
             // The entire pool is initially one large free block.
@@ -82,7 +80,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void free_list_heap::free()
+        void free_list_heap::free() noexcept
         {
             // Reinitialize the free list to cover the entire memory pool.
             m_free_list = reinterpret_cast<block_header*>(m_base_memory);
@@ -106,7 +104,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        memory_size free_list_heap::current_size() const
+        memory_size free_list_heap::current_memory() const
         {
             u64 free_memory = 0;
             for (block_header* curr = m_free_list; curr != nullptr; curr = curr->next) 
@@ -119,7 +117,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        memory_size free_list_heap::total_size() const
+        memory_size free_list_heap::total_memory() const
         {
             return m_total_memory_size;
         }

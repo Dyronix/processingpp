@@ -12,12 +12,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_plane(bool smooth_normals)
         {
-            pool_stringstream stream;
+            temp_stringstream stream;
 
             stream << "plane|";
             stream << smooth_normals;
 
-            const pool_string gid = stream.str();
+            const temp_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

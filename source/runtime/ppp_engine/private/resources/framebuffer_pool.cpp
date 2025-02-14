@@ -21,9 +21,9 @@ namespace ppp
             return s_framebuffers;
         }
         //-------------------------------------------------------------------------
-        graphics_hash_map<std::string_view, render::framebuffer*>& active_framebuffers()
+        graphics_hash_map<string::string_id, render::framebuffer*>& active_framebuffers()
         {
-            static graphics_hash_map<std::string_view, render::framebuffer*> s_in_use;
+            static graphics_hash_map<string::string_id, render::framebuffer*> s_in_use;
 
             return s_in_use;
         }        
@@ -122,7 +122,7 @@ namespace ppp
                 }
             }
 
-            log::error("No framebuffers available for tag: {}", desc.tag);
+            log::error("No framebuffers available for tag: {}", string::restore_sid(desc.tag));
             return nullptr;
         }
 

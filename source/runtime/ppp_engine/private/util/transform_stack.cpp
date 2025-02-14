@@ -10,9 +10,9 @@ namespace ppp
     {
         namespace internal
         {
-            static pool_vector<glm::mat4>& model_matrices()
+            static temp_vector<glm::mat4>& model_matrices()
             {
-                static pool_vector<glm::mat4> s_model_matrices;
+                static temp_vector<glm::mat4> s_model_matrices;
 
                 return s_model_matrices;
             }

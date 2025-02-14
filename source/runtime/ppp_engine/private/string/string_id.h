@@ -10,6 +10,13 @@ namespace ppp
 {
     namespace string
     {
+        class string_id;
+
+        // Store a new sid
+        string_id store_sid(std::string_view characters);
+        // Restore to a string
+        std::string_view restore_sid(const string_id& sid);
+
         /**
          * The process of generating a standalone string_id object lacks a hash collision check,
          *   which implies that in extremely rare scenarios, different strings may exist with the same hash value.
@@ -24,6 +31,12 @@ namespace ppp
          */
         class string_id
         {
+        public:
+            std::string_view restore() const
+            {
+                return ppp::string::restore_sid(*this);
+            }
+
         public:
             //-------------------------------------------------------------------------
             /**
@@ -65,9 +78,9 @@ namespace ppp
             /**
              * Retrieve the hashed value as u32
              */
-            operator u32() const // NOLINT(google-explicit-constructor)
+            operator u64() const // NOLINT(google-explicit-constructor)
             {
-                return static_cast<u32>(m_comparison_hash);
+                return m_comparison_hash;
             }
             //-------------------------------------------------------------------------
             /**
@@ -111,21 +124,18 @@ namespace ppp
             /**
              * Retrieve the hashed value
              */
-            u32 value() const
+            u64 value() const
             {
-                return static_cast<u32>(m_comparison_hash);
+                return m_comparison_hash;
             }
 
         private:
             /** Hash for invalid string_id into string pool */
-            static const u32 s_none_state_hash_val = 0;
+            static const u64 s_none_state_hash_val = 0;
 
             /** Hash into the string_id hash table */
             u64 m_comparison_hash;
         };
-
-        string_id store_sid(std::string_view characters);
-        std::string_view restore_sid(const string_id& sid);
 
         bool operator==(std::string_view s, const string_id& sid);
         bool operator!=(std::string_view s, const string_id& sid);
@@ -134,7 +144,7 @@ namespace ppp
     }
 }
 
-ppp::string::string_id operator""_sid(const char* string, size_t size)
+inline ppp::string::string_id operator""_sid(const char* string, size_t size)
 {
     return ppp::string::string_id(std::string_view(string, static_cast<u32>(size))); // NOLINT(cppcoreguidelines-narrowing-conversions)
 }

@@ -2,8 +2,6 @@
 
 #include "util/log.h"
 
-#include "memory/memory_types.h"
-
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <unordered_map>
@@ -15,30 +13,30 @@ namespace ppp
         namespace tags
         {
             //-------------------------------------------------------------------------
-            const pool_string& perspective()
+            string::string_id perspective()
             {
-                static const pool_string s_perspective = "perspective";
+                static const string::string_id s_perspective = string::store_sid("perspective");
 
                 return s_perspective;
             }
             //-------------------------------------------------------------------------
-            const pool_string& orthographic()
+            string::string_id orthographic()
             {
-                static const pool_string s_orthographic = "orthographic";
+                static const string::string_id s_orthographic = string::store_sid("orthographic");
 
                 return s_orthographic;
             }
             //-------------------------------------------------------------------------
-            const pool_string& font()
+            string::string_id font()
             {
-                static const pool_string s_font = "font";
+                static const string::string_id s_font = string::store_sid("font");
 
                 return s_font;
             }
         }
 
-        using camera_map = pool_hash_map<std::string_view, camera>;
-        using camera_tag = pool_string;
+        using camera_map = global_hash_map<string::string_id, camera>;
+        using camera_tag = string::string_id;
                
         static camera_map& cameras()
         {
@@ -54,7 +52,7 @@ namespace ppp
         }
         static camera_tag& active_camera_tag()
         {
-            static camera_tag s_camera_tag = {};
+            static camera_tag s_camera_tag = string::string_id::create_invalid();
 
             return s_camera_tag;
         }
@@ -92,7 +90,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        camera* set_camera(std::string_view camera_tag, const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj)
+        camera* set_camera(string::string_id camera_tag, const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj)
         {
             auto it = cameras().find(camera_tag);
             if (it != std::cend(cameras()))
@@ -108,7 +106,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        camera* set_as_active_camera(std::string_view camera_tag)
+        camera* set_as_active_camera(string::string_id camera_tag)
         {
             if (active_camera_tag() != camera_tag)
             {
@@ -144,7 +142,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const glm::mat4& get_view(std::string_view camera_tag)
+        const glm::mat4& get_view(string::string_id camera_tag)
         {
             static glm::mat4 view = glm::mat4(1.0f);
 
@@ -180,7 +178,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const glm::mat4& get_proj(std::string_view camera_tag)
+        const glm::mat4& get_proj(string::string_id camera_tag)
         {
             static glm::mat4 proj = glm::mat4(1.0f);
 
@@ -199,7 +197,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        camera* camera_by_tag(std::string_view camera_tag)
+        camera* camera_by_tag(string::string_id camera_tag)
         {
             auto it = cameras().find(camera_tag);
             if (it != std::cend(cameras()))
@@ -207,7 +205,7 @@ namespace ppp
                 return &it->second;
             }
 
-            log::error("Unable to find camera for tag: {}", camera_tag);
+            log::error("Unable to find camera for tag: {}", string::restore_sid(camera_tag));
             return nullptr;
         }
     }

@@ -6,6 +6,8 @@
 
 #include "memory/memory_types.h"
 
+#include "string/string_id.h"
+
 #include <glm/glm.hpp>
 
 #include <memory>
@@ -30,21 +32,19 @@ namespace ppp
             virtual s32 add_texture(render::texture_id id) = 0;
             virtual void reset_textures() = 0;
 
-            virtual const u64 id() const = 0;
-
             virtual const glm::vec4 ambient_color() const = 0;
             virtual const glm::vec4 diffuse_color() const = 0;
 
             virtual const sampler_ids& samplers() const = 0;
             virtual const texture_ids& textures() const = 0;
 
-            virtual std::string_view shader_tag() const = 0;
+            virtual string::string_id shader_tag() const = 0;
         };
 
         class material : public imaterial
         {
         public:
-            material(std::string_view shader_tag);
+            material(string::string_id shader_tag);
 
         public:
             void ambient_color(const glm::vec4& ambient_color) override;
@@ -58,20 +58,16 @@ namespace ppp
         public:
             bool has_textures() const override;
 
-            const u64 id() const override;
-
             const glm::vec4 ambient_color() const override;
             const glm::vec4 diffuse_color() const override;
             
             const sampler_ids& samplers() const override;
             const texture_ids& textures() const override;
 
-            std::string_view shader_tag() const override;
+            string::string_id shader_tag() const override;
 
         private:
-            u64 m_id;
-
-            std::string_view m_shader_tag;
+            string::string_id m_shader_tag;
 
             glm::vec4 m_ambient_color;
             glm::vec4 m_diffuse_color;
@@ -96,15 +92,13 @@ namespace ppp
         public:
             bool has_textures() const override;
 
-            const u64 id() const override;
-
             const glm::vec4 ambient_color() const override;
             const glm::vec4 diffuse_color() const override;
 
             const sampler_ids& samplers() const override;
             const texture_ids& textures() const override;
 
-            std::string_view shader_tag() const override;
+            string::string_id shader_tag() const override;
 
         private:
             imaterial* m_base_material;

@@ -2,6 +2,8 @@
 
 #include "util/types.h"
 
+#include <memory/memory_types.h>
+
 #include <glm/glm.hpp>
 
 #include <map>
@@ -12,7 +14,7 @@ namespace ppp
 {
     namespace typography
     {
-        struct FontCharacter
+        struct font_character
         {
             glm::ivec2 size;
             glm::ivec2 bearing;
@@ -21,16 +23,16 @@ namespace ppp
             glm::vec2 uv_end;
         };
 
-        struct FontAtlas
+        struct font_atlas
         {
             u32 texture_id;
 
             u32 texture_width;
             u32 texture_height;
 
-            std::map<u32, FontCharacter> characters;
+            resources_map<u32, font_character> characters;
         };
 
-        FontAtlas make_font_atlas(FT_FaceRec_* face, u32 characters_to_load);
+        font_atlas make_font_atlas(FT_FaceRec_* face, u32 characters_to_load);
     }
 }

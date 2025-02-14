@@ -13,7 +13,7 @@ namespace ppp
 {
     namespace typography
     {
-        struct GlyphBitmap
+        struct glyph_bitmap
         {
             u32 width;
             u32 height;
@@ -21,10 +21,10 @@ namespace ppp
             s32 left;
             s32 top;
 
-            pool_vector<u8> blob;
+            temp_vector<u8> blob;
         };
 
-        struct GlyphInfo
+        struct glyph_info
         {
             u32 character;
 
@@ -33,18 +33,18 @@ namespace ppp
             slong advance_x;
             slong advance_y;
 
-            GlyphBitmap bitmap;
+            glyph_bitmap bitmap;
         };
 
-        struct FontAtlasDimensions
+        struct font_atlas_dimensions
         {
             u32 width;
             u32 height;
         };
 
-        GlyphInfo copy_glyph_info(u32 character, FT_GlyphSlot glyph)
+        glyph_info copy_glyph_info(u32 character, FT_GlyphSlot glyph)
         {
-            GlyphInfo glyph_info;
+            glyph_info glyph_info;
 
             glyph_info.character = character;
 
@@ -65,9 +65,9 @@ namespace ppp
             return glyph_info;
         }
 
-        pool_vector<GlyphInfo> load_glyph_info(FT_FaceRec_* face, u32 characters_to_load)
+        temp_vector<glyph_info> load_glyph_info(FT_FaceRec_* face, u32 characters_to_load)
         {
-            pool_vector<GlyphInfo> glyph_info;
+            temp_vector<glyph_info> glyph_info;
 
             glyph_info.reserve(characters_to_load);
 
@@ -85,7 +85,7 @@ namespace ppp
             return glyph_info;
         }
 
-        std::optional<FontAtlasDimensions> try_packing_glyphs(const pool_vector<GlyphInfo>& info, FontAtlasDimensions dimensions)
+        std::optional<font_atlas_dimensions> try_packing_glyphs(const temp_vector<glyph_info>& info, font_atlas_dimensions dimensions)
         {
             u32 pen_x = 0;
             u32 pen_y = 0;
@@ -115,7 +115,7 @@ namespace ppp
             return dimensions;
         }
 
-        FontAtlasDimensions pack_glyphs(const pool_vector<GlyphInfo>& info, FontAtlasDimensions dimensions)
+        font_atlas_dimensions pack_glyphs(const temp_vector<glyph_info>& info, font_atlas_dimensions dimensions)
         {
             // Try packing glyphs into the current atlas dimensions
             auto result = try_packing_glyphs(info, dimensions);
@@ -132,9 +132,9 @@ namespace ppp
             return *result;
         }
 
-        FontCharacter build_font_character(const GlyphInfo& info, u32 pen_x, u32 pen_y, u32 atlas_width, u32 atlas_height)
+        font_character build_font_character(const glyph_info& info, u32 pen_x, u32 pen_y, u32 atlas_width, u32 atlas_height)
         {
-            FontCharacter c;
+            font_character c;
 
             c.size = glm::ivec2(info.bitmap.width, info.bitmap.height);
             c.bearing = glm::ivec2(info.bitmap.left, info.bitmap.top);
@@ -145,19 +145,19 @@ namespace ppp
             return c;
         }
 
-        FontAtlas build_atlas(const pool_vector<GlyphInfo>& info)
+        font_atlas build_atlas(const temp_vector<glyph_info>& info)
         {
             // Start with an initial atlas size (e.g., 128x128)
-            FontAtlasDimensions atlas_dimensions = pack_glyphs(info, { 128, 128 });
+            font_atlas_dimensions atlas_dimensions = pack_glyphs(info, { 128, 128 });
 
-            FontAtlas atlas;
+            font_atlas atlas;
 
             atlas.texture_id = -1;
             atlas.texture_width = atlas_dimensions.width;
             atlas.texture_height = atlas_dimensions.height;
             atlas.characters = {};
 
-            pool_vector<u8> atlas_buffer(atlas.texture_width * atlas.texture_height, 0);
+            temp_vector<u8> atlas_buffer(atlas.texture_width * atlas.texture_height, 0);
 
             u32 pen_x = 0;
             u32 pen_y = 0;
@@ -205,7 +205,7 @@ namespace ppp
             return atlas;
         }
 
-        FontAtlas make_font_atlas(FT_FaceRec_* face, u32 characters_to_load)
+        font_atlas make_font_atlas(FT_FaceRec_* face, u32 characters_to_load)
         {
             auto glyph_info = load_glyph_info(face, characters_to_load);
 

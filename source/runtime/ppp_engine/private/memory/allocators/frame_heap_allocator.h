@@ -1,29 +1,28 @@
 #pragma once
 
-#include "memory/string_heap.h"
 #include "memory/memory_size.h"
+#include "memory/memory_manager.h"
 
-namespace ppp 
+namespace ppp
 {
-    namespace memory 
+    namespace memory
     {
         template <typename T>
-        class string_heap_allocator 
+        class frame_heap_allocator
         {
         public:
             using value_type = T;
 
             //-------------------------------------------------------------------------
-            explicit string_heap_allocator() noexcept
-                : m_pool(get_string_heap())
+            explicit frame_heap_allocator() noexcept
             {
             }
 
             //-------------------------------------------------------------------------
             template <typename U>
-            string_heap_allocator(const string_heap_allocator<U>& other) noexcept
-                : m_pool(other.m_pool)
+            frame_heap_allocator(const frame_heap_allocator<U>& other) noexcept
             {
+                // Nothing to implement
             }
 
             //-------------------------------------------------------------------------
@@ -31,13 +30,13 @@ namespace ppp
             {
                 u64 total_size = n * sizeof(T);
 
-                return static_cast<T*>(m_pool->allocate(memory_size(total_size)));
+                return static_cast<T*>(heap()->allocate(memory_size(total_size)));
             }
 
             //-------------------------------------------------------------------------
             void deallocate(T* p, u64 /*n*/) noexcept
             {
-                m_pool->deallocate(static_cast<void*>(p));
+                // Will be cleared all at once
             }
 
             //-------------------------------------------------------------------------
@@ -56,32 +55,30 @@ namespace ppp
              * with the full range of operations expected by STL containers.
              */
             template <typename U>
-            struct rebind 
+            struct rebind
             {
-                using other = string_heap_allocator<U>;
+                using other = frame_heap_allocator<U>;
             };
 
         public:
-            const string_heap* pool() const noexcept { return m_pool; }
+            iheap* heap() noexcept { return memory_manager::instance().get_frame_heap(); }
 
         private:
-            // Allow other string_heap_allocator instantiations (with different types) access to m_pool.
+            // Allow other frame_heap_allocator instantiations (with different types) access to m_heap.
             template <typename U>
-            friend class string_heap_allocator;
-
-            string_heap* m_pool;
+            friend class frame_heap_allocator;
         };
 
         // Equality comparison operators for the allocator.
         // These compare the underlying memory pool pointers.
         template <typename T, typename U>
-        bool operator==(const string_heap_allocator<T>& a, const string_heap_allocator<U>& b) noexcept 
+        bool operator==(const frame_heap_allocator<T>& a, const frame_heap_allocator<U>& b) noexcept
         {
-            return a.pool() == b.pool();
+            return a.heap() == b.heap();
         }
 
         template <typename T, typename U>
-        bool operator!=(const string_heap_allocator<T>& a, const string_heap_allocator<U>& b) noexcept 
+        bool operator!=(const frame_heap_allocator<T>& a, const frame_heap_allocator<U>& b) noexcept
         {
             return !(a == b);
         }

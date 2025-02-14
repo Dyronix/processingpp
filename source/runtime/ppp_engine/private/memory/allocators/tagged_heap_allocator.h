@@ -1,26 +1,28 @@
 #pragma once
 
-#include "memory/tagged_heap.h"
-#include "memory/tagged_heap_tags.h"
+#include "memory/heaps/tagged_heap.h"
+#include "memory/memory_tags.h"
+#include "memory/memory_manager.h"
 
 namespace ppp
 {
     namespace memory
     {
         template<typename T, u32 allocator_tag> 
-        class tagged_allocator
+        class tagged_heap_allocator
         {
         public:
             using value_type = T;
 
             //-------------------------------------------------------------------------
-            tagged_allocator()
+            tagged_heap_allocator()
                 :m_tag(allocator_tag)
-            {}
+            {
+            }
 
             //-------------------------------------------------------------------------
             template<class U, u32 other_allocator_tag>
-            tagged_allocator(const tagged_allocator <U, other_allocator_tag>& other) noexcept
+            tagged_heap_allocator(const tagged_heap_allocator <U, other_allocator_tag>& other) noexcept
             {
                 m_tag = other.tag();
             }
@@ -28,13 +30,13 @@ namespace ppp
             //-------------------------------------------------------------------------
             value_type* allocate(u64 n) noexcept
             {
-                return static_cast<value_type*>(get_tagged_heap()->allocate(m_tag, n * sizeof(value_type)));
+                return static_cast<value_type*>(heap()->allocate(m_tag, n * sizeof(value_type)));
             }
 
             //-------------------------------------------------------------------------
             void deallocate(value_type* p, u64 /*n*/) noexcept
             {
-                get_tagged_heap()->deallocate(allocator_tag, p);
+                // Will be cleared all at once or block by block
             }
 
             /*
@@ -54,11 +56,12 @@ namespace ppp
             template <typename U>
             struct rebind 
             {
-                using other = tagged_allocator<U, allocator_tag>;
+                using other = tagged_heap_allocator<U, allocator_tag>;
             };
 
         public:
             u32 tag() const noexcept { return m_tag; }
+            tagged_heap* heap() noexcept { return memory_manager::instance().get_tagged_heap(); }
 
         private:
             u32 m_tag;
@@ -66,9 +69,9 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         template<class T, u32 allocator_tag, class U, u32 other_allocator_tag>
-        bool operator==(const tagged_allocator <T, allocator_tag>& lhs, const tagged_allocator <U, other_allocator_tag>& rhs) { return lhs.tag() == rhs.tag(); }
+        bool operator==(const tagged_heap_allocator <T, allocator_tag>& lhs, const tagged_heap_allocator <U, other_allocator_tag>& rhs) { return lhs.tag() == rhs.tag(); }
         //-------------------------------------------------------------------------
         template<class T, u32 allocator_tag, class U, u32 other_allocator_tag>
-        bool operator!=(const tagged_allocator <T, allocator_tag>& lhs, const tagged_allocator <U, other_allocator_tag>& rhs) { return lhs.tag() != rhs.tag(); }
+        bool operator!=(const tagged_heap_allocator <T, allocator_tag>& lhs, const tagged_heap_allocator <U, other_allocator_tag>& rhs) { return lhs.tag() != rhs.tag(); }
     }
 }

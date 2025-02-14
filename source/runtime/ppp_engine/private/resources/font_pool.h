@@ -1,10 +1,9 @@
 #pragma once
 
 #include "util/types.h"
-
 #include "memory/memory_types.h"
-
 #include "resources/font_atlas.h"
+#include "string/string_id.h"
 
 #include <glm/glm.hpp>
 
@@ -15,26 +14,26 @@ namespace ppp
 {
     namespace font_pool
     {
-        struct Font
+        struct font
         {
-            pool_string file_path = {};
+            string::string_id file_path = string::string_id::create_invalid();
             u32 size = -1;
-            typography::FontAtlas atlas;
+            typography::font_atlas atlas;
         };
 
         bool initialize();
         void terminate();
 
-        bool has_font(std::string_view file_path);
+        bool has_font(string::string_id file_path);
         bool has_font(u32 id);
 
-        const Font* font_at_path(std::string_view file_path);
-        const Font* font_at_id(u32 id);
+        const font* font_at_path(string::string_id file_path);
+        const font* font_at_id(u32 id);
 
         void load_active_font(u32 id);
 
-        void add_new_font(const Font& font);
+        void add_new_font(const font& font);
 
-        const Font* active_font();
+        const font* active_font();
     }
 }

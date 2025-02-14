@@ -122,23 +122,16 @@ namespace ppp
         namespace conversions
         {
             //-------------------------------------------------------------------------
-            inline const char* to_string(attribute_type type)
+            inline temp_string to_string(attribute_type type)
             {
-                static const pool_string s_attribute_type_position = "POSITION|VEC3";
-                static const pool_string s_attribute_type_normal = "NORMAL|VEC3";
-                static const pool_string s_attribute_type_texcoord = "TEXCOORD|VEC2";
-                static const pool_string s_attribute_type_color = "COLOR|VEC4";
-                static const pool_string s_attribute_type_MATERIAL_INDEX = "DIFFUSE TEXTURE INDEX|INT";
-                static const pool_string s_attribute_type_world_matrix = "WORLD MATRIX|MAT4";
-
                 switch (type)
                 {
-                case attribute_type::POSITION:                 return s_attribute_type_position.data();
-                case attribute_type::NORMAL:                   return s_attribute_type_normal.data();
-                case attribute_type::TEXCOORD:                 return s_attribute_type_texcoord.data();
-                case attribute_type::COLOR:                    return s_attribute_type_color.data();
-                case attribute_type::MATERIAL_INDEX:           return s_attribute_type_MATERIAL_INDEX.data();
-                case attribute_type::WORLD_MATRIX:             return s_attribute_type_world_matrix.data();
+                case attribute_type::POSITION:                 return "POSITION|VEC3";
+                case attribute_type::NORMAL:                   return "NORMAL|VEC3";
+                case attribute_type::TEXCOORD:                 return "TEXCOORD|VEC2";
+                case attribute_type::COLOR:                    return "COLOR|VEC4";
+                case attribute_type::MATERIAL_INDEX:           return "DIFFUSE TEXTURE INDEX|INT";
+                case attribute_type::WORLD_MATRIX:             return "WORLD MATRIX|MAT4";
                 default:
                     assert(false && "Unknown attribute type");
                     return {};

@@ -102,9 +102,9 @@ namespace ppp
                 clock::time_point previous_frame_time;
                 clock::milliseconds delta_frame_time = { clock::milliseconds(0) };
 
-                pool_hash_map<u32, bool> key_pressed;
-                pool_hash_map<u32, bool> key_down;
-                pool_hash_map<u32, bool> key_released;
+                global_hash_map<u32, bool> key_pressed;
+                global_hash_map<u32, bool> key_down;
+                global_hash_map<u32, bool> key_released;
 
                 s32 last_key_pressed = -1;
 
@@ -113,15 +113,15 @@ namespace ppp
                 f32 prev_mouse_y = -1;
                 f32 current_mouse_y = -1;
 
-                pool_hash_map<u32, bool> mouse_button_pressed;
-                pool_hash_map<u32, bool> mouse_button_released;
+                global_hash_map<u32, bool> mouse_button_pressed;
+                global_hash_map<u32, bool> mouse_button_released;
 
                 s32 last_mouse_button_pressed = -1;
 
                 f32 scroll_offset_x = 0.0f;
                 f32 scroll_offset_y = 0.0f;
 
-                pool_vector<std::function<void(f32, f32)>> dragging_callback;
+                global_vector<std::function<void(f32, f32)>> dragging_callback;
             };
 
             static device_ctx& ctx()

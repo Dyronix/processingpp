@@ -1,8 +1,8 @@
 #pragma once
 
 #include "render/render_framebuffer.h"
-
 #include "util/types.h"
+#include "string/string_id.h"
 
 #include <memory>
 
@@ -12,7 +12,7 @@ namespace ppp
     {
         struct framebuffer_description
         {
-            std::string_view tag;
+            string::string_id tag;
 
             bool require_depth;
 
@@ -50,7 +50,7 @@ namespace std
     {
         u64 operator()(const ppp::framebuffer_pool::framebuffer_description& s) const
         {
-            return std::hash<std::string_view>{}(s.tag);
+            return s.tag;
         }
     };
 }

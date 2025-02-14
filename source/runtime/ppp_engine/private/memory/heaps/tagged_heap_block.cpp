@@ -1,4 +1,4 @@
-#include "memory/tagged_heap_block.h"
+#include "memory/heaps/tagged_heap_block.h"
 
 #include "util/pointer_math.h"
 
@@ -7,7 +7,7 @@ namespace ppp
     namespace memory
     {
         //-------------------------------------------------------------------------
-        tagged_heap_block::tagged_heap_block(heap* heap, memory_size size)
+        tagged_heap_block::tagged_heap_block(iheap* heap, memory_size size)
             :m_tag(0)
             ,m_linear_heap(heap, size)
         {

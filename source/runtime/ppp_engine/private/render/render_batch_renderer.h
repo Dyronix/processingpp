@@ -18,7 +18,7 @@ namespace ppp
             static void set_wireframe_linecolor(s32 color);
 
         public:
-            batch_renderer(const attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag);
+            batch_renderer(const attribute_layout* layouts, u64 layout_cout, string::string_id shader_tag);
             ~batch_renderer() override;
 
         public:
@@ -60,7 +60,7 @@ namespace ppp
         class primitive_batch_renderer : public batch_renderer
         {
         public:
-            primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag);
+            primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, string::string_id shader_tag);
             ~primitive_batch_renderer() override;
 
             void on_render(topology_type topology, batch_drawing_data& drawing_data) override;
@@ -69,7 +69,7 @@ namespace ppp
         class texture_batch_renderer : public batch_renderer
         {
         public:
-            texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, std::string_view shader_tag);
+            texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, string::string_id shader_tag);
             ~texture_batch_renderer() override;
 
             void on_render(topology_type topology, batch_drawing_data& drawing_data) override;

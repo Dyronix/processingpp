@@ -9,17 +9,17 @@ namespace ppp
         namespace internal
         {
             //-------------------------------------------------------------------------
-            static pool_vector<std::function<void()>>& draw_begin_subs()
+            static global_vector<std::function<void()>>& draw_begin_subs()
             {
-                static pool_vector<std::function<void()>> s_draw_begin_subs;
+                static global_vector<std::function<void()>> s_draw_begin_subs;
 
                 return s_draw_begin_subs;
             }
 
             //-------------------------------------------------------------------------
-            static pool_vector<std::function<void()>>& draw_end_subs()
+            static global_vector<std::function<void()>>& draw_end_subs()
             {
-                static pool_vector<std::function<void()>> s_draw_end_subs;
+                static global_vector<std::function<void()>> s_draw_end_subs;
 
                 return s_draw_end_subs;
             }

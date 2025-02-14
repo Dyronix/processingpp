@@ -8,14 +8,12 @@ namespace ppp
     {
         //-------------------------------------------------------------------------
         // Material
-        material::material(std::string_view shader_tag)
+        material::material(string::string_id shader_tag)
             : m_shader_tag(shader_tag)
             , m_ambient_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
             , m_diffuse_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
             , m_texture_registry(render::max_textures())
-        {
-            m_id = std::hash<std::string_view>{}(shader_tag);
-        }
+        {}
 
         //-------------------------------------------------------------------------
         void material::ambient_color(const glm::vec4& ambient_color) { m_ambient_color = ambient_color; }
@@ -45,12 +43,6 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const u64 material::id() const
-        {
-            return m_id;
-        }
-
-        //-------------------------------------------------------------------------
         const glm::vec4 material::ambient_color() const { return m_ambient_color; }
         //-------------------------------------------------------------------------
         const glm::vec4 material::diffuse_color() const { return m_diffuse_color; }
@@ -61,8 +53,7 @@ namespace ppp
         const texture_ids& material::textures() const { return m_texture_registry.textures(); }
 
         //-------------------------------------------------------------------------
-        std::string_view material::shader_tag() const { return m_shader_tag; }
-
+        string::string_id material::shader_tag() const { return m_shader_tag; }
 
         //-------------------------------------------------------------------------
         // Material Instance
@@ -108,9 +99,6 @@ namespace ppp
         bool material_instance::has_textures() const { return m_base_material->has_textures(); }
 
         //-------------------------------------------------------------------------
-        const u64 material_instance::id() const { return m_base_material->id(); }
-
-        //-------------------------------------------------------------------------
         const glm::vec4 material_instance::ambient_color() const { return m_ambient_color.value_or(m_base_material->ambient_color()); }
         //-------------------------------------------------------------------------
         const glm::vec4 material_instance::diffuse_color() const { return m_diffuse_color.value_or(m_base_material->diffuse_color()); }
@@ -121,6 +109,6 @@ namespace ppp
         const texture_ids& material_instance::textures() const { return m_base_material->textures(); }
 
         //-------------------------------------------------------------------------
-        std::string_view material_instance::shader_tag() const { return m_base_material->shader_tag(); }
+        string::string_id material_instance::shader_tag() const { return m_base_material->shader_tag(); }
     }
 }

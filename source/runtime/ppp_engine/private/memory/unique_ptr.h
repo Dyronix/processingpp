@@ -1,12 +1,12 @@
 #pragma once
 
-#include "memory/scratch_pool_allocator.h"
+#include "memory/allocators/global_heap_allocator.h"
 
 namespace ppp
 {
     //--------------------------------------------------------------
     // Custom smart pointer that uses free_list_allocator for deallocation
-    template <typename T, typename Allocator = memory::scratch_pool_allocator<T>>
+    template <typename T, typename Allocator = memory::global_heap_allocator<T>>
     class unique_ptr 
     {
     public:
@@ -125,7 +125,7 @@ namespace ppp
     //--------------------------------------------------------------
     // Factory function to create a unique_ptr.
     // It allocates memory using the free_list_allocator and constructs the object in-place.
-    template <typename T, typename Allocator = memory::scratch_pool_allocator<T>, typename... Args>
+    template <typename T, typename Allocator = memory::global_heap_allocator<T>, typename... Args>
     unique_ptr<T, Allocator> make_unique(Args&&... args) 
     {
         Allocator alloc;

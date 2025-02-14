@@ -1,12 +1,11 @@
-#include "memory/double_buffered_heap.h"
-#include "memory/heap.h"
+#include "memory/heaps/double_buffered_heap.h"
 
 namespace ppp
 {
     namespace memory
     {
         //-------------------------------------------------------------------------
-        double_buffered_heap::double_buffered_heap(heap* heap, memory_size size)
+        double_buffered_heap::double_buffered_heap(iheap* heap, memory_size size)
             :m_active_linear_heap(nullptr)
             ,m_buffer_0(heap, size)
             ,m_buffer_1(heap, size)
@@ -27,7 +26,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void double_buffered_heap::free()
+        void double_buffered_heap::free() noexcept
         {
             // Swap to a different buffer
             present();
@@ -37,11 +36,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void double_buffered_heap::present()
+        bool double_buffered_heap::can_alloc(memory_size size) const
         {
-            m_active_linear_heap = m_active_linear_heap == &m_buffer_0
-                ? &m_buffer_1
-                : &m_buffer_0;
+            return m_active_linear_heap->can_alloc(size);
         }
 
         //-------------------------------------------------------------------------
@@ -54,6 +51,14 @@ namespace ppp
         memory_size double_buffered_heap::current_memory() const
         {
             return m_buffer_0.current_memory() + m_buffer_1.current_memory();
+        }
+
+        //-------------------------------------------------------------------------
+        void double_buffered_heap::present()
+        {
+            m_active_linear_heap = m_active_linear_heap == &m_buffer_0
+                ? &m_buffer_1
+                : &m_buffer_0;
         }
     }
 }

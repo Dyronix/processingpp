@@ -1,9 +1,8 @@
 #include "resources/material_pool.h"
 #include "resources/shader_pool.h"
-
 #include "util/log.h"
-
 #include "memory/memory_tracker.h"
+#include "string/string_id.h"
 
 namespace ppp
 {
@@ -33,9 +32,9 @@ namespace ppp
                 return s_material_instances;
             }
 
-            static graphics_hash_map<std::string_view, graphics_vector<render::texture_id>>& registered_images()
+            static graphics_hash_map<string::string_id, graphics_vector<render::texture_id>>& registered_images()
             {
-                static graphics_hash_map<std::string_view, graphics_vector<render::texture_id>> s_registered_images;
+                static graphics_hash_map<string::string_id, graphics_vector<render::texture_id>> s_registered_images;
 
                 return s_registered_images;
             }
@@ -43,7 +42,7 @@ namespace ppp
 
         namespace texture_cache
         {
-            void add_image(std::string_view shader_tag, render::texture_id image)
+            void add_image(string::string_id shader_tag, render::texture_id image)
             {
                 auto it = internal::registered_images().find(shader_tag);
                 if (it == std::cend(internal::registered_images()))
@@ -60,7 +59,7 @@ namespace ppp
                 }
             }
 
-            void reset_images(std::string_view shader_tag)
+            void reset_images(string::string_id shader_tag)
             {
                 auto it = internal::registered_images().find(shader_tag);
                 if (it != std::cend(internal::registered_images()))
@@ -69,7 +68,7 @@ namespace ppp
                 }
             }
 
-            const graphics_vector<render::texture_id>& images(std::string_view shader_tag)
+            const graphics_vector<render::texture_id>& images(string::string_id shader_tag)
             {
                 auto it = internal::registered_images().find(shader_tag);
                 if (it != std::cend(internal::registered_images()))
@@ -111,72 +110,54 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool has_material(std::string_view shader_tag)
+        bool has_material(string::string_id shader_tag)
         {
-            return has_material(std::hash<std::string_view>{}(shader_tag));
+            return internal::materials().find(shader_tag) != std::cend(internal::materials());
         }
 
         //-------------------------------------------------------------------------
-        bool has_material(u64 id)
+        resources::imaterial* material_at_shader_tag(string::string_id shader_tag)
         {
-            return internal::materials().find(id) != std::cend(internal::materials());
+            return &internal::materials().at(shader_tag);
         }
 
         //-------------------------------------------------------------------------
-        resources::imaterial* material_at_shader_tag(std::string_view shader_tag)
-        {
-            return material_at_id(std::hash<std::string_view>{}(shader_tag));
-        }
-
-        //-------------------------------------------------------------------------
-        resources::imaterial* material_at_id(u64 id)
-        {
-            return &internal::materials().at(id);
-        }
-
-        //-------------------------------------------------------------------------
-        resources::imaterial* material_instance_at_shader_tag(std::string_view shader_tag)
-        {
-            return material_instance_at_id(std::hash<std::string_view>{}(shader_tag));
-        }
-
-        //-------------------------------------------------------------------------
-        resources::imaterial* material_instance_at_id(u64 id)
+        resources::imaterial* material_instance_at_shader_tag(string::string_id shader_tag)
         {
             auto it = std::find_if(std::begin(internal::material_instances()), std::end(internal::material_instances()),
-                [id](const auto& pair)
-            {
-                return pair.second.id() == id;
-            });
+                [shader_tag](const auto& pair)
+                {
+                    return pair.second.shader_tag() == shader_tag;
+                });
 
             if (it != std::cend(internal::material_instances()))
             {
                 return &it->second;
             }
-                
+
             return nullptr;
         }
 
         //-------------------------------------------------------------------------
         void add_new_material(const resources::material& material)
         {
-            internal::materials().emplace(material.id(), material);
+            internal::materials().emplace(material.shader_tag(), material);
         }
 
         //-------------------------------------------------------------------------
-        resources::imaterial* get_or_create_material_instance(std::string_view shader_tag)
+        resources::imaterial* get_or_create_material_instance(string::string_id shader_tag)
         {
             auto mat = material_at_shader_tag(shader_tag);
             auto cache = internal::registered_images().find(shader_tag);
 
             if (mat == nullptr)
             {
-                log::error("No material found for given tag: {}", shader_tag);
+                log::error("No material found for given tag: {}", string::restore_sid(shader_tag));
                 return nullptr;
             }
 
             // Hash active textures for uniqueness
-            size_t hash = mat->id();
+            u64 hash = mat->shader_tag();
 
             if (cache != std::cend(internal::registered_images()))
             {
@@ -196,7 +177,7 @@ namespace ppp
             // Create a new material instance
             resources::material_instance instance(mat, internal::registered_images().size());
 
-            log::info("material instance ({0}) added for shader tag: {1}", hash, shader_tag);
+            log::info("material instance ({0}) added for shader tag: {1}", hash, string::restore_sid(shader_tag));
 
             // Assign textures
             if (cache != std::cend(internal::registered_images()))

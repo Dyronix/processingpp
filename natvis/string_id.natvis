@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="ppp::string::string_id">
+    <!-- Display the resolved string value by invoking your restore function -->
+      <DisplayString>{{ text = restore_sid() }}</DisplayString>
+  </Type>
+</AutoVisualizer>

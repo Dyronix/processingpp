@@ -9,7 +9,12 @@ namespace ppp
     {
         namespace internal
         {
-            pool_hash_map<std::string_view, Image> _images;
+            static global_hash_map<string::string_id, image>& images()
+            {
+                static global_hash_map<string::string_id, image> s_images;
+
+                return s_images;
+            }
 
             unsigned char* _active_pixels = nullptr;
         }
@@ -26,43 +31,43 @@ namespace ppp
                 free(internal::_active_pixels);
             }
 
-            for (auto& i : internal::_images)
+            for (auto& i : internal::images())
             {
                 free(i.second.data);
             }
         }
 
-        bool has_image(std::string_view file_path)
+        bool has_image(string::string_id file_path)
         {
-            return internal::_images.find(file_path) != internal::_images.cend();
+            return internal::images().find(file_path) != internal::images().cend();
         }
 
         bool has_image(s32 id)
         {
-            auto it = std::find_if(std::cbegin(internal::_images), std::cend(internal::_images),
+            auto it = std::find_if(std::cbegin(internal::images()), std::cend(internal::images()),
                 [id](const auto& pair)
             {
                 return pair.second.image_id == id;
             });
 
-            return it != internal::_images.cend();
+            return it != internal::images().cend();
         }
 
-        const Image* image_at_path(std::string_view file_path)
+        const image* image_at_path(string::string_id file_path)
         {
             if (has_image(file_path))
             {
-                return &internal::_images.find(file_path)->second;
+                return &internal::images().find(file_path)->second;
             }
 
             return nullptr;
         }
 
-        const Image* image_at_id(s32 id)
+        const image* image_at_id(s32 id)
         {
             if (has_image(id))
             {
-                auto it = std::find_if(std::cbegin(internal::_images), std::cend(internal::_images),
+                auto it = std::find_if(std::cbegin(internal::images()), std::cend(internal::images()),
                     [id](const auto& pair)
                 {
                     return pair.second.image_id == id;
@@ -74,14 +79,14 @@ namespace ppp
             return nullptr;
         }
 
-        void add_new_image(const Image& image)
+        void add_new_image(const image& image)
         {
-            internal::_images.emplace(image.file_path, image);
+            internal::images().emplace(image.file_path, image);
         }
 
         u8* load_active_pixels(s32 id)
         {
-            const Image* img = image_at_id(id);
+            const image* img = image_at_id(id);
 
             if (img != nullptr)
             {
@@ -112,7 +117,7 @@ namespace ppp
 
         void update_active_pixels(s32 id)
         {
-            const Image* img = image_at_id(id);
+            const image* img = image_at_id(id);
             if (img != nullptr)
             {
                 memcpy(img->data, internal::_active_pixels, img->width * img->height * img->channels);

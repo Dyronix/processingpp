@@ -3,6 +3,8 @@
 
 #include "string/string_ops.h"
 
+#include "memory/allocators/tagged_heap_allocator.h"
+
 #include "util/log.h"
 
 #include <fstream>
@@ -13,37 +15,47 @@ namespace ppp
     {
 		namespace internal
 		{
-			pool_hash_map<pool_string, pool_string> _wildcards;
-		}
-
-		//-------------------------------------------------------------------------
-		void add_wildcard(const pool_string& wildcard, const pool_string& value)
-		{
-			log::info("adding wildcard {} | {}", wildcard, value);
-
-			internal::_wildcards[wildcard] = value;
-		}
-
-		//-------------------------------------------------------------------------
-		pool_string resolve_path(std::string_view filename)
-		{
-			file_info full_path(filename);
-
-			for (const auto& p : internal::_wildcards)
+			static fileio_hash_map<string::string_id, fileio_string>& wildcards()
 			{
-				if (full_path.str().find(p.first) != std::string::npos)
+				static fileio_hash_map<string::string_id, fileio_string> s_wildcards;
+
+				return s_wildcards;
+			}
+		}
+
+		//-------------------------------------------------------------------------
+		void add_wildcard(string::string_id wildcard, const std::string_view value)
+		{
+			log::info("adding wildcard {} | {}", string::restore_sid(wildcard), value);
+
+			internal::wildcards()[wildcard] = value;
+		}
+
+		//-------------------------------------------------------------------------
+		temp_string resolve_path(std::string_view filename)
+		{
+			temp_string		resolved_path;
+
+			file_info_view	file_info_view(filename);
+
+			for (const auto& p : internal::wildcards())
+			{
+				std::string_view sv_wildcard = string::restore_sid(p.first);
+				std::string_view sv_path = p.second;
+
+				if (file_info_view.path().find(sv_wildcard) != std::string::npos)
 				{
-					full_path = file_info(string::string_replace(full_path.str(), p.first, p.second));
+					resolved_path = string::string_replace<temp_string>(file_info_view.path(), sv_wildcard, sv_path);
 				}
 			}
 
-			return full_path.str();
+			return resolved_path;
 		}
 
 		//-------------------------------------------------------------------------
 		bool exists(std::string_view filename)
 		{
-			const pool_string path = resolve_path(filename);
+			const temp_string path = resolve_path(filename);
 
 			std::ifstream f(path.c_str());
 			bool good = f.good();

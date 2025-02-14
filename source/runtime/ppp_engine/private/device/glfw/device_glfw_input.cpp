@@ -18,30 +18,30 @@ namespace ppp
         {
             namespace internal
             {
-                static pool_hash_map<u32, pool_vector<keyboard::key_callback>>& key_callbacks()
+                static global_hash_map<u32, global_vector<keyboard::key_callback>>& key_callbacks()
                 {
-                    static pool_hash_map<u32, pool_vector<keyboard::key_callback>> s_key_callbacks;
+                    static global_hash_map<u32, global_vector<keyboard::key_callback>> s_key_callbacks;
 
                     return s_key_callbacks;
                 }
 
-                static pool_vector<mouse::mouse_pos_callback>& mouse_pos_callbacks()
+                static global_vector<mouse::mouse_pos_callback>& mouse_pos_callbacks()
                 {
-                    static pool_vector<mouse::mouse_pos_callback> s_mouse_pos_callbacks;
+                    static global_vector<mouse::mouse_pos_callback> s_mouse_pos_callbacks;
 
                     return s_mouse_pos_callbacks;
                 }
 
-                static pool_hash_map<u32, pool_vector<mouse::mouse_button_scroll_callback>>& mouse_scroll_callbacks()
+                static global_hash_map<u32, global_vector<mouse::mouse_button_scroll_callback>>& mouse_scroll_callbacks()
                 {
-                    static pool_hash_map<u32, pool_vector<mouse::mouse_button_scroll_callback>> s_mouse_scroll_callbacks;
+                    static global_hash_map<u32, global_vector<mouse::mouse_button_scroll_callback>> s_mouse_scroll_callbacks;
 
                     return s_mouse_scroll_callbacks;
                 }
 
-                static pool_hash_map<u32, pool_vector<mouse::mouse_button_callback>>& mouse_button_callbacks()
+                static global_hash_map<u32, global_vector<mouse::mouse_button_callback>>& mouse_button_callbacks()
                 {
-                    static pool_hash_map<u32, pool_vector<mouse::mouse_button_callback>> s_mouse_button_callbacks;
+                    static global_hash_map<u32, global_vector<mouse::mouse_button_callback>> s_mouse_button_callbacks;
 
                     return s_mouse_button_callbacks;
                 }
