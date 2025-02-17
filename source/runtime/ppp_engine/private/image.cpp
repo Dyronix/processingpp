@@ -212,7 +212,7 @@ namespace ppp
             auto buffer = fileio::read_binary_file(file_path);
             
             texture_pool::image img;
-            img.file_path = string::string_id(file_path);
+            img.file_path = sid;
             img.data = stbi_load_from_memory(
                 reinterpret_cast<pixels_u8_ptr>(buffer.data()),
                 static_cast<int>(buffer.size()),

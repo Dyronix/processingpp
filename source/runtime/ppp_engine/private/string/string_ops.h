@@ -12,7 +12,8 @@ namespace ppp
     {
         //-----------------------------------------------------------------------------
         template <typename TString>
-        auto string_replace(std::string_view subject, std::string_view search, std::string_view replace) -> TString
+        auto string_replace(std::string_view subject, std::string_view search, std::string_view replace) 
+            -> TString
         {
             typedef typename TString::allocator_type TAllocator;
 
@@ -31,7 +32,7 @@ namespace ppp
 
         //-----------------------------------------------------------------------------
         template <typename TString>
-        auto split_string(std::string_view str, std::string_view delimiters)
+        auto split_string(std::string_view str, std::string_view delimiters) 
             -> std::vector<TString, typename std::allocator_traits<typename TString::allocator_type>::template rebind_alloc<TString>>
         {
             using TChar             = typename TString::value_type;

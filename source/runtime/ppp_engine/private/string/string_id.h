@@ -2,6 +2,9 @@
 
 #include "util/types.h"
 
+#include "memory/memory_types.h"
+#include "memory/memory_manager.h"
+
 #include <functional>
 #include <ostream>
 #include <cstddef>
@@ -12,9 +15,18 @@ namespace ppp
     {
         class string_id;
 
-        // Store a new sid
+        /**
+        * @brief Stores a string and returns its associated string_id.
+        * @param characters The string to be stored.
+        * @return The generated string_id.
+        */
         string_id store_sid(std::string_view characters);
-        // Restore to a string
+
+        /**
+         * @brief Restores the original string from a string_id.
+         * @param sid The string_id to restore.
+         * @return The original string view.
+         */
         std::string_view restore_sid(const string_id& sid);
 
         /**
@@ -32,19 +44,13 @@ namespace ppp
         class string_id
         {
         public:
-            std::string_view restore() const
-            {
-                return ppp::string::restore_sid(*this);
-            }
-
-        public:
             //-------------------------------------------------------------------------
             /**
              * Create an invalid string_id.
              */
             static string_id create_invalid()
             {
-                return string_id(s_none_state_hash_val);
+                return string_id();
             }
 
             //-------------------------------------------------------------------------
@@ -52,16 +58,10 @@ namespace ppp
              * Create an None string_id.
              */
             string_id()
-                : m_comparison_hash(create_invalid())
-            {
-            }
-
-            //-------------------------------------------------------------------------
-            /**
-             * Create a runtime generated string_id.
-             */
-            explicit string_id(u64 entryID)
-                : m_comparison_hash(entryID)
+                : m_comparison_hash(0)
+#ifdef _DEBUG
+                , m_value(memory::create_new<debug_scratch_string, memory::debug_scratch_policy>("invalid string id"))
+#endif
             {
             }
 
@@ -69,8 +69,11 @@ namespace ppp
             /**
              * Create an string_id with characters.
              */
-            explicit string_id(std::string_view stringView)
-                : m_comparison_hash(std::hash<std::string_view> {}(stringView))
+            explicit string_id(std::string_view string_view)
+                : m_comparison_hash(std::hash<std::string_view> {}(string_view))
+#ifdef _DEBUG
+                , m_value(memory::create_new<debug_scratch_string, memory::debug_scratch_policy>(string_view))
+#endif
             {
             }
 
@@ -129,12 +132,36 @@ namespace ppp
                 return m_comparison_hash;
             }
 
+            //-------------------------------------------------------------------------
+            /**
+            * Retrieve the string value
+            */
+            std::string_view str() const
+            {
+                return restore_sid(*this);
+            }
+
+            //-------------------------------------------------------------------------
+            /**
+            * Retrieve the string value in a c-style string
+            */
+            const char* c_str() const
+            {
+                auto view = str();
+
+                return view.data();
+            }
+
         private:
             /** Hash for invalid string_id into string pool */
             static const u64 s_none_state_hash_val = 0;
 
             /** Hash into the string_id hash table */
             u64 m_comparison_hash;
+
+#ifdef _DEBUG
+            debug_scratch_string* m_value;
+#endif
         };
 
         bool operator==(std::string_view s, const string_id& sid);
@@ -144,14 +171,19 @@ namespace ppp
     }
 }
 
+//-------------------------------------------------------------------------
+// User-defined literal operator to create a string_id from a string literal.
 inline ppp::string::string_id operator""_sid(const char* string, size_t size)
 {
     return ppp::string::string_id(std::string_view(string, static_cast<u32>(size))); // NOLINT(cppcoreguidelines-narrowing-conversions)
 }
 
-std::ostream& operator<<(std::ostream& os, const ppp::string::string_id& stringID);
+//-------------------------------------------------------------------------
+// Outputs the string associated with a string_id. 
+std::ostream& operator<<(std::ostream& os, const ppp::string::string_id& sid);
 
-// custom specialization of std::hash can be injected in namespace std
+//-------------------------------------------------------------------------
+// Custom specialization of std::hash for string_id to allow using it in unordered containers
 namespace std
 {
     //-------------------------------------------------------------------------

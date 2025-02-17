@@ -30,7 +30,7 @@ namespace ppp
             u32 texture_width;
             u32 texture_height;
 
-            resources_map<u32, font_character> characters;
+            graphics_map<u32, font_character> characters;
         };
 
         font_atlas make_font_atlas(FT_FaceRec_* face, u32 characters_to_load);

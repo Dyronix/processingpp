@@ -11,21 +11,22 @@ namespace ppp
 {
     namespace framebuffer_pool
     {
+        using framebuffers_arr = graphics_vector<ppp::unique_ptr<render::framebuffer>>;
+        using active_framebuffers_hash_map = graphics_hash_map<string::string_id, render::framebuffer*>;
+
         ppp::unique_ptr<render::default_framebuffer> _default_framebuffer;
 
         //-------------------------------------------------------------------------
-        graphics_vector<ppp::unique_ptr<render::framebuffer>>& framebuffers()
+        framebuffers_arr& framebuffers()
         {
-            static graphics_vector<ppp::unique_ptr<render::framebuffer>> s_framebuffers;
-
-            return s_framebuffers;
+            static framebuffers_arr* s_framebuffers = memory::create_tagged_new<framebuffers_arr, memory::persistent_tagged_policy, memory::tags::graphics>();
+            return *s_framebuffers;
         }
         //-------------------------------------------------------------------------
-        graphics_hash_map<string::string_id, render::framebuffer*>& active_framebuffers()
+        active_framebuffers_hash_map& active_framebuffers()
         {
-            static graphics_hash_map<string::string_id, render::framebuffer*> s_in_use;
-
-            return s_in_use;
+            static active_framebuffers_hash_map* s_in_use = memory::create_tagged_new< active_framebuffers_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+            return *s_in_use;
         }        
 
         //-------------------------------------------------------------------------

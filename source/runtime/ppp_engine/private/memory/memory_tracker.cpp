@@ -6,12 +6,12 @@
 
 #include "util/log.h"
 
-#define PRINT_WARN_WITHIN_SAME_FRAME 0
+#define PRINT_WARN_WITHIN_SAME_FRAME 1
 
-#define PRINT_INFO_ALLOCATIONS_TOTAL 0
-#define PRINT_INFO_ALLOCATION_THIS_FRAME 0
-#define PRINT_INFO_ALLOCATION_AND_DEALLOCATIONS_THIS_FRAME 0
-#define PRINT_INFO_ALLOCATION_ADDRESS_AND_SIZE 0
+#define PRINT_INFO_ALLOCATIONS_TOTAL 1
+#define PRINT_INFO_ALLOCATION_THIS_FRAME 1
+#define PRINT_INFO_ALLOCATION_AND_DEALLOCATIONS_THIS_FRAME 1
+#define PRINT_INFO_ALLOCATION_ADDRESS_AND_SIZE 1
 
 namespace ppp
 {
@@ -20,7 +20,9 @@ namespace ppp
         namespace internal
         {
             bool _constructing_tracker = false;
-            bool _tracking_enabled = false;
+            bool _tracking_enabled = _DEBUG;
+
+            u64 _untracked_memory = 0;
         }
 
         class memory_tracker
@@ -53,7 +55,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void end_frame()
+            void end_frame(bool dump_memory_info)
             {
                 if (m_active_frame == -1)
                 {
@@ -61,7 +63,10 @@ namespace ppp
                     return;
                 }
 
-                dump_memory_data();
+                if (dump_memory_info)
+                {
+                    dump_memory_data();
+                }
 
                 m_active_frame = -1;
 
@@ -73,6 +78,7 @@ namespace ppp
             void dump_memory_data()
             {
 #if PRINT_INFO_ALLOCATIONS_TOTAL
+                log::info("Total Bytes Untracked: {}", internal::_untracked_memory);
                 log::info("Frame nr: {} | Total amount of allocations: {}", m_active_frame, m_allocations.size());
 #endif
 
@@ -106,8 +112,6 @@ namespace ppp
             //-------------------------------------------------------------------------
             void track_allocation(void* p, u64 size)
             {
-                std::lock_guard<std::mutex> lock(m_mutex);
-
                 m_allocations[p] = m_active_frame;
                 m_frame_allocations[p] = size;
 
@@ -117,8 +121,6 @@ namespace ppp
             //-------------------------------------------------------------------------
             void track_deallocation(void* p)
             {
-                std::lock_guard<std::mutex> lock(m_mutex);
-
                 auto it = m_allocations.find(p);
                 if (it != std::cend(m_allocations))
                 {
@@ -142,8 +144,6 @@ namespace ppp
             std::unordered_map<void*, u64> m_allocations;
             std::unordered_map<void*, u64> m_frame_allocations;
             
-            std::mutex m_mutex;
-            
             s32 m_active_frame = -1;
 
             u64 m_total_alloc = 0;
@@ -163,24 +163,28 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void end_frame()
+        void end_frame(bool dump_memory_info)
         {
             if (internal::_tracking_enabled)
             {
-                memory_tracker::instance()->end_frame();
+                memory_tracker::instance()->end_frame(dump_memory_info);
             }
         }
 
         //-------------------------------------------------------------------------
-        void enable_tracking()
+        bool enable_tracking()
         {
+            bool prev_tracking_state = internal::_tracking_enabled;
             internal::_tracking_enabled = true;
+            return prev_tracking_state;
         }
 
         //-------------------------------------------------------------------------
-        void disable_tracking()
+        bool disable_tracking()
         {
+            bool prev_tracking_state = internal::_tracking_enabled;
             internal::_tracking_enabled = false;
+            return prev_tracking_state;
         }
         
         //-------------------------------------------------------------------------
@@ -207,6 +211,11 @@ namespace ppp
             memory_tracker::instance()->track_deallocation(p);
         }
 
+        void track_memory_size(u64 size)
+        {
+            internal::_untracked_memory += size;
+        }
+
         //-------------------------------------------------------------------------
         void peek()
         {
@@ -225,13 +234,14 @@ void* operator new(u64 size)
     if (ppp::memory::is_tracking_enabled() && ppp::memory::is_constructing_tracker() == false)
     {
         ppp::memory::disable_tracking();
+        p = ppp::memory::get_memory_manager().get_persistent_region().get_tagged_heap()->allocate(ppp::memory::tags::global, size);
         ppp::memory::track_allocation(p, size);
-        p = ppp::memory::memory_manager::instance().get_scratch_heap()->allocate(size);
         ppp::memory::enable_tracking();
     }
     else
     {
         p = malloc(size);
+        ppp::memory::track_memory_size(size);
     }
 
     return p;
@@ -244,8 +254,7 @@ void operator delete(void* p) noexcept
     {
         ppp::memory::disable_tracking();
         ppp::memory::track_deallocation(p);
-        // scratch memory should free their memory all at once
-        // ppp::memory::memory_manager::instance().get_scratch_heap()->deallocate(p);
+        //ppp::memory::get_memory_manager().get_persistent_region().get_tagged_heap()->deallocate(ppp::memory::tags::global, p);
         ppp::memory::enable_tracking();
     }
     else

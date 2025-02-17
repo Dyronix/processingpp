@@ -1,5 +1,8 @@
 #include "resources/font_pool.h"
+
 #include "memory/memory_types.h"
+#include "memory/memory_manager.h"
+
 #include <unordered_map>
 
 namespace ppp
@@ -10,9 +13,9 @@ namespace ppp
         {
             static global_hash_map<string::string_id, font>& fonts()
             {
-                static global_hash_map<string::string_id, font> s_fonts;
+                static global_hash_map<string::string_id, font>* s_fonts = memory::create_tagged_new<global_hash_map<string::string_id, font>>();
 
-                return s_fonts;
+                return *s_fonts;
             }
 
             const font* _active_font = nullptr;

@@ -341,17 +341,17 @@ namespace ppp
                     }
 
                 private:
-                    graphics_hash_map<string::string_id, shader_uniform> m_deferred_uniforms;
-                    graphics_hash_map<string::string_id, u32> m_shader_uniform_locations;
+                    temp_hash_map<string::string_id, shader_uniform> m_deferred_uniforms;
+                    temp_hash_map<string::string_id, u32> m_shader_uniform_locations;
 
                     u32 m_shader_program_id;
                 };
 
-                static graphics_hash_map<u32, shader_uniform_manager>& shader_uniform_managers()
+                static global_hash_map<u32, shader_uniform_manager>& shader_uniform_managers()
                 {
-                    static graphics_hash_map<u32, shader_uniform_manager> s_shader_uniform_managers;
+                    static global_hash_map<u32, shader_uniform_manager>* s_shader_uniform_managers = memory::create_tagged_new< global_hash_map<u32, shader_uniform_manager>>();
 
-                    return s_shader_uniform_managers;
+                    return *s_shader_uniform_managers;
                 }
             }
 

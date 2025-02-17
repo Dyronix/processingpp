@@ -24,7 +24,7 @@ namespace ppp
 			template<typename TAlloc>
 			std::basic_string<char, std::char_traits<char>, TAlloc> ensure_trailing_separator(std::string_view path)
 			{
-				std::basic_string<char, std::char_traits<char>, TAlloc> new_path = path;
+				std::basic_string<char, std::char_traits<char>, TAlloc> new_path(path.data(), path.size());
 
 				char separator = get_separator();
 
@@ -83,6 +83,7 @@ namespace ppp
 		{
 		public:
 			using string_type = std::basic_string<char, std::char_traits<char>, TAlloc>;
+			using stringstream_type = std::basic_stringstream<char, std::char_traits<char>, TAlloc>;
 
 		public:
 			//-------------------------------------------------------------------------
@@ -94,9 +95,21 @@ namespace ppp
 				auto filename  = parsed_path.filename;
 				auto extension = parsed_path.extension;
 
-				string_type full_path = internal::ensure_trailing_separator(path) + filename + extension;
+				string_type full_path = internal::ensure_trailing_separator<TAlloc>(path) + filename + extension;
 
 				return string::string_replace<string_type>(full_path, "\\", "/");
+			}
+
+			//-------------------------------------------------------------------------
+			static string_type make_full_path(std::string_view path, std::string_view filename, std::string_view extension)
+			{
+				stringstream_type stream;
+
+				stream << internal::ensure_trailing_separator<TAlloc>(path);
+				stream << filename;
+				stream << extension;
+
+				return string::string_replace<string_type>(stream.str(), "\\", "/");
 			}
 
 		public:

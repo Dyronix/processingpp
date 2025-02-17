@@ -29,10 +29,9 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/circular_heap.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/circular_heap.h
     # memory-allocators
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/frame_heap_allocator.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/scratch_heap_allocator.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/tagged_heap_allocator.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/global_heap_allocator.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/generic_heap_allocator.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/heap_allocator_policy.h
     # fileio
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.cpp
@@ -170,8 +169,6 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/string/string_id.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/string/string_pool.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/string/string_pool.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/string/string_entry.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/string/string_entry.cpp
     # util
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/brush.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/brush.h
@@ -262,8 +259,3 @@ endif()
 # Target properties
 set_target_properties(processing_engine PROPERTIES
                       FOLDER "engine")
-
-if(MSVC)
-    message(STATUS "${CMAKE_SOURCE_DIR}/natvis/string_id.natvis")
-    target_sources(processing_engine PRIVATE "${CMAKE_SOURCE_DIR}/natvis/string_id.natvis")
-endif()

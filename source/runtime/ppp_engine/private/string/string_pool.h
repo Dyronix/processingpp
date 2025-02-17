@@ -1,12 +1,15 @@
 #pragma once
 
+#include <memory/memory_types.h>
+
 #include <string>
 
 namespace ppp
 {
     namespace string
     {
-        class string_entry;
+        using string_entry = global_string;
+
         class string_id;
 
         namespace string_pool

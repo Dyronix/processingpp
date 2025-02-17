@@ -12,14 +12,17 @@ namespace ppp
             , m_free_list(nullptr)
             , m_total_memory_size(size)
         {
-            // Allocate a large contiguous block of memory from the heap.
-            m_base_memory = static_cast<u8*>(heap->allocate(size));
+            if (size.size_in_bytes() > 0);
+            {
+                // Allocate a large contiguous block of memory from the heap.
+                m_base_memory = static_cast<u8*>(heap->allocate(size));
 
-            // Initialize the free list:
-            // The entire pool is initially one large free block.
-            m_free_list = reinterpret_cast<block_header*>(m_base_memory);
-            m_free_list->size = size.size_in_bytes();
-            m_free_list->next = nullptr;
+                // Initialize the free list:
+                // The entire pool is initially one large free block.
+                m_free_list = reinterpret_cast<block_header*>(m_base_memory);
+                m_free_list->size = size.size_in_bytes();
+                m_free_list->next = nullptr;
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -31,6 +34,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         void* free_list_heap::allocate(memory_size size) noexcept
         {
+            assert(m_base_memory);
+            assert(m_free_list);
+
             // Compute the total size needed.
             u64 total_size = calculate_total_size_to_allocate(size);
 
@@ -72,6 +78,9 @@ namespace ppp
                 return;
             }
 
+            assert(m_base_memory);
+            assert(m_free_list);
+
             // Retrieve the block header (which is just before the user pointer).
             block_header* block = reinterpret_cast<block_header*>(reinterpret_cast<u8*>(ptr) - sizeof(block_header));
 
@@ -82,10 +91,13 @@ namespace ppp
         //-------------------------------------------------------------------------
         void free_list_heap::free() noexcept
         {
-            // Reinitialize the free list to cover the entire memory pool.
-            m_free_list = reinterpret_cast<block_header*>(m_base_memory);
-            m_free_list->size = m_total_memory_size.size_in_bytes();
-            m_free_list->next = nullptr;
+            if (m_base_memory != nullptr && m_free_list != nullptr)
+            {
+                // Reinitialize the free list to cover the entire memory pool.
+                m_free_list = reinterpret_cast<block_header*>(m_base_memory);
+                m_free_list->size = m_total_memory_size.size_in_bytes();
+                m_free_list->next = nullptr;
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -106,20 +118,25 @@ namespace ppp
         //-------------------------------------------------------------------------
         memory_size free_list_heap::current_memory() const
         {
-            u64 free_memory = 0;
-            for (block_header* curr = m_free_list; curr != nullptr; curr = curr->next) 
+            if (m_base_memory != nullptr && m_free_list != nullptr)
             {
-                free_memory += curr->size;
+                u64 free_memory = 0;
+                for (block_header* curr = m_free_list; curr != nullptr; curr = curr->next)
+                {
+                    free_memory += curr->size;
+                }
+
+                // The used memory is total memory minus free memory.
+                return m_total_memory_size.size_in_bytes() - free_memory;
             }
 
-            // The used memory is total memory minus free memory.
-            return m_total_memory_size.size_in_bytes() - free_memory;
+            return 0;
         }
 
         //-------------------------------------------------------------------------
         memory_size free_list_heap::total_memory() const
         {
-            return m_total_memory_size;
+            return m_base_memory != nullptr && m_free_list != nullptr ? m_total_memory_size : 0; 
         }
 
         //-------------------------------------------------------------------------

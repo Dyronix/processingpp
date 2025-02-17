@@ -100,7 +100,7 @@ namespace ppp
         {
             if (internal::cwd().is_none())
             {
-                temp_string s_cwd = std::filesystem::current_path().string<char, std::char_traits<char>, memory::frame_heap_allocator<char>>();
+                temp_string s_cwd = std::filesystem::current_path().string<char, std::char_traits<char>, memory::persistent_frame_allocator<char>>();
 
                 internal::cwd() = string::store_sid(s_cwd);
             }

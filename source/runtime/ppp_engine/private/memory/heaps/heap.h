@@ -22,8 +22,8 @@ namespace ppp
         public:
             bool can_alloc(memory_size size) const override;
 
-            memory_size total_memory() const override { return m_total_size; }
-            memory_size current_memory() const override { return m_offset; }
+            memory_size total_memory() const override { return m_base_memory ? m_total_size : 0; }
+            memory_size current_memory() const override { return m_base_memory ? m_offset : 0; }
 
         private:
             u8* m_base_memory;

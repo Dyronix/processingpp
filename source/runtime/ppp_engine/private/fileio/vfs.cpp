@@ -15,11 +15,11 @@ namespace ppp
     {
 		namespace internal
 		{
-			static fileio_hash_map<string::string_id, fileio_string>& wildcards()
+			static global_hash_map<string::string_id, global_string>& wildcards()
 			{
-				static fileio_hash_map<string::string_id, fileio_string> s_wildcards;
+				static global_hash_map<string::string_id, global_string>* s_wildcards = memory::create_tagged_new<global_hash_map<string::string_id, global_string>>();
 
-				return s_wildcards;
+				return *s_wildcards;
 			}
 		}
 
@@ -49,7 +49,7 @@ namespace ppp
 				}
 			}
 
-			return resolved_path;
+			return file_info<memory::persistent_frame_allocator<char>>::make_full_path(resolved_path, file_info_view.filename(), file_info_view.extension());
 		}
 
 		//-------------------------------------------------------------------------

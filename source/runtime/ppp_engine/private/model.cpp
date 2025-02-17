@@ -117,6 +117,8 @@ namespace ppp
         {
             auto buffer = fileio::read_text_file(model_path);
 
+            assert(!buffer.empty() && "Was unable to load buffer for model");
+
             return create_model(buffer, model_file_type::OBJ);
         }
 
@@ -142,7 +144,7 @@ namespace ppp
                 case model_file_type::OBJ:
                     create_geom_fn = [model_string](geometry::geometry* self)
                     {
-                        init_vector<std::string_view> lines;
+                        stage_scratch_vector<std::string_view> lines;
 
                         size_t pos = 0, prev = 0;
                         while ((pos = model_string.find('\n', prev)) != std::string::npos)

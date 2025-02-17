@@ -12,12 +12,17 @@ namespace ppp
             ,m_base_memory(nullptr)
             ,m_offset(0)
         {
-            m_base_memory = heap->allocate(size);
+            if (size.size_in_bytes() > 0)
+            {
+                m_base_memory = heap->allocate(size);
+            }
         }
 
         //-------------------------------------------------------------------------
         void* linear_heap::allocate(memory_size size) noexcept
         {
+            assert(m_base_memory);
+
             constexpr u64 alignment = alignof(std::max_align_t);
 
             uptr raw_address = reinterpret_cast<uptr>(m_base_memory) + m_offset;
@@ -39,7 +44,10 @@ namespace ppp
         //-------------------------------------------------------------------------
         void linear_heap::free() noexcept
         {
-            m_offset = 0;
+            if (m_base_memory != nullptr)
+            {
+                m_offset = 0;
+            }
         }
 
         //-------------------------------------------------------------------------

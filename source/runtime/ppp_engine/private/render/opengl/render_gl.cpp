@@ -36,6 +36,9 @@ namespace ppp
     {
         namespace internal
         {
+            using instance_renderers_hash_map = graphics_hash_map<string::string_id, ppp::unique_ptr<instance_renderer>>;
+            using batch_renderers_hash_map = graphics_hash_map<string::string_id, ppp::unique_ptr<batch_renderer>>;
+
             //-------------------------------------------------------------------------
             render_draw_mode _draw_mode = render_draw_mode::BATCHED;
 
@@ -65,17 +68,19 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            static graphics_hash_map<string::string_id, ppp::unique_ptr<instance_renderer>>& instance_renderers()
+            static instance_renderers_hash_map& instance_renderers()
             {
-                static graphics_hash_map<string::string_id, ppp::unique_ptr<instance_renderer>> s_instance_renderers;
+                static instance_renderers_hash_map* s_instance_renderers = memory::create_tagged_new<instance_renderers_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
 
-                return s_instance_renderers;
+                return *s_instance_renderers;
             }
-            static graphics_hash_map<string::string_id, ppp::unique_ptr<batch_renderer>>& batch_renderers()
-            {
-                static graphics_hash_map<string::string_id, ppp::unique_ptr<batch_renderer>> s_batch_renderers;
 
-                return s_batch_renderers;
+            //-------------------------------------------------------------------------
+            static batch_renderers_hash_map& batch_renderers()
+            {
+                static batch_renderers_hash_map* s_batch_renderers = memory::create_tagged_new<batch_renderers_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+
+                return *s_batch_renderers;
             }
 
             //-------------------------------------------------------------------------

@@ -13,12 +13,17 @@ namespace ppp
             ,m_tail(0)
             ,m_head(0)
         {
-            m_base_memory = heap->allocate(size);
+            if (size.size_in_bytes() > 0);
+            {
+                m_base_memory = heap->allocate(size);
+            }
         }
 
         //-------------------------------------------------------------------------
         void* circular_heap::allocate(memory_size size) noexcept
         {
+            assert(m_base_memory);
+
             constexpr u64 alignment = alignof(std::max_align_t);
 
             u64 aligned_head = align_up(m_head, alignment);
@@ -58,8 +63,11 @@ namespace ppp
         //-------------------------------------------------------------------------
         void circular_heap::free() noexcept
         {
-            m_head = 0;
-            m_tail = 0;
+            if (m_base_memory != nullptr)
+            {
+                m_head = 0;
+                m_tail = 0;
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -76,16 +84,21 @@ namespace ppp
         //-------------------------------------------------------------------------
         memory_size circular_heap::total_memory() const
         {
-            return m_total_size;
+            return m_base_memory != nullptr ? m_total_size : 0;
         }
 
         //-------------------------------------------------------------------------
         memory_size circular_heap::current_memory() const
         {
-            u64 max = std::max(m_head, m_tail);
-            u64 min = std::min(m_head, m_tail);
+            if (m_base_memory != nullptr)
+            {
+                u64 max = std::max(m_head, m_tail);
+                u64 min = std::min(m_head, m_tail);
 
-            return max - min;
+                return max - min;
+            }
+
+            return 0;
         }
 
         //-------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 #include "string/string_pool.h"
 
-#include "string/string_entry.h"
 #include "string/string_id.h"
 
 #include "memory/memory_types.h"
@@ -38,20 +37,19 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            string_id store(u64 hash, std::string_view newCharacters)
+            string_id store(std::string_view new_characters)
             {
-                string_id entry_id = string_id(hash);
+                string_id entry_id = string_id(new_characters);
 
-                string_entry entry(newCharacters);
                 auto it = get_entries().find(entry_id);
                 if (it != std::cend(get_entries()))
                 {
-                    assert(std::strcmp(newCharacters.data(), it->second.characters().data()) == 0 && "Hash collision");
+                    assert(std::strcmp(new_characters.data(), it->second.data()) == 0 && "Hash collision");
 
                     return it->first;
                 }
 
-                auto result = get_entries().emplace(std::move(entry_id), std::move(entry));
+                auto result = get_entries().emplace(std::move(entry_id), new_characters);
 
                 // if and only if the insertion took place 
                 if (result.second)
@@ -65,19 +63,19 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            std::string_view resolve(const string_id& entryID)
+            std::string_view resolve(const string_id& entry_id)
             {
-                const string_entry& entry = find(entryID);
+                const string_entry& entry = find(entry_id);
 
-                assert(entry.is_valid() && "Entry not found");
+                assert(!entry.empty() && "Entry not found");
 
-                return entry.characters();
+                return entry;
             }
 
             //-------------------------------------------------------------------------
-            const string_entry& find(const string_id& entryID)
+            const string_entry& find(const string_id& entry_id)
             {
-                auto it = get_entries().find(entryID);
+                auto it = get_entries().find(entry_id);
                 if (it == std::cend(get_entries()))
                 {
                     it = get_entries().find(string_id::create_invalid());
@@ -91,7 +89,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             string_id make_and_store(std::string_view characters)
             {
-                return store(std::hash<std::string_view> {}(characters), characters);
+                return store(characters);
             }
         }
     } // namespace string

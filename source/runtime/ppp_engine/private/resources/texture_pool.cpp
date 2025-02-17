@@ -11,9 +11,9 @@ namespace ppp
         {
             static global_hash_map<string::string_id, image>& images()
             {
-                static global_hash_map<string::string_id, image> s_images;
+                static global_hash_map<string::string_id, image>* s_images = memory::create_tagged_new<global_hash_map<string::string_id, image>>();
 
-                return s_images;
+                return *s_images;
             }
 
             unsigned char* _active_pixels = nullptr;

@@ -26,7 +26,6 @@
 #include "util/types.h"
 #include "util/steady_clock.h"
 
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -97,12 +96,31 @@ namespace ppp
                     memory::peek();
                 }
             });
+
+        keyboard::add_key_pressed_callback(
+            [](keyboard::key_code key)
+        {
+            if (key == keyboard::key_code::KEY_F8)
+            {
+                s32 frame_id = ppp::environment::frame_count();
+                
+                ppp::log::info("--- Frame id: {}", frame_id);
+
+                ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
+            }
+        });
 #endif
+
+        //ppp::log::info("--- Pre Setup");
+        //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
 
         setup();
 
-        memory::memory_manager::instance().get_tagged_heap()->free_blocks(memory::tags::fileio);
-        memory::memory_manager::instance().get_tagged_heap()->free_blocks(memory::tags::initialization);
+        //ppp::log::info("--- Post Setup");
+        //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
+
+        memory::get_memory_manager().get_persistent_region().get_tagged_heap()->free_blocks(memory::tags::fileio);
+        memory::get_memory_manager().get_staging_region().free();
 
         return 0;
     }
@@ -113,6 +131,11 @@ namespace ppp
 
         while (!device::should_close())
         {
+            //s32 frame_id = ppp::environment::frame_count();
+            //
+            //ppp::log::info("--- Start Frame: {}", frame_id);
+            //ppp::memory::print_memory_region(ppp::memory::get_memory_manager().get_persistent_region(), "persistant");
+
             memory::start_frame(device::current_frame_index());
 
             if (device::can_draw())
@@ -156,8 +179,11 @@ namespace ppp
                 }
             }
 
-            memory::memory_manager::instance().get_frame_heap()->free();
+            memory::get_memory_manager().get_persistent_region().get_frame_heap()->free();
             memory::end_frame();
+
+            //ppp::log::info("--- End Frame: {}", frame_id);
+            //ppp::memory::print_memory_region(ppp::memory::get_memory_manager().get_persistent_region(), "persistant");
         }
 
         return 0;
@@ -216,7 +242,9 @@ namespace ppp
 
 int main(int argc, char** argv)
 {
+#ifdef _DEBUG
     ppp::memory::enable_tracking();
+#endif
 
     for (int i = 0; i < argc; ++i)
     {
@@ -227,18 +255,29 @@ int main(int argc, char** argv)
 
     s32 result = 0;
 
+    //ppp::log::info("--- Pre Init");
+    //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
+
     result = ppp::init(app_params, argv[0]);
     if (result != 0)
     {
         ppp::log::error("Failed to initialize app");
         return result;
     }
+
+    //ppp::log::info("--- Post Init");
+    //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
+
     result = run(app_params);
     if (result != 0)
     {
         ppp::log::error("Encountered runtime error in app");
         return result;
     }
+
+    //ppp::log::info("--- Pre Quit");
+    //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
+
     result = quit(app_params);
     if (result != 0)
     {
@@ -246,7 +285,16 @@ int main(int argc, char** argv)
         return result;
     }
 
+    //ppp::log::info("--- Post Quit");
+    //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
+
+#ifdef _DEBUG
     ppp::memory::disable_tracking();
+#endif
+
+    ppp::memory::get_memory_manager().get_debug_region().free();
+    ppp::memory::get_memory_manager().get_staging_region().free();
+    ppp::memory::get_memory_manager().get_persistent_region().free();
 
     return result;
 }

@@ -8,20 +8,23 @@ namespace ppp
     {
         namespace internal
         {
-            //-------------------------------------------------------------------------
-            static global_vector<std::function<void()>>& draw_begin_subs()
-            {
-                static global_vector<std::function<void()>> s_draw_begin_subs;
+            using draw_begin_subscriptions = global_vector<std::function<void()>>;
+            using draw_end_subscriptions = global_vector<std::function<void()>>;
 
-                return s_draw_begin_subs;
+            //-------------------------------------------------------------------------
+            static draw_begin_subscriptions& draw_begin_subs()
+            {
+                static draw_begin_subscriptions* s_draw_begin_subs = memory::create_tagged_new<draw_begin_subscriptions>();
+
+                return *s_draw_begin_subs;
             }
 
             //-------------------------------------------------------------------------
             static global_vector<std::function<void()>>& draw_end_subs()
             {
-                static global_vector<std::function<void()>> s_draw_end_subs;
+                static draw_end_subscriptions* s_draw_end_subs = memory::create_tagged_new<draw_end_subscriptions>();
 
-                return s_draw_end_subs;
+                return *s_draw_end_subs;
             }
         }
 

@@ -27,6 +27,7 @@ namespace ppp
         {
             return string_pool::make_and_store(characters);
         }
+
         //-------------------------------------------------------------------------
         std::string_view restore_sid(const string_id& sid)
         {
@@ -57,9 +58,9 @@ namespace ppp
 }
 
 //-------------------------------------------------------------------------
-std::ostream& operator<<(std::ostream& os, const ppp::string::string_id& stringID)
+std::ostream& operator<<(std::ostream& os, const ppp::string::string_id& sid)
 {
-    os << ppp::string::restore_sid(stringID);
+    os << sid.str();
 
     return os;
 }

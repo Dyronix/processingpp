@@ -10,11 +10,12 @@ namespace ppp
     {
         namespace internal
         {
+            using model_matrices_arr = temp_vector<glm::mat4>;
+
             static temp_vector<glm::mat4>& model_matrices()
             {
-                static temp_vector<glm::mat4> s_model_matrices;
-
-                return s_model_matrices;
+                static model_matrices_arr* s_model_matrices = memory::create_new<model_matrices_arr, ppp::memory::persistent_frame_policy>();
+                return *s_model_matrices;
             }
         }
 

@@ -11,10 +11,10 @@ namespace ppp
     namespace memory
     {
         void start_frame(s32 frame_index);
-        void end_frame();
+        void end_frame(bool dump_memory_info = false);
 
-        void enable_tracking();
-        void disable_tracking();
+        bool enable_tracking();
+        bool disable_tracking();
 
         bool is_tracking_enabled();
 

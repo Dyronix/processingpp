@@ -10,33 +10,25 @@ namespace ppp
     {
         namespace internal
         {
-            struct material_id_hasher
-            {
-                u64 operator()(u64 key) const
-                {
-                    // No hashing required for the material id as it is already hashed
-                    return key;
-                }
-            };
+            using materials_hash_map = graphics_hash_map<string::string_id, resources::material>;
+            using material_instances_hash_map = graphics_hash_map<u64, resources::material_instance>;
+            using registred_images_hash_map = graphics_hash_map<string::string_id, graphics_vector<render::texture_id>>;
 
-            static graphics_hash_map<u64, resources::material, material_id_hasher>& materials()
+            static materials_hash_map& materials()
             {
-                static graphics_hash_map<u64, resources::material, material_id_hasher> s_material;
-
-                return s_material;
+                static materials_hash_map* s_material = memory::create_tagged_new<materials_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+                return *s_material;
             }
-            static graphics_hash_map<u64, resources::material_instance>& material_instances()
+            static material_instances_hash_map& material_instances()
             {
-                static graphics_hash_map<u64, resources::material_instance> s_material_instances;
-
-                return s_material_instances;
+                static material_instances_hash_map* s_material_instances = memory::create_tagged_new<material_instances_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+                return *s_material_instances;
             }
 
-            static graphics_hash_map<string::string_id, graphics_vector<render::texture_id>>& registered_images()
+            static registred_images_hash_map& registered_images()
             {
-                static graphics_hash_map<string::string_id, graphics_vector<render::texture_id>> s_registered_images;
-
-                return s_registered_images;
+                static registred_images_hash_map* s_registered_images = memory::create_tagged_new<registred_images_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+                return *s_registered_images;
             }
         }
 
@@ -157,7 +149,7 @@ namespace ppp
             }
 
             // Hash active textures for uniqueness
-            u64 hash = mat->shader_tag();
+            u64 hash = mat->shader_tag().value();
 
             if (cache != std::cend(internal::registered_images()))
             {

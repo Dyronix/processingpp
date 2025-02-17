@@ -1,5 +1,7 @@
 #include "memory/heaps/tagged_heap.h"
 
+#include "util/log.h"
+
 #include <assert.h>
 
 namespace ppp
@@ -11,23 +13,28 @@ namespace ppp
             :m_block_size(block_size)
             ,m_block_count(block_count)
         {
-            m_blocks.reserve(block_count);
-
-            for (s32 i = 0; i < block_count; ++i)
+            if (block_count > 0 && block_size.size_in_bytes() > 0)
             {
-                m_blocks.push_back(tagged_heap_block(heap, block_size));
+                m_blocks.reserve(block_count);
+
+                for (s32 i = 0; i < block_count; ++i)
+                {
+                    m_blocks.push_back(tagged_heap_block(heap, block_size));
+                }
             }
         }
 
         //-------------------------------------------------------------------------
         tagged_heap::~tagged_heap()
         {
-            // No need to free m_base_memory here because its lifetime is managed by the heap.
+            free();
         }
 
         //-------------------------------------------------------------------------
         void* tagged_heap::allocate(u32 tag, memory_size size) noexcept
         {
+            assert(!m_blocks.empty());
+
             for (auto& block : m_blocks) 
             {
                 if ((block.tag() == tag || block.tag() == 0) && (block.can_alloc(size))) 
@@ -43,6 +50,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         void tagged_heap::deallocate(u32 tag, void* ptr) noexcept
         {
+            assert(!m_blocks.empty());
+
             for (auto& block : m_blocks)
             {
                 if (block.tag() == tag)
@@ -69,11 +78,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         void tagged_heap::free_blocks(u32 tag)
         {
-            for (auto& block : m_blocks)
+            if (!m_blocks.empty())
             {
-                if (block.tag() == tag)
+                for (auto& block : m_blocks)
                 {
-                    block.free();
+                    if (block.tag() == tag)
+                    {
+                        block.free();
+                    }
                 }
             }
         }
@@ -81,12 +93,16 @@ namespace ppp
         //-------------------------------------------------------------------------
         void tagged_heap::free()
         {
-            for (auto& block : m_blocks)
+            if (!m_blocks.empty())
             {
-                block.free();
-            }
+                for (auto& block : m_blocks)
+                {
+                    block.free();
+                }
 
-            m_base_memory = nullptr;
+                m_blocks.clear();
+                m_block_count = 0;
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -98,25 +114,37 @@ namespace ppp
         //-------------------------------------------------------------------------
         u32 tagged_heap::block_tag(s32 block_index) const
         {
-            assert(block_index < m_block_count);
+            if (!m_blocks.empty())
+            {
+                assert(block_index < m_block_count);
+                return m_blocks[block_index].tag();
+            }
 
-            return m_blocks[block_index].tag();
+            return -1;
         }
 
         //-------------------------------------------------------------------------
         memory_size tagged_heap::current_size(s32 block_index) const
         {
-            assert(block_index < m_block_count);
-
-            return m_blocks[block_index].current_size();
+            if (!m_blocks.empty())
+            {
+                assert(block_index < m_block_count);
+                return m_blocks[block_index].current_size();
+            }
+            
+            return 0;
         }
 
         //-------------------------------------------------------------------------
         memory_size tagged_heap::total_size(s32 block_index) const
         {
-            assert(block_index < m_block_count);
+            if (!m_blocks.empty())
+            {
+                assert(block_index < m_block_count);
+                return m_blocks[block_index].total_size();
+            }
 
-            return m_blocks[block_index].total_size();
+            return 0;
         }
     }
 }

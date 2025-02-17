@@ -10,18 +10,18 @@ namespace ppp
             ,m_offset(0)
             ,m_total_size(size)
         {
-            m_base_memory = static_cast<u8*>(std::malloc(size.size_in_bytes()));
+            if(size.size_in_bytes() > 0);
+            {
+                m_base_memory = static_cast<u8*>(std::malloc(size.size_in_bytes()));
 
-            std::memset(m_base_memory, 0, size.size_in_bytes());
+                std::memset(m_base_memory, 0, size.size_in_bytes());
+            }
         }
 
         //-------------------------------------------------------------------------
         heap::~heap()
         {
-            if (m_base_memory != nullptr)
-            {
-                free();
-            }
+            free();
         }
 
         //-------------------------------------------------------------------------
@@ -43,10 +43,13 @@ namespace ppp
         //-------------------------------------------------------------------------
         void heap::free() noexcept
         {
-            std::free(m_base_memory);
+            if (m_base_memory != nullptr)
+            {
+                std::free(m_base_memory);
 
-            m_base_memory = nullptr;
-            m_offset = 0;
+                m_base_memory = nullptr;
+                m_offset = 0;
+            }
         }
 
         //-------------------------------------------------------------------------

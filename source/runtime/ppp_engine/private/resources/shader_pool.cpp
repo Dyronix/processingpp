@@ -90,7 +90,7 @@ namespace ppp
 
         bool initialize()
         {
-            memory::tagged_heap_allocator<render::shaders::shader_program, memory::tags::graphics> graphics_allocator;
+            memory::persistent_graphics_tagged_allocator<render::shaders::shader_program> graphics_allocator;
 
             internal::get_shader_program_map().emplace(tags::unlit_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code()));
             internal::get_shader_program_map().emplace(tags::instance_unlit_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::instance_unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code()));
