@@ -20,6 +20,19 @@ namespace ppp
                 alloc.deallocate(ptr, 1);
             }
         }
+
+        // Conversion operator to allow converting to an allocator_deleter for another type U
+        // with an arbitrary allocator OtherAllocator. This conversion is only enabled if:
+        // 1. T* is convertible to U*, and
+        // 2. Allocator is convertible to OtherAllocator.
+        template <typename U, typename OtherAllocator>
+        operator allocator_deleter<U, OtherAllocator>() const 
+        {
+            static_assert(std::is_convertible<T*, U*>::value, "Pointer type conversion not allowed");
+            static_assert(std::is_convertible<Allocator, OtherAllocator>::value, "Allocator type conversion not allowed");
+
+            return allocator_deleter<U, OtherAllocator>();
+        }
     };
 
     //--------------------------------------------------------------

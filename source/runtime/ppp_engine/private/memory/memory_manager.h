@@ -86,7 +86,12 @@ namespace ppp
 
         private:
             development_memory_manager(const memory_requirements& persistant, const memory_requirements& staging, const memory_requirements& debug);
-            ~development_memory_manager() override = default;
+            ~development_memory_manager() override
+            {
+                free_persistent();
+                free_staging();
+                free_debug();
+            }
 
             // Non-copyable
             development_memory_manager(const development_memory_manager&) = delete;

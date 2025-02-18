@@ -292,9 +292,9 @@ int main(int argc, char** argv)
     ppp::memory::disable_tracking();
 #endif
 
-    ppp::memory::get_memory_manager().get_debug_region().free();
-    ppp::memory::get_memory_manager().get_staging_region().free();
-    ppp::memory::get_memory_manager().get_persistent_region().free();
+    //ppp::memory::get_memory_manager().get_debug_region().free();
+    //ppp::memory::get_memory_manager().get_staging_region().free();
+    //ppp::memory::get_memory_manager().get_persistent_region().free();
 
     return result;
 }

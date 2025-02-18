@@ -39,6 +39,8 @@ namespace ppp
             //-------------------------------------------------------------------------
             string_id store(std::string_view new_characters)
             {
+                // We create a string id from the incoming characters here 
+                // to check if the entry is already available
                 string_id entry_id = string_id(new_characters);
 
                 auto it = get_entries().find(entry_id);
@@ -49,7 +51,15 @@ namespace ppp
                     return it->first;
                 }
 
-                auto result = get_entries().emplace(std::move(entry_id), new_characters);
+                // We need to store the actual charaters in a new string here to make sure the
+                // string is retained in memory
+                string_entry entry(new_characters);
+                // We store a view to the string entry we created to pass to a new string_id
+                // to make sure the "debug string" remains valid within the string_id
+                // as this one is actually stored within the string pool
+                std::string_view sv_entry = entry;
+
+                auto result = get_entries().emplace(string_id(sv_entry), std::move(entry));
 
                 // if and only if the insertion took place 
                 if (result.second)

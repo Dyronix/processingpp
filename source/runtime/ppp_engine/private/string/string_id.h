@@ -60,7 +60,7 @@ namespace ppp
             string_id()
                 : m_comparison_hash(0)
 #ifdef _DEBUG
-                , m_value(memory::placement_new<debug_scratch_string, memory::debug_scratch_policy>("invalid string id"))
+                , m_value("invalid string id")
 #endif
             {
             }
@@ -72,7 +72,7 @@ namespace ppp
             explicit string_id(std::string_view string_view)
                 : m_comparison_hash(std::hash<std::string_view> {}(string_view))
 #ifdef _DEBUG
-                , m_value(memory::placement_new<debug_scratch_string, memory::debug_scratch_policy>(string_view))
+                , m_value(string_view)
 #endif
             {
             }
@@ -160,7 +160,7 @@ namespace ppp
             u64 m_comparison_hash;
 
 #ifdef _DEBUG
-            debug_scratch_string* m_value;
+            std::string_view m_value;
 #endif
         };
 
