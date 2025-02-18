@@ -559,8 +559,8 @@ namespace ppp
             u64 m_instance_id = 0;
             s32 m_instance_count = 0;
 
-            ppp::unique_ptr<instance_buffer_manager> m_buffer_manager;
-            ppp::unique_ptr<instance_material_manager> m_material_manager;
+            global_unique_ptr<instance_buffer_manager> m_buffer_manager;
+            global_unique_ptr<instance_material_manager> m_material_manager;
 
             u32 m_vao;
         };

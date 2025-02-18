@@ -40,7 +40,7 @@ namespace ppp
                
         static camera_map& cameras()
         {
-            static camera_map* s_camera_map = memory::create_tagged_new<camera_map>();
+            static camera_map* s_camera_map = memory::tagged_placement_new<camera_map>();
 
             return *s_camera_map;
         }

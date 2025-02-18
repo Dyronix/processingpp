@@ -16,18 +16,18 @@ namespace ppp
 
             static materials_hash_map& materials()
             {
-                static materials_hash_map* s_material = memory::create_tagged_new<materials_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+                static materials_hash_map* s_material = memory::tagged_placement_new<materials_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
                 return *s_material;
             }
             static material_instances_hash_map& material_instances()
             {
-                static material_instances_hash_map* s_material_instances = memory::create_tagged_new<material_instances_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+                static material_instances_hash_map* s_material_instances = memory::tagged_placement_new<material_instances_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
                 return *s_material_instances;
             }
 
             static registred_images_hash_map& registered_images()
             {
-                static registred_images_hash_map* s_registered_images = memory::create_tagged_new<registred_images_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+                static registred_images_hash_map* s_registered_images = memory::tagged_placement_new<registred_images_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
                 return *s_registered_images;
             }
         }

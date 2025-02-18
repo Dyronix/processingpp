@@ -513,8 +513,8 @@ namespace ppp
                 }
             }
 
-            ppp::unique_ptr<batch_buffer_manager> m_buffer_manager;
-            ppp::unique_ptr<batch_material_manager> m_material_manager;
+            global_unique_ptr<batch_buffer_manager> m_buffer_manager;
+            global_unique_ptr<batch_material_manager> m_material_manager;
 
             u32 m_vao;
         };

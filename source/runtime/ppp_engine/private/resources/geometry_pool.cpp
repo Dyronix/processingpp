@@ -21,7 +21,7 @@ namespace ppp
 
             global_hash_map<u64, geometry::geometry, geometry_id_hasher>& get_geometry_map()
             {
-                static global_hash_map<u64, geometry::geometry, geometry_id_hasher>* s_geometry_map = memory::create_tagged_new<global_hash_map<u64, geometry::geometry, geometry_id_hasher>>();
+                static global_hash_map<u64, geometry::geometry, geometry_id_hasher>* s_geometry_map = memory::tagged_placement_new<global_hash_map<u64, geometry::geometry, geometry_id_hasher>>();
 
                 return *s_geometry_map;
             }

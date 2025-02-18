@@ -24,7 +24,7 @@ namespace ppp
             static graphics_hash_map<string::string_id, render::vertex_type>& shader_tag_vertex_type_map()
             {
                 static graphics_hash_map<string::string_id, render::vertex_type>* s_shader_tag_vertex_type_map =
-                    memory::create_tagged_new<graphics_hash_map<string::string_id, render::vertex_type>, memory::persistent_tagged_policy, memory::tags::graphics>(
+                    memory::tagged_placement_new<graphics_hash_map<string::string_id, render::vertex_type>, memory::persistent_tagged_policy, memory::tags::graphics>(
                         std::initializer_list<std::pair<const string::string_id, render::vertex_type>>
                 {
                     {shader_pool::tags::unlit_color(), render::vertex_type::POSITION_COLOR},

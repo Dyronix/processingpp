@@ -14,7 +14,7 @@ namespace ppp
 
             static temp_vector<glm::mat4>& model_matrices()
             {
-                static model_matrices_arr* s_model_matrices = memory::create_new<model_matrices_arr, ppp::memory::persistent_frame_policy>();
+                static model_matrices_arr* s_model_matrices = memory::placement_new<model_matrices_arr, ppp::memory::persistent_frame_policy>();
                 return *s_model_matrices;
             }
         }

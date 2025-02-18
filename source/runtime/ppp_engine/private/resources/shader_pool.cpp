@@ -20,7 +20,7 @@ namespace ppp
             graphics_hash_map<string::string_id, std::shared_ptr<render::shaders::shader_program>>& get_shader_program_map()
             {
                 static graphics_hash_map<string::string_id, std::shared_ptr<render::shaders::shader_program>>* s_shader_program_map = 
-                    memory::create_tagged_new<graphics_hash_map<string::string_id, std::shared_ptr<render::shaders::shader_program>>, memory::persistent_tagged_policy, memory::tags::graphics>();
+                    memory::tagged_placement_new<graphics_hash_map<string::string_id, std::shared_ptr<render::shaders::shader_program>>, memory::persistent_tagged_policy, memory::tags::graphics>();
 
                 return *s_shader_program_map;
             }

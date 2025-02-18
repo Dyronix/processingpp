@@ -136,7 +136,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         template <typename T, typename TMemoryPolicy = persistent_tagged_policy, typename u32 tag = tags::global, typename... Args>
-        T* create_tagged_new(Args&&... args)
+        T* tagged_placement_new(Args&&... args)
         {
             auto heap = TMemoryPolicy::get_heap();
 
@@ -147,7 +147,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         template <typename T, typename TMemoryPolicy = persistent_global_policy, typename... Args>
-        T* create_new(Args&&... args)
+        T* placement_new(Args&&... args)
         {
             auto heap = TMemoryPolicy::get_heap();
 
