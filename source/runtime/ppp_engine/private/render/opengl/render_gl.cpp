@@ -36,8 +36,8 @@ namespace ppp
     {
         namespace internal
         {
-            using instance_renderers_hash_map = graphics_hash_map<string::string_id, ppp::unique_ptr<instance_renderer>>;
-            using batch_renderers_hash_map = graphics_hash_map<string::string_id, ppp::unique_ptr<batch_renderer>>;
+            using instance_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<instance_renderer>>;
+            using batch_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<batch_renderer>>;
 
             //-------------------------------------------------------------------------
             render_draw_mode _draw_mode = render_draw_mode::BATCHED;
@@ -84,9 +84,9 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            static ppp::unique_ptr<batch_renderer>& font_renderer()
+            static graphics_unique_ptr<batch_renderer>& font_renderer()
             {
-                static ppp::unique_ptr<batch_renderer> s_font_renderer;
+                static graphics_unique_ptr<batch_renderer> s_font_renderer;
 
                 return s_font_renderer;
             }
@@ -140,17 +140,17 @@ namespace ppp
                 {
                     if (internal::batch_renderers().find(shader_tag) == std::cend(internal::batch_renderers()))
                     {
-                        ppp::unique_ptr<batch_renderer> renderer = nullptr;
+                        graphics_unique_ptr<batch_renderer> renderer = nullptr;
                         if (item->has_textures() == false)
                         {
-                            renderer = ppp::make_unique<primitive_batch_renderer>(
+                            renderer = ppp::make_unique<primitive_batch_renderer, memory::persistent_graphics_tagged_allocator<primitive_batch_renderer>>(
                                 _fill_user_shader.is_none() ? pos_col_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
                                 _fill_user_shader.is_none() ? pos_col_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
                                 shader_tag);
                         }
                         else
                         {
-                            renderer = ppp::make_unique<texture_batch_renderer>(
+                            renderer = ppp::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<primitive_batch_renderer>>(
                                 _fill_user_shader.is_none() ? pos_tex_col_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
                                 _fill_user_shader.is_none() ? pos_tex_col_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
                                 shader_tag);
@@ -171,10 +171,10 @@ namespace ppp
                 {
                     if (internal::instance_renderers().find(shader_tag) == std::cend(internal::instance_renderers()))
                     {
-                        ppp::unique_ptr<instance_renderer> renderer = nullptr;
+                        graphics_unique_ptr<instance_renderer> renderer = nullptr;
                         if (item->has_textures() == false)
                         {
-                            renderer = ppp::make_unique<primitive_instance_renderer>(
+                            renderer = ppp::make_unique<primitive_instance_renderer, memory::persistent_graphics_tagged_allocator<primitive_batch_renderer>>(
                                 _fill_user_shader.is_none() ? pos_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
                                 _fill_user_shader.is_none() ? pos_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
                                 color_world_layout().data(),
@@ -183,7 +183,7 @@ namespace ppp
                         }
                         else
                         {
-                            renderer = ppp::make_unique<texture_instance_renderer>(
+                            renderer = ppp::make_unique<texture_instance_renderer, memory::persistent_graphics_tagged_allocator<primitive_batch_renderer>>(
                                 _fill_user_shader.is_none() ? pos_tex_layout().data() : fill_user_layout(internal::_fill_user_vertex_type),
                                 _fill_user_shader.is_none() ? pos_tex_layout().size() : fill_user_layout_count(internal::_fill_user_vertex_type),
                                 color_world_matid_layout().data(),
@@ -223,7 +223,10 @@ namespace ppp
             internal::_scissor_height = h;
             internal::_scissor_enable = false;
 
-            internal::font_renderer() = ppp::make_unique<texture_batch_renderer>(pos_tex_col_layout().data(), pos_tex_col_layout().size(), shader_pool::tags::unlit_font());
+            internal::font_renderer() = ppp::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<primitive_batch_renderer>>(
+                pos_tex_col_layout().data(),
+                pos_tex_col_layout().size(),
+                shader_pool::tags::unlit_font());
 
             return true;
         }

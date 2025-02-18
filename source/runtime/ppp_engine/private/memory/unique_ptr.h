@@ -2,139 +2,66 @@
 
 #include "memory/allocators/tagged_heap_allocator.h"
 
+#include <memory>
+
 namespace ppp
 {
     //--------------------------------------------------------------
-    // Custom smart pointer that uses free_list_allocator for deallocation
+    // Custom deleter that calls the destructor and then deallocates the memory using the provided Allocator.
     template <typename T, typename Allocator = memory::persistent_global_tagged_allocator<T>>
-    class unique_ptr 
+    struct allocator_deleter 
     {
-    public:
-        // Make other instantiations of unique_ptr friends so we can access their private members.
-        template <typename U, typename OtherAllocator>
-        friend class unique_ptr;
-
-    public:
-        // Constructor: takes ownership of the pointer.
-        explicit unique_ptr(T* p = nullptr) noexcept 
-            : ptr(p) 
-        {}
-
-        // Overloaded constructor for std::nullptr_t (explicitly handles nullptr).
-        unique_ptr(std::nullptr_t) noexcept 
-            : ptr(nullptr) 
-        {}
-
-        // Destructor: explicitly calls the destructor of T, then deallocates memory.
-        ~unique_ptr() 
-        {
-            if (ptr) 
-            {
-                // Call the destructor explicitly.
-                ptr->~T();
-
-                // Use a temporary allocator instance to deallocate memory.
-                Allocator alloc;
-                alloc.deallocate(ptr, 1);
-            }
-        }
-
-        // Delete copy semantics.
-        unique_ptr(const unique_ptr&) = delete;
-        unique_ptr& operator=(const unique_ptr&) = delete;
-
-        // Move constructor.
-        unique_ptr(unique_ptr&& other) noexcept 
-            : ptr(other.ptr) 
-        {
-            other.ptr = nullptr;
-        }
-
-        // Move assignment operator.
-        unique_ptr& operator=(unique_ptr&& other) noexcept 
-        {
-            if (this != &other) 
-            {
-                reset(other.ptr);
-                other.ptr = nullptr;
-            }
-
-            return *this;
-        }
-
-        // --- Polymorphic support ---
-        // Conversion move constructor: allows moving from a unique_ptr<U, OtherAllocator>
-        // to a unique_ptr<T, Allocator> if U* is convertible to T*.
-        template <typename U, typename OtherAllocator, typename = std::enable_if_t<std::is_convertible<U*, T*>::value>>
-            unique_ptr(unique_ptr<U, OtherAllocator>&& other) noexcept
-            : ptr(other.ptr) 
-        {
-            other.ptr = nullptr;
-        }
-
-        // Conversion move assignment operator.
-        template <typename U, typename OtherAllocator, typename = std::enable_if_t<std::is_convertible<U*, T*>::value>>
-            unique_ptr & operator=(unique_ptr<U, OtherAllocator>&& other) noexcept
-        {
-            // Avoid self-assignment (even across different instantiations, comparing the stored pointers suffices).
-            if (ptr != other.ptr) 
-            {
-                reset();
-
-                ptr = other.ptr;
-                other.ptr = nullptr;
-            }
-            return *this;
-        }
-        // --- End Polymorphic support ---
-
-        // Overloaded assignment operator for std::nullptr_t.
-        unique_ptr& operator=(std::nullptr_t) noexcept
-        {
-            reset();
-            return *this;
-        }
-
-        // Access the underlying pointer.
-        T* get() const noexcept { return ptr; }
-
-        // Overload dereference operators.
-        T& operator*() const noexcept { return *ptr; }
-        T* operator->() const noexcept { return ptr; }
-
-        // Reset the pointer, deallocating the old memory.
-        void reset(T* p = nullptr) 
+        void operator()(T* ptr) const 
         {
             if (ptr) 
             {
                 ptr->~T();
-
                 Allocator alloc;
                 alloc.deallocate(ptr, 1);
             }
-
-            ptr = p;
         }
-
-    private:
-        T* ptr;
     };
-    //--------------------------------------------------------------
-
 
     //--------------------------------------------------------------
-    // Factory function to create a unique_ptr.
-    // It allocates memory using the free_list_allocator and constructs the object in-place.
+    // Factory function to create an object using the Allocator and wrap it in a std::unique_ptr with a custom deleter.
     template <typename T, typename Allocator = memory::persistent_global_tagged_allocator<T>, typename... Args>
-    unique_ptr<T, Allocator> make_unique(Args&&... args) 
+    std::unique_ptr<T, allocator_deleter<T, Allocator>> make_unique(Args&&... args) 
     {
         Allocator alloc;
         T* raw_ptr = alloc.allocate(1);
-
-        // Use placement new to construct T in the allocated memory.
         new (raw_ptr) T(std::forward<Args>(args)...);
-
-        return unique_ptr<T, Allocator>(raw_ptr);
+        return std::unique_ptr<T, allocator_deleter<T, Allocator>>(raw_ptr, allocator_deleter<T, Allocator>{});
     }
+
     //--------------------------------------------------------------
+    // Type aliases for persistent allocators.
+    template <typename T>
+    using global_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::persistent_global_tagged_allocator<T>>>;
+
+    template <typename T>
+    using graphics_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::persistent_graphics_tagged_allocator<T>>>;
+
+    template <typename T>
+    using fileio_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::persistent_fileio_tagged_allocator<T>>>;
+
+    // Type aliases for staging allocators.
+    template <typename T>
+    using staging_global_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::staging_global_tagged_allocator<T>>>;
+
+    template <typename T>
+    using staging_graphics_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::staging_graphics_tagged_allocator<T>>>;
+
+    template <typename T>
+    using staging_fileio_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::staging_fileio_tagged_allocator<T>>>;
+
+    // Type aliases for debug allocators.
+    template <typename T>
+    using debug_global_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::debug_global_tagged_allocator<T>>>;
+
+    template <typename T>
+    using debug_graphics_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::debug_graphics_tagged_allocator<T>>>;
+
+    template <typename T>
+    using debug_fileio_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::debug_fileio_tagged_allocator<T>>>;
+
 }
