@@ -135,25 +135,29 @@ namespace ppp
         void print_memory_manager(imemory_manager& manager);
 
         //-------------------------------------------------------------------------
-        template <typename T, typename TMemoryPolicy = persistent_tagged_policy, typename u32 tag = tags::global, typename... Args>
-        T* tagged_placement_new(Args&&... args)
+        template <typename TTaggedHeapContainer, 
+            typename TMemoryPolicy = TTaggedHeapContainer::allocator_type::memory_policy,
+            typename u32 tag = TTaggedHeapContainer::allocator_type::allocator_tag, typename... Args>
+        TTaggedHeapContainer* tagged_placement_new(Args&&... args)
         {
             auto heap = TMemoryPolicy::get_heap();
 
-            void* p = heap->allocate(tag, sizeof(T));
+            void* p = heap->allocate(tag, sizeof(TTaggedHeapContainer));
 
-            return new (p) T(std::forward<Args>(args)...);
+            return new (p) TTaggedHeapContainer(std::forward<Args>(args)...);
         }
 
         //-------------------------------------------------------------------------
-        template <typename T, typename TMemoryPolicy = persistent_global_policy, typename... Args>
-        T* placement_new(Args&&... args)
+        template <typename TGenericHeapContainer, 
+            typename TMemoryPolicy = TGenericHeapContainer::allocator_type::memory_policy,
+            typename... Args>
+        TGenericHeapContainer* placement_new(Args&&... args)
         {
             auto heap = TMemoryPolicy::get_heap();
 
-            void* p = heap->allocate(sizeof(T));
+            void* p = heap->allocate(sizeof(TGenericHeapContainer));
 
-            return new (p) T(std::forward<Args>(args)...);
+            return new (p) TGenericHeapContainer(std::forward<Args>(args)...);
         }
     }
 }

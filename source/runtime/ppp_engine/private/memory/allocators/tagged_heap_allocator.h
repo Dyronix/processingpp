@@ -8,12 +8,13 @@ namespace ppp
 {
     namespace memory
     {
-        template<typename T, typename TMemoryPolicy, u32 allocator_tag>
+        template<typename T, typename TMemoryPolicy, u32 allocator_tag_v>
         class tagged_heap_allocator
         {
         public:
             using value_type = T;
             using memory_policy = TMemoryPolicy;
+            static constexpr u32 allocator_tag = allocator_tag_v;
 
             //-------------------------------------------------------------------------
             tagged_heap_allocator()
