@@ -2,8 +2,6 @@
 
 #include "render/opengl/render_gl_error.h"
 
-#include "memory/memory_types.h"
-
 #include "util/pointer_math.h"
 
 #include <glad/glad.h>

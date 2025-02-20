@@ -1,7 +1,7 @@
 #include "resources/font_pool.h"
 
 #include "memory/memory_types.h"
-#include "memory/memory_manager.h"
+#include "memory/memory_placement_new.h"
 
 #include <unordered_map>
 

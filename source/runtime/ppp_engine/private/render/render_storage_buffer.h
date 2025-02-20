@@ -2,7 +2,7 @@
 
 #include "util/types.h"
 
-#include "memory/unique_ptr.h"
+#include "memory/memory_types.h"
 
 #include <vector>
 #include <functional>

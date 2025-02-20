@@ -15,7 +15,7 @@ namespace ppp
             typename TMemoryPolicy = TTaggedHeapContainer::allocator_type::memory_policy,
             typename u32 tag = TTaggedHeapContainer::allocator_type::allocator_tag,
             typename... Args>
-        std::unique_ptr<TTaggedHeapContainer, allocator_deleter<TTaggedHeapContainer, TTaggedHeapContainer::allocator_type>> tagged_placement_new(Args&&... args)
+        std::unique_ptr<TTaggedHeapContainer, allocator_deleter<TTaggedHeapContainer, typename TTaggedHeapContainer::allocator_type>> tagged_placement_new(Args&&... args)
         {
             auto heap = TMemoryPolicy::get_heap();
 
@@ -23,14 +23,14 @@ namespace ppp
 
             TTaggedHeapContainer* ptr = new (p) TTaggedHeapContainer(std::forward<Args>(args)...);
 
-            return std::unique_ptr<TTaggedHeapContainer, allocator_deleter<TTaggedHeapContainer, TTaggedHeapContainer::allocator_type>>(ptr);
+            return std::unique_ptr<TTaggedHeapContainer, allocator_deleter<TTaggedHeapContainer, typename TTaggedHeapContainer::allocator_type>>(ptr);
         }
 
         //-------------------------------------------------------------------------
         template <typename TGenericHeapContainer,
             typename TMemoryPolicy = TGenericHeapContainer::allocator_type::memory_policy,
             typename... Args>
-        std::unique_ptr<TGenericHeapContainer, allocator_deleter<TGenericHeapContainer, TGenericHeapContainer::allocator_type>> placement_new(Args&&... args)
+        std::unique_ptr<TGenericHeapContainer, allocator_deleter<TGenericHeapContainer, typename TGenericHeapContainer::allocator_type>> placement_new(Args&&... args)
         {
             auto heap = TMemoryPolicy::get_heap();
 
@@ -38,7 +38,7 @@ namespace ppp
 
             TGenericHeapContainer* ptr = new (p) TGenericHeapContainer(std::forward<Args>(args)...);
 
-            return std::unique_ptr<TGenericHeapContainer, allocator_deleter<TGenericHeapContainer, TGenericHeapContainer::allocator_type>>(ptr);
+            return std::unique_ptr<TGenericHeapContainer, allocator_deleter<TGenericHeapContainer, typename TGenericHeapContainer::allocator_type>>(ptr);
         }
     }
 }
