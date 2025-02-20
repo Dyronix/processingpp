@@ -6,31 +6,29 @@ namespace ppp
 {
     namespace memory
     {
-        template<typename T, typename TMemoryPolicy, u32 allocator_tag_v>
+        template<typename T, typename TMemoryPolicy, u32 allocator_tag>
         class tagged_heap_allocator
         {
         public:
             using value_type = T;
             using memory_policy = TMemoryPolicy;
-            static constexpr u32 allocator_tag = allocator_tag_v;
+            static constexpr u32 memory_tag = allocator_tag;
 
             //-------------------------------------------------------------------------
             tagged_heap_allocator()
-                :m_tag(allocator_tag)
             {
             }
 
             //-------------------------------------------------------------------------
-            template<class U, typename TOtherMemoryPolicy, u32 other_allocator_tag>
-            tagged_heap_allocator(const tagged_heap_allocator <U, TOtherMemoryPolicy, other_allocator_tag>& other) noexcept
+            template<typename U>
+            tagged_heap_allocator(const tagged_heap_allocator<U, memory_policy, memory_tag>& other) noexcept
             {
-                m_tag = other.tag();
             }
 
             //-------------------------------------------------------------------------
             value_type* allocate(u64 n) noexcept
             {
-                return static_cast<value_type*>(heap()->allocate(m_tag, n * sizeof(value_type)));
+                return static_cast<value_type*>(heap()->allocate(memory_tag, n * sizeof(value_type)));
             }
 
             //-------------------------------------------------------------------------
@@ -56,15 +54,12 @@ namespace ppp
             template <typename U>
             struct rebind 
             {
-                using other = tagged_heap_allocator<U, TMemoryPolicy, allocator_tag>;
+                using other = tagged_heap_allocator<U, TMemoryPolicy, memory_tag>;
             };
 
         public:
-            u32 tag() const noexcept { return m_tag; }
-            tagged_heap* heap() noexcept { return memory_policy::get_heap(); }
-
-        private:
-            u32 m_tag;
+            static constexpr u32 tag() noexcept { return memory_tag; }
+            static tagged_heap* heap() noexcept { return memory_policy::get_heap(); }
         };
 
         //-----------------------------------------------------------------------------
@@ -72,14 +67,14 @@ namespace ppp
         //-----------------------------------------------------------------------------
 
         // For stateless memory policies, all instances using the same tag are equivalent.
-        template<class T, typename TMemoryPolicy, u32 allocator_tag, class U, typename TOtherMemoryPolicy, u32 other_allocator_tag>
-        bool operator==(const tagged_heap_allocator<T, TMemoryPolicy, allocator_tag>& lhs, const tagged_heap_allocator<U, TOtherMemoryPolicy, other_allocator_tag>& rhs) noexcept
+        template<class T, typename TMemoryPolicy, u32 memory_tag, class U, typename TOtherMemoryPolicy, u32 other_allocator_tag>
+        constexpr bool operator==(const tagged_heap_allocator<T, TMemoryPolicy, memory_tag>& lhs, const tagged_heap_allocator<U, TOtherMemoryPolicy, other_allocator_tag>& rhs) noexcept
         {
             return lhs.tag() == rhs.tag();
         }
 
-        template<class T, typename TMemoryPolicy, u32 allocator_tag, class U, typename TOtherMemoryPolicy, u32 other_allocator_tag>
-        bool operator!=(const tagged_heap_allocator<T, TMemoryPolicy, allocator_tag>& lhs, const tagged_heap_allocator<U, TOtherMemoryPolicy, other_allocator_tag>& rhs) noexcept
+        template<class T, typename TMemoryPolicy, u32 memory_tag, class U, typename TOtherMemoryPolicy, u32 other_allocator_tag>
+        constexpr bool operator!=(const tagged_heap_allocator<T, TMemoryPolicy, memory_tag>& lhs, const tagged_heap_allocator<U, TOtherMemoryPolicy, other_allocator_tag>& rhs) noexcept
         {
             return !(lhs == rhs);
         }

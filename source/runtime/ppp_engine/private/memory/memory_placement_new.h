@@ -12,8 +12,8 @@ namespace ppp
     {
         //-------------------------------------------------------------------------
         template <typename TTaggedHeapContainer,
-            typename TMemoryPolicy = TTaggedHeapContainer::allocator_type::memory_policy,
-            typename u32 tag = TTaggedHeapContainer::allocator_type::allocator_tag,
+            typename TMemoryPolicy = default_tagged_memory_policy_t<TTaggedHeapContainer>,
+            typename u32 tag = tags::default_memory_tag_v<TTaggedHeapContainer>,
             typename... Args>
         std::unique_ptr<TTaggedHeapContainer, allocator_deleter<TTaggedHeapContainer, typename TTaggedHeapContainer::allocator_type>> tagged_placement_new(Args&&... args)
         {
@@ -28,7 +28,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         template <typename TGenericHeapContainer,
-            typename TMemoryPolicy = TGenericHeapContainer::allocator_type::memory_policy,
+            typename TMemoryPolicy = default_global_memory_policy_t<TGenericHeapContainer>,
             typename... Args>
         std::unique_ptr<TGenericHeapContainer, allocator_deleter<TGenericHeapContainer, typename TGenericHeapContainer::allocator_type>> placement_new(Args&&... args)
         {
