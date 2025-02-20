@@ -2,6 +2,8 @@
 
 #include "util/log.h"
 
+#include "memory/memory_manager.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <unordered_map>
@@ -40,7 +42,7 @@ namespace ppp
                
         static camera_map& cameras()
         {
-            static camera_map* s_camera_map = memory::tagged_placement_new<camera_map>();
+            static auto s_camera_map = memory::tagged_placement_new<camera_map>();
 
             return *s_camera_map;
         }

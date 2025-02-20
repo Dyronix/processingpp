@@ -14,6 +14,7 @@ namespace ppp
     {
         namespace internal
         {
+            //-------------------------------------------------------------------------
             static string::string_id& active_shader_tag()
             {
                 static string::string_id s_active_shader_tag = {};
@@ -21,26 +22,27 @@ namespace ppp
                 return s_active_shader_tag;
             }
 
+            //-------------------------------------------------------------------------
             static graphics_hash_map<string::string_id, render::vertex_type>& shader_tag_vertex_type_map()
             {
-                static graphics_hash_map<string::string_id, render::vertex_type>* s_shader_tag_vertex_type_map =
-                    memory::tagged_placement_new<graphics_hash_map<string::string_id, render::vertex_type>>(
-                std::initializer_list<std::pair<const string::string_id, render::vertex_type>>
+                static auto s_shader_tag_vertex_types = std::initializer_list<std::pair<const string::string_id, render::vertex_type>>
                 {
-                    std::make_pair(shader_pool::tags::unlit_color(), render::vertex_type::POSITION_COLOR),
-                    {shader_pool::tags::instance_unlit_color(), render::vertex_type::POSITION},
+                    {shader_pool::tags::unlit_color(),              render::vertex_type::POSITION_COLOR},
+                    {shader_pool::tags::instance_unlit_color(),     render::vertex_type::POSITION},
 
-                    {shader_pool::tags::unlit_texture(), render::vertex_type::POSITION_TEXCOORD_COLOR},
-                    {shader_pool::tags::instance_unlit_texture(), render::vertex_type::POSITION_TEXCOORD},
+                    {shader_pool::tags::unlit_texture(),            render::vertex_type::POSITION_TEXCOORD_COLOR},
+                    {shader_pool::tags::instance_unlit_texture(),   render::vertex_type::POSITION_TEXCOORD},
 
-                    {shader_pool::tags::unlit_font(), render::vertex_type::POSITION_TEXCOORD_COLOR},
+                    {shader_pool::tags::unlit_font(),               render::vertex_type::POSITION_TEXCOORD_COLOR},
 
-                    {shader_pool::tags::unlit_normal(), render::vertex_type::POSITION_NORMAL_COLOR},
-                    {shader_pool::tags::instance_unlit_normal(), render::vertex_type::POSITION_NORMAL},
+                    {shader_pool::tags::unlit_normal(),             render::vertex_type::POSITION_NORMAL_COLOR},
+                    {shader_pool::tags::instance_unlit_normal(),    render::vertex_type::POSITION_NORMAL},
 
-                    {shader_pool::tags::lit_specular(), render::vertex_type::POSITION_NORMAL_COLOR},
-                    {shader_pool::tags::instance_lit_specular(), render::vertex_type::POSITION_NORMAL}
-                });
+                    {shader_pool::tags::lit_specular(),             render::vertex_type::POSITION_NORMAL_COLOR},
+                    {shader_pool::tags::instance_lit_specular(),    render::vertex_type::POSITION_NORMAL}
+                };
+
+                static auto s_shader_tag_vertex_type_map = memory::tagged_placement_new<graphics_hash_map<string::string_id, render::vertex_type>>(s_shader_tag_vertex_types);
 
                 return *s_shader_tag_vertex_type_map;
             }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "memory/heaps/tagged_heap.h"
 #include "memory/memory_tags.h"
+#include "memory/heaps/tagged_heap.h"
 #include "memory/allocators/heap_allocator_policy.h"
 
 namespace ppp
@@ -85,33 +85,5 @@ namespace ppp
         {
             return !(lhs == rhs);
         }
-
-        //-----------------------------------------------------------------------------
-        // Type aliases for convenience.
-        //-----------------------------------------------------------------------------
-
-        // Allocator using the persistent tagged heap.
-        template<typename T>
-        using persistent_graphics_tagged_allocator = tagged_heap_allocator<T, persistent_tagged_policy, memory::tags::graphics>;
-        template<typename T>
-        using persistent_fileio_tagged_allocator = tagged_heap_allocator<T, persistent_tagged_policy, memory::tags::fileio>;
-        template<typename T>
-        using persistent_global_tagged_allocator = tagged_heap_allocator<T, persistent_tagged_policy, memory::tags::global>;
-
-        // Allocator using the staging tagged heap.
-        template<typename T>
-        using staging_graphics_tagged_allocator = tagged_heap_allocator<T, staging_tagged_policy, memory::tags::graphics>;
-        template<typename T>
-        using staging_fileio_tagged_allocator = tagged_heap_allocator<T, staging_tagged_policy, memory::tags::fileio>;
-        template<typename T>
-        using staging_global_tagged_allocator = tagged_heap_allocator<T, staging_tagged_policy, memory::tags::global>;
-
-        // Allocator using the debug tagged heap.
-        template<typename T>
-        using debug_graphics_tagged_allocator = tagged_heap_allocator<T, debug_tagged_policy, memory::tags::graphics>;
-        template<typename T>
-        using debug_fileio_tagged_allocator = tagged_heap_allocator<T, debug_tagged_policy, memory::tags::fileio>;
-        template<typename T>
-        using debug_global_tagged_allocator = tagged_heap_allocator<T, debug_tagged_policy, memory::tags::global>;
     }
 }

@@ -8,9 +8,9 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_tracker.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_types.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_tags.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/unique_ptr.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_manager.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_manager.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_placement_new.h
     # memory-heaps
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap.cpp
@@ -32,6 +32,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/tagged_heap_allocator.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/generic_heap_allocator.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/heap_allocator_policy.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/heap_allocator_deleter.h
     # fileio
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.cpp

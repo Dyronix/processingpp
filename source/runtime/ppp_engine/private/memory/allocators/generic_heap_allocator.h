@@ -79,39 +79,5 @@ namespace ppp
         {
             return !(a == b);
         }
-
-        //-----------------------------------------------------------------------------
-        // Type aliases for convenience.
-        //-----------------------------------------------------------------------------
-
-        // Persistent allocators.
-        template<typename T>
-        using persistent_global_allocator = generic_heap_allocator<T, persistent_global_policy>;
-
-        template<typename T>
-        using persistent_frame_allocator = generic_heap_allocator<T, persistent_frame_policy>;
-
-        template<typename T>
-        using persistent_scratch_allocator = generic_heap_allocator<T, persistent_scratch_policy>;
-
-        // Staging allocators.
-        template<typename T>
-        using staging_global_allocator = generic_heap_allocator<T, staging_global_policy>;
-
-        template<typename T>
-        using staging_frame_allocator = generic_heap_allocator<T, staging_frame_policy>;
-
-        template<typename T>
-        using staging_scratch_allocator = generic_heap_allocator<T, staging_scratch_policy>;
-
-        // Debug allocators.
-        template<typename T>
-        using debug_global_allocator = generic_heap_allocator<T, debug_global_policy>;
-
-        template<typename T>
-        using debug_frame_allocator = generic_heap_allocator<T, debug_frame_policy>;
-
-        template<typename T>
-        using debug_scratch_allocator = generic_heap_allocator<T, debug_scratch_policy>;
     } // namespace memory
 } // namespace ppp

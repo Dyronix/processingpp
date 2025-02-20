@@ -13,7 +13,7 @@ namespace ppp
         {
             static global_hash_map<string::string_id, font>& fonts()
             {
-                static global_hash_map<string::string_id, font>* s_fonts = memory::tagged_placement_new<global_hash_map<string::string_id, font>>();
+                static auto s_fonts = memory::tagged_placement_new<global_hash_map<string::string_id, font>>();
 
                 return *s_fonts;
             }
