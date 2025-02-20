@@ -136,27 +136,5 @@ namespace ppp
         //-------------------------------------------------------------------------
         void print_memory_region(memory_region& region, std::string_view region_name);
         void print_memory_manager(imemory_manager& manager);
-
-        //-------------------------------------------------------------------------
-        template <typename T, typename TMemoryPolicy = default_tagged_memory_policy_t<T>, u32 tag = tags::default_memory_tag_v<T>, typename... Args>
-        T* tagged_placement_new(Args&&... args)
-        {
-            auto heap = TMemoryPolicy::get_heap();
-
-            void* p = heap->allocate(tag, sizeof(T));
-
-            return new (p) T(std::forward<Args>(args)...);
-        }
-
-        //-------------------------------------------------------------------------
-        template <typename T, typename TMemoryPolicy = default_global_memory_policy_t<T>, typename... Args>
-        T* placement_new(Args&&... args)
-        {
-            auto heap = TMemoryPolicy::get_heap();
-
-            void* p = heap->allocate(sizeof(T));
-
-            return new (p) T(std::forward<Args>(args)...);
-        }
     }
 }
