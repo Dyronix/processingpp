@@ -59,7 +59,7 @@ namespace ppp
 
         public:
             static constexpr u32 tag() noexcept { return memory_tag; }
-            tagged_heap* heap() noexcept { return memory_policy::get_heap(); }
+            static tagged_heap* heap() noexcept { return memory_policy::get_heap(); }
         };
 
         //-----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ namespace ppp
         }
 
         template<class T, typename TMemoryPolicy, u32 memory_tag, class U, typename TOtherMemoryPolicy, u32 other_allocator_tag>
-        bool operator!=(const tagged_heap_allocator<T, TMemoryPolicy, memory_tag>& lhs, const tagged_heap_allocator<U, TOtherMemoryPolicy, other_allocator_tag>& rhs) noexcept
+        constexpr bool operator!=(const tagged_heap_allocator<T, TMemoryPolicy, memory_tag>& lhs, const tagged_heap_allocator<U, TOtherMemoryPolicy, other_allocator_tag>& rhs) noexcept
         {
             return !(lhs == rhs);
         }
