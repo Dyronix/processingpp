@@ -2,6 +2,7 @@
 #include "render/render.h"
 
 #include "memory/memory_types.h"
+#include "memory/memory_placement_new.h"
 
 #include <unordered_set>
 
@@ -20,30 +21,30 @@ namespace ppp
             {
                 static global_hash_map<u32, global_vector<keyboard::key_callback>>& key_callbacks()
                 {
-                    static global_hash_map<u32, global_vector<keyboard::key_callback>> s_key_callbacks;
+                    static auto s_key_callbacks = memory::tagged_placement_new<global_hash_map<u32, global_vector<keyboard::key_callback>>>();
 
-                    return s_key_callbacks;
+                    return *s_key_callbacks;
                 }
 
                 static global_vector<mouse::mouse_pos_callback>& mouse_pos_callbacks()
                 {
-                    static global_vector<mouse::mouse_pos_callback> s_mouse_pos_callbacks;
+                    static auto s_mouse_pos_callbacks = memory::tagged_placement_new<global_vector<mouse::mouse_pos_callback>>();
 
-                    return s_mouse_pos_callbacks;
+                    return *s_mouse_pos_callbacks;
                 }
 
                 static global_hash_map<u32, global_vector<mouse::mouse_button_scroll_callback>>& mouse_scroll_callbacks()
                 {
-                    static global_hash_map<u32, global_vector<mouse::mouse_button_scroll_callback>> s_mouse_scroll_callbacks;
+                    static auto s_mouse_scroll_callbacks = memory::tagged_placement_new<global_hash_map<u32, global_vector<mouse::mouse_button_scroll_callback>>>();
 
-                    return s_mouse_scroll_callbacks;
+                    return *s_mouse_scroll_callbacks;
                 }
 
                 static global_hash_map<u32, global_vector<mouse::mouse_button_callback>>& mouse_button_callbacks()
                 {
-                    static global_hash_map<u32, global_vector<mouse::mouse_button_callback>> s_mouse_button_callbacks;
+                    static auto s_mouse_button_callbacks = memory::tagged_placement_new<global_hash_map<u32, global_vector<mouse::mouse_button_callback>>>();
 
-                    return s_mouse_button_callbacks;
+                    return *s_mouse_button_callbacks;
                 }
 
                 void key_callback(GLFWwindow* window, s32 key, s32 scancode, s32 action, s32 mods)

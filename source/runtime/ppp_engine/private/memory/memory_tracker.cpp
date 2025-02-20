@@ -236,14 +236,14 @@ void* operator new(u64 size)
 
     void* p = nullptr;
 
-    if (ppp::memory::is_tracking_enabled() && ppp::memory::is_constructing_tracker() == false)
-    {
-        ppp::memory::disable_tracking();
-        p = ppp::memory::get_memory_manager().get_persistent_region().get_tagged_heap()->allocate(ppp::memory::tags::global, size);
-        ppp::memory::track_allocation(p, size);
-        ppp::memory::enable_tracking();
-    }
-    else
+    //if (ppp::memory::is_tracking_enabled() && ppp::memory::is_constructing_tracker() == false)
+    //{
+    //    ppp::memory::disable_tracking();
+    //    p = ppp::memory::get_memory_manager().get_persistent_region().get_tagged_heap()->allocate(ppp::memory::tags::global, size);
+    //    ppp::memory::track_allocation(p, size);
+    //    ppp::memory::enable_tracking();
+    //}
+    //else
     {
         p = malloc(size);
         ppp::memory::track_memory_size(size);
@@ -255,14 +255,14 @@ void* operator new(u64 size)
 //-------------------------------------------------------------------------
 void operator delete(void* p) noexcept
 {
-    if (ppp::memory::is_tracking_enabled() && ppp::memory::is_constructing_tracker() == false)
-    {
-        ppp::memory::disable_tracking();
-        ppp::memory::track_deallocation(p);
-        //ppp::memory::get_memory_manager().get_persistent_region().get_tagged_heap()->deallocate(ppp::memory::tags::global, p);
-        ppp::memory::enable_tracking();
-    }
-    else
+    //if (ppp::memory::is_tracking_enabled() && ppp::memory::is_constructing_tracker() == false)
+    //{
+    //    ppp::memory::disable_tracking();
+    //    ppp::memory::track_deallocation(p);
+    //    //ppp::memory::get_memory_manager().get_persistent_region().get_tagged_heap()->deallocate(ppp::memory::tags::global, p);
+    //    ppp::memory::enable_tracking();
+    //}
+    //else
     {
         free(p);
     }

@@ -1,5 +1,7 @@
 #include "resources/geometry_pool.h"
 
+#include "memory/memory_placement_new.h"
+
 #include "util/log.h"
 
 #include <unordered_map>

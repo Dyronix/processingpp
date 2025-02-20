@@ -1,6 +1,7 @@
 #include "resources/texture_pool.h"
 #include "render/render.h"
 #include "memory/memory_types.h"
+#include "memory/memory_placement_new.h"
 #include <unordered_map>
 
 namespace ppp

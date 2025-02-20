@@ -2,6 +2,8 @@
 
 #include "render/opengl/render_gl_error.h"
 
+#include "memory/memory_unique_ptr_util.h"
+
 #include "util/pointer_math.h"
 
 #include <glad/glad.h>
@@ -95,7 +97,7 @@ namespace ppp
 
         //------------------------------------------------------------------------
         storage_buffer::storage_buffer(u64 element_count, u64 element_size)
-            : m_pimpl(ppp::make_unique<impl>(element_count, element_size))
+            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(element_count, element_size))
         {
 
         }

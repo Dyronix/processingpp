@@ -2,8 +2,9 @@
 
 #include "util/log.h"
 
-#include "memory/memory_manager.h"
+#include "memory/memory_placement_new.h"
 #include "memory/memory_types.h"
+#include "memory/memory_unique_ptr_util.h"
 
 #include <unordered_map>
 
@@ -13,8 +14,6 @@ namespace ppp
     {
         using framebuffers_arr = graphics_vector<graphics_unique_ptr<render::framebuffer>>;
         using active_framebuffers_hash_map = graphics_hash_map<string::string_id, render::framebuffer*>;
-
-        graphics_unique_ptr<render::default_framebuffer> _default_framebuffer;
 
         //-------------------------------------------------------------------------
         framebuffers_arr& framebuffers()
@@ -28,20 +27,27 @@ namespace ppp
             static auto s_in_use = memory::tagged_placement_new<active_framebuffers_hash_map>();
             return *s_in_use;
         }        
+        //-------------------------------------------------------------------------
+        graphics_unique_ptr<render::default_framebuffer>& default_framebuffer()
+        {
+            static graphics_unique_ptr<render::default_framebuffer> s_default_framebuffer;
+
+            return s_default_framebuffer;
+        }
 
         //-------------------------------------------------------------------------
         bool initialize(s32 width, s32 height)
         {
-            _default_framebuffer = ppp::make_unique<render::default_framebuffer, memory::persistent_graphics_tagged_allocator<render::default_framebuffer>>(width, height);
+            default_framebuffer() = memory::make_unique<render::default_framebuffer, memory::persistent_graphics_tagged_allocator<render::default_framebuffer>>(width, height);
 
             constexpr bool with_depth = true;
             constexpr bool without_depth = false;
 
             framebuffers().reserve(4);
-            framebuffers().emplace_back(ppp::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, with_depth));
-            framebuffers().emplace_back(ppp::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, with_depth));
-            framebuffers().emplace_back(ppp::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, without_depth));
-            framebuffers().emplace_back(ppp::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, without_depth));
+            framebuffers().emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, with_depth));
+            framebuffers().emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, with_depth));
+            framebuffers().emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, without_depth));
+            framebuffers().emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, without_depth));
 
             return true;
         }
@@ -130,7 +136,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         const render::default_framebuffer* get_system()
         {
-            return _default_framebuffer.get();
+            return default_framebuffer().get();
         }
     }
 }

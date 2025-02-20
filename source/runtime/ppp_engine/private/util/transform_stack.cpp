@@ -1,6 +1,7 @@
 #include "util/transform_stack.h"
 
-#include "memory/memory_types.h"
+#include "memory/memory_types.h" 
+#include "memory/memory_placement_new.h" 
 
 #include <glm/ext/matrix_transform.hpp>
 
@@ -14,7 +15,7 @@ namespace ppp
 
             static temp_vector<glm::mat4>& model_matrices()
             {
-                static model_matrices_arr* s_model_matrices = memory::placement_new<model_matrices_arr, ppp::memory::persistent_frame_policy>();
+                static auto s_model_matrices = memory::placement_new<model_matrices_arr, memory::persistent_frame_policy>();
                 return *s_model_matrices;
             }
         }

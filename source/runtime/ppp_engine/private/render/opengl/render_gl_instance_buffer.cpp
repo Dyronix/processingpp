@@ -2,6 +2,8 @@
 
 #include "render/opengl/render_gl_error.h"
 
+#include "memory/memory_unique_ptr_util.h"
+
 #include <glad/glad.h>
 
 namespace ppp
@@ -135,7 +137,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         instance_buffer::instance_buffer(u64 instance_count, const attribute_layout* layouts, u64 layout_count, u64 layout_id_offset)
-            : m_pimpl(ppp::make_unique<impl>(instance_count, layouts, layout_count, layout_id_offset))
+            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(instance_count, layouts, layout_count, layout_id_offset))
         {
 
         }

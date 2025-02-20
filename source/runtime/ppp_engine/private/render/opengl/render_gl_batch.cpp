@@ -14,7 +14,7 @@
 
 #include "resources/material_pool.h"
 
-#include "memory/unique_ptr.h"
+#include "memory/memory_unique_ptr_util.h"
 
 #include "util/types.h"
 #include "util/log.h"
@@ -445,8 +445,8 @@ namespace ppp
                 GL_CALL(glGenVertexArrays(1, &m_vao));
                 GL_CALL(glBindVertexArray(m_vao));
 
-                m_buffer_manager = ppp::make_unique<batch_buffer_manager>(size_vertex_buffer, size_index_buffer, layouts, layout_count);
-                m_material_manager = ppp::make_unique<batch_material_manager>();
+                m_buffer_manager = memory::make_unique<batch_buffer_manager, memory::persistent_graphics_tagged_allocator<batch_buffer_manager>>(size_vertex_buffer, size_index_buffer, layouts, layout_count);
+                m_material_manager = memory::make_unique<batch_material_manager, memory::persistent_graphics_tagged_allocator<batch_material_manager>>();
 
                 GL_CALL(glBindVertexArray(0));
             }
@@ -513,8 +513,8 @@ namespace ppp
                 }
             }
 
-            global_unique_ptr<batch_buffer_manager> m_buffer_manager;
-            global_unique_ptr<batch_material_manager> m_material_manager;
+            graphics_unique_ptr<batch_buffer_manager> m_buffer_manager;
+            graphics_unique_ptr<batch_material_manager> m_material_manager;
 
             u32 m_vao;
         };
@@ -522,7 +522,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         // Batch
         batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
-            : m_pimpl(ppp::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
+            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
         {}
         //-------------------------------------------------------------------------
         batch::~batch() = default;
@@ -641,7 +641,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
-            : m_pimpl(ppp::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count, render_buffer_policy))
+            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(size_vertex_buffer, size_index_buffer, layouts, layout_count, render_buffer_policy))
         {
         }
 

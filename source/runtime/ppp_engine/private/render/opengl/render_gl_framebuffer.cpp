@@ -2,6 +2,8 @@
 
 #include "render/opengl/render_gl_error.h"
 
+#include "memory/memory_unique_ptr_util.h"
+
 #include "util/log.h"
 
 #include <glad/glad.h>
@@ -112,7 +114,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         framebuffer::framebuffer(s32 width, s32 height, bool with_depth)
-            :m_pimpl(ppp::make_unique<impl>(width, height, with_depth))
+            :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(width, height, with_depth))
         {
 
         }
@@ -190,7 +192,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         default_framebuffer::default_framebuffer(s32 width, s32 height)
-            :m_pimpl(ppp::make_unique<impl>(width, height))
+            :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(width, height))
         {
 
         }

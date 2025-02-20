@@ -3,6 +3,7 @@
 #include "render/opengl/render_gl_error.h"
 
 #include "memory/memory_types.h"
+#include "memory/memory_unique_ptr_util.h"
 
 #include <glad/glad.h>
 
@@ -81,7 +82,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         index_buffer::index_buffer(u64 index_count)
-            : m_pimpl(ppp::make_unique<impl>(index_count))
+            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(index_count))
         {}
 
         //-------------------------------------------------------------------------

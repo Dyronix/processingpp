@@ -5,8 +5,6 @@
 #include "render/render_index_buffer.h"
 #include "render/render_types.h"
 
-#include "memory/unique_ptr.h"
-
 #include <glm/glm.hpp>
 
 #include <memory>

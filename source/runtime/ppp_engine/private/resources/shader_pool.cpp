@@ -4,6 +4,7 @@
 #include "render/render_shader.h"
 
 #include "memory/memory_types.h"
+#include "memory/memory_placement_new.h"
 
 #include "util/log.h"
 

@@ -6,6 +6,7 @@
 #include "resources/material_pool.h"
 #include "util/log.h"
 #include "memory/memory_types.h"
+#include "memory/memory_placement_new.h"
 #include "string/string_id.h"
 
 namespace ppp

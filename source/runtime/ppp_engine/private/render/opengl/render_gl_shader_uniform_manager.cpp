@@ -2,6 +2,8 @@
 
 #include "render/opengl/render_gl_error.h"
 
+#include "memory/memory_placement_new.h"
+
 #include "util/log.h"
 
 #include <glad/glad.h>
