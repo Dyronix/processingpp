@@ -1,6 +1,7 @@
 #include "render/helpers/render_event_dispatcher.h"
 
 #include "memory/memory_types.h"
+#include "memory/memory_placement_new.h"
 
 namespace ppp
 {

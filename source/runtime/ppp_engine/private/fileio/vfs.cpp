@@ -3,7 +3,7 @@
 
 #include "string/string_ops.h"
 
-#include "memory/allocators/tagged_heap_allocator.h"
+#include "memory/memory_placement_new.h"
 
 #include "util/log.h"
 

@@ -32,6 +32,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/tagged_heap_allocator.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/generic_heap_allocator.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/heap_allocator_policy.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/heap_allocator_policy.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/heap_allocator_deleter.h
     # fileio
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h

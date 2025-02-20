@@ -211,10 +211,14 @@ namespace ppp
         using staging_scratch_allocator = memory::generic_heap_allocator<T, staging_scratch_policy>;
     }
 
+    // Unique Ptr
+    // Type alias for a unique_ptr that uses the 'global' tag
     template <typename T>
     using staging_global_unique_ptr = std::unique_ptr<T, memory::allocator_deleter<T, memory::staging_global_tagged_allocator<T>>>;
+    // Type alias for a unique_ptr that uses the 'graphis' tag
     template <typename T>
     using staging_graphics_unique_ptr = std::unique_ptr<T, memory::allocator_deleter<T, memory::staging_graphics_tagged_allocator<T>>>;
+    // Type alias for a unique_ptr that uses the 'fileio' tag
     template <typename T>
     using staging_fileio_unique_ptr = std::unique_ptr<T, memory::allocator_deleter<T, memory::staging_fileio_tagged_allocator<T>>>;
 
@@ -358,27 +362,34 @@ namespace ppp
     // 
     //-----------------------------------------------------------------------------
 
-    // Allocator using the debug tagged heap.
-    template<typename T>
-    using debug_graphics_tagged_allocator = memory::tagged_heap_allocator<T, debug_tagged_policy, memory::tags::graphics>;
-    template<typename T>
-    using debug_fileio_tagged_allocator = memory::tagged_heap_allocator<T, debug_tagged_policy, memory::tags::fileio>;
-    template<typename T>
-    using debug_global_tagged_allocator = memory::tagged_heap_allocator<T, debug_tagged_policy, memory::tags::global>;
-    template<typename T>
-    using debug_global_allocator = memory::generic_heap_allocator<T, debug_global_policy>;
-    template<typename T>
-    using debug_frame_allocator = memory::generic_heap_allocator<T, debug_frame_policy>;
-    template<typename T>
-    using debug_scratch_allocator = memory::generic_heap_allocator<T, debug_scratch_policy>;
-
-    // Type aliases for debug allocators.
+    namespace memory
+    {
+        // Allocator using the debug tagged heap.
+        template<typename T>
+        using debug_graphics_tagged_allocator = memory::tagged_heap_allocator<T, debug_tagged_policy, memory::tags::graphics>;
+        template<typename T>
+        using debug_fileio_tagged_allocator = memory::tagged_heap_allocator<T, debug_tagged_policy, memory::tags::fileio>;
+        template<typename T>
+        using debug_global_tagged_allocator = memory::tagged_heap_allocator<T, debug_tagged_policy, memory::tags::global>;
+        // Type aliases for debug allocators.
+        template<typename T>
+        using debug_global_allocator = memory::generic_heap_allocator<T, debug_global_policy>;
+        template<typename T>
+        using debug_frame_allocator = memory::generic_heap_allocator<T, debug_frame_policy>;
+        template<typename T>
+        using debug_scratch_allocator = memory::generic_heap_allocator<T, debug_scratch_policy>;
+    }
+    
+    // Unique Ptr
+    // Type alias for a unique_ptr that uses the 'global' tag
     template <typename T>
-    using debug_global_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::debug_global_tagged_allocator<T>>>;
+    using debug_global_unique_ptr = std::unique_ptr<T, memory::allocator_deleter<T, memory::debug_global_tagged_allocator<T>>>;
+    // Type alias for a unique_ptr that uses the 'graphics' tag
     template <typename T>
-    using debug_graphics_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::debug_graphics_tagged_allocator<T>>>;
+    using debug_graphics_unique_ptr = std::unique_ptr<T, memory::allocator_deleter<T, memory::debug_graphics_tagged_allocator<T>>>;
+    // Type alias for a unique_ptr that uses the 'fileio' tag
     template <typename T>
-    using debug_fileio_unique_ptr = std::unique_ptr<T, allocator_deleter<T, memory::debug_fileio_tagged_allocator<T>>>;
+    using debug_fileio_unique_ptr = std::unique_ptr<T, memory::allocator_deleter<T, memory::debug_fileio_tagged_allocator<T>>>;
 
     // Vectors
     // Type alias for a vector that uses the 'geometry' tag

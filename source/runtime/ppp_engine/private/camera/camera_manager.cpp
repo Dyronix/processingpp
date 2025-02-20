@@ -2,7 +2,7 @@
 
 #include "util/log.h"
 
-#include "memory/memory_manager.h"
+#include "memory/memory_placement_new.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 

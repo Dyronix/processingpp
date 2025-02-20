@@ -1,8 +1,6 @@
 #pragma once
 
-#include "memory/memory_size.h"
-#include "memory/memory_manager.h"
-#include "memory/allocators/heap_allocator_policy.h"
+#include "memory/heaps/iheap.h"
 
 namespace ppp
 {
@@ -30,7 +28,7 @@ namespace ppp
             {
                 u64 total_size = n * sizeof(T);
 
-                return static_cast<T*>(heap()->allocate(memory_size(total_size)));
+                return static_cast<T*>(heap()->allocate(total_size));
             }
 
             //-------------------------------------------------------------------------
