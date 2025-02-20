@@ -349,7 +349,7 @@ namespace ppp
 
                 static global_hash_map<u32, shader_uniform_manager>& shader_uniform_managers()
                 {
-                    static global_hash_map<u32, shader_uniform_manager>* s_shader_uniform_managers = memory::tagged_placement_new<global_hash_map<u32, shader_uniform_manager>>();
+                    static auto s_shader_uniform_managers = memory::tagged_placement_new<global_hash_map<u32, shader_uniform_manager>>();
 
                     return *s_shader_uniform_managers;
                 }

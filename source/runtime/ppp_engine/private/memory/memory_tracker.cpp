@@ -20,7 +20,12 @@ namespace ppp
         namespace internal
         {
             bool _constructing_tracker = false;
-            bool _tracking_enabled = _DEBUG;
+
+#ifdef _DEBUG
+            bool _tracking_enabled = true;
+#else
+            bool _tracking_enabled = false;
+#endif
 
             u64 _untracked_memory = 0;
         }

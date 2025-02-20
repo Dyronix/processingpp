@@ -5,8 +5,6 @@
 #include "memory/heaps/circular_heap.h"
 #include "memory/heaps/tagged_heap.h"
 
-#include "memory/memory_tags.h"
-
 #include <string>
 
 namespace ppp

@@ -3,7 +3,7 @@
 
 #include "string/string_ops.h"
 
-#include "memory/allocators/tagged_heap_allocator.h"
+#include "memory/memory_placement_new.h"
 
 #include "util/log.h"
 
@@ -17,7 +17,7 @@ namespace ppp
 		{
 			static global_hash_map<string::string_id, global_string>& wildcards()
 			{
-				static global_hash_map<string::string_id, global_string>* s_wildcards = memory::tagged_placement_new<global_hash_map<string::string_id, global_string>>();
+				static auto s_wildcards = memory::tagged_placement_new<global_hash_map<string::string_id, global_string>>();
 
 				return *s_wildcards;
 			}

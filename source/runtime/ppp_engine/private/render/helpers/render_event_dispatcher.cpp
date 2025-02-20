@@ -1,6 +1,7 @@
 #include "render/helpers/render_event_dispatcher.h"
 
 #include "memory/memory_types.h"
+#include "memory/memory_placement_new.h"
 
 namespace ppp
 {
@@ -14,7 +15,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             static draw_begin_subscriptions& draw_begin_subs()
             {
-                static draw_begin_subscriptions* s_draw_begin_subs = memory::tagged_placement_new<draw_begin_subscriptions>();
+                static auto s_draw_begin_subs = memory::tagged_placement_new<draw_begin_subscriptions>();
 
                 return *s_draw_begin_subs;
             }
@@ -22,7 +23,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             static global_vector<std::function<void()>>& draw_end_subs()
             {
-                static draw_end_subscriptions* s_draw_end_subs = memory::tagged_placement_new<draw_end_subscriptions>();
+                static auto s_draw_end_subs = memory::tagged_placement_new<draw_end_subscriptions>();
 
                 return *s_draw_end_subs;
             }

@@ -70,7 +70,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             static instance_renderers_hash_map& instance_renderers()
             {
-                static instance_renderers_hash_map* s_instance_renderers = memory::tagged_placement_new<instance_renderers_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+                static auto s_instance_renderers = memory::tagged_placement_new<instance_renderers_hash_map>();
 
                 return *s_instance_renderers;
             }
@@ -78,7 +78,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             static batch_renderers_hash_map& batch_renderers()
             {
-                static batch_renderers_hash_map* s_batch_renderers = memory::tagged_placement_new<batch_renderers_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+                static auto s_batch_renderers = memory::tagged_placement_new<batch_renderers_hash_map>();
 
                 return *s_batch_renderers;
             }

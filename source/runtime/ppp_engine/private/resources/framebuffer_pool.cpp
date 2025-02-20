@@ -2,8 +2,8 @@
 
 #include "util/log.h"
 
+#include "memory/memory_manager.h"
 #include "memory/memory_types.h"
-#include "memory/unique_ptr.h"
 
 #include <unordered_map>
 
@@ -19,13 +19,13 @@ namespace ppp
         //-------------------------------------------------------------------------
         framebuffers_arr& framebuffers()
         {
-            static framebuffers_arr* s_framebuffers = memory::tagged_placement_new<framebuffers_arr, memory::persistent_tagged_policy, memory::tags::graphics>();
+            static auto s_framebuffers = memory::tagged_placement_new<framebuffers_arr>();
             return *s_framebuffers;
         }
         //-------------------------------------------------------------------------
         active_framebuffers_hash_map& active_framebuffers()
         {
-            static active_framebuffers_hash_map* s_in_use = memory::tagged_placement_new< active_framebuffers_hash_map, memory::persistent_tagged_policy, memory::tags::graphics>();
+            static auto s_in_use = memory::tagged_placement_new<active_framebuffers_hash_map>();
             return *s_in_use;
         }        
 

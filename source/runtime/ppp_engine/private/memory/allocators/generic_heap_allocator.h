@@ -1,8 +1,6 @@
 #pragma once
 
-#include "memory/memory_size.h"
-#include "memory/memory_manager.h"
-#include "memory/allocators/heap_allocator_policy.h"
+#include "memory/heaps/iheap.h"
 
 namespace ppp
 {
@@ -30,7 +28,7 @@ namespace ppp
             {
                 u64 total_size = n * sizeof(T);
 
-                return static_cast<T*>(heap()->allocate(memory_size(total_size)));
+                return static_cast<T*>(heap()->allocate(total_size));
             }
 
             //-------------------------------------------------------------------------
@@ -79,39 +77,5 @@ namespace ppp
         {
             return !(a == b);
         }
-
-        //-----------------------------------------------------------------------------
-        // Type aliases for convenience.
-        //-----------------------------------------------------------------------------
-
-        // Persistent allocators.
-        template<typename T>
-        using persistent_global_allocator = generic_heap_allocator<T, persistent_global_policy>;
-
-        template<typename T>
-        using persistent_frame_allocator = generic_heap_allocator<T, persistent_frame_policy>;
-
-        template<typename T>
-        using persistent_scratch_allocator = generic_heap_allocator<T, persistent_scratch_policy>;
-
-        // Staging allocators.
-        template<typename T>
-        using staging_global_allocator = generic_heap_allocator<T, staging_global_policy>;
-
-        template<typename T>
-        using staging_frame_allocator = generic_heap_allocator<T, staging_frame_policy>;
-
-        template<typename T>
-        using staging_scratch_allocator = generic_heap_allocator<T, staging_scratch_policy>;
-
-        // Debug allocators.
-        template<typename T>
-        using debug_global_allocator = generic_heap_allocator<T, debug_global_policy>;
-
-        template<typename T>
-        using debug_frame_allocator = generic_heap_allocator<T, debug_frame_policy>;
-
-        template<typename T>
-        using debug_scratch_allocator = generic_heap_allocator<T, debug_scratch_policy>;
     } // namespace memory
 } // namespace ppp
