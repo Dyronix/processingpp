@@ -69,10 +69,10 @@ namespace ppp
             staging.scratch_heap_size = 20_mb;
 
             static memory_requirements debug;
-            persistant.frame_heap_size = 1_mb;
-            persistant.tagged_heap_block_size = 500_kb;
-            persistant.tagged_heap_block_count = 10;
-            persistant.scratch_heap_size = 1_mb;
+            debug.frame_heap_size = 1_mb;
+            debug.tagged_heap_block_size = 500_kb;
+            debug.tagged_heap_block_count = 10;
+            debug.scratch_heap_size = 1_mb;
 
             static development_memory_manager s_instance(persistant, staging, debug);
 
@@ -111,10 +111,10 @@ namespace ppp
             staging.scratch_heap_size = 20_mb;
 
             static memory_requirements debug;
-            persistant.frame_heap_size = 0_mb;
-            persistant.tagged_heap_block_size = 0_kb;
-            persistant.tagged_heap_block_count = 0;
-            persistant.scratch_heap_size = 0_mb;
+            debug.frame_heap_size = 0_mb;
+            debug.tagged_heap_block_size = 0_kb;
+            debug.tagged_heap_block_count = 0;
+            debug.scratch_heap_size = 0_mb;
 
             static shipping_memory_manager s_instance(persistant, staging, debug);
 

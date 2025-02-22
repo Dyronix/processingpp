@@ -6,6 +6,10 @@
 
 #include "util/log.h"
 
+#include <new>        // for std::bad_alloc
+#include <cstddef>    // for std::size_t
+#include <cstdlib>    // for malloc/free
+
 #define PRINT_WARN_WITHIN_SAME_FRAME 1
 
 #define PRINT_INFO_ALLOCATIONS_TOTAL 1
@@ -230,40 +234,54 @@ namespace ppp
 }
 
 //-------------------------------------------------------------------------
-void* operator new(u64 size)
+void* operator new(std::size_t size)
 {
-    assert(size != 0);
-
-    void* p = nullptr;
-
-    //if (ppp::memory::is_tracking_enabled() && ppp::memory::is_constructing_tracker() == false)
-    //{
-    //    ppp::memory::disable_tracking();
-    //    p = ppp::memory::get_memory_manager().get_persistent_region().get_tagged_heap()->allocate(ppp::memory::tags::global, size);
-    //    ppp::memory::track_allocation(p, size);
-    //    ppp::memory::enable_tracking();
-    //}
-    //else
+    // handle zero-size requests in a well-defined way
+    if (size == 0)
     {
-        p = malloc(size);
-        ppp::memory::track_memory_size(size);
+        size = 1;
     }
 
+    void* p = malloc(size);
+
+    if (!p)
+    {
+        // if malloc fails, operator new must throw std::bad_alloc
+        throw std::bad_alloc();
+    }
+
+    ppp::memory::track_memory_size(size);
+
+    return p;
+}
+
+//-------------------------------------------------------------------------
+void* operator new[](std::size_t size)
+{
+    if (size == 0)
+    {
+        size = 1;
+    }
+
+    void* p = std::malloc(size);
+    if (!p)
+    {
+        throw std::bad_alloc();
+    }
+
+    ppp::memory::track_memory_size(size);
+    
     return p;
 }
 
 //-------------------------------------------------------------------------
 void operator delete(void* p) noexcept
 {
-    //if (ppp::memory::is_tracking_enabled() && ppp::memory::is_constructing_tracker() == false)
-    //{
-    //    ppp::memory::disable_tracking();
-    //    ppp::memory::track_deallocation(p);
-    //    //ppp::memory::get_memory_manager().get_persistent_region().get_tagged_heap()->deallocate(ppp::memory::tags::global, p);
-    //    ppp::memory::enable_tracking();
-    //}
-    //else
-    {
-        free(p);
-    }
+    free(p);
+}
+
+//-------------------------------------------------------------------------
+void operator delete[](void* p) noexcept
+{
+    std::free(p);
 }

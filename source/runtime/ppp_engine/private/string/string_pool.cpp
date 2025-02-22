@@ -39,12 +39,14 @@ namespace ppp
             //-------------------------------------------------------------------------
             string_id store(std::string_view new_characters)
             {
+                auto& entries = get_entries();
+
                 // We create a string id from the incoming characters here 
                 // to check if the entry is already available
-                string_id entry_id = string_id(new_characters);
+                string_id temp_id = string_id(new_characters);
 
-                auto it = get_entries().find(entry_id);
-                if (it != std::cend(get_entries()))
+                auto it = entries.find(temp_id);
+                if (it != std::cend(entries))
                 {
                     assert(std::strcmp(new_characters.data(), it->second.data()) == 0 && "Hash collision");
 
@@ -59,7 +61,7 @@ namespace ppp
                 // as this one is actually stored within the string pool
                 std::string_view sv_entry = entry;
 
-                auto result = get_entries().emplace(string_id(sv_entry), std::move(entry));
+                auto result = entries.emplace(string_id(sv_entry), std::move(entry));
 
                 // if and only if the insertion took place 
                 if (result.second)

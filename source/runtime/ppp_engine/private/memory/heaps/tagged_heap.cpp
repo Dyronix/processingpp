@@ -43,7 +43,7 @@ namespace ppp
                 }
             }
 
-            assert("Out of memory!");
+            assert(false && "Out of memory!");
             return nullptr; // Out of memory
         }
 

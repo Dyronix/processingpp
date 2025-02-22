@@ -18,6 +18,10 @@ namespace ppp
         class framebuffer
         {
         public:
+            constexpr static s32 min_framebuffer_width() { return 32; }
+            constexpr static s32 min_framebuffer_height() { return 32; }
+
+        public:
             framebuffer(s32 width, s32 height, bool with_depth = false);
             ~framebuffer();
 

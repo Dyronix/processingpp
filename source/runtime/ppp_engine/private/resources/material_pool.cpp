@@ -9,38 +9,27 @@ namespace ppp
 {
     namespace material_pool
     {
-        namespace internal
+        using materials_hash_map            = graphics_hash_map<string::string_id, resources::material>;
+        using material_instances_hash_map   = graphics_hash_map<u64, resources::material_instance>;
+        using registred_images_hash_map     = graphics_hash_map<string::string_id, graphics_vector<render::texture_id>>;
+
+        struct context
         {
-            using materials_hash_map = graphics_hash_map<string::string_id, resources::material>;
-            using material_instances_hash_map = graphics_hash_map<u64, resources::material_instance>;
-            using registred_images_hash_map = graphics_hash_map<string::string_id, graphics_vector<render::texture_id>>;
+            materials_hash_map          materials_hash_map;
+            material_instances_hash_map material_instances_hash_map;
 
-            static materials_hash_map& materials()
-            {
-                static auto s_material = memory::tagged_placement_new<materials_hash_map>();
-                return *s_material;
-            }
-            static material_instances_hash_map& material_instances()
-            {
-                static auto s_material_instances = memory::tagged_placement_new<material_instances_hash_map>();
-                return *s_material_instances;
-            }
-
-            static registred_images_hash_map& registered_images()
-            {
-                static auto s_registered_images = memory::tagged_placement_new<registred_images_hash_map>();
-                return *s_registered_images;
-            }
-        }
+            registred_images_hash_map   registered_images;
+        } g_ctx;
 
         namespace texture_cache
         {
+            //-------------------------------------------------------------------------
             void add_image(string::string_id shader_tag, render::texture_id image)
             {
-                auto it = internal::registered_images().find(shader_tag);
-                if (it == std::cend(internal::registered_images()))
+                auto it = g_ctx.registered_images.find(shader_tag);
+                if (it == std::cend(g_ctx.registered_images))
                 {
-                    internal::registered_images()[shader_tag] = { image };
+                    g_ctx.registered_images[shader_tag] = { image };
                 }
                 else
                 {
@@ -52,19 +41,21 @@ namespace ppp
                 }
             }
 
+            //-------------------------------------------------------------------------
             void reset_images(string::string_id shader_tag)
             {
-                auto it = internal::registered_images().find(shader_tag);
-                if (it != std::cend(internal::registered_images()))
+                auto it = g_ctx.registered_images.find(shader_tag);
+                if (it != std::cend(g_ctx.registered_images))
                 {
-                    internal::registered_images().at(shader_tag).clear();
+                    g_ctx.registered_images.at(shader_tag).clear();
                 }
             }
 
+            //-------------------------------------------------------------------------
             const graphics_vector<render::texture_id>& images(string::string_id shader_tag)
             {
-                auto it = internal::registered_images().find(shader_tag);
-                if (it != std::cend(internal::registered_images()))
+                auto it = g_ctx.registered_images.find(shader_tag);
+                if (it != std::cend(g_ctx.registered_images))
                 {
                     return it->second;
                 }
@@ -98,32 +89,32 @@ namespace ppp
         //-------------------------------------------------------------------------
         void terminate()
         {
-            internal::materials().clear();
-            internal::material_instances().clear();
+            g_ctx.materials_hash_map.clear();
+            g_ctx.material_instances_hash_map.clear();
         }
 
         //-------------------------------------------------------------------------
         bool has_material(string::string_id shader_tag)
         {
-            return internal::materials().find(shader_tag) != std::cend(internal::materials());
+            return g_ctx.materials_hash_map.find(shader_tag) != std::cend(g_ctx.materials_hash_map);
         }
 
         //-------------------------------------------------------------------------
         resources::imaterial* material_at_shader_tag(string::string_id shader_tag)
         {
-            return &internal::materials().at(shader_tag);
+            return &g_ctx.materials_hash_map.at(shader_tag);
         }
 
         //-------------------------------------------------------------------------
         resources::imaterial* material_instance_at_shader_tag(string::string_id shader_tag)
         {
-            auto it = std::find_if(std::begin(internal::material_instances()), std::end(internal::material_instances()),
+            auto it = std::find_if(std::begin(g_ctx.material_instances_hash_map), std::end(g_ctx.material_instances_hash_map),
                 [shader_tag](const auto& pair)
                 {
                     return pair.second.shader_tag() == shader_tag;
                 });
 
-            if (it != std::cend(internal::material_instances()))
+            if (it != std::cend(g_ctx.material_instances_hash_map))
             {
                 return &it->second;
             }
@@ -134,14 +125,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         void add_new_material(const resources::material& material)
         {
-            internal::materials().emplace(material.shader_tag(), material);
+            g_ctx.materials_hash_map.emplace(material.shader_tag(), material);
         }
 
         //-------------------------------------------------------------------------
         resources::imaterial* get_or_create_material_instance(string::string_id shader_tag)
         {
             auto mat = material_at_shader_tag(shader_tag);
-            auto cache = internal::registered_images().find(shader_tag);
+            auto cache = g_ctx.registered_images.find(shader_tag);
 
             if (mat == nullptr)
             {
@@ -152,39 +143,39 @@ namespace ppp
             // Hash active textures for uniqueness
             u64 hash = mat->shader_tag().value();
 
-            if (cache != std::cend(internal::registered_images()))
+            if (cache != std::cend(g_ctx.registered_images))
             {
-                for (auto texture : internal::registered_images().at(shader_tag))
+                for (auto texture : g_ctx.registered_images.at(shader_tag))
                 {
                     hash ^= std::hash<u32>{}(texture)+0x9e3779b9 + (hash << 6) + (hash >> 2);
                 }
             }
 
             // Check if instance already exists
-            auto it = internal::material_instances().find(hash);
-            if (it != internal::material_instances().end()) 
+            auto it = g_ctx.material_instances_hash_map.find(hash);
+            if (it != g_ctx.material_instances_hash_map.end()) 
             {
                 return &it->second;
             }
 
             // Create a new material instance
-            resources::material_instance instance(mat, internal::registered_images().size());
+            resources::material_instance instance(mat, g_ctx.registered_images.size());
 
             log::info("material instance ({0}) added for shader tag: {1}", hash, string::restore_sid(shader_tag));
 
             // Assign textures
-            if (cache != std::cend(internal::registered_images()))
+            if (cache != std::cend(g_ctx.registered_images))
             {
-                for (auto texture : internal::registered_images().at(shader_tag))
+                for (auto texture : g_ctx.registered_images.at(shader_tag))
                 {
                     instance.add_texture(texture);
                 }
             }
 
             // Cache the instance
-            internal::material_instances().emplace(hash, std::move(instance));
+            g_ctx.material_instances_hash_map.emplace(hash, std::move(instance));
 
-            return &internal::material_instances().at(hash);
+            return &g_ctx.material_instances_hash_map.at(hash);
         }
     }
 }

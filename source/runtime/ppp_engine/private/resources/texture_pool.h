@@ -20,7 +20,7 @@ namespace ppp
             s32			        height = -1;
             s32			        channels = -1;
 
-            u8*                 data;
+            u8*                 data = nullptr;
         };
 
         bool initialize();
@@ -39,6 +39,6 @@ namespace ppp
 
         void update_active_pixels(s32 id);
 
-        unsigned char* active_pixels();
+        u8* active_pixels();
     }
 }

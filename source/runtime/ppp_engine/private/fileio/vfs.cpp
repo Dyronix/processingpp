@@ -13,22 +13,17 @@ namespace ppp
 {
     namespace vfs
     {
-		namespace internal
+		struct context
 		{
-			static global_hash_map<string::string_id, global_string>& wildcards()
-			{
-				static auto s_wildcards = memory::tagged_placement_new<global_hash_map<string::string_id, global_string>>();
-
-				return *s_wildcards;
-			}
-		}
+			global_hash_map<string::string_id, global_string> wildcards;
+		} g_ctx;
 
 		//-------------------------------------------------------------------------
 		void add_wildcard(string::string_id wildcard, const std::string_view value)
 		{
 			log::info("adding wildcard {} | {}", string::restore_sid(wildcard), value);
 
-			internal::wildcards()[wildcard] = value;
+			g_ctx.wildcards[wildcard] = value;
 		}
 
 		//-------------------------------------------------------------------------
@@ -38,7 +33,7 @@ namespace ppp
 
 			file_info_view	file_info_view(filename);
 
-			for (const auto& p : internal::wildcards())
+			for (const auto& p : g_ctx.wildcards)
 			{
 				std::string_view sv_wildcard = string::restore_sid(p.first);
 				std::string_view sv_path = p.second;

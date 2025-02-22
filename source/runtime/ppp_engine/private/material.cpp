@@ -13,42 +13,6 @@ namespace ppp
 {
     namespace material
     {
-        namespace internal
-        {
-            //-------------------------------------------------------------------------
-            static string::string_id& active_shader_tag()
-            {
-                static string::string_id s_active_shader_tag = {};
-
-                return s_active_shader_tag;
-            }
-
-            //-------------------------------------------------------------------------
-            static graphics_hash_map<string::string_id, render::vertex_type>& shader_tag_vertex_type_map()
-            {
-                static auto s_shader_tag_vertex_types = std::initializer_list<std::pair<const string::string_id, render::vertex_type>>
-                {
-                    {shader_pool::tags::unlit_color(),              render::vertex_type::POSITION_COLOR},
-                    {shader_pool::tags::instance_unlit_color(),     render::vertex_type::POSITION},
-
-                    {shader_pool::tags::unlit_texture(),            render::vertex_type::POSITION_TEXCOORD_COLOR},
-                    {shader_pool::tags::instance_unlit_texture(),   render::vertex_type::POSITION_TEXCOORD},
-
-                    {shader_pool::tags::unlit_font(),               render::vertex_type::POSITION_TEXCOORD_COLOR},
-
-                    {shader_pool::tags::unlit_normal(),             render::vertex_type::POSITION_NORMAL_COLOR},
-                    {shader_pool::tags::instance_unlit_normal(),    render::vertex_type::POSITION_NORMAL},
-
-                    {shader_pool::tags::lit_specular(),             render::vertex_type::POSITION_NORMAL_COLOR},
-                    {shader_pool::tags::instance_lit_specular(),    render::vertex_type::POSITION_NORMAL}
-                };
-
-                static auto s_shader_tag_vertex_type_map = memory::tagged_placement_new<graphics_hash_map<string::string_id, render::vertex_type>>(s_shader_tag_vertex_types);
-
-                return *s_shader_tag_vertex_type_map;
-            }
-        }
-
         namespace tags
         {
             //-------------------------------------------------------------------------
@@ -97,6 +61,34 @@ namespace ppp
                 return string::restore_sid(sid);
             }
         }
+
+        struct context
+        {
+            context()
+                : shader_tag_vertex_type_map()
+                , active_shader_tag(string::string_id::create_invalid())
+            {
+                shader_tag_vertex_type_map = std::initializer_list<std::pair<const string::string_id, render::vertex_type>>
+                {
+                    {shader_pool::tags::unlit_color(),              render::vertex_type::POSITION_COLOR},
+                    {shader_pool::tags::instance_unlit_color(),     render::vertex_type::POSITION},
+
+                    {shader_pool::tags::unlit_texture(),            render::vertex_type::POSITION_TEXCOORD_COLOR},
+                    {shader_pool::tags::instance_unlit_texture(),   render::vertex_type::POSITION_TEXCOORD},
+
+                    {shader_pool::tags::unlit_font(),               render::vertex_type::POSITION_TEXCOORD_COLOR},
+
+                    {shader_pool::tags::unlit_normal(),             render::vertex_type::POSITION_NORMAL_COLOR},
+                    {shader_pool::tags::instance_unlit_normal(),    render::vertex_type::POSITION_NORMAL},
+
+                    {shader_pool::tags::lit_specular(),             render::vertex_type::POSITION_NORMAL_COLOR},
+                    {shader_pool::tags::instance_lit_specular(),    render::vertex_type::POSITION_NORMAL}
+                };
+            }
+
+            graphics_hash_map<string::string_id, render::vertex_type>   shader_tag_vertex_type_map;
+            string::string_id                                           active_shader_tag;
+        } g_ctx;
 
         //-------------------------------------------------------------------------
         shader_program::shader_program()
@@ -157,17 +149,17 @@ namespace ppp
         //-------------------------------------------------------------------------
         void texture(unsigned int image_id)
         {
-            assert(!internal::active_shader_tag().is_none());
+            assert(!g_ctx.active_shader_tag.is_none());
 
-            material_pool::texture_cache::add_image(internal::active_shader_tag(), image_id);
+            material_pool::texture_cache::add_image(g_ctx.active_shader_tag, image_id);
         }
 
         //-------------------------------------------------------------------------
         void reset_textures()
         {
-            assert(!internal::active_shader_tag().is_none());
+            assert(!g_ctx.active_shader_tag.is_none());
 
-            material_pool::texture_cache::reset_images(internal::active_shader_tag());
+            material_pool::texture_cache::reset_images(g_ctx.active_shader_tag);
         }
 
         //-------------------------------------------------------------------------
@@ -175,10 +167,10 @@ namespace ppp
         {
             auto sid_tag = string::store_sid(tag);
 
-            internal::active_shader_tag() = sid_tag;
+            g_ctx.active_shader_tag = sid_tag;
 
-            auto it = internal::shader_tag_vertex_type_map().find(sid_tag);
-            auto vertex_type = it == std::cend(internal::shader_tag_vertex_type_map())
+            auto it = g_ctx.shader_tag_vertex_type_map.find(sid_tag);
+            auto vertex_type = it == std::cend(g_ctx.shader_tag_vertex_type_map)
                 ? render::vertex_type::POSITION_TEXCOORD_NORMAL_COLOR
                 : it->second;
 
@@ -192,9 +184,9 @@ namespace ppp
                 ? shader_pool::tags::unlit_normal()
                 : shader_pool::tags::instance_unlit_normal();
 
-            internal::active_shader_tag() = tag;
+            g_ctx.active_shader_tag = tag;
 
-            render::push_active_shader(tag, internal::shader_tag_vertex_type_map().at(tag));
+            render::push_active_shader(tag, g_ctx.shader_tag_vertex_type_map.at(tag));
 
             return get_shader(string::restore_sid(tag));
         }
@@ -206,9 +198,9 @@ namespace ppp
                 ? shader_pool::tags::lit_specular()
                 : shader_pool::tags::instance_lit_specular();
 
-            internal::active_shader_tag() = tag;
+            g_ctx.active_shader_tag = tag;
 
-            render::push_active_shader(tag, internal::shader_tag_vertex_type_map().at(tag));
+            render::push_active_shader(tag, g_ctx.shader_tag_vertex_type_map.at(tag));
             
             return get_shader(string::restore_sid(tag));
         }

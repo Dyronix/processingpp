@@ -18,21 +18,18 @@ namespace ppp
             string::string_id perspective()
             {
                 static const string::string_id s_perspective = string::store_sid("perspective");
-
                 return s_perspective;
             }
             //-------------------------------------------------------------------------
             string::string_id orthographic()
             {
                 static const string::string_id s_orthographic = string::store_sid("orthographic");
-
                 return s_orthographic;
             }
             //-------------------------------------------------------------------------
             string::string_id font()
             {
                 static const string::string_id s_font = string::store_sid("font");
-
                 return s_font;
             }
         }
@@ -40,24 +37,13 @@ namespace ppp
         using camera_map = global_hash_map<string::string_id, camera>;
         using camera_tag = string::string_id;
                
-        static camera_map& cameras()
+        struct context
         {
-            static auto s_camera_map = memory::tagged_placement_new<camera_map>();
+            camera*     active_camera        = nullptr;
+            camera_tag  active_camera_tag    = string::string_id::create_invalid();
 
-            return *s_camera_map;
-        }
-        static camera*& active_camera ()
-        {
-            static camera* s_camera = nullptr;
-
-            return s_camera;
-        }
-        static camera_tag& active_camera_tag()
-        {
-            static camera_tag s_camera_tag = string::string_id::create_invalid();
-
-            return s_camera_tag;
-        }
+            camera_map  cameras              = {};
+        } g_ctx;
 
         //-------------------------------------------------------------------------
         bool initialize(f32 frustum_width, f32 frustum_height)
@@ -88,42 +74,42 @@ namespace ppp
         //-------------------------------------------------------------------------
         void terminate()
         {
-            cameras().clear();
+            g_ctx.cameras.clear();
         }
 
         //-------------------------------------------------------------------------
         camera* set_camera(string::string_id camera_tag, const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj)
         {
-            auto it = cameras().find(camera_tag);
-            if (it != std::cend(cameras()))
+            auto it = g_ctx.cameras.find(camera_tag);
+            if (it != std::cend(g_ctx.cameras))
             {
                 it->second = { eye, center, up, proj };
 
                 return &it->second;
             }
 
-            cameras()[camera_tag] = { eye, center, up, proj };
+            g_ctx.cameras[camera_tag] = { eye, center, up, proj };
 
-            return &cameras().at(camera_tag);
+            return &g_ctx.cameras.at(camera_tag);
         }
 
         //-------------------------------------------------------------------------
         camera* set_as_active_camera(string::string_id camera_tag)
         {
-            if (active_camera_tag() != camera_tag)
+            if (g_ctx.active_camera_tag != camera_tag)
             {
                 camera* c = camera_by_tag(camera_tag);
 
                 if (c)
                 {
-                    active_camera_tag() = camera_tag;
-                    active_camera() = c;
+                    g_ctx.active_camera_tag = camera_tag;
+                    g_ctx.active_camera = c;
                 }
 
                 return c;
             }
 
-            return active_camera();
+            return g_ctx.active_camera;
         }
 
         //-------------------------------------------------------------------------
@@ -131,9 +117,9 @@ namespace ppp
         {
             static glm::mat4 view = glm::mat4(1.0f);
 
-            if (active_camera())
+            if (g_ctx.active_camera)
             {
-                view = glm::lookAt(active_camera()->eye, active_camera()->target, active_camera()->up);
+                view = glm::lookAt(g_ctx.active_camera->eye, g_ctx.active_camera->target, g_ctx.active_camera->up);
             }
             else
             {
@@ -167,9 +153,9 @@ namespace ppp
         {
             static glm::mat4 proj = glm::mat4(1.0f);
             
-            if (active_camera())
+            if (g_ctx.active_camera)
             {
-                proj = active_camera()->proj;
+                proj = g_ctx.active_camera->proj;
             }
             else
             {
@@ -201,8 +187,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         camera* camera_by_tag(string::string_id camera_tag)
         {
-            auto it = cameras().find(camera_tag);
-            if (it != std::cend(cameras()))
+            auto it = g_ctx.cameras.find(camera_tag);
+            if (it != std::cend(g_ctx.cameras))
             {
                 return &it->second;
             }

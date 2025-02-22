@@ -12,42 +12,32 @@ namespace ppp
 {
     namespace framebuffer_pool
     {
-        using framebuffers_arr = graphics_vector<graphics_unique_ptr<render::framebuffer>>;
-        using active_framebuffers_hash_map = graphics_hash_map<string::string_id, render::framebuffer*>;
+        using framebuffers_arr              = graphics_vector<graphics_unique_ptr<render::framebuffer>>;
+        using active_framebuffers_hash_map  = graphics_hash_map<string::string_id, render::framebuffer*>;
+        using default_framebuffer_ptr       = graphics_unique_ptr<render::default_framebuffer>;
 
-        //-------------------------------------------------------------------------
-        framebuffers_arr& framebuffers()
+        struct context
         {
-            static auto s_framebuffers = memory::tagged_placement_new<framebuffers_arr>();
-            return *s_framebuffers;
-        }
-        //-------------------------------------------------------------------------
-        active_framebuffers_hash_map& active_framebuffers()
-        {
-            static auto s_in_use = memory::tagged_placement_new<active_framebuffers_hash_map>();
-            return *s_in_use;
-        }        
-        //-------------------------------------------------------------------------
-        graphics_unique_ptr<render::default_framebuffer>& default_framebuffer()
-        {
-            static graphics_unique_ptr<render::default_framebuffer> s_default_framebuffer;
+            framebuffers_arr                framebuffers;
+            active_framebuffers_hash_map    framebuffers_in_use;
 
-            return s_default_framebuffer;
-        }
+            default_framebuffer_ptr         default_framebuffer;
+
+        } g_ctx;
 
         //-------------------------------------------------------------------------
         bool initialize(s32 width, s32 height)
         {
-            default_framebuffer() = memory::make_unique<render::default_framebuffer, memory::persistent_graphics_tagged_allocator<render::default_framebuffer>>(width, height);
+            g_ctx.default_framebuffer = memory::make_unique<render::default_framebuffer, memory::persistent_graphics_tagged_allocator<render::default_framebuffer>>(width, height);
 
             constexpr bool with_depth = true;
             constexpr bool without_depth = false;
 
-            framebuffers().reserve(4);
-            framebuffers().emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, with_depth));
-            framebuffers().emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, with_depth));
-            framebuffers().emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, without_depth));
-            framebuffers().emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, without_depth));
+            g_ctx.framebuffers.reserve(4);
+            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, with_depth));
+            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, with_depth));
+            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, without_depth));
+            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, without_depth));
 
             return true;
         }
@@ -55,37 +45,37 @@ namespace ppp
         //-------------------------------------------------------------------------
         void terminate()
         {
-            framebuffers().clear();
+            g_ctx.framebuffers.clear();
         }
 
         //-------------------------------------------------------------------------
         void release(const render::framebuffer* framebuffer)
         {
-            auto it = std::find_if(std::cbegin(active_framebuffers()), std::cend(active_framebuffers()),
+            auto it = std::find_if(std::cbegin(g_ctx.framebuffers_in_use), std::cend(g_ctx.framebuffers_in_use),
                 [framebuffer](const auto& pair)
                 {
                     return pair.second == framebuffer;
                 });
 
-            if (it != std::cend(active_framebuffers()))
+            if (it != std::cend(g_ctx.framebuffers_in_use))
             {
                 // Make sure the frame buffer is unbound when we release it from the list
                 framebuffer->unbind();
 
-                active_framebuffers().erase(it);
+                g_ctx.framebuffers_in_use.erase(it);
             }
         }
 
         //-------------------------------------------------------------------------
         void release(const framebuffer_description& desc)
         {
-            auto it = active_framebuffers().find(desc.tag);
-            if (it != std::cend(active_framebuffers()))
+            auto it = g_ctx.framebuffers_in_use.find(desc.tag);
+            if (it != std::cend(g_ctx.framebuffers_in_use))
             {
                 // Make sure the frame buffer is unbound when we release it from the list
                 it->second->unbind();
 
-                active_framebuffers().erase(it);
+                g_ctx.framebuffers_in_use.erase(it);
             }
         }
 
@@ -109,22 +99,22 @@ namespace ppp
         const render::framebuffer* get(const framebuffer_description& desc)
         {
             // 1) Check if we already have a framebuffer with the same (tag, withDepth) in use.
-            for (auto& fb : framebuffers())
+            for (auto& fb : g_ctx.framebuffers)
             {
-                auto it = active_framebuffers().find(desc.tag);
-                if (it != std::cend(active_framebuffers()) && fb->has_depth() == desc.require_depth)
+                auto it = g_ctx.framebuffers_in_use.find(desc.tag);
+                if (it != std::cend(g_ctx.framebuffers_in_use) && fb->has_depth() == desc.require_depth)
                 {
                     return it->second;
                 }
             }
 
             // 2) Otherwise find a free one with the same depth requirement
-            for (auto& fb : framebuffers()) 
+            for (auto& fb : g_ctx.framebuffers) 
             {
-                auto it = active_framebuffers().find(desc.tag);
-                if (it == std::cend(active_framebuffers()) && fb->has_depth() == desc.require_depth)
+                auto it = g_ctx.framebuffers_in_use.find(desc.tag);
+                if (it == std::cend(g_ctx.framebuffers_in_use) && fb->has_depth() == desc.require_depth)
                 {
-                    active_framebuffers()[desc.tag] = fb.get();
+                    g_ctx.framebuffers_in_use[desc.tag] = fb.get();
                     return fb.get();
                 }
             }
@@ -136,7 +126,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         const render::default_framebuffer* get_system()
         {
-            return default_framebuffer().get();
+            return g_ctx.default_framebuffer.get();
         }
     }
 }
