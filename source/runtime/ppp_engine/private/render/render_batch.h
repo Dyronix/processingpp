@@ -39,7 +39,6 @@ namespace ppp
             void release();
 
             bool can_add(s32 nr_vertices, s32 nr_indices) const;
-
             bool has_data() const;
 
         public:

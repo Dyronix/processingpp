@@ -14,6 +14,7 @@ namespace ppp
             static const u32 graphics = BIT(0);   // Tag for graphics-related memory allocations
             static const u32 fileio = BIT(1);     // Tag for file I/O related memory allocations
             static const u32 global = BIT(2);     // Default tag for general/global memory allocations
+            static const u32 stage = BIT(3);      // Tag for staging memory allocations
 
             //--------------------------------------------------------------------------
             // Type Traits to Check for Memory Tag and Allocator Support

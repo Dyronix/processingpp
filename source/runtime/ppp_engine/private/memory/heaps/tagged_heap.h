@@ -28,10 +28,12 @@ namespace ppp
         public:
             bool can_alloc(memory_size size) const;
 
-            memory_size current_size(s32 block_index) const;
-            memory_size total_size(s32 block_index) const;
+            memory_size current_memory() const;
+            memory_size total_memory() const;
 
         public:
+            memory_size block_current_size(s32 block_index) const;
+            memory_size block_total_size() const;
             s32 block_count() const;
             u32 block_tag(s32 block_index) const;
 

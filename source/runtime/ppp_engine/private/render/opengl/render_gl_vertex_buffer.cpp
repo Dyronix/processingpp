@@ -6,6 +6,8 @@
 
 #include <glad/glad.h>
 
+#include <assert.h>
+
 namespace ppp
 {
     namespace render
@@ -34,6 +36,7 @@ namespace ppp
                 : layouts(layouts)
                 , layout_count(layout_count)
                 , vertex_count(vertex_count)
+                , previous_vertex_count(0)
                 , current_vertex_count(0)
                 , max_elements_to_set(0)
                 , buffer()
@@ -41,6 +44,7 @@ namespace ppp
             {
                 auto vertex_size = calculate_total_size_layout(layouts, layout_count);
 
+                buffer.reserve(vertex_size * vertex_count);
                 buffer.resize(vertex_size * vertex_count);
 
                 GL_CALL(glGenBuffers(1, &vbo));
@@ -113,14 +117,28 @@ namespace ppp
             //-------------------------------------------------------------------------
             void submit() const
             {
-                const u64 vertex_buffer_byte_size =  calculate_total_size_layout(layouts, layout_count);
+                if (current_vertex_count == previous_vertex_count)
+                {
+                    // No new vertices have been added, skip upload
+                    return;
+                }
+
+                const u64 vertex_buffer_byte_size = calculate_total_size_layout(layouts, layout_count);
+
+                // Ensure that current_vertex_count hasn't decreased unexpectedly.
+                assert(current_vertex_count >= previous_vertex_count && "Current vertex count decreased unexpectedly.");
 
                 bind();
 
-                GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_buffer_byte_size * vertex_count, buffer.data()));
+                u64 buffer_offset = previous_vertex_count * vertex_buffer_byte_size;
+                u64 buffer_size = (current_vertex_count - previous_vertex_count) * vertex_buffer_byte_size;
+
+                GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data()));
             }
 
             //-------------------------------------------------------------------------
+            u64                             previous_vertex_count;
+            
             const attribute_layout*         layouts;
             const u64                       layout_count;
 
@@ -128,7 +146,7 @@ namespace ppp
             u64                             current_vertex_count;
             u64                             max_elements_to_set;
             
-            graphics_vector<u8>             buffer;
+            stage_vector<u8>                buffer;
 
             u32                             vbo;
         };
@@ -159,6 +177,27 @@ namespace ppp
         void vertex_buffer::submit() const
         {
             m_pimpl->submit();
+
+            m_pimpl->previous_vertex_count = m_pimpl->current_vertex_count;
+
+            m_pimpl->buffer.clear();
+            m_pimpl->buffer.shrink_to_fit();
+        }
+
+        //-------------------------------------------------------------------------
+        bool vertex_buffer::can_add(u64 max_elements_to_set) const
+        {
+            using memory_policy = typename decltype(m_pimpl->buffer)::allocator_type::memory_policy;
+
+            auto heap = memory_policy::get_heap();
+            auto available_memory = heap->block_total_size();
+
+            u64 new_vertex_count = active_vertex_count() + max_elements_to_set;
+            u64 vertices_size = calculate_total_size_layout(m_pimpl->layouts, m_pimpl->layout_count) * new_vertex_count;
+
+            // Make sure we do not exceed the memory size of one block
+            // Make sure we do not exceed the amount of vertices we can store
+            return vertices_size < available_memory && new_vertex_count < m_pimpl->vertex_count;
         }
     
         //-------------------------------------------------------------------------
@@ -177,6 +216,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void vertex_buffer::reset()
         {
+            m_pimpl->previous_vertex_count = 0;
             m_pimpl->current_vertex_count = 0;
         }
 

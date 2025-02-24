@@ -103,7 +103,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             bool can_add(s32 nr_vertices, s32 nr_indices) const
             {
-                return m_vertex_buffer.active_vertex_count() + nr_vertices < m_max_vertex_count && m_index_buffer.active_index_count() + nr_indices < m_max_index_count;
+                return m_vertex_buffer.can_add(nr_vertices) && m_index_buffer.can_add(nr_indices);
             }
             //-------------------------------------------------------------------------
             bool has_data() const
@@ -161,6 +161,10 @@ namespace ppp
                 m_vertex_buffer.free();
                 m_index_buffer.free();
             }
+
+            //-------------------------------------------------------------------------
+            u64 vertex_size_in_bytes() const { return m_vertex_buffer.vertex_size_in_bytes(); }
+            u64 index_size_in_bytes() const { return m_index_buffer.index_size_in_bytes(); }
 
             //-------------------------------------------------------------------------
             u32 active_vertex_count() const { return m_vertex_buffer.active_vertex_count(); }
@@ -306,6 +310,12 @@ namespace ppp
             {}
 
             //-------------------------------------------------------------------------
+            bool can_add(s32 nr_elements) const
+            {
+                return m_storage_buffer.can_add(nr_elements);
+            }
+
+            //-------------------------------------------------------------------------
             s32 add_material_attributes(const irender_item* item)
             {
                 s32 material_index = m_storage_buffer.active_element_count();
@@ -345,6 +355,14 @@ namespace ppp
                 m_storage_buffer.free();
             }
 
+        public:
+            //-------------------------------------------------------------------------
+            u64 element_size_in_bytes() const { return m_storage_buffer.element_size_in_bytes(); }
+
+            //-------------------------------------------------------------------------
+            u32 active_element_count() const { return m_storage_buffer.active_element_count(); }
+            u64 active_elements_byte_size() const { return m_storage_buffer.total_size_in_bytes(); }
+
         private:
             void copy_material_data(const irender_item* item)
             {
@@ -356,7 +374,7 @@ namespace ppp
 
                 storage_buffer_ops::storage_data_addition_scope sdas(m_storage_buffer, 1);
 
-                temp_vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
+                scratch_vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
 
                 size_t offset = 0;
 
@@ -581,7 +599,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool batch::can_add(s32 nr_vertices, s32 nr_indices) const
         {
-            return m_pimpl->m_buffer_manager->can_add(nr_vertices, nr_indices);
+            return m_pimpl->m_buffer_manager->can_add(nr_vertices, nr_indices)
+                && m_pimpl->m_material_manager->can_add(1);
         }
         //-------------------------------------------------------------------------
         bool batch::has_data() const
@@ -667,6 +686,12 @@ namespace ppp
             }
             else
             {
+                // submit the current batch so we can clear the memory 
+                m_pimpl->batches[m_pimpl->push_batch].submit();
+
+                // clear all the memory in the staging area
+                memory::get_memory_manager().get_persistent_region().get_tagged_heap()->free_blocks(memory::tags::stage);
+
                 if (m_pimpl->batches.size() <= m_pimpl->push_batch + 1)
                 {
                     u32 max_vertex_count = m_pimpl->batches[m_pimpl->push_batch].max_vertex_count();

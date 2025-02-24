@@ -98,7 +98,7 @@ namespace ppp
          *
          * Provides access to the heap used for global staging memory allocations.
          */
-        struct staging_global_policy
+        struct transient_global_policy
         {
             /**
              * @brief Retrieves the global staging heap.
@@ -112,7 +112,7 @@ namespace ppp
          *
          * Provides access to the heap used for frame-level staging memory allocations.
          */
-        struct staging_frame_policy
+        struct transient_frame_policy
         {
             /**
              * @brief Retrieves the frame staging heap.
@@ -126,7 +126,7 @@ namespace ppp
          *
          * Provides access to the heap used for scratch (temporary) staging memory.
          */
-        struct staging_scratch_policy
+        struct transient_scratch_policy
         {
             /**
              * @brief Retrieves the scratch staging heap.
@@ -140,7 +140,7 @@ namespace ppp
          *
          * Provides access to a tagged heap for staging memory, allowing for extra metadata.
          */
-        struct staging_tagged_policy
+        struct transient_tagged_policy
         {
             /**
              * @brief Retrieves the tagged staging heap.

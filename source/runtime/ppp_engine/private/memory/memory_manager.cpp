@@ -61,11 +61,11 @@ namespace ppp
             persistant.tagged_heap_block_size = 500_kb;
             persistant.tagged_heap_block_count = 10;
             persistant.scratch_heap_size = 1_mb;
-
+            
             static memory_requirements staging;
-            staging.frame_heap_size = 1_mb;
-            staging.tagged_heap_block_size = 1_mb;
-            staging.tagged_heap_block_count = 1;
+            staging.frame_heap_size = 0_mb;
+            staging.tagged_heap_block_size = 0_kb;
+            staging.tagged_heap_block_count = 0;
             staging.scratch_heap_size = 20_mb;
 
             static memory_requirements debug;
@@ -87,7 +87,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         development_memory_manager::development_memory_manager(const memory_requirements& persistant, const memory_requirements& staging, const memory_requirements& debug)
             : m_persistant_region(persistant)
-            , m_staging_region(staging)
+            , m_transient_region(staging)
             , m_debug_region(debug)
         {}
 
@@ -105,9 +105,9 @@ namespace ppp
             persistant.scratch_heap_size = 1_mb;
 
             static memory_requirements staging;
-            staging.frame_heap_size = 1_mb;
-            staging.tagged_heap_block_size = 1_mb;
-            staging.tagged_heap_block_count = 1;
+            staging.frame_heap_size = 0_mb;
+            staging.tagged_heap_block_size = 0_kb;
+            staging.tagged_heap_block_count = 0;
             staging.scratch_heap_size = 20_mb;
 
             static memory_requirements debug;
@@ -129,7 +129,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         shipping_memory_manager::shipping_memory_manager(const memory_requirements& persistant, const memory_requirements& staging, const memory_requirements& debug)
             : m_persistant_region(persistant)
-            , m_staging_region(staging)
+            , m_transient_region(staging)
             , m_debug_region(debug)
         {}
 
@@ -165,8 +165,8 @@ namespace ppp
                 log::info("  Block {} (Tag: {}): {} / {} bytes",
                     i,
                     tagged_heap->block_tag(i),
-                    tagged_heap->current_size(i).size_in_bytes(),
-                    tagged_heap->total_size(i).size_in_bytes());
+                    tagged_heap->block_current_size(i).size_in_bytes(),
+                    tagged_heap->block_total_size().size_in_bytes());
             }
 
             // Scratch (circular) heap.
@@ -180,7 +180,7 @@ namespace ppp
         void print_memory_manager(imemory_manager& manager)
         {
             print_memory_region(manager.get_persistent_region(), "persistant");
-            print_memory_region(manager.get_staging_region(), "staging");
+            print_memory_region(manager.get_transient_region(), "staging");
             print_memory_region(manager.get_debug_region(), "debug");
         }
     }

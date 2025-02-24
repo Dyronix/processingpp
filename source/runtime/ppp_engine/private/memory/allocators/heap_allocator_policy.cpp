@@ -58,9 +58,9 @@ namespace ppp
          *
          * @return Pointer to the global staging heap obtained from the memory manager.
          */
-        iheap* staging_global_policy::get_heap()
+        iheap* transient_global_policy::get_heap()
         {
-            return get_memory_manager().get_staging_region().get_heap();
+            return get_memory_manager().get_transient_region().get_heap();
         }
 
         /**
@@ -68,9 +68,9 @@ namespace ppp
          *
          * @return Pointer to the frame staging heap obtained from the memory manager.
          */
-        iheap* staging_frame_policy::get_heap()
+        iheap* transient_frame_policy::get_heap()
         {
-            return get_memory_manager().get_staging_region().get_frame_heap();
+            return get_memory_manager().get_transient_region().get_frame_heap();
         }
 
         /**
@@ -78,9 +78,9 @@ namespace ppp
          *
          * @return Pointer to the scratch staging heap obtained from the memory manager.
          */
-        iheap* staging_scratch_policy::get_heap()
+        iheap* transient_scratch_policy::get_heap()
         {
-            return get_memory_manager().get_staging_region().get_scratch_heap();
+            return get_memory_manager().get_transient_region().get_scratch_heap();
         }
 
         /**
@@ -88,9 +88,9 @@ namespace ppp
          *
          * @return Pointer to the tagged staging heap obtained from the memory manager.
          */
-        tagged_heap* staging_tagged_policy::get_heap()
+        tagged_heap* transient_tagged_policy::get_heap()
         {
-            return get_memory_manager().get_staging_region().get_tagged_heap();
+            return get_memory_manager().get_transient_region().get_tagged_heap();
         }
 
         //-----------------------------------------------------------------------------

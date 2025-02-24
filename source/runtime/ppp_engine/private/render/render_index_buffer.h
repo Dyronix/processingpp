@@ -23,6 +23,8 @@ namespace ppp
             void                            submit() const;
 
         public:
+            bool                            can_add(u64 max_elements_to_set) const;
+
             void                            open(u64 max_elements_to_set);
             void                            close();
 

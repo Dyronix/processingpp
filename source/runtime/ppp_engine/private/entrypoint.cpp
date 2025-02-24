@@ -111,16 +111,10 @@ namespace ppp
         });
 #endif
 
-        //ppp::log::info("--- Pre Setup");
-        //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
-
         setup();
 
-        //ppp::log::info("--- Post Setup");
-        //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
-
         memory::get_memory_manager().get_persistent_region().get_tagged_heap()->free_blocks(memory::tags::fileio);
-        memory::get_memory_manager().get_staging_region().free();
+        memory::get_memory_manager().get_transient_region().free();
 
         return 0;
     }
@@ -131,11 +125,6 @@ namespace ppp
 
         while (!device::should_close())
         {
-            //s32 frame_id = ppp::environment::frame_count();
-            //
-            //ppp::log::info("--- Start Frame: {}", frame_id);
-            //ppp::memory::print_memory_region(ppp::memory::get_memory_manager().get_persistent_region(), "persistant");
-
             memory::start_frame(device::current_frame_index());
 
             if (device::can_draw())
@@ -181,9 +170,6 @@ namespace ppp
 
             memory::get_memory_manager().get_persistent_region().get_frame_heap()->free();
             memory::end_frame();
-
-            //ppp::log::info("--- End Frame: {}", frame_id);
-            //ppp::memory::print_memory_region(ppp::memory::get_memory_manager().get_persistent_region(), "persistant");
         }
 
         return 0;
@@ -255,18 +241,12 @@ int main(int argc, char** argv)
 
     s32 result = 0;
 
-    //ppp::log::info("--- Pre Init");
-    //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
-
     result = ppp::init(app_params, argv[0]);
     if (result != 0)
     {
         ppp::log::error("Failed to initialize app");
         return result;
     }
-
-    //ppp::log::info("--- Post Init");
-    //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
 
     result = run(app_params);
     if (result != 0)
@@ -275,9 +255,6 @@ int main(int argc, char** argv)
         return result;
     }
 
-    //ppp::log::info("--- Pre Quit");
-    //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
-
     result = quit(app_params);
     if (result != 0)
     {
@@ -285,16 +262,9 @@ int main(int argc, char** argv)
         return result;
     }
 
-    //ppp::log::info("--- Post Quit");
-    //ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
-
 #ifdef _DEBUG
     ppp::memory::disable_tracking();
 #endif
-
-    //ppp::memory::get_memory_manager().get_debug_region().free();
-    //ppp::memory::get_memory_manager().get_staging_region().free();
-    //ppp::memory::get_memory_manager().get_persistent_region().free();
 
     return result;
 }

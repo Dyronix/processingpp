@@ -29,6 +29,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/double_buffered_heap.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/circular_heap.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/circular_heap.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/stack_heap.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/stack_heap.h
     # memory-allocators
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/tagged_heap_allocator.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/generic_heap_allocator.h

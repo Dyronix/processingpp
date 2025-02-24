@@ -50,17 +50,17 @@ namespace ppp
             };
 
             //-------------------------------------------------------------------------
-            static temp_vector<u8> intermediate_unlit_buffer()
+            static scratch_vector<u8> intermediate_unlit_buffer()
             {
-                static temp_vector<u8> s_intermediate_unlit_buffer(sizeof(unlit_instance_data));
+                static scratch_vector<u8> s_intermediate_unlit_buffer(sizeof(unlit_instance_data));
 
                 return s_intermediate_unlit_buffer;
             }
 
             //-------------------------------------------------------------------------
-            static temp_vector<u8> intermediate_unlit_texture_buffer()
+            static scratch_vector<u8> intermediate_unlit_texture_buffer()
             {
-                static temp_vector<u8> s_intermediate_unlit_texture_buffer;
+                static scratch_vector<u8> s_intermediate_unlit_texture_buffer;
 
                 return s_intermediate_unlit_texture_buffer;
             }
@@ -359,7 +359,7 @@ namespace ppp
 
                 storage_buffer_ops::storage_data_addition_scope sdas(m_storage_buffer, 1);
 
-                temp_vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
+                scratch_vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
 
                 size_t offset = 0;
 

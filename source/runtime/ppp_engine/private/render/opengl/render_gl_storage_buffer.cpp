@@ -3,6 +3,7 @@
 #include "render/opengl/render_gl_error.h"
 
 #include "memory/memory_unique_ptr_util.h"
+#include "memory/memory_manager.h"
 
 #include "util/pointer_math.h"
 
@@ -19,10 +20,12 @@ namespace ppp
                 : element_size(memory::align_up(in_element_size, 16))
                 , element_count(in_element_count)
                 , current_element_count(0)
+                , previous_element_count(0)
                 , max_elements_to_set(0)
                 , buffer()
                 , ssbo(0)
             {
+                buffer.reserve(element_size * in_element_count);
                 buffer.resize(element_size * in_element_count);
 
                 GL_CALL(glGenBuffers(1, &ssbo));
@@ -79,18 +82,32 @@ namespace ppp
             //------------------------------------------------------------------------
             void submit(u32 binding_point) const
             {
+                if (current_element_count == previous_element_count)
+                {
+                    // No new elements have been added, skip upload
+                    return;
+                }
+
+                // Ensure that current_element_count hasn't decreased unexpectedly.
+                assert(current_element_count >= previous_element_count && "Current vertex count decreased unexpectedly.");
+
                 bind(binding_point);
 
-                GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, element_size * current_element_count, buffer.data()));
+                u64 buffer_offset = previous_element_count * element_size;
+                u64 buffer_size = (current_element_count - previous_element_count) * element_size;
+
+                GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, buffer_offset, buffer_size, buffer.data()));
             }
 
-            //------------------------------------------------------------------------
+            //-------------------------------------------------------------------------
+            u64                             previous_element_count;
+
             u64                             element_size;
             u64                             element_count;
             u64                             current_element_count;
             u64                             max_elements_to_set;
 
-            graphics_vector<u8>             buffer;
+            stage_vector<u8>                buffer;
 
             u32                             ssbo;
         };
@@ -121,6 +138,49 @@ namespace ppp
         void storage_buffer::submit(u32 binding_point) const
         {
             m_pimpl->submit(binding_point);
+
+            m_pimpl->previous_element_count = m_pimpl->current_element_count;
+
+            m_pimpl->buffer.clear();
+            m_pimpl->buffer.shrink_to_fit();
+        }
+
+        //-------------------------------------------------------------------------
+        bool storage_buffer::can_add(u64 max_elements_to_set) const
+        {
+            using memory_policy = typename decltype(m_pimpl->buffer)::allocator_type::memory_policy;
+
+            auto heap = memory_policy::get_heap();
+            auto block_total_size = heap->block_total_size(); // in bytes
+
+            // Total number of elements after adding the new ones.
+            u64 new_element_count = active_element_count() + max_elements_to_set;
+
+            // Compute total bytes required (each element occupies m_pimpl->element_size bytes).
+            u64 required_bytes = new_element_count * m_pimpl->element_size;
+
+            // Current allocated capacity in bytes.
+            u64 current_capacity_bytes = m_pimpl->buffer.capacity();
+
+            // If the required bytes fit in the current allocation, no resize occurs.
+            if (required_bytes <= current_capacity_bytes)
+            {
+                return true;
+            }
+
+            // Otherwise, predict the new capacity based on a doubling strategy.
+            u64 predicted_capacity_bytes = (current_capacity_bytes == 0)
+                ? required_bytes
+                : current_capacity_bytes * 2;
+
+            // Ensure the predicted capacity is at least enough for the required bytes.
+            if (predicted_capacity_bytes < required_bytes)
+            {
+                predicted_capacity_bytes = required_bytes;
+            }
+
+            // Finally, check that the predicted new allocation stays within the block's total size.
+            return predicted_capacity_bytes <= block_total_size;
         }
 
         //-------------------------------------------------------------------------

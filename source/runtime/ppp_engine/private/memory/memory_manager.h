@@ -59,7 +59,7 @@ namespace ppp
 
         public:
             virtual memory_region&  get_persistent_region() = 0;
-            virtual memory_region&  get_staging_region() = 0;
+            virtual memory_region&  get_transient_region() = 0;
             virtual memory_region&  get_debug_region() = 0;
 
             virtual void            free_persistent() = 0;
@@ -75,11 +75,11 @@ namespace ppp
 
         public:
             memory_region&          get_persistent_region() override { return m_persistant_region; }
-            memory_region&          get_staging_region()    override { return m_staging_region; }
+            memory_region&          get_transient_region()    override { return m_transient_region; }
             memory_region&          get_debug_region()      override { return m_debug_region; }
 
             void                    free_persistent()       override { m_persistant_region.free(); }
-            void                    free_staging()          override { m_staging_region.free(); }
+            void                    free_staging()          override { m_transient_region.free(); }
             void                    free_debug()            override { m_debug_region.free(); }
 
         private:
@@ -97,7 +97,7 @@ namespace ppp
 
         private:
             memory_region m_persistant_region;
-            memory_region m_staging_region;
+            memory_region m_transient_region;
             memory_region m_debug_region;
         };
 
@@ -109,11 +109,11 @@ namespace ppp
 
         public:
             memory_region&          get_persistent_region() override { return m_persistant_region; }
-            memory_region&          get_staging_region()    override { return m_staging_region; }
+            memory_region&          get_transient_region()    override { return m_transient_region; }
             memory_region&          get_debug_region()      override { return m_debug_region; }
 
             void                    free_persistent()       override { m_persistant_region.free(); }
-            void                    free_staging()          override { m_staging_region.free(); }
+            void                    free_staging()          override { m_transient_region.free(); }
             void                    free_debug()            override { m_debug_region.free(); }
 
         private:
@@ -126,7 +126,7 @@ namespace ppp
 
         private:
             memory_region m_persistant_region;
-            memory_region m_staging_region;
+            memory_region m_transient_region;
             memory_region m_debug_region; // will be empty in a shipping build
         };
 

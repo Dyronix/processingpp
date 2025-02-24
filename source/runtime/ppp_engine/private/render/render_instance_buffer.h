@@ -47,7 +47,7 @@ namespace ppp
 
         private:
             class impl;
-            global_unique_ptr<impl>           m_pimpl;
+            global_unique_ptr<impl>         m_pimpl;
         };
     }
 }

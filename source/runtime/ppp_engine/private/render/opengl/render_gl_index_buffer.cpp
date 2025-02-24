@@ -20,12 +20,14 @@ namespace ppp
             impl(u64 count)
                 : index_count(count)
                 , current_index_count(0)
+                , previous_index_count(0)
                 , max_elements_to_set(0)
                 , buffer()
                 , ebo(0)
             {
                 const size_t size_ebo = sizeof(index) * count;
 
+                buffer.reserve(size_ebo);
                 buffer.resize(size_ebo);
 
                 GL_CALL(glGenBuffers(1, &ebo));
@@ -58,10 +60,23 @@ namespace ppp
             //-------------------------------------------------------------------------
             void submit() const
             {
+                if (current_index_count == previous_index_count)
+                {
+                    // No new indices have been added, skip upload
+                    return;
+                }
+
                 const u64 index_buffer_byte_size = sizeof(index) * index_count;
 
+                // Ensure that current_index_count hasn't decreased unexpectedly.
+                assert(current_index_count >= previous_index_count && "Current index count decreased unexpectedly.");
+
                 bind();
-                GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index_buffer_byte_size, buffer.data()));
+
+                u64 buffer_offset = previous_index_count * index_buffer_byte_size;
+                u64 buffer_size = (current_index_count - previous_index_count) * index_buffer_byte_size;
+
+                GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data()));
             }
 
             //-------------------------------------------------------------------------
@@ -71,11 +86,14 @@ namespace ppp
                 ebo = 0;
             }
 
+            //-------------------------------------------------------------------------
+            u64                             previous_index_count;
+
             u64                             index_count;
             u64                             current_index_count;
             u64                             max_elements_to_set;
 
-            graphics_vector<u8>             buffer;
+            stage_vector<u8>                buffer;
 
             u32                             ebo;
         };
@@ -104,6 +122,27 @@ namespace ppp
         void index_buffer::submit() const
         {
             m_pimpl->submit();
+
+            m_pimpl->previous_index_count = m_pimpl->current_index_count;
+
+            m_pimpl->buffer.clear();
+            m_pimpl->buffer.shrink_to_fit();
+        }
+
+        //-------------------------------------------------------------------------
+        bool index_buffer::can_add(u64 max_elements_to_set) const
+        {
+            using memory_policy = typename decltype(m_pimpl->buffer)::allocator_type::memory_policy;
+
+            auto heap = memory_policy::get_heap();
+            auto available_memory = heap->block_total_size();
+
+            u64 new_index_count = active_index_count() + max_elements_to_set;
+            u64 indices_size = sizeof(index) * new_index_count;
+
+            // Make sure we do not exceed the memory size of one block
+            // Make sure we do not exceed the amount of indices we can store
+            return indices_size < available_memory && new_index_count < m_pimpl->index_count;
         }
     
         //-------------------------------------------------------------------------

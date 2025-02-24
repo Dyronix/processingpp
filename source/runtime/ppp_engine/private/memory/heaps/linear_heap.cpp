@@ -29,7 +29,12 @@ namespace ppp
             uptr aligned_address = align_up(raw_address, alignment);
 
             // Calculate the new offset after alignment
-            m_offset = aligned_address - reinterpret_cast<uptr>(m_base_memory) + size.size_in_bytes();
+            u64 new_offset = aligned_address - reinterpret_cast<uptr>(m_base_memory) + size.size_in_bytes();
+
+            // Assert if the allocation exceeds the available memory
+            assert(new_offset <= m_total_memory.size_in_bytes() && "Out of memory!");
+
+            m_offset = new_offset;
 
             // Return the aligned pointer
             return reinterpret_cast<void*>(aligned_address);
@@ -53,6 +58,11 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool linear_heap::can_alloc(memory_size size) const
         {
+            if (m_base_memory == nullptr)
+            {
+                return false;
+            }
+
             constexpr std::size_t alignment = alignof(std::max_align_t);
 
             uptr raw_address = reinterpret_cast<uptr>(m_base_memory) + m_offset;

@@ -34,6 +34,7 @@ namespace ppp
                 : layouts(layouts)
                 , layout_count(layout_count)
                 , instance_count(instance_count)
+                , previous_instance_count(0)
                 , current_instance_count(0)
                 , max_elements_to_set(0)
                 , buffer()
@@ -41,6 +42,7 @@ namespace ppp
             {
                 auto instance_size = calculate_total_size_layout(layouts, layout_count);
 
+                buffer.reserve(instance_size * instance_count);
                 buffer.resize(instance_size * instance_count);
 
                 GL_CALL(glGenBuffers(1, &ibo));
@@ -115,14 +117,28 @@ namespace ppp
             //-------------------------------------------------------------------------
             void submit() const
             {
-                const u64 instance_size = calculate_total_size_layout(layouts, layout_count);
+                if (current_instance_count == previous_instance_count)
+                {
+                    // No new instances have been added, skip upload
+                    return;
+                }
+
+                const u64 instance_size_byte_size = calculate_total_size_layout(layouts, layout_count);
+
+                // Ensure that current_vertex_count hasn't decreased unexpectedly.
+                assert(current_instance_count >= previous_instance_count && "Current instance count decreased unexpectedly.");
 
                 bind();
 
-                GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, instance_size * instance_count, buffer.data()));
+                u64 buffer_offset = previous_instance_count * instance_size_byte_size;
+                u64 buffer_size = (current_instance_count - previous_instance_count) * instance_size_byte_size;
+
+                GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data()));
             }
 
             //-------------------------------------------------------------------------
+            u64                             previous_instance_count;
+
             const attribute_layout*         layouts;
             const u64                       layout_count;
 
@@ -161,6 +177,11 @@ namespace ppp
         void instance_buffer::submit() const
         {
             m_pimpl->submit();
+
+            m_pimpl->previous_instance_count = m_pimpl->current_instance_count;
+
+            m_pimpl->buffer.clear();
+            m_pimpl->buffer.shrink_to_fit();
         }
 
         //-------------------------------------------------------------------------
@@ -193,6 +214,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void instance_buffer::reset()
         {
+            m_pimpl->previous_instance_count = 0;
             m_pimpl->current_instance_count = 0;
         }
 

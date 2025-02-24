@@ -33,7 +33,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         void* tagged_heap::allocate(u32 tag, memory_size size) noexcept
         {
-            assert(!m_blocks.empty());
+            assert(!m_blocks.empty() && "No blocks to allocate from");
+            assert(size.size_in_bytes() <= block_total_size() && "Block size is too small for given memory size");
 
             for (auto& block : m_blocks) 
             {
@@ -76,6 +77,38 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        memory_size tagged_heap::current_memory() const
+        {
+            u64 current_size = 0;
+
+            if (!m_blocks.empty())
+            {
+                for (s32 i = 0; i < block_count(); ++i)
+                {
+                    current_size += block_current_size(i);
+                }
+            }
+
+            return current_size;
+        }
+
+        //-------------------------------------------------------------------------
+        memory_size tagged_heap::total_memory() const
+        {
+            u64 total_size = 0;
+
+            if (!m_blocks.empty())
+            {
+                for (s32 i = 0; i < block_count(); ++i)
+                {
+                    total_size += block_total_size();
+                }
+            }
+
+            return total_size;
+        }
+
+        //-------------------------------------------------------------------------
         void tagged_heap::free_blocks(u32 tag)
         {
             if (!m_blocks.empty())
@@ -112,6 +145,29 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        memory_size tagged_heap::block_current_size(s32 block_index) const
+        {
+            if (!m_blocks.empty())
+            {
+                assert(block_index < m_block_count);
+                return m_blocks[block_index].current_size();
+            }
+
+            return 0;
+        }
+
+        //-------------------------------------------------------------------------
+        memory_size tagged_heap::block_total_size() const
+        {
+            if (!m_blocks.empty())
+            {
+                return m_block_size;
+            }
+
+            return 0;
+        }
+
+        //-------------------------------------------------------------------------
         u32 tagged_heap::block_tag(s32 block_index) const
         {
             if (!m_blocks.empty())
@@ -121,30 +177,6 @@ namespace ppp
             }
 
             return -1;
-        }
-
-        //-------------------------------------------------------------------------
-        memory_size tagged_heap::current_size(s32 block_index) const
-        {
-            if (!m_blocks.empty())
-            {
-                assert(block_index < m_block_count);
-                return m_blocks[block_index].current_size();
-            }
-            
-            return 0;
-        }
-
-        //-------------------------------------------------------------------------
-        memory_size tagged_heap::total_size(s32 block_index) const
-        {
-            if (!m_blocks.empty())
-            {
-                assert(block_index < m_block_count);
-                return m_blocks[block_index].total_size();
-            }
-
-            return 0;
         }
     }
 }
