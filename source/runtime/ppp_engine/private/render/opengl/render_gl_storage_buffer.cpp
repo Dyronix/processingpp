@@ -201,6 +201,7 @@ namespace ppp
         void storage_buffer::reset()
         {
             m_pimpl->current_element_count = 0;
+            m_pimpl->previous_element_count = 0;
         }
 
         //------------------------------------------------------------------------
