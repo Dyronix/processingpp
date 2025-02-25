@@ -66,15 +66,15 @@ namespace ppp
                     return;
                 }
 
-                const u64 index_buffer_byte_size = sizeof(index) * index_count;
+                const u64 index_byte_size = sizeof(index);
 
                 // Ensure that current_index_count hasn't decreased unexpectedly.
                 assert(current_index_count >= previous_index_count && "Current index count decreased unexpectedly.");
 
                 bind();
 
-                u64 buffer_offset = previous_index_count * index_buffer_byte_size;
-                u64 buffer_size = (current_index_count - previous_index_count) * index_buffer_byte_size;
+                u64 buffer_offset = previous_index_count * index_byte_size;
+                u64 buffer_size = (current_index_count - previous_index_count) * index_byte_size;
 
                 GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data()));
             }
