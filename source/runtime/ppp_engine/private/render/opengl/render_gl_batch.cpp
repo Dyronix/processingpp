@@ -518,7 +518,6 @@ namespace ppp
 #ifndef NDEBUG
                 internal::check_drawing_type(m_buffer_manager->active_index_count(), gl_topology);
 #endif
-
                 shaders::apply_uniforms(shader_program);
 
                 if (m_buffer_manager->active_index_count() != 0)

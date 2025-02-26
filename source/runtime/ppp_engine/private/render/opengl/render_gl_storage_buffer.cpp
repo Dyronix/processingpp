@@ -140,9 +140,6 @@ namespace ppp
             m_pimpl->submit(binding_point);
 
             m_pimpl->previous_element_count = m_pimpl->current_element_count;
-
-            m_pimpl->buffer.clear();
-            m_pimpl->buffer.shrink_to_fit();
         }
 
         //-------------------------------------------------------------------------
