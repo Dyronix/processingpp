@@ -60,18 +60,18 @@ namespace ppp
             //-------------------------------------------------------------------------
             void submit() const
             {
-                if (current_index_count == previous_index_count)
-                {
-                    // No new indices have been added, skip upload
-                    return;
-                }
-
                 const u64 index_byte_size = sizeof(index);
 
                 // Ensure that current_index_count hasn't decreased unexpectedly.
                 assert(current_index_count >= previous_index_count && "Current index count decreased unexpectedly.");
 
                 bind();
+
+                if (current_index_count == previous_index_count)
+                {
+                    // No new indices have been added, skip upload
+                    return;
+                }
 
                 u64 buffer_offset = previous_index_count * index_byte_size;
                 u64 buffer_size = (current_index_count - previous_index_count) * index_byte_size;

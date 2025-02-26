@@ -117,18 +117,18 @@ namespace ppp
             //-------------------------------------------------------------------------
             void submit() const
             {
-                if (current_vertex_count == previous_vertex_count)
-                {
-                    // No new vertices have been added, skip upload
-                    return;
-                }
-
                 const u64 vertex_buffer_byte_size = calculate_total_size_layout(layouts, layout_count);
 
                 // Ensure that current_vertex_count hasn't decreased unexpectedly.
                 assert(current_vertex_count >= previous_vertex_count && "Current vertex count decreased unexpectedly.");
 
                 bind();
+
+                if (current_vertex_count == previous_vertex_count)
+                {
+                    // No new vertices have been added, skip upload
+                    return;
+                }
 
                 u64 buffer_offset = previous_vertex_count * vertex_buffer_byte_size;
                 u64 buffer_size = (current_vertex_count - previous_vertex_count) * vertex_buffer_byte_size;

@@ -82,16 +82,16 @@ namespace ppp
             //------------------------------------------------------------------------
             void submit(u32 binding_point) const
             {
+                // Ensure that current_element_count hasn't decreased unexpectedly.
+                assert(current_element_count >= previous_element_count && "Current vertex count decreased unexpectedly.");
+
+                bind(binding_point);
+
                 if (current_element_count == previous_element_count)
                 {
                     // No new elements have been added, skip upload
                     return;
                 }
-
-                // Ensure that current_element_count hasn't decreased unexpectedly.
-                assert(current_element_count >= previous_element_count && "Current vertex count decreased unexpectedly.");
-
-                bind(binding_point);
 
                 u64 buffer_offset = previous_element_count * element_size;
                 u64 buffer_size = (current_element_count - previous_element_count) * element_size;

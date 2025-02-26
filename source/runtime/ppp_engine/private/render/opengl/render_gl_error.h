@@ -23,7 +23,6 @@ namespace ppp
 
 #ifdef _DEBUG
     #define GL_CALL(x)                                                      \
-        ppp::render::gl_check_error();                                      \
         x;                                                                  \
         if (!ppp::render::gl_log_call(#x, __FILE__, __LINE__))              \
         {                                                                   \

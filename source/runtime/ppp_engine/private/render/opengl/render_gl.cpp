@@ -30,6 +30,93 @@
 #include <vector>
 #include <array>
 #include <functional>
+#include <iostream>
+
+void APIENTRY DebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* uerParam)
+{
+    std::string sourceStr = "Unknown";
+    std::string typeStr = "Unknown";
+    std::string severityStr = "Unknown";
+
+    switch (source)
+    {
+    case GL_DEBUG_SOURCE_API:
+        sourceStr = "API";
+        break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        sourceStr = "WINDOW_SYSTEM";
+        break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        sourceStr = "SHADER_COMPILER";
+        break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY:
+        sourceStr = "THIRD_PARTY";
+        break;
+    case GL_DEBUG_SOURCE_APPLICATION:
+        sourceStr = "APPLICATION";
+        break;
+    case GL_DEBUG_SOURCE_OTHER:
+        sourceStr = "OTHER";
+        break;
+    }
+
+    switch (type)
+    {
+    case GL_DEBUG_TYPE_ERROR:
+        typeStr = "ERROR";
+        break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        typeStr = "DEPRECATED_BEHAVIOR";
+        break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        typeStr = "UNDEFINED_BEHAVIOR";
+        break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        typeStr = "PERFORMANCE";
+        break;
+    case GL_DEBUG_TYPE_PORTABILITY:
+        typeStr = "PORTABILITY";
+        break;
+    case GL_DEBUG_TYPE_MARKER:
+        typeStr = "MARKER";
+        break;
+    case GL_DEBUG_TYPE_PUSH_GROUP:
+        typeStr = "PUSH_GROUP";
+        break;
+    case GL_DEBUG_TYPE_POP_GROUP:
+        typeStr = "POP_GROUP";
+        break;
+    case GL_DEBUG_TYPE_OTHER:
+        typeStr = "OTHER";
+        break;
+    }
+
+    auto lvl = GL_DEBUG_SEVERITY_HIGH;
+    switch (severity)
+    {
+    case GL_DEBUG_SEVERITY_HIGH:
+        severityStr = "HIGH";
+        lvl = GL_DEBUG_SEVERITY_HIGH;
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        severityStr = "MEDIUM";
+        lvl = GL_DEBUG_SEVERITY_MEDIUM;
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        severityStr = "LOW";
+        lvl = GL_DEBUG_SEVERITY_LOW;
+        break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        severityStr = "NOTIFICATION";
+        lvl = GL_DEBUG_SEVERITY_NOTIFICATION;
+        break;
+    }
+
+    //ppp::log::info("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severityStr, sourceStr, typeStr, id, message);
+
+    if (severity == GL_DEBUG_SEVERITY_HIGH)
+        throw std::runtime_error("An OpenGL runtime error occurred.");
+}
 
 namespace ppp
 {
@@ -200,6 +287,15 @@ namespace ppp
             {
                 log::error("Failed to initialize GLAD");
                 return false;
+            }
+
+            int flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+            if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+            {
+                glEnable(GL_DEBUG_OUTPUT);
+                glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+                glDebugMessageCallback(DebugMessageCallback, nullptr);
+                glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
             }
 
             g_ctx.scissor.x = 0;

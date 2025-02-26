@@ -14,8 +14,8 @@ namespace ppp
     constexpr int _canvas_width = 600;
     constexpr int _canvas_height = 600;
 
-    int _cols = 3; // number of columns in the grid (x-direction)
-    int _rows = 3; // number of rows in the grid (z-direction)
+    int _cols = 11; // number of columns in the grid (x-direction)
+    int _rows = 9; // number of rows in the grid (z-direction)
 
     // Separate amplitudes for X and Z directions
     constexpr int _amplitude_x = 50; // height of the wave in the x-direction
