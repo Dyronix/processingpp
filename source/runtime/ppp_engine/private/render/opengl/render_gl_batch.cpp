@@ -685,7 +685,7 @@ namespace ppp
             }
             else
             {
-                // submit the current batch so we can clear the memory 
+                m_pimpl->batches[m_pimpl->push_batch].bind();
                 m_pimpl->batches[m_pimpl->push_batch].submit();
 
                 // clear all the memory in the staging area

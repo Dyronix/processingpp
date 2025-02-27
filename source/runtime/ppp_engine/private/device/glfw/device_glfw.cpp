@@ -13,6 +13,53 @@ namespace ppp
 {
     namespace device
     {
+        constexpr s32 _total_avg_frames = 100;
+
+        struct device_ctx
+        {
+            GLFWwindow* window = nullptr;
+
+            bool is_looping = true;
+
+            u64 current_frame_idx = 0;
+            u64 desired_frame_idx = 1;
+
+            u32 target_frame_rate = 60;
+
+            f64 frame_times[_total_avg_frames] = { 0.0 };
+
+            clock::time_point previous_frame_time;
+            clock::milliseconds delta_frame_time = { clock::milliseconds(0) };
+
+            global_hash_map<u32, bool> key_pressed;
+            global_hash_map<u32, bool> key_down;
+            global_hash_map<u32, bool> key_released;
+
+            s32 last_key_pressed = -1;
+
+            f32 prev_mouse_x = -1;
+            f32 current_mouse_x = -1;
+            f32 prev_mouse_y = -1;
+            f32 current_mouse_y = -1;
+
+            global_hash_map<u32, bool> mouse_button_pressed;
+            global_hash_map<u32, bool> mouse_button_released;
+
+            s32 last_mouse_button_pressed = -1;
+
+            f32 scroll_offset_x = 0.0f;
+            f32 scroll_offset_y = 0.0f;
+
+            global_vector<std::function<void(f32, f32)>> dragging_callback;
+        };
+
+        static device_ctx& ctx()
+        {
+            static device_ctx s_ctx;
+
+            return s_ctx;
+        }
+
         namespace internal
         {
             void center_window(GLFWwindow* window) 
@@ -84,53 +131,6 @@ namespace ppp
 
         namespace input
         {
-            constexpr s32 _total_avg_frames = 100;
-
-            struct device_ctx
-            {
-                GLFWwindow* window = nullptr;
-
-                bool is_looping = true;
-
-                u64 current_frame_idx = 0;
-                u64 desired_frame_idx = 1;
-
-                u32 target_frame_rate = 60;
-
-                f64 frame_times[_total_avg_frames] = { 0.0 };
-
-                clock::time_point previous_frame_time;
-                clock::milliseconds delta_frame_time = { clock::milliseconds(0) };
-
-                global_hash_map<u32, bool> key_pressed;
-                global_hash_map<u32, bool> key_down;
-                global_hash_map<u32, bool> key_released;
-
-                s32 last_key_pressed = -1;
-
-                f32 prev_mouse_x = -1;
-                f32 current_mouse_x = -1;
-                f32 prev_mouse_y = -1;
-                f32 current_mouse_y = -1;
-
-                global_hash_map<u32, bool> mouse_button_pressed;
-                global_hash_map<u32, bool> mouse_button_released;
-
-                s32 last_mouse_button_pressed = -1;
-
-                f32 scroll_offset_x = 0.0f;
-                f32 scroll_offset_y = 0.0f;
-
-                global_vector<std::function<void(f32, f32)>> dragging_callback;
-            };
-
-            static device_ctx& ctx()
-            {
-                static device_ctx s_ctx;
-
-                return s_ctx;
-            }
-
             namespace keyboard
             {
                 namespace callbacks
@@ -410,31 +410,44 @@ namespace ppp
 
         bool initialize(s32 w, s32 h)
         {
+            constexpr s32 required_version_major = 4;
+            constexpr s32 required_version_minor = 3;
+
             // glfw: initialize and configure
             // ------------------------------
             glfwInit();
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, required_version_major);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, required_version_minor);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
             glfwWindowHint(GLFW_DEPTH_BITS, 24);
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 
-            #ifdef PPP_APPLE
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            #endif
+#ifdef _DEBUG
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+#endif
 
             // glfw window creation
             // --------------------
-            input::ctx().window = glfwCreateWindow(w, h, "Processing", NULL, NULL);
-            if (input::ctx().window == NULL)
+            ctx().window = glfwCreateWindow(w, h, "Processing", NULL, NULL);
+            if (ctx().window == NULL)
             {
-                log::error("Failed to create GLFW window");
+                // Try and fallback to an earlier version of OpenGL
+                constexpr s32 fallback_version_major = 3;
+                constexpr s32 fallback_version_minor = 3;
 
-                terminate();
-                return false;
+                glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, fallback_version_major);
+                glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, fallback_version_minor);
+
+                ctx().window = glfwCreateWindow(w, h, "Processing", NULL, NULL);
+                if (ctx().window == NULL)
+                {
+                    log::error("Failed to create GLFW window, minimum required OpenGL version {}.{}", fallback_version_major, fallback_version_minor);
+
+                    terminate();
+                    return false;
+                }
             }
 
-            glfwMakeContextCurrent(input::ctx().window);
+            glfwMakeContextCurrent(ctx().window);
             glfwSwapInterval(1);
 
             // Register the key pressed callback so we can cache the last key that was pressed
@@ -450,10 +463,10 @@ namespace ppp
             input::mouse::add_mouse_horizontal_wheel_callback(input::mouse::callbacks::scroll_x_callback);
             input::mouse::add_mouse_vertical_wheel_callback(input::mouse::callbacks::scroll_y_callback);
 
-            internal::center_window(input::ctx().window);
+            internal::center_window(ctx().window);
 
             // Initialize frame time
-            input::ctx().previous_frame_time = clock::now();
+            ctx().previous_frame_time = clock::now();
 
             return true;
         }
@@ -466,68 +479,68 @@ namespace ppp
 
         void tick()
         {
-            input::ctx().prev_mouse_x = input::ctx().current_mouse_x;
-            input::ctx().prev_mouse_y = input::ctx().current_mouse_y;
-            input::ctx().current_mouse_x = input::mouse::mouse_x(input::ctx().window);
-            input::ctx().current_mouse_y = input::mouse::mouse_y(input::ctx().window);
+            ctx().prev_mouse_x = ctx().current_mouse_x;
+            ctx().prev_mouse_y = ctx().current_mouse_y;
+            ctx().current_mouse_x = input::mouse::mouse_x(ctx().window);
+            ctx().current_mouse_y = input::mouse::mouse_y(ctx().window);
 
-            input::ctx().scroll_offset_x = 0.0f;
-            input::ctx().scroll_offset_y = 0.0f;
+            ctx().scroll_offset_x = 0.0f;
+            ctx().scroll_offset_y = 0.0f;
 
             auto current_frame_time = clock::now();
 
-            input::ctx().delta_frame_time = clock::duration(input::ctx().previous_frame_time, current_frame_time);
-            input::ctx().previous_frame_time = current_frame_time;
+            ctx().delta_frame_time = clock::duration(ctx().previous_frame_time, current_frame_time);
+            ctx().previous_frame_time = current_frame_time;
 
-            if (input::ctx().is_looping)
+            if (ctx().is_looping)
             {
-                input::ctx().frame_times[current_frame_index() % input::_total_avg_frames] = delta_time();
+                ctx().frame_times[current_frame_index() % _total_avg_frames] = delta_time();
             }
         }
 
         void window_width(s32* w)
         {
             s32 height = 0;
-            glfwGetWindowSize(input::ctx().window, w, &height);
+            glfwGetWindowSize(ctx().window, w, &height);
         }
         void window_height(s32* h)
         {
             s32 width = 0;
-            glfwGetWindowSize(input::ctx().window, &width, h);
+            glfwGetWindowSize(ctx().window, &width, h);
         }
 
         void loop()
         {
-            input::ctx().is_looping = true;
+            ctx().is_looping = true;
         }
 
         void no_loop()
         {
-            input::ctx().is_looping = false;
+            ctx().is_looping = false;
         }
 
         void redraw()
         {
-            --input::ctx().current_frame_idx;
+            --ctx().current_frame_idx;
         }
 
         void present()
         {
-            glfwSwapBuffers(input::ctx().window);
+            glfwSwapBuffers(ctx().window);
 
             // Make sure we don't overflow
             // Reset the frame indices to their initial value if we reach a certain threshold
-            if (input::ctx().desired_frame_idx + 1 > std::numeric_limits<u32>::max())
+            if (ctx().desired_frame_idx + 1 > std::numeric_limits<u32>::max())
             {
-                input::ctx().current_frame_idx = 0;
-                input::ctx().desired_frame_idx = 1;
+                ctx().current_frame_idx = 0;
+                ctx().desired_frame_idx = 1;
             }
 
-            input::ctx().current_frame_idx = input::ctx().desired_frame_idx;
+            ctx().current_frame_idx = ctx().desired_frame_idx;
 
             if (is_looping())
             {
-                ++input::ctx().desired_frame_idx;
+                ++ctx().desired_frame_idx;
             }
         }
 
@@ -538,42 +551,42 @@ namespace ppp
 
         void request_quit()
         {
-            glfwSetWindowShouldClose(input::ctx().window, true);
+            glfwSetWindowShouldClose(ctx().window, true);
         }
 
         void target_frame_rate(u32 rate)
         {
-            input::ctx().target_frame_rate = rate;
+            ctx().target_frame_rate = rate;
         }
 
         bool is_looping()
         {
-            return input::ctx().is_looping;
+            return ctx().is_looping;
         }
 
         bool can_draw()
         {
-            return is_looping() || input::ctx().current_frame_idx < input::ctx().desired_frame_idx;
+            return is_looping() || ctx().current_frame_idx < ctx().desired_frame_idx;
         }
 
         bool should_close()
         {
-            return glfwWindowShouldClose(input::ctx().window);
+            return glfwWindowShouldClose(ctx().window);
         }
 
         u32 current_frame_index()
         {
-            return input::ctx().current_frame_idx;
+            return ctx().current_frame_idx;
         }
 
         u32 desired_frame_index()
         {
-            return input::ctx().desired_frame_idx;
+            return ctx().desired_frame_idx;
         }
 
         u32 current_frame_rate()
         {
-            if (input::ctx().is_looping)
+            if (ctx().is_looping)
             {
                 return 1.0f / delta_time();
             }
@@ -584,14 +597,14 @@ namespace ppp
         u32 average_frame_rate()
         {
             f64 total_frame_time = 0.0;
-            for (s32 i = 0; i < input::_total_avg_frames; ++i)
+            for (s32 i = 0; i < _total_avg_frames; ++i)
             {
-                total_frame_time += input::ctx().frame_times[i];
+                total_frame_time += ctx().frame_times[i];
             }
 
             if (total_frame_time > 0.0) 
             {
-                auto fps = input::_total_avg_frames / total_frame_time;
+                auto fps = _total_avg_frames / total_frame_time;
                 return fps;
             }
 
@@ -600,19 +613,19 @@ namespace ppp
 
         u32 target_frame_rate()
         {
-            return input::ctx().target_frame_rate;
+            return ctx().target_frame_rate;
         }
 
         f32 max_frame_time()
         {
-            return 1.0f / input::ctx().target_frame_rate;
+            return 1.0f / ctx().target_frame_rate;
         }
 
         f32 delta_time()
         {
-            if (input::ctx().is_looping)
+            if (ctx().is_looping)
             {
-                return std::chrono::duration<float>(input::ctx().delta_frame_time).count();
+                return std::chrono::duration<float>(ctx().delta_frame_time).count();
             }
             
             log::info("We specified that the app should not be looping, calling delta_time could result in weird results. returning 0");

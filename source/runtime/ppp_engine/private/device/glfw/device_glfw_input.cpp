@@ -17,7 +17,7 @@ namespace ppp
     {
         namespace input
         {
-            struct context
+            struct input_context
             {
                 global_hash_map<u32, global_vector<keyboard::key_callback>>                 key_callbacks;
 

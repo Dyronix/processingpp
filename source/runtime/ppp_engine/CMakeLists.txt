@@ -107,6 +107,10 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_error.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_features.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_framebuffer.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_function_library.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_function_library.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_api.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_api.cpp
     ## render-helpers
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.cpp
@@ -244,6 +248,7 @@ target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTO
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glad/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glfw/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/freetype/include)
+target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/gsl/include)
 
 target_link_libraries(processing_engine PRIVATE stb)
 target_link_libraries(processing_engine PRIVATE glad)
@@ -255,6 +260,10 @@ target_include_directories(processing_engine PRIVATE ${SOURCE_RUNTIME_DIRECTORY}
 target_include_directories(processing_engine PUBLIC ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public)
 
 # Compile definitions
+if(PPP_HEADLESS)
+    target_compile_definitions(processing_engine PUBLIC -DPPP_HEADLESS)
+endif()
+
 target_compile_definitions(processing_engine PUBLIC -DPPP_OPENGL)
 
 if(${CMAKE_HOST_WIN32})

@@ -161,7 +161,7 @@ namespace ppp
             // Create a new material instance
             resources::material_instance instance(mat, g_ctx.registered_images.size());
 
-            log::info("material instance ({0}) added for shader tag: {1}", hash, string::restore_sid(shader_tag));
+            log::info("Material instance ({0}) added for shader with tag: {1}", hash, string::restore_sid(shader_tag));
 
             // Assign textures
             if (cache != std::cend(g_ctx.registered_images))

@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.28)
 project(processingpp)
 
 option(PPP_ENABLE_TESTING "Enable testing for the Processing framework" OFF)
+option(PPP_ENABLE_UNIT_TESTING "Enable testing for the Processing framework" OFF)
+option(PPP_ENABLE_INTEGRATION_TESTING "Enable testing for the Processing framework" OFF)
+option(PPP_HEADLESS "Enable testing for the Processing framework" OFF)
 
 # Use C++ 17 as a standard
 set(CMAKE_CXX_STANDARD 17)
@@ -52,7 +55,7 @@ add_custom_target(copy-content ALL
 
 set_property(TARGET copy-content PROPERTY FOLDER "programs")
 
-if(PPP_ENABLE_TESTING)
+if(PPP_ENABLE_TESTING OR PPP_ENABLE_INTEGRATION_TESTING)
 
 	SET(SOURCE_TEST_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/test)
 	

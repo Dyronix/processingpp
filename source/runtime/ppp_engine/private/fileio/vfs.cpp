@@ -21,7 +21,7 @@ namespace ppp
 		//-------------------------------------------------------------------------
 		void add_wildcard(string::string_id wildcard, const std::string_view value)
 		{
-			log::info("adding wildcard {} | {}", string::restore_sid(wildcard), value);
+			log::info("Adding wildcard: [{} | {}]", string::restore_sid(wildcard), value);
 
 			g_ctx.wildcards[wildcard] = value;
 		}

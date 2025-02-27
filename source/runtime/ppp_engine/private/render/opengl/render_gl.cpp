@@ -32,94 +32,87 @@
 #include <functional>
 #include <iostream>
 
-void APIENTRY DebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* uerParam)
-{
-    std::string sourceStr = "Unknown";
-    std::string typeStr = "Unknown";
-    std::string severityStr = "Unknown";
-
-    switch (source)
-    {
-    case GL_DEBUG_SOURCE_API:
-        sourceStr = "API";
-        break;
-    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-        sourceStr = "WINDOW_SYSTEM";
-        break;
-    case GL_DEBUG_SOURCE_SHADER_COMPILER:
-        sourceStr = "SHADER_COMPILER";
-        break;
-    case GL_DEBUG_SOURCE_THIRD_PARTY:
-        sourceStr = "THIRD_PARTY";
-        break;
-    case GL_DEBUG_SOURCE_APPLICATION:
-        sourceStr = "APPLICATION";
-        break;
-    case GL_DEBUG_SOURCE_OTHER:
-        sourceStr = "OTHER";
-        break;
-    }
-
-    switch (type)
-    {
-    case GL_DEBUG_TYPE_ERROR:
-        typeStr = "ERROR";
-        break;
-    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        typeStr = "DEPRECATED_BEHAVIOR";
-        break;
-    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        typeStr = "UNDEFINED_BEHAVIOR";
-        break;
-    case GL_DEBUG_TYPE_PERFORMANCE:
-        typeStr = "PERFORMANCE";
-        break;
-    case GL_DEBUG_TYPE_PORTABILITY:
-        typeStr = "PORTABILITY";
-        break;
-    case GL_DEBUG_TYPE_MARKER:
-        typeStr = "MARKER";
-        break;
-    case GL_DEBUG_TYPE_PUSH_GROUP:
-        typeStr = "PUSH_GROUP";
-        break;
-    case GL_DEBUG_TYPE_POP_GROUP:
-        typeStr = "POP_GROUP";
-        break;
-    case GL_DEBUG_TYPE_OTHER:
-        typeStr = "OTHER";
-        break;
-    }
-
-    auto lvl = GL_DEBUG_SEVERITY_HIGH;
-    switch (severity)
-    {
-    case GL_DEBUG_SEVERITY_HIGH:
-        severityStr = "HIGH";
-        lvl = GL_DEBUG_SEVERITY_HIGH;
-        break;
-    case GL_DEBUG_SEVERITY_MEDIUM:
-        severityStr = "MEDIUM";
-        lvl = GL_DEBUG_SEVERITY_MEDIUM;
-        break;
-    case GL_DEBUG_SEVERITY_LOW:
-        severityStr = "LOW";
-        lvl = GL_DEBUG_SEVERITY_LOW;
-        break;
-    case GL_DEBUG_SEVERITY_NOTIFICATION:
-        severityStr = "NOTIFICATION";
-        lvl = GL_DEBUG_SEVERITY_NOTIFICATION;
-        break;
-    }
-
-    //ppp::log::info("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severityStr, sourceStr, typeStr, id, message);
-
-    if (severity == GL_DEBUG_SEVERITY_HIGH)
-        throw std::runtime_error("An OpenGL runtime error occurred.");
-}
+#define LOG_GL_NOTIFICATIONS 0
+#define LOG_GL_LOW 0
+#define LOG_GL_MEDIUM 1
 
 namespace ppp
 {
+    namespace opengl
+    {
+        enum class debug_message_severity
+        {
+            UNKNOWN,
+            NOTIFICATION,
+            LOW,
+            MEDIUM,
+            HIGH
+        };
+
+        //-------------------------------------------------------------------------
+        void APIENTRY debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* uerParam)
+        {
+            static debug_scratch_string             source_str = "UNKNOWN";
+            static debug_scratch_string             type_str = "UNKNOWN";
+            static debug_scratch_string             severity_str = "UNKNOWN";
+
+            switch (source)
+            {
+            case GL_DEBUG_SOURCE_API:               source_str = "API"; break;
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     source_str = "WINDOW_SYSTEM"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER:   source_str = "SHADER_COMPILER"; break;
+            case GL_DEBUG_SOURCE_THIRD_PARTY:       source_str = "THIRD_PARTY"; break;
+            case GL_DEBUG_SOURCE_APPLICATION:       source_str = "APPLICATION"; break;
+            case GL_DEBUG_SOURCE_OTHER:             source_str = "OTHER"; break;
+            }
+
+            switch (type)
+            {
+            case GL_DEBUG_TYPE_ERROR:               type_str = "ERROR"; break;
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: type_str = "DEPRECATED_BEHAVIOR"; break;
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  type_str = "UNDEFINED_BEHAVIOR"; break;
+            case GL_DEBUG_TYPE_PERFORMANCE:         type_str = "PERFORMANCE"; break;
+            case GL_DEBUG_TYPE_PORTABILITY:         type_str = "PORTABILITY"; break;
+            case GL_DEBUG_TYPE_MARKER:              type_str = "MARKER"; break;
+            case GL_DEBUG_TYPE_PUSH_GROUP:          type_str = "PUSH_GROUP"; break;
+            case GL_DEBUG_TYPE_POP_GROUP:           type_str = "POP_GROUP"; break;
+            case GL_DEBUG_TYPE_OTHER:               type_str = "OTHER"; break;
+            }
+
+            auto lvl = debug_message_severity::UNKNOWN;
+            switch (severity)
+            {
+            case GL_DEBUG_SEVERITY_HIGH:
+                severity_str = "HIGH";
+                ppp::log::error("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
+                break;
+#if LOG_GL_MEDIUM
+            case GL_DEBUG_SEVERITY_MEDIUM:
+                severity_str = "MEDIUM";
+                ppp::log::warn("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
+                break;
+#endif
+#if LOG_GL_LOW
+            case GL_DEBUG_SEVERITY_LOW:
+                severity_str = "LOW";
+                ppp::log::warn("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
+                break;
+#endif
+#if LOG_GL_NOTIFICATIONS
+            case GL_DEBUG_SEVERITY_NOTIFICATION:
+                severity_str = "NOTIFICATION";
+                ppp::log::info("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
+                break;
+#endif
+            }            
+
+            if (severity == GL_DEBUG_SEVERITY_HIGH)
+            {
+                throw std::runtime_error("An OpenGL runtime error occurred.");
+            }
+        }
+    }
+
     namespace render
     {
         using instance_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<instance_renderer>>;
@@ -192,6 +185,10 @@ namespace ppp
             batch_renderers_hash_map    batch_renderers = {};
 
             font_renderer               font_renderer = nullptr;
+
+            // opengl version       
+            s32                         major = 0;
+            s32                         minor = 0;
         } g_ctx;
 
         //-------------------------------------------------------------------------
@@ -279,6 +276,20 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void parse_gl_version(const char* version_string)
+        {
+            temp_stringstream ss(version_string);
+            char dot;
+            ss >> g_ctx.major >> dot >> g_ctx.minor;
+        }
+        //-------------------------------------------------------------------------
+        void print_gl_version(const char* version_string)
+        {
+            log::info("OpenGL version format: <major_version>.<minor_version>.<release_number> <vendor-specific information>");
+            log::info("OpenGL version: {}", version_string);
+        }
+
+        //-------------------------------------------------------------------------
         bool initialize(s32 w, s32 h, void* user_data)
         {
             // glad: load all OpenGL function pointers
@@ -289,14 +300,27 @@ namespace ppp
                 return false;
             }
 
-            int flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-            if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+            GL_CALL(auto opengl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+
+            parse_gl_version(opengl_version);
+            print_gl_version(opengl_version);
+
+#if _DEBUG
+            // glDebugMessageCallback is only available on OpenGL 4.3 or higher
+            if (g_ctx.major >= 4 && g_ctx.minor >= 3)
             {
-                glEnable(GL_DEBUG_OUTPUT);
-                glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-                glDebugMessageCallback(DebugMessageCallback, nullptr);
-                glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+                s32 flags = 0; 
+                GL_CALL(glGetIntegerv(GL_CONTEXT_FLAGS, &flags));
+
+                if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+                {
+                    GL_CALL(glEnable(GL_DEBUG_OUTPUT));
+                    GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+                    GL_CALL(glDebugMessageCallback(opengl::debug_message_callback, nullptr));
+                    GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE));
+                }
             }
+#endif
 
             g_ctx.scissor.x = 0;
             g_ctx.scissor.y = 0;

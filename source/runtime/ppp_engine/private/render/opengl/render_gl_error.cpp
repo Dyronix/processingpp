@@ -34,6 +34,18 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void gl_flush_errors()
+        {
+            u32 error = gl_check_error();
+
+            while (error != GL_NO_ERROR)
+            {
+                log::error("[OpenGL Error] flushing OpenGL error queue: ({0}, {1})", error, gl_get_error_message(error));
+                error = gl_check_error();
+            }
+        }
+
+        //-------------------------------------------------------------------------
         bool gl_log_call(const char* function, const char* file, s32 line)
         {
             u32 error = gl_check_error();

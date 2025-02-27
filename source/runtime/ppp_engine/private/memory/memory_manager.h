@@ -75,7 +75,7 @@ namespace ppp
 
         public:
             memory_region&          get_persistent_region() override { return m_persistant_region; }
-            memory_region&          get_transient_region()    override { return m_transient_region; }
+            memory_region&          get_transient_region()  override { return m_transient_region; }
             memory_region&          get_debug_region()      override { return m_debug_region; }
 
             void                    free_persistent()       override { m_persistant_region.free(); }
