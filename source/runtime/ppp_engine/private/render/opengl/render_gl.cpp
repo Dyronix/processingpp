@@ -9,6 +9,7 @@
 #include "render/helpers/render_event_dispatcher.h"
 
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "resources/shader_pool.h"
 #include "resources/framebuffer_pool.h"
@@ -38,83 +39,83 @@
 
 namespace ppp
 {
-    namespace opengl
-    {
-        enum class debug_message_severity
-        {
-            UNKNOWN,
-            NOTIFICATION,
-            LOW,
-            MEDIUM,
-            HIGH
-        };
-
-        //-------------------------------------------------------------------------
-        void APIENTRY debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* uerParam)
-        {
-            static debug_scratch_string             source_str = "UNKNOWN";
-            static debug_scratch_string             type_str = "UNKNOWN";
-            static debug_scratch_string             severity_str = "UNKNOWN";
-
-            switch (source)
-            {
-            case GL_DEBUG_SOURCE_API:               source_str = "API"; break;
-            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     source_str = "WINDOW_SYSTEM"; break;
-            case GL_DEBUG_SOURCE_SHADER_COMPILER:   source_str = "SHADER_COMPILER"; break;
-            case GL_DEBUG_SOURCE_THIRD_PARTY:       source_str = "THIRD_PARTY"; break;
-            case GL_DEBUG_SOURCE_APPLICATION:       source_str = "APPLICATION"; break;
-            case GL_DEBUG_SOURCE_OTHER:             source_str = "OTHER"; break;
-            }
-
-            switch (type)
-            {
-            case GL_DEBUG_TYPE_ERROR:               type_str = "ERROR"; break;
-            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: type_str = "DEPRECATED_BEHAVIOR"; break;
-            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  type_str = "UNDEFINED_BEHAVIOR"; break;
-            case GL_DEBUG_TYPE_PERFORMANCE:         type_str = "PERFORMANCE"; break;
-            case GL_DEBUG_TYPE_PORTABILITY:         type_str = "PORTABILITY"; break;
-            case GL_DEBUG_TYPE_MARKER:              type_str = "MARKER"; break;
-            case GL_DEBUG_TYPE_PUSH_GROUP:          type_str = "PUSH_GROUP"; break;
-            case GL_DEBUG_TYPE_POP_GROUP:           type_str = "POP_GROUP"; break;
-            case GL_DEBUG_TYPE_OTHER:               type_str = "OTHER"; break;
-            }
-
-            auto lvl = debug_message_severity::UNKNOWN;
-            switch (severity)
-            {
-            case GL_DEBUG_SEVERITY_HIGH:
-                severity_str = "HIGH";
-                ppp::log::error("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
-                break;
-#if LOG_GL_MEDIUM
-            case GL_DEBUG_SEVERITY_MEDIUM:
-                severity_str = "MEDIUM";
-                ppp::log::warn("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
-                break;
-#endif
-#if LOG_GL_LOW
-            case GL_DEBUG_SEVERITY_LOW:
-                severity_str = "LOW";
-                ppp::log::warn("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
-                break;
-#endif
-#if LOG_GL_NOTIFICATIONS
-            case GL_DEBUG_SEVERITY_NOTIFICATION:
-                severity_str = "NOTIFICATION";
-                ppp::log::info("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
-                break;
-#endif
-            }            
-
-            if (severity == GL_DEBUG_SEVERITY_HIGH)
-            {
-                throw std::runtime_error("An OpenGL runtime error occurred.");
-            }
-        }
-    }
-
     namespace render
     {
+        namespace opengl
+        {
+            enum class debug_message_severity
+            {
+                UNKNOWN,
+                NOTIFICATION,
+                LOW,
+                MEDIUM,
+                HIGH
+            };
+
+            //-------------------------------------------------------------------------
+            void APIENTRY debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* uerParam)
+            {
+                static debug_scratch_string             source_str = "UNKNOWN";
+                static debug_scratch_string             type_str = "UNKNOWN";
+                static debug_scratch_string             severity_str = "UNKNOWN";
+
+                switch (source)
+                {
+                case GL_DEBUG_SOURCE_API:               source_str = "API"; break;
+                case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     source_str = "WINDOW_SYSTEM"; break;
+                case GL_DEBUG_SOURCE_SHADER_COMPILER:   source_str = "SHADER_COMPILER"; break;
+                case GL_DEBUG_SOURCE_THIRD_PARTY:       source_str = "THIRD_PARTY"; break;
+                case GL_DEBUG_SOURCE_APPLICATION:       source_str = "APPLICATION"; break;
+                case GL_DEBUG_SOURCE_OTHER:             source_str = "OTHER"; break;
+                }
+
+                switch (type)
+                {
+                case GL_DEBUG_TYPE_ERROR:               type_str = "ERROR"; break;
+                case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: type_str = "DEPRECATED_BEHAVIOR"; break;
+                case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  type_str = "UNDEFINED_BEHAVIOR"; break;
+                case GL_DEBUG_TYPE_PERFORMANCE:         type_str = "PERFORMANCE"; break;
+                case GL_DEBUG_TYPE_PORTABILITY:         type_str = "PORTABILITY"; break;
+                case GL_DEBUG_TYPE_MARKER:              type_str = "MARKER"; break;
+                case GL_DEBUG_TYPE_PUSH_GROUP:          type_str = "PUSH_GROUP"; break;
+                case GL_DEBUG_TYPE_POP_GROUP:           type_str = "POP_GROUP"; break;
+                case GL_DEBUG_TYPE_OTHER:               type_str = "OTHER"; break;
+                }
+
+                auto lvl = debug_message_severity::UNKNOWN;
+                switch (severity)
+                {
+                case GL_DEBUG_SEVERITY_HIGH:
+                    severity_str = "HIGH";
+                    ppp::log::error("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
+                    break;
+                    #if LOG_GL_MEDIUM
+                case GL_DEBUG_SEVERITY_MEDIUM:
+                    severity_str = "MEDIUM";
+                    ppp::log::warn("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
+                    break;
+                    #endif
+                    #if LOG_GL_LOW
+                case GL_DEBUG_SEVERITY_LOW:
+                    severity_str = "LOW";
+                    ppp::log::warn("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
+                    break;
+                    #endif
+                    #if LOG_GL_NOTIFICATIONS
+                case GL_DEBUG_SEVERITY_NOTIFICATION:
+                    severity_str = "NOTIFICATION";
+                    ppp::log::info("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
+                    break;
+                    #endif
+                }
+
+                if (severity == GL_DEBUG_SEVERITY_HIGH)
+                {
+                    throw std::runtime_error("An OpenGL runtime error occurred.");
+                }
+            }
+        }
+
         using instance_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<instance_renderer>>;
         using batch_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<batch_renderer>>;
 
@@ -300,7 +301,7 @@ namespace ppp
                 return false;
             }
 
-            GL_CALL(auto opengl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+            auto opengl_version = reinterpret_cast<const char*>(opengl::api::instance().get_string_value(GL_VERSION));
 
             parse_gl_version(opengl_version);
             print_gl_version(opengl_version);
@@ -310,14 +311,15 @@ namespace ppp
             if (g_ctx.major >= 4 && g_ctx.minor >= 3)
             {
                 s32 flags = 0; 
-                GL_CALL(glGetIntegerv(GL_CONTEXT_FLAGS, &flags));
+                opengl::api::instance().get_integer_value(GL_CONTEXT_FLAGS, &flags);
 
                 if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
                 {
-                    GL_CALL(glEnable(GL_DEBUG_OUTPUT));
-                    GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
-                    GL_CALL(glDebugMessageCallback(opengl::debug_message_callback, nullptr));
-                    GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE));
+                    opengl::api::instance().enable(GL_DEBUG_OUTPUT);
+                    opengl::api::instance().enable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+                    glDebugMessageCallback(opengl::debug_message_callback, nullptr);
+                    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
                 }
             }
 #endif
@@ -378,31 +380,31 @@ namespace ppp
             auto framebuffer = framebuffer_pool::bind({ g_ctx.main_framebuffer_tag, true });
 
             // Clear the background to black
-            GL_CALL(glViewport(0, 0, framebuffer->width(), framebuffer->height()));
+            opengl::api::instance().viewport(0, 0, framebuffer->width(), framebuffer->height());
 
-            GL_CALL(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
-            GL_CALL(glClearDepth(1.0));
-            GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+            opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
+            opengl::api::instance().clear_depth(1.0);
+            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Reset to the user clear color
             glm::vec4 bg_color = brush::background();
-            GL_CALL(glClearColor(bg_color.r, bg_color.g, bg_color.b, bg_color.a));
+            opengl::api::instance().clear_color(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
 
             if (g_ctx.scissor.enable)
             {
-                GL_CALL(glEnable(GL_SCISSOR_TEST));
-                GL_CALL(glScissor(
+                opengl::api::instance().enable(GL_SCISSOR_TEST);
+                opengl::api::instance().scissor(
                     std::clamp(g_ctx.scissor.x, 0, framebuffer->width()),
                     std::clamp(g_ctx.scissor.y, 0, framebuffer->height()),
                     std::clamp(g_ctx.scissor.width, framebuffer::min_framebuffer_width(), framebuffer->width()),
-                    std::clamp(g_ctx.scissor.height, framebuffer::min_framebuffer_height(), framebuffer->height())));
+                    std::clamp(g_ctx.scissor.height, framebuffer::min_framebuffer_height(), framebuffer->height()));
             }
             else
             {
-                GL_CALL(glDisable(GL_SCISSOR_TEST));
+                opengl::api::instance().disable(GL_SCISSOR_TEST);
             }
 
-            GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             broadcast_on_draw_begin();
         }
@@ -416,13 +418,13 @@ namespace ppp
             f32 w = static_cast<f32>(target_framebuffer->width());
             f32 h = static_cast<f32>(target_framebuffer->height());
 
-            GL_CALL(glDisable(GL_BLEND));
-            GL_CALL(glEnable(GL_CULL_FACE));
-            GL_CALL(glEnable(GL_DEPTH_TEST));
+            opengl::api::instance().disable(GL_BLEND);
+            opengl::api::instance().enable(GL_CULL_FACE);
+            opengl::api::instance().enable(GL_DEPTH_TEST);
 
-            GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-            GL_CALL(glCullFace(GL_BACK));
-            GL_CALL(glDepthFunc(GL_LESS));
+            opengl::api::instance().blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            opengl::api::instance().cull_face(GL_BACK);
+            opengl::api::instance().depth_func(GL_LESS);
 
             const glm::mat4& cam_font_p = context.mat_proj_font;
             const glm::mat4& cam_font_v = context.mat_view_font;
@@ -447,7 +449,7 @@ namespace ppp
             target_framebuffer->bind(framebuffer_bound_target::READ);
             system_framebuffer->bind(framebuffer_bound_target::WRITE);
 
-            GL_CALL(glBlitFramebuffer(
+            opengl::api::instance().blit_framebuffer(
                 0, 
                 0, 
                 target_framebuffer->width(), 
@@ -459,7 +461,7 @@ namespace ppp
                 system_framebuffer->height(), 
                 
                 GL_COLOR_BUFFER_BIT, 
-                GL_NEAREST));
+                GL_NEAREST);
             
             system_framebuffer->bind();
         }
@@ -643,14 +645,14 @@ namespace ppp
 
             u32 texture_id;
 
-            GL_CALL(glGenTextures(1, &texture_id));
-            GL_CALL(glBindTexture(GL_TEXTURE_2D, texture_id));
-            GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter));
-            GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter));
-            GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap));
-            GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap));
+            opengl::api::instance().generate_textures(1, &texture_id);
+            opengl::api::instance().bind_texture(GL_TEXTURE_2D, texture_id);
+            opengl::api::instance().set_texture_integer_parameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+            opengl::api::instance().set_texture_integer_parameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+            opengl::api::instance().set_texture_integer_parameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+            opengl::api::instance().set_texture_integer_parameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 
-            GL_CALL(glTexImage2D(
+            opengl::api::instance().texture_image_2D(
                 GL_TEXTURE_2D,						// What (target)
                 0,									// Mip-map level
                 format,								// Internal format
@@ -659,9 +661,9 @@ namespace ppp
                 0,									// Border
                 usage,								// Format (how to use)
                 GL_UNSIGNED_BYTE,					// Type   (how to interpret)
-                data));								// Data
+                data);								// Data
 
-            GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
+            opengl::api::instance().bind_texture(GL_TEXTURE_2D, 0);
 
             return texture_id;
         }
@@ -689,8 +691,8 @@ namespace ppp
                 assert(false);
             }
 
-            GL_CALL(glBindTexture(GL_TEXTURE_2D, id));
-            GL_CALL(glTexSubImage2D(
+            opengl::api::instance().bind_texture(GL_TEXTURE_2D, id);
+            opengl::api::instance().texture_sub_image_2D(
                 GL_TEXTURE_2D,
                 0,
                 static_cast<GLint>(x),
@@ -699,9 +701,15 @@ namespace ppp
                 static_cast<GLsizei>(height),
                 format,
                 GL_UNSIGNED_BYTE,
-                data));
+                data);
 
-            GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
+            opengl::api::instance().bind_texture(GL_TEXTURE_2D, 0);
+        }
+
+        //-------------------------------------------------------------------------
+        void read_pixels(s32 x, s32 y, s32 width, s32 height, u8* data)
+        {
+            opengl::api::instance().read_pixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
         }
 
         //-------------------------------------------------------------------------
@@ -742,13 +750,13 @@ namespace ppp
         {
             brush::push_background_color(glm::vec4(r, g, b, a));
 
-            GL_CALL(glClearColor(r, g, b, a));
+            opengl::api::instance().clear_color(r, g, b, a);
         }
 
         //-------------------------------------------------------------------------
         void clear(u32 flags)
         {
-            GL_CALL(glClear(flags));
+            opengl::api::instance().clear(flags);
         }
     }
 }

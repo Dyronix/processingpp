@@ -1,6 +1,7 @@
 #include "render/render_shader_uniform_manager.h"
 
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "memory/memory_placement_new.h"
 
@@ -79,13 +80,13 @@ namespace ppp
                         , m_needs_rebind(false)
                     {
                         // Get the currently bound shader program
-                        GL_CALL(glGetIntegerv(GL_CURRENT_PROGRAM, &m_previous_program));
+                        opengl::api::instance().get_integer_value(GL_CURRENT_PROGRAM, &m_previous_program);
 
                         // Check if we need to bind the given shader program
                         if (static_cast<u32>(m_previous_program) != shader_program_id)
                         {
                             m_needs_rebind = true;
-                            GL_CALL(glUseProgram(shader_program_id)); // Bind the new shader
+                            opengl::api::instance().use_program(shader_program_id); // Bind the new shader
                         }
                     }
 
@@ -93,7 +94,7 @@ namespace ppp
                     {
                         if (m_needs_rebind)
                         {
-                            GL_CALL(glUseProgram(m_previous_program));  // Rebind the previous shader
+                            opengl::api::instance().use_program(m_previous_program);  // Rebind the previous shader
                         }
                     }
 
@@ -186,7 +187,7 @@ namespace ppp
                     if (m_shader_uniform_locations.find(uniform_name) == m_shader_uniform_locations.end())
                     {
                         // Get uniform location from OpenGL
-                        GL_CALL(s32 location = glGetUniformLocation(m_shader_program_id, string::restore_sid(uniform_name).data()));
+                        s32 location = opengl::api::instance().get_uniform_location(m_shader_program_id, string::restore_sid(uniform_name).data());
                         m_shader_uniform_locations[uniform_name] = location;
                     }
 
@@ -282,62 +283,62 @@ namespace ppp
 
                 void set_uniform(s32 location, s32 value)
                 {
-                    glUniform1i(location, value);
+                    opengl::api::instance().uniform_1i(location, value);
                 }
 
                 void set_uniform(s32 location, u32 value)
                 {
-                    glUniform1ui(location, value);
+                    opengl::api::instance().uniform_1ui(location, value);
                 }
 
                 void set_uniform(s32 location, f32 value)
                 {
-                    glUniform1f(location, value);
+                    opengl::api::instance().uniform_1f(location, value);
                 }
 
                 void set_uniform(s32 location, const glm::vec2& value)
                 {
-                    GL_CALL(glUniform2fv(location, 1, glm::value_ptr(value)));
+                    opengl::api::instance().uniform_2fv(location, 1, glm::value_ptr(value));
                 }
 
                 void set_uniform(s32 location, const glm::vec3& value)
                 {
-                    GL_CALL(glUniform3fv(location, 1, glm::value_ptr(value)));
+                    opengl::api::instance().uniform_3fv(location, 1, glm::value_ptr(value));
                 }
 
                 void set_uniform(s32 location, const glm::vec4& value)
                 {
-                    GL_CALL(glUniform4fv(location, 1, glm::value_ptr(value)));
+                    opengl::api::instance().uniform_4fv(location, 1, glm::value_ptr(value));
                 }
 
                 void set_uniform(s32 location, const glm::mat2& value)
                 {
-                    GL_CALL(glUniformMatrix2fv(location, 1, GL_FALSE, glm::value_ptr(value)));
+                    opengl::api::instance().uniform_matrix_2fv(location, 1, GL_FALSE, glm::value_ptr(value));
                 }
 
                 void set_uniform(s32 location, const glm::mat3& value)
                 {
-                    glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
+                    opengl::api::instance().uniform_matrix_3fv(location, 1, GL_FALSE, glm::value_ptr(value));
                 }
 
                 void set_uniform(s32 location, const glm::mat4& value)
                 {
-                    GL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value)));
+                    opengl::api::instance().uniform_matrix_4fv(location, 1, GL_FALSE, glm::value_ptr(value));
                 }
 
                 void set_uniform(s32 location, u64 count, const s32* value)
                 {
-                    GL_CALL(glUniform1iv(location, count, value));
+                    opengl::api::instance().uniform_1iv(location, count, value);
                 }
 
                 void set_uniform(s32 location, u64 count, const u32* value)
                 {
-                    GL_CALL(glUniform1uiv(location, count, value));
+                    opengl::api::instance().uniform_1uiv(location, count, value);
                 }
 
                 void set_uniform(s32 location, u64 count, const f32* value)
                 {
-                    GL_CALL(glUniform1fv(location, count, value));
+                    opengl::api::instance().uniform_1fv(location, count, value);
                 }
 
             private:

@@ -1,6 +1,7 @@
 #include "render/render_vertex_buffer.h"
 
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "memory/memory_unique_ptr_util.h"
 
@@ -47,9 +48,9 @@ namespace ppp
                 buffer.reserve(vertex_size * vertex_count);
                 buffer.resize(vertex_size * vertex_count);
 
-                GL_CALL(glGenBuffers(1, &vbo));
-                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-                GL_CALL(glBufferData(GL_ARRAY_BUFFER, vertex_size * vertex_count, nullptr, GL_DYNAMIC_DRAW));
+                opengl::api::instance().generate_buffers(1, &vbo);
+                opengl::api::instance().bind_buffer(GL_ARRAY_BUFFER, vbo);
+                opengl::api::instance().buffer_data(GL_ARRAY_BUFFER, vertex_size * vertex_count, nullptr, GL_DYNAMIC_DRAW);
 
                 u64 attribute_index_offset = layout_id_offset;
                 u64 attribute_stride_offset = 0;
@@ -66,15 +67,15 @@ namespace ppp
                         attribute_index = attribute_index_offset + i + j;
                         attribute_offset = attribute_stride_offset + j * layout.count * layout.element_size_in_bytes();
 
-                        GL_CALL(glEnableVertexAttribArray(attribute_index));
+                        opengl::api::instance().enable_vertex_attrib_array(attribute_index);
                         switch (layout.data_type)
                         {
                         case attribute_data_type::FLOAT:
-                            GL_CALL(glVertexAttribPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)attribute_offset));
+                            opengl::api::instance().vertex_attrib_pointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)attribute_offset);
                             break;
                         case attribute_data_type::UNSIGNED_INT: // fallthrough
                         case attribute_data_type::INT:
-                            GL_CALL(glVertexAttribIPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.stride, (void*)attribute_offset));
+                            opengl::api::instance().vertex_attrib_i_pointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.stride, (void*)attribute_offset);
                             break;
                         }
                     }
@@ -83,7 +84,7 @@ namespace ppp
                     attribute_stride_offset += layout.total_size_in_bytes();
                 }
                 
-                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                opengl::api::instance().bind_buffer(GL_ARRAY_BUFFER, 0);
             }
 
             //-------------------------------------------------------------------------
@@ -91,26 +92,26 @@ namespace ppp
             {
                 if (vbo)
                 {
-                    GL_CALL(glDeleteBuffers(1, &vbo));
+                    opengl::api::instance().delete_buffers(1, &vbo);
                 }
             }
 
             //-------------------------------------------------------------------------
             void bind() const
             {
-                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+                opengl::api::instance().bind_buffer(GL_ARRAY_BUFFER, vbo);
             }
 
             //-------------------------------------------------------------------------
             void unbind() const
             {
-                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                opengl::api::instance().bind_buffer(GL_ARRAY_BUFFER, 0);
             }
 
             //-------------------------------------------------------------------------
             void free()
             {
-                GL_CALL(glDeleteBuffers(1, &vbo));
+                opengl::api::instance().delete_buffers(1, &vbo);
                 vbo = 0;
             }
 
@@ -133,7 +134,7 @@ namespace ppp
                 u64 buffer_offset = previous_vertex_count * vertex_buffer_byte_size;
                 u64 buffer_size = (current_vertex_count - previous_vertex_count) * vertex_buffer_byte_size;
 
-                GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data()));
+                opengl::api::instance().buffer_sub_data(GL_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data());
             }
 
             //-------------------------------------------------------------------------

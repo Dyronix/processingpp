@@ -86,6 +86,8 @@ namespace ppp
 
         void update_image_item(u32 id, f32 x, f32 y, f32 width, f32 height, s32 channels, u8* data);
 
+        void read_pixels(s32 x, s32 y, s32 width, s32 height, u8* data);
+
         // Font Item
         void submit_font_item(const irender_item* item);
 

@@ -961,7 +961,7 @@ namespace ppp
                 GL_CALL(glDeleteShader(shader));
             }
             //-------------------------------------------------------------------------
-            void function_library::shader_source(u32 shader, u64 count, const s8** code, const s32* length)
+            void function_library::shader_source(u32 shader, u64 count, const char8** code, const s32* length)
             {
                 GL_LOG("glShaderSource");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
@@ -1022,7 +1022,7 @@ namespace ppp
 #endif
             }
             //-------------------------------------------------------------------------
-            void function_library::get_shader_info_log(u32 shader, u64 maxLength, s32* length, s8* infoLog)
+            void function_library::get_shader_info_log(u32 shader, u64 maxLength, s32* length, char8* infoLog)
             {
                 GL_LOG("glGetShaderInfoLog");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
@@ -1098,7 +1098,7 @@ namespace ppp
 #endif
             }           
             //-------------------------------------------------------------------------
-            void function_library::get_program_info_log(u32 program, u64 maxLength, s32* length, s8* infoLog)
+            void function_library::get_program_info_log(u32 program, u64 maxLength, s32* length, char8* infoLog)
             {
                 GL_LOG("glGetProgramInfoLog");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
@@ -1114,7 +1114,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             // Uniforms
             //-------------------------------------------------------------------------
-            s32 function_library::get_uniform_location(u32 program, const s8* name)
+            s32 function_library::get_uniform_location(u32 program, const char8* name)
             {
                 GL_LOG("glGetUniformLocation");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
@@ -1219,6 +1219,42 @@ namespace ppp
 #endif
 
                 GL_CALL(glUniform1fv(location, gsl::narrow<GLsizei>(count), value));
+            }
+            //-------------------------------------------------------------------------
+            void function_library::uniform_2fv(s32 location, u64 count, const f32* value)
+            {
+                GL_LOG("glUniform2fv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+
+                GL_CALL(glUniform2fv(location, gsl::narrow<GLsizei>(count), value));
+            }
+            //-------------------------------------------------------------------------
+            void function_library::uniform_3fv(s32 location, u64 count, const f32* value)
+            {
+                GL_LOG("glUniform3fv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+
+                GL_CALL(glUniform3fv(location, gsl::narrow<GLsizei>(count), value));
+            }
+            //-------------------------------------------------------------------------
+            void function_library::uniform_4fv(s32 location, u64 count, const f32* value)
+            {
+                GL_LOG("glUniform4fv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+
+                GL_CALL(glUniform4fv(location, gsl::narrow<GLsizei>(count), value));
             }
             //-------------------------------------------------------------------------
             void function_library::uniform_1i(s32 location, s32 value)
@@ -1779,7 +1815,7 @@ namespace ppp
 #endif
             }
             //-------------------------------------------------------------------------
-            void mock_function_library::shader_source(u32 shader, u64 count, const s8** code, const s32* length)
+            void mock_function_library::shader_source(u32 shader, u64 count, const char8** code, const s32* length)
             {
                 GL_LOG("glShaderSource");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
@@ -1828,7 +1864,7 @@ namespace ppp
 #endif
             }
             //-------------------------------------------------------------------------
-            void mock_function_library::get_shader_info_log(u32 shader, u64 maxLength, s32* length, s8* infoLog)
+            void mock_function_library::get_shader_info_log(u32 shader, u64 maxLength, s32* length, char8* infoLog)
             {
                 GL_LOG("glGetShaderInfoLog");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
@@ -1887,7 +1923,7 @@ namespace ppp
 #endif
             }
             //-------------------------------------------------------------------------
-            void mock_function_library::get_program_info_log(u32 program, u64 maxLength, s32* length, s8* infoLog)
+            void mock_function_library::get_program_info_log(u32 program, u64 maxLength, s32* length, char8* infoLog)
             {
                 GL_LOG("glGetProgramInfoLog");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
@@ -1901,7 +1937,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             // Uniforms
             //-------------------------------------------------------------------------
-            s32 mock_function_library::get_uniform_location(u32 program, const s8* name)
+            s32 mock_function_library::get_uniform_location(u32 program, const char8* name)
             {
                 GL_LOG("glGetUniformLocation");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
@@ -1985,6 +2021,36 @@ namespace ppp
             void mock_function_library::uniform_1fv(s32 location, u64 count, const f32* value)
             {
                 GL_LOG("glUniform1fv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::uniform_2fv(s32 location, u64 count, const f32* value)
+            {
+                GL_LOG("glUniform2fv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::uniform_3fv(s32 location, u64 count, const f32* value)
+            {
+                GL_LOG("glUniform3fv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::uniform_4fv(s32 location, u64 count, const f32* value)
+            {
+                GL_LOG("glUniform4fv");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\tlocation: {0}", location);
                 GL_LOG("\tcount: {0}", count);

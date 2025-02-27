@@ -33,7 +33,7 @@ using ulong = unsigned long;
 static_assert(sizeof(slong) == sizeof(s32), "long should be the same size as int32");
 static_assert(sizeof(ulong) == sizeof(u32), "ulong should be the same size as uint32");
 
-using char8 = s8;
+using char8 = char;
 using char16 = char16_t;
 using char32 = char32_t;
 using tchar = wchar_t;

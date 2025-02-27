@@ -1,6 +1,7 @@
 #include "render/render_framebuffer.h"
 
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "memory/memory_unique_ptr_util.h"
 
@@ -28,40 +29,40 @@ namespace ppp
                 ,m_color_rbo(0)
                 ,m_depth_rbo(0)
             {
-                GL_CALL(glGenFramebuffers(1, &m_framebuffer_id));
-                GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer_id));
+                opengl::api::instance().generate_framebuffers(1, &m_framebuffer_id);
+                opengl::api::instance().bind_framebuffer(GL_FRAMEBUFFER, m_framebuffer_id);
 
                 // Color attachment
-                GL_CALL(glGenTextures(1, &m_color_rbo));
-                GL_CALL(glBindTexture(GL_TEXTURE_2D, m_color_rbo));
+                opengl::api::instance().generate_textures(1, &m_color_rbo);
+                opengl::api::instance().bind_texture(GL_TEXTURE_2D, m_color_rbo);
 
-                GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, std::max(width, _min_frame_buffer_width), std::max(height, _min_frame_buffer_height), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL));
-                GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-                GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-                GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_rbo, 0));
+                opengl::api::instance().texture_image_2D(GL_TEXTURE_2D, 0, GL_RGBA, std::max(width, _min_frame_buffer_width), std::max(height, _min_frame_buffer_height), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+                opengl::api::instance().set_texture_integer_parameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                opengl::api::instance().set_texture_integer_parameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                opengl::api::instance().framebuffer_texture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_color_rbo, 0);
 
                 // Depth attachment ( if enabled )
                 if (with_depth)
                 {
-                    GL_CALL(glGenRenderbuffers(1, &m_depth_rbo));
-                    GL_CALL(glBindRenderbuffer(GL_RENDERBUFFER, m_depth_rbo));
-                    GL_CALL(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, std::max(width, _min_frame_buffer_width), std::max(height, _min_frame_buffer_height)));
-                    GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth_rbo));
+                    opengl::api::instance().generate_renderbuffers(1, &m_depth_rbo);
+                    opengl::api::instance().bind_renderbuffer(GL_RENDERBUFFER, m_depth_rbo);
+                    opengl::api::instance().renderbuffer_storage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, std::max(width, _min_frame_buffer_width), std::max(height, _min_frame_buffer_height));
+                    opengl::api::instance().framebuffer_renderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth_rbo);
                 }
 
-                if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+                if (opengl::api::instance().check_framebuffer_status(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
                 {
                     log::error("FramebufferStatus != FRAMEBUFFER_COMPLETE");
                     return;
                 }
 
-                GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+                opengl::api::instance().bind_framebuffer(GL_FRAMEBUFFER, 0);
             }
 
             //-------------------------------------------------------------------------
             void bind(framebuffer_bound_target target)
             {
-                GLenum fb_bound_target;
+                GLenum fb_bound_target = 0;
 
                 switch (target)
                 {
@@ -70,13 +71,13 @@ namespace ppp
                 case framebuffer_bound_target::WRITE: fb_bound_target = GL_DRAW_FRAMEBUFFER; break;
                 }
 
-                GL_CALL(glBindFramebuffer(fb_bound_target, m_framebuffer_id));
+                opengl::api::instance().bind_framebuffer(fb_bound_target, m_framebuffer_id);
             }
 
             //-------------------------------------------------------------------------
             void unbind()
             {
-                GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+                opengl::api::instance().bind_framebuffer(GL_FRAMEBUFFER, 0);
             }
 
             //-------------------------------------------------------------------------
@@ -84,19 +85,19 @@ namespace ppp
             {
                 if (m_color_rbo != 0)
                 {
-                    glDeleteTextures(1, &m_color_rbo);
+                    opengl::api::instance().delete_textures(1, &m_color_rbo);
                     m_color_rbo = 0;
                 }
 
                 if (m_depth_rbo != 0)
                 {
-                    glDeleteRenderbuffers(1, &m_depth_rbo);
+                    opengl::api::instance().delete_renderbuffers(1, &m_depth_rbo);
                     m_depth_rbo = 0;
                 }
 
                 if (m_framebuffer_id != 0)
                 {
-                    glDeleteFramebuffers(1, &m_framebuffer_id);
+                    opengl::api::instance().delete_framebuffers(1, &m_framebuffer_id);
                     m_framebuffer_id = 0;
                 }
 
@@ -172,7 +173,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             void bind(framebuffer_bound_target target)
             {
-                GLenum fb_bound_target;
+                GLenum fb_bound_target = 0;
 
                 switch (target)
                 {
@@ -181,7 +182,7 @@ namespace ppp
                 case framebuffer_bound_target::WRITE: fb_bound_target = GL_DRAW_FRAMEBUFFER; break;
                 }
 
-                GL_CALL(glBindFramebuffer(fb_bound_target, m_framebuffer_id));
+                opengl::api::instance().bind_framebuffer(fb_bound_target, m_framebuffer_id);
             }
 
             s32 m_width;

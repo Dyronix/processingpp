@@ -1,6 +1,7 @@
 #include "render/render_shader_compiler.h"
 
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "util/log.h"
 
@@ -28,28 +29,28 @@ namespace ppp
                         return false;
                     }
 
-                    GL_CALL(*shader = glCreateShader(type));
-                    GL_CALL(glShaderSource(*shader, 1, &source, nullptr));
+                    *shader = opengl::api::instance().create_shader(type);
 
-                    GL_CALL(glCompileShader(*shader));
+                    opengl::api::instance().shader_source(*shader, 1, &source, nullptr);
+                    opengl::api::instance().compile_shader(*shader);
 
                     #if defined(_DEBUG)
                     GLint log_length = 0;
-                    GL_CALL(glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &log_length));
+                    opengl::api::instance().get_shader_integer_value(*shader, GL_INFO_LOG_LENGTH, &log_length);
                     if (log_length > 1)
                     {
                         GLchar* log = static_cast<GLchar*>(malloc(log_length));
-                        GL_CALL(glGetShaderInfoLog(*shader, log_length, &log_length, log));
+                        opengl::api::instance().get_shader_info_log(*shader, log_length, &log_length, log);
                         if (log)
                             log::error("Program compile log: {}", log);
                         free(log);
                     }
                     #endif
 
-                    GL_CALL(glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
+                    opengl::api::instance().get_shader_integer_value(*shader, GL_COMPILE_STATUS, &status);
                     if (status == 0)
                     {
-                        GL_CALL(glDeleteShader(*shader));
+                        opengl::api::instance().delete_shader(*shader);
                         return false;
                     }
 
@@ -60,22 +61,24 @@ namespace ppp
                 {
                     GLint status;
 
-                    GL_CALL(glLinkProgram(program));
+                    opengl::api::instance().link_program(program);
 
                     #if defined(_DEBUG)
-                    GLint logLength = 0;
-                    GL_CALL(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength));
-                    if (logLength > 1)
+                    GLint log_length = 0;
+                    opengl::api::instance().get_program_integer_value(program, GL_INFO_LOG_LENGTH, &log_length);
+                    if (log_length > 1)
                     {
-                        GLchar* log = static_cast<GLchar*>(malloc(logLength));
-                        GL_CALL(glGetProgramInfoLog(program, logLength, &logLength, log));
+                        GLchar* log = static_cast<GLchar*>(malloc(log_length));
+                        opengl::api::instance().get_program_info_log(program, log_length, &log_length, log);
                         if (log)
+                        {
                             log::error("Program link log: {}", log);
+                        }
                         free(log);
                     }
                     #endif
 
-                    GL_CALL(glGetProgramiv(program, GL_LINK_STATUS, &status));
+                    opengl::api::instance().get_program_integer_value(program, GL_LINK_STATUS, &status);
                     return status != 0;
                 }
             }
@@ -85,7 +88,7 @@ namespace ppp
                 GLuint vert_shader = 0;
                 GLuint frag_shader = 0;
 
-                GL_CALL(u32 shader_program = glCreateProgram());
+                u32 shader_program = opengl::api::instance().create_program();
 
                 GLboolean res = internal::compile_shader(&vert_shader, GL_VERTEX_SHADER, vs_source.data());
                 if (!res)
@@ -101,20 +104,20 @@ namespace ppp
                     return -1;
                 }
 
-                GL_CALL(glAttachShader(shader_program, vert_shader));
-                GL_CALL(glAttachShader(shader_program, frag_shader));
+                opengl::api::instance().attach_shader(shader_program, vert_shader);
+                opengl::api::instance().attach_shader(shader_program, frag_shader);
 
                 if (!internal::link_program(shader_program))
                 {
-                    GL_CALL(glDeleteShader(vert_shader));
-                    GL_CALL(glDeleteShader(frag_shader));
-                    GL_CALL(glDeleteProgram(shader_program));
+                    opengl::api::instance().delete_shader(vert_shader);
+                    opengl::api::instance().delete_shader(frag_shader);
+                    opengl::api::instance().delete_program(shader_program);
                     log::error("Renderer failed to link shader program");
                     return -1;
                 }
 
-                GL_CALL(glDeleteShader(vert_shader));
-                GL_CALL(glDeleteShader(frag_shader));
+                opengl::api::instance().delete_shader(vert_shader);
+                opengl::api::instance().delete_shader(frag_shader);
 
                 return shader_program;
             }
@@ -124,7 +127,7 @@ namespace ppp
                 GLuint geom_shader = 0;
                 GLuint frag_shader = 0;
 
-                GL_CALL(u32 shader_program = glCreateProgram());
+                u32 shader_program = opengl::api::instance().create_program();
 
                 GLboolean res = internal::compile_shader(&vert_shader, GL_VERTEX_SHADER, vs_source.data());
                 if (!res)
@@ -147,23 +150,23 @@ namespace ppp
                     return -1;
                 }
 
-                GL_CALL(glAttachShader(shader_program, vert_shader));
-                GL_CALL(glAttachShader(shader_program, geom_shader));
-                GL_CALL(glAttachShader(shader_program, frag_shader));
+                opengl::api::instance().attach_shader(shader_program, vert_shader);
+                opengl::api::instance().attach_shader(shader_program, geom_shader);
+                opengl::api::instance().attach_shader(shader_program, frag_shader);
 
                 if (!internal::link_program(shader_program))
                 {
-                    GL_CALL(glDeleteShader(vert_shader));
-                    GL_CALL(glDeleteShader(geom_shader));
-                    GL_CALL(glDeleteShader(frag_shader));
-                    GL_CALL(glDeleteProgram(shader_program));
+                    opengl::api::instance().delete_shader(vert_shader);
+                    opengl::api::instance().delete_shader(geom_shader);
+                    opengl::api::instance().delete_shader(frag_shader);
+                    opengl::api::instance().delete_program(shader_program);
                     log::error("Renderer failed to link shader program");
                     return -1;
                 }
 
-                GL_CALL(glDeleteShader(vert_shader));
-                GL_CALL(glDeleteShader(geom_shader));
-                GL_CALL(glDeleteShader(frag_shader));
+                opengl::api::instance().delete_shader(vert_shader);
+                opengl::api::instance().delete_shader(geom_shader);
+                opengl::api::instance().delete_shader(frag_shader);
 
                 return shader_program;
             }

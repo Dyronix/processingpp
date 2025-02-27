@@ -10,9 +10,9 @@ namespace ppp
             ifunction_library& api::instance()
             {
 #if PPP_HEADLESS
-                static function_library library;
-#else
                 static mock_function_library library;
+#else
+                static function_library library;
 #endif
 
                 return library;

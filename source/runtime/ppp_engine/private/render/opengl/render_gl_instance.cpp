@@ -7,6 +7,7 @@
 #include "render/render_features.h"
 
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
@@ -447,8 +448,8 @@ namespace ppp
                 assert(instance->vertex_count() > 0 && "render item does not have vertices");
 
                 // Allocate VAO
-                GL_CALL(glGenVertexArrays(1, &m_vao));
-                GL_CALL(glBindVertexArray(m_vao));
+                opengl::api::instance().generate_vertex_arrays(1, &m_vao);
+                opengl::api::instance().bind_vertex_array(m_vao);
 
                 m_buffer_manager = memory::make_unique<instance_buffer_manager, memory::persistent_graphics_tagged_allocator<instance_buffer_manager>>(instance, layouts, layout_count, instance_layouts, instance_layout_count);
                 m_material_manager = memory::make_unique<instance_material_manager, memory::persistent_graphics_tagged_allocator<instance_material_manager>>();
@@ -460,21 +461,21 @@ namespace ppp
 
                 m_buffer_manager->add_vertices(instance);
 
-                GL_CALL(glBindVertexArray(0));
+                opengl::api::instance().bind_vertex_array(0);
             }
 
             ~impl()
             {
                 if (m_vao)
                 {
-                    GL_CALL(glDeleteVertexArrays(1, &m_vao));
+                    opengl::api::instance().delete_vertex_arrays(1, &m_vao);
                 }
             }
 
             //-------------------------------------------------------------------------
             void bind() const
             {
-                GL_CALL(glBindVertexArray(m_vao));
+                opengl::api::instance().bind_vertex_array(m_vao);
 
                 m_material_manager->bind();
             }
@@ -484,7 +485,7 @@ namespace ppp
             {
                 m_material_manager->unbind();
 
-                GL_CALL(glBindVertexArray(0));
+                opengl::api::instance().bind_vertex_array(0);
             }
 
             //-------------------------------------------------------------------------
@@ -497,7 +498,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             void release()
             {
-                GL_CALL(glDeleteVertexArrays(1, &m_vao));
+                opengl::api::instance().delete_vertex_arrays(1, &m_vao);
 
                 m_vao = 0;
             }
@@ -515,11 +516,11 @@ namespace ppp
 
                 if (m_buffer_manager->active_index_count() != 0)
                 {
-                    GL_CALL(glDrawElementsInstanced(gl_topology, m_buffer_manager->active_index_count(), internal::index_type(), nullptr, m_instance_count));
+                    opengl::api::instance().draw_elements_instanced(gl_topology, m_buffer_manager->active_index_count(), internal::index_type(), nullptr, m_instance_count);
                 }
                 else
                 {
-                    GL_CALL(glDrawArraysInstanced(gl_topology, 0, m_buffer_manager->active_vertex_count(), m_instance_count));
+                    opengl::api::instance().draw_arrays_instanced(gl_topology, 0, m_buffer_manager->active_vertex_count(), m_instance_count);
                 }
             }
 

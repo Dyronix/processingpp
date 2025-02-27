@@ -1,6 +1,7 @@
 #include "render/render_instance_buffer.h"
 
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "memory/memory_unique_ptr_util.h"
 
@@ -45,9 +46,9 @@ namespace ppp
                 buffer.reserve(instance_size * instance_count);
                 buffer.resize(instance_size * instance_count);
 
-                GL_CALL(glGenBuffers(1, &ibo));
-                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, ibo));
-                GL_CALL(glBufferData(GL_ARRAY_BUFFER, instance_count * instance_size, nullptr, GL_DYNAMIC_DRAW)); // Allocate initial size
+                opengl::api::instance().generate_buffers(1, &ibo);
+                opengl::api::instance().bind_buffer(GL_ARRAY_BUFFER, ibo);
+                opengl::api::instance().buffer_data(GL_ARRAY_BUFFER, instance_count * instance_size, nullptr, GL_DYNAMIC_DRAW); // Allocate initial sie
 
                 u64 attribute_index_offset = layout_id_offset;
                 u64 attribute_stride_offset = 0;
@@ -64,26 +65,26 @@ namespace ppp
                         attribute_index = attribute_index_offset + i + j;
                         attribute_offset = attribute_stride_offset + j * layout.count * layout.element_size_in_bytes();
 
-                        GL_CALL(glEnableVertexAttribArray(attribute_index));
+                        opengl::api::instance().enable_vertex_attrib_array(attribute_index);
                         switch (layout.data_type)
                         {
                         case attribute_data_type::FLOAT:
-                            GL_CALL(glVertexAttribPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)attribute_offset));
+                            opengl::api::instance().vertex_attrib_pointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)attribute_offset);
                             break;
                         case attribute_data_type::UNSIGNED_INT: // fallthrough
                         case attribute_data_type::INT:
-                            GL_CALL(glVertexAttribIPointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.stride, (void*)attribute_offset));
+                            opengl::api::instance().vertex_attrib_i_pointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.stride, (void*)attribute_offset);
                             break;
                         }
 
-                        GL_CALL(glVertexAttribDivisor(attribute_index, 1));
+                        opengl::api::instance().vertex_attrib_divisor(attribute_index, 1);
                     }
 
                     attribute_index_offset = layout_id_offset + (layout.span - 1);
                     attribute_stride_offset += layout.total_size_in_bytes();
                 }
 
-                GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                opengl::api::instance().bind_buffer(GL_ARRAY_BUFFER, 0);
             }
 
             //-------------------------------------------------------------------------
@@ -91,26 +92,26 @@ namespace ppp
             {
                 if (ibo)
                 {
-                    glDeleteBuffers(1, &ibo);
+                    opengl::api::instance().delete_buffers(1, &ibo);
                 }
             }
 
             //-------------------------------------------------------------------------
             void bind() const
             {
-                glBindBuffer(GL_ARRAY_BUFFER, ibo);
+                opengl::api::instance().bind_buffer(GL_ARRAY_BUFFER, ibo);
             }
 
             //-------------------------------------------------------------------------
             void unbind() const
             {
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                opengl::api::instance().bind_buffer(GL_ARRAY_BUFFER, 0);
             }
 
             //-------------------------------------------------------------------------
             void free()
             {
-                glDeleteBuffers(1, &ibo);
+                opengl::api::instance().delete_buffers(1, &ibo);
                 ibo = 0;
             }
 
@@ -133,7 +134,7 @@ namespace ppp
                 u64 buffer_offset = previous_instance_count * instance_size_byte_size;
                 u64 buffer_size = (current_instance_count - previous_instance_count) * instance_size_byte_size;
 
-                GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data()));
+                opengl::api::instance().buffer_sub_data(GL_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data());
             }
 
             //-------------------------------------------------------------------------
@@ -202,7 +203,7 @@ namespace ppp
 
                 bind();
 
-                glBufferData(GL_ARRAY_BUFFER, new_size * layout_size, nullptr, GL_DYNAMIC_DRAW); // Allocate new GPU memory
+                opengl::api::instance().buffer_data(GL_ARRAY_BUFFER, new_size * layout_size, nullptr, GL_DYNAMIC_DRAW); // Allocate new GPU memory
 
                 m_pimpl->instance_count = static_cast<s32>(new_size / layout_size);
             }

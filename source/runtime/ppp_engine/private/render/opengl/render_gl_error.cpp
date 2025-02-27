@@ -1,4 +1,5 @@
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "util/log.h"
 
@@ -28,7 +29,7 @@ namespace ppp
         {
             u32 error = GL_NO_ERROR;
 
-            error = glGetError();  // no GL_CALL here to avoid recursive function call.
+            error = opengl::api::instance().get_error();  // no GL_CALL here to avoid recursive function call.
 
             return error;
         }

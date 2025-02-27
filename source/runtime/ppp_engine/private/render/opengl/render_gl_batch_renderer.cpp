@@ -4,6 +4,7 @@
 #include "render/render_features.h"
 
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "resources/shader_pool.h"
 #include "resources/material_pool.h"
@@ -117,7 +118,7 @@ namespace ppp
                 return;
             }
 
-            GL_CALL(glUseProgram(shader_program()));
+            opengl::api::instance().use_program(shader_program());
 
             shaders::push_uniform(shader_program(), string::store_sid("u_view_proj"), vp);
 
@@ -135,7 +136,7 @@ namespace ppp
                 }
             }
 
-            GL_CALL(glUseProgram(0));
+            opengl::api::instance().use_program(0);
         }
 
         //-------------------------------------------------------------------------
@@ -228,7 +229,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void batch_renderer::solid_render(topology_type topology, batch_drawing_data& drawing_data)
         {
-            GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
 
             shaders::push_uniform(shader_program(), string::store_sid("u_wireframe"), GL_FALSE);
 
@@ -238,8 +239,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         void batch_renderer::wireframe_render(topology_type topology, batch_drawing_data& drawing_data)
         {
-            GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
-            GL_CALL(glLineWidth(internal::_wireframe_linewidth));
+            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_LINE);
+            opengl::api::instance().line_width(internal::_wireframe_linewidth);
 
             shaders::push_uniform(shader_program(), string::store_sid("u_wireframe"), GL_TRUE);
             shaders::push_uniform(shader_program(), string::store_sid("u_wireframe_color"), color::convert_color(internal::_wireframe_linecolor));
@@ -306,8 +307,8 @@ namespace ppp
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
                     for (int i = 0; i < textures.size(); ++i)
                     {
-                        GL_CALL(glActiveTexture(GL_TEXTURE0 + (offset * i)));
-                        GL_CALL(glBindTexture(GL_TEXTURE_2D, textures[i]));
+                        opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * i));
+                        opengl::api::instance().bind_texture(GL_TEXTURE_2D, textures[i]);
                     }
 
                     batch->submit();

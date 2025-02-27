@@ -100,11 +100,13 @@ namespace ppp
                 const resources::imaterial* m_material;
             };
 
+            //-------------------------------------------------------------------------
             geometry::geometry* extrude_image(const glm::mat4& world, const geometry::geometry* in_geom, f32 extrusion_width)
             {
                 return geometry::extrude_rectangle(world, in_geom, extrusion_width);
             }
 
+            //-------------------------------------------------------------------------
             geometry::geometry* make_image(u32 image_id)
             {
                 temp_stringstream stream;
@@ -132,30 +134,35 @@ namespace ppp
             }
         }
 
+        //-------------------------------------------------------------------------
         void image_mode(image_mode_type mode)
         {
             internal::_image_mode = mode;
         }
 
+        //-------------------------------------------------------------------------
         unsigned char* load_pixels(int x, int y, int width, int height)
         {
-            auto active_pixels = texture_pool::load_active_pixels(x, y, width, height, 4);
+            u8* active_pixels = texture_pool::load_active_pixels(x, y, width, height, 4);
 
-            glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, texture_pool::active_pixels());
+            render::read_pixels(x, y, width, height, texture_pool::active_pixels());
 
             return active_pixels;
         }
 
+        //-------------------------------------------------------------------------
         unsigned char* load_pixels(image_id id)
         {
             return texture_pool::load_active_pixels(id);
         }
 
+        //-------------------------------------------------------------------------
         void update_pixels(image_id id)
         {
             texture_pool::update_active_pixels(id);
         }
 
+        //-------------------------------------------------------------------------
         void save_pixels(std::string_view output_name, unsigned char* data, int width, int height, int channels)
         {
             auto path = vfs::resolve_path(output_name);
@@ -166,6 +173,7 @@ namespace ppp
             }
         }
 
+        //-------------------------------------------------------------------------
         void save_pixels(std::string_view output_name, int width, int height)
         {
             auto path = vfs::resolve_path(output_name);
@@ -176,6 +184,7 @@ namespace ppp
             }
         }
 
+        //-------------------------------------------------------------------------
         void save_pixels(std::string_view output_name, image_id id)
         {
             auto path = vfs::resolve_path(output_name);
@@ -188,16 +197,19 @@ namespace ppp
             }
         }
 
+        //-------------------------------------------------------------------------
         pixels_u8_ptr pixels_as_u8()
         {
             return texture_pool::active_pixels();
         }
 
+        //-------------------------------------------------------------------------
         pixels_s32_ptr pixels_as_u32()
         {
             return (pixels_s32_ptr)texture_pool::active_pixels();
         }
 
+        //-------------------------------------------------------------------------
         image load(std::string_view file_path)
         {
             auto sid = string::string_id(file_path);
@@ -234,6 +246,7 @@ namespace ppp
             return { (image_id)img.image_id, img.width, img.height, img.channels };
         }
 
+        //-------------------------------------------------------------------------
         image create(float width, float height, int channels, pixels_u8_ptr data)
         {
             texture_pool::image img;
@@ -259,6 +272,7 @@ namespace ppp
             return { (image_id)img.image_id, img.width, img.height, img.channels };
         }
 
+        //-------------------------------------------------------------------------
         void draw(image_id image_id, float x, float y, float width, float height)
         {
             auto prev_shader = render::active_shader();
@@ -321,35 +335,41 @@ namespace ppp
             material::shader(string::restore_sid(prev_shader));
         }
 
+        //-------------------------------------------------------------------------
         void no_tint() 
         {
             render::brush::push_tint_enable(false);
         }
 
+        //-------------------------------------------------------------------------
         void tint(int grayscale) 
         {
             render::brush::push_tint_enable(true);
             render::brush::push_tint_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 1.0f));
         }
 
+        //-------------------------------------------------------------------------
         void tint(int grayscale, int alpha)
         {
             render::brush::push_tint_enable(true);
             render::brush::push_tint_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
         }
 
+        //-------------------------------------------------------------------------
         void tint(int r, int g, int b, int a)
         {
             render::brush::push_tint_enable(true);
             render::brush::push_tint_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
         }
 
+        //-------------------------------------------------------------------------
         void tint(const color::Color& c)
         {
             render::brush::push_tint_enable(true);
             render::brush::push_tint_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
         }
 
+        //-------------------------------------------------------------------------
         std::vector<pixels_s32> rotate_clockwise(const pixels_s32_ptr arr, int width, int height, int num_rotations)
         {
             std::vector<pixels_s32> rotated_arr(arr, arr + (width * height));
@@ -376,6 +396,7 @@ namespace ppp
             return rotated_arr;
         }
 
+        //-------------------------------------------------------------------------
         std::vector<pixels_s32> rotate_counterclockwise(const pixels_s32_ptr arr, int width, int height, int num_rotations)
         {
             std::vector<pixels_s32> rotated_arr(arr, arr + (width * height));

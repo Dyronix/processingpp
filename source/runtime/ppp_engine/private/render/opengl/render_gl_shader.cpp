@@ -1,6 +1,8 @@
 #include "render/render_shader.h"
 #include "render/render_shader_compiler.h"
 
+#include "render/opengl/render_gl_api.h"
+
 #include <glad/glad.h>
 
 namespace ppp
@@ -24,19 +26,19 @@ namespace ppp
             //-------------------------------------------------------------------------
             shader_program::~shader_program()
             {
-                glDeleteProgram(m_program_id);
+                opengl::api::instance().delete_program(m_program_id);
             }
 
             //-------------------------------------------------------------------------
             void shader_program::bind() const
             {
-                glUseProgram(m_program_id);
+                opengl::api::instance().use_program(m_program_id);
             }
 
             //-------------------------------------------------------------------------
             void shader_program::unbind() const
             {
-                glUseProgram(0);
+                opengl::api::instance().use_program(0);
             }
 
             //-------------------------------------------------------------------------

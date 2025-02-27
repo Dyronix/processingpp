@@ -1,5 +1,7 @@
 #include "render/render_features.h"
+
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "glad/glad.h"
 
@@ -18,7 +20,8 @@ namespace ppp
         u32 max_vertices(topology_type type)
         {
             s32 max_vertex_elements = 0;
-            GL_CALL(glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_vertex_elements));
+
+            opengl::api::instance().get_integer_value(GL_MAX_ELEMENTS_VERTICES, &max_vertex_elements);
 
             s32 max_vertices = 0;
             switch (type)
@@ -40,7 +43,8 @@ namespace ppp
         u32 max_indices(topology_type type)
         {
             s32 max_index_elements = 0;
-            GL_CALL(glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_index_elements));
+
+            opengl::api::instance().get_integer_value(GL_MAX_ELEMENTS_INDICES, &max_index_elements);
 
             s32 max_indices = 0;
             switch (type)
@@ -62,7 +66,8 @@ namespace ppp
         u32 max_textures()
         {
             s32 max_texture_units = 0;
-            GL_CALL(glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units));
+
+            opengl::api::instance().get_integer_value(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
 
             return std::min(max_texture_units, _max_texture_units);
         }

@@ -1,6 +1,7 @@
 #include "render/render_storage_buffer.h"
 
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "memory/memory_unique_ptr_util.h"
 #include "memory/memory_manager.h"
@@ -28,11 +29,11 @@ namespace ppp
                 buffer.reserve(element_size * in_element_count);
                 buffer.resize(element_size * in_element_count);
 
-                GL_CALL(glGenBuffers(1, &ssbo));
-                GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo));
-                GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, element_size * in_element_count, nullptr, GL_DYNAMIC_DRAW));
+                opengl::api::instance().generate_buffers(1, &ssbo);
+                opengl::api::instance().bind_buffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+                opengl::api::instance().buffer_data(GL_SHADER_STORAGE_BUFFER, element_size * in_element_count, nullptr, GL_DYNAMIC_DRAW);
 
-                GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                opengl::api::instance().bind_buffer(GL_SHADER_STORAGE_BUFFER, 0);
             }
 
             //------------------------------------------------------------------------
@@ -40,20 +41,20 @@ namespace ppp
             {
                 if (ssbo)
                 {
-                    GL_CALL(glDeleteBuffers(1, &ssbo));
+                    opengl::api::instance().delete_buffers(1, &ssbo);
                 }
             }
 
             //------------------------------------------------------------------------
             void bind(u32 binding_point) const
             {
-                GL_CALL(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, ssbo));
+                opengl::api::instance().bind_buffer_base(GL_SHADER_STORAGE_BUFFER, binding_point, ssbo);
             }
 
             //------------------------------------------------------------------------
             void unbind() const
             {
-                GL_CALL(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0));
+                opengl::api::instance().bind_buffer_base(GL_SHADER_STORAGE_BUFFER, 0, 0);
             }
 
             //------------------------------------------------------------------------
@@ -65,16 +66,16 @@ namespace ppp
 
                     buffer.resize(element_size * new_element_count);
 
-                    GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo));
-                    GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, element_size * new_element_count, nullptr, GL_DYNAMIC_DRAW));
-                    GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                    opengl::api::instance().bind_buffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+                    opengl::api::instance().buffer_data(GL_SHADER_STORAGE_BUFFER, element_size * new_element_count, nullptr, GL_DYNAMIC_DRAW);
+                    opengl::api::instance().bind_buffer(GL_SHADER_STORAGE_BUFFER, 0);
                 }
             }
 
             //------------------------------------------------------------------------
             void free()
             {
-                GL_CALL(glDeleteBuffers(1, &ssbo));
+                opengl::api::instance().delete_buffers(1, &ssbo);
 
                 ssbo = 0;
             }
@@ -96,7 +97,7 @@ namespace ppp
                 u64 buffer_offset = previous_element_count * element_size;
                 u64 buffer_size = (current_element_count - previous_element_count) * element_size;
 
-                GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, buffer_offset, buffer_size, buffer.data()));
+                opengl::api::instance().buffer_sub_data(GL_SHADER_STORAGE_BUFFER, buffer_offset, buffer_size, buffer.data());
             }
 
             //-------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 #include "render/render_index_buffer.h"
 
 #include "render/opengl/render_gl_error.h"
+#include "render/opengl/render_gl_api.h"
 
 #include "memory/memory_types.h"
 #include "memory/memory_unique_ptr_util.h"
@@ -30,10 +31,10 @@ namespace ppp
                 buffer.reserve(size_ebo);
                 buffer.resize(size_ebo);
 
-                GL_CALL(glGenBuffers(1, &ebo));
-                GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
-                GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW));
-                GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+                opengl::api::instance().generate_buffers(1, &ebo);
+                opengl::api::instance().bind_buffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+                opengl::api::instance().buffer_data(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW);
+                opengl::api::instance().bind_buffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             }
 
             //-------------------------------------------------------------------------
@@ -41,20 +42,20 @@ namespace ppp
             {
                 if (ebo)
                 {
-                    GL_CALL(glDeleteBuffers(1, &ebo));
+                    opengl::api::instance().delete_buffers(1, &ebo);
                 }
             }
 
             //-------------------------------------------------------------------------
             void bind() const
             {
-                GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
+                opengl::api::instance().bind_buffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
             }
 
             //-------------------------------------------------------------------------
             void unbind() const
             {
-                GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+                opengl::api::instance().bind_buffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             }
 
             //-------------------------------------------------------------------------
@@ -76,13 +77,13 @@ namespace ppp
                 u64 buffer_offset = previous_index_count * index_byte_size;
                 u64 buffer_size = (current_index_count - previous_index_count) * index_byte_size;
 
-                GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data()));
+                opengl::api::instance().buffer_sub_data(GL_ELEMENT_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data());
             }
 
             //-------------------------------------------------------------------------
             void free()
             {
-                GL_CALL(glDeleteBuffers(1, &ebo));
+                opengl::api::instance().delete_buffers(1, &ebo);
                 ebo = 0;
             }
 
