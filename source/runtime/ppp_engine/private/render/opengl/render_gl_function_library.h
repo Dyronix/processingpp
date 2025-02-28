@@ -68,7 +68,7 @@ namespace ppp
                 virtual void draw_buffers(u64 count, const u32* buffers) = 0;
 
                 // Renderbuffers
-                virtual void generate_renderbuffers(u64 count, const u32* renderbuffers) = 0;
+                virtual void generate_renderbuffers(u64 count, u32* renderbuffers) = 0;
                 virtual void bind_renderbuffer(u32 target, s32 renderbuffer) = 0;
                 virtual void renderbuffer_storage(u32 target, u32 internal_format, u64 width, u64 height) = 0;
                 virtual void framebuffer_renderbuffer(u32 target, u32 attachement, u32 renderbuffer_target, u32 renderbuffer) = 0;
@@ -194,7 +194,7 @@ namespace ppp
                 void draw_buffers(u64 count, const u32* buffers) override;
 
                 // Renderbuffers
-                void generate_renderbuffers(u64 count, const u32* renderbuffers) override;
+                void generate_renderbuffers(u64 count, u32* renderbuffers) override;
                 void bind_renderbuffer(u32 target, s32 renderbuffer) override;
                 void renderbuffer_storage(u32 target, u32 internal_format, u64 width, u64 height) override;
                 void framebuffer_renderbuffer(u32 target, u32 attachement, u32 renderbuffer_target, u32 renderbuffer) override;
@@ -320,7 +320,7 @@ namespace ppp
                 void draw_buffers(u64 count, const u32* buffers) override;
 
                 // Renderbuffers
-                void generate_renderbuffers(u64 count, const u32* renderbuffers) override;
+                void generate_renderbuffers(u64 count, u32* renderbuffers) override;
                 void bind_renderbuffer(u32 target, s32 renderbuffer) override;
                 void renderbuffer_storage(u32 target, u32 internal_format, u64 width, u64 height) override;
                 void framebuffer_renderbuffer(u32 target, u32 attachement, u32 renderbuffer_target, u32 renderbuffer) override;

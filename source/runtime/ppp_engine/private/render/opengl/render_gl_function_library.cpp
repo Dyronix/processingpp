@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <gsl/narrow>
 
-#define ENABLE_GL_FUNCTION_LOGGING 0
+#define ENABLE_GL_FUNCTION_LOGGING 1
 #define ENABLE_GL_PARAMETER_LOGGING 1
 
 #if ENABLE_GL_FUNCTION_LOGGING
@@ -25,7 +25,29 @@ namespace ppp
         namespace opengl
         {
             //-------------------------------------------------------------------------
-            debug_scratch_string pixeltype_to_string(const u32 pixelType)
+            debug_temp_string pname_to_string(const u32 pname)
+            {
+                switch (pname)
+                {
+                case GL_VERSION: return "OpenGL Version";
+                case GL_CONTEXT_FLAGS: return "OpenGL Context Flags";
+                case GL_INFO_LOG_LENGTH: return "OpenGL Info Log Length";
+                case GL_COMPILE_STATUS: return "OpenGL Compile Status";
+                case GL_LINK_STATUS: return "OpenGL Link Status";
+                case GL_CURRENT_PROGRAM: return "OpenGL Current Program";
+                case GL_TEXTURE_MIN_FILTER: return "Texture Min Filter";
+                case GL_TEXTURE_MAG_FILTER: return "Texture Mag Filter";
+                case GL_MAX_TEXTURE_IMAGE_UNITS: return "Max Texture Image Units";
+                case GL_MAX_ELEMENTS_INDICES: return "Max Elements Indices";
+                case GL_MAX_ELEMENTS_VERTICES: return "Max Elements Vertices";
+                }
+
+                log::warn("Unknown state, this list is incomplete maybe you need to add another element: {0}", pname);
+                return string::to_string<debug_temp_string>(pname);
+            }
+
+            //-------------------------------------------------------------------------
+            debug_temp_string pixeltype_to_string(const u32 pixelType)
             {
                 switch (pixelType)
                 {
@@ -46,11 +68,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown pxiel type: {0}", pixelType);
-                return string::to_string<debug_scratch_string>(pixelType);
+                return string::to_string<debug_temp_string>(pixelType);
             }
 
             //-------------------------------------------------------------------------
-            debug_scratch_string format_to_string(const u32 format)
+            debug_temp_string format_to_string(const u32 format)
             {
                 switch (format)
                 {
@@ -64,11 +86,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown format: {0}", format);
-                return string::to_string<debug_scratch_string>(format);
+                return string::to_string<debug_temp_string>(format);
             }
 
             //-------------------------------------------------------------------------
-            debug_scratch_string internal_format_to_string(const u32 format)
+            debug_temp_string internal_format_to_string(const u32 format)
             {
                 switch (format)
                 {
@@ -110,6 +132,8 @@ namespace ppp
                 case GL_RGB32UI: return "GL_RGB32UI";
                 case GL_RGB32F: return "GL_RGB32F";
 
+                case GL_RGBA: return "GL_RGBA";
+
                 case GL_RGBA8: return "GL_RGBA8";
                 case GL_RGBA8I: return "GL_RGBA8I";
                 case GL_RGBA8UI: return "GL_RGBA8UI";
@@ -132,11 +156,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown internal format: {0}", format);
-                return string::to_string<debug_scratch_string>(format);
+                return string::to_string<debug_temp_string>(format);
             }
 
             //-------------------------------------------------------------------------
-            debug_scratch_string buffer_target_to_string(const u32 target)
+            debug_temp_string buffer_target_to_string(const u32 target)
             {
                 switch (target)
                 {
@@ -157,11 +181,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown buffer target: {0}", target);
-                return string::to_string<debug_scratch_string>(target);
+                return string::to_string<debug_temp_string>(target);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string texture_target_to_string(const u32 target)
+            debug_temp_string texture_target_to_string(const u32 target)
             {
                 switch (target)
                 {
@@ -185,11 +209,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown texture target: {0}", target);
-                return string::to_string<debug_scratch_string>(target);
+                return string::to_string<debug_temp_string>(target);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string shadertype_to_string(const u32 shaderType)
+            debug_temp_string shadertype_to_string(const u32 shaderType)
             {
                 switch (shaderType)
                 {
@@ -202,11 +226,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown shader type: {0}", shaderType);
-                return string::to_string<debug_scratch_string>(shaderType);
+                return string::to_string<debug_temp_string>(shaderType);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string framebuffer_target_to_string(const u32 target)
+            debug_temp_string framebuffer_target_to_string(const u32 target)
             {
                 switch (target)
                 {
@@ -216,11 +240,48 @@ namespace ppp
                 }
 
                 log::warn("Unknown framebuffer target: {0}", target);
-                return string::to_string<debug_scratch_string>(target);
+                return string::to_string<debug_temp_string>(target);
+            }
+
+            //-------------------------------------------------------------------------
+            debug_temp_string framebuffer_attachment_to_string(const u32 attachment)
+            {
+                for (int i = GL_COLOR_ATTACHMENT0; i <= GL_COLOR_ATTACHMENT31; i += (GL_COLOR_ATTACHMENT1 - GL_COLOR_ATTACHMENT0))
+                {
+                    if (attachment == i)
+                    {
+                        debug_temp_stringstream stream;
+                        stream << "Color Attachment";
+                        stream << i;
+                        return stream.str();
+                    }
+                }
+
+                switch (attachment)
+                {
+                case GL_DEPTH_ATTACHMENT: return "Depth Attachment";
+                case GL_STENCIL_ATTACHMENT: return "Stencil Attachment";
+                case GL_DEPTH_STENCIL_ATTACHMENT: return "Depth Stencil Attachment";
+                }
+
+                log::warn("Unknown renderbuffer attachment: {0}", attachment);
+                return string::to_string<debug_temp_string>(attachment);
+            }
+
+            //-------------------------------------------------------------------------
+            debug_temp_string renderbuffer_target_to_string(const u32 target)
+            {
+                switch (target)
+                {
+                case GL_RENDERBUFFER: return "Render buffer";
+                }
+
+                log::warn("Unknown renderbuffer target: {0}", target);
+                return string::to_string<debug_temp_string>(target);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string drawbuffer_target_to_string(const u32 target)
+            debug_temp_string drawbuffer_target_to_string(const u32 target)
             {
                 switch (target)
                 {
@@ -237,11 +298,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown drawbuffer target: {0}", target);
-                return string::to_string<debug_scratch_string>(target);
+                return string::to_string<debug_temp_string>(target);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string buffer_usage_to_string(const u32 usage)
+            debug_temp_string buffer_usage_to_string(const u32 usage)
             {
                 switch (usage)
                 {
@@ -257,11 +318,34 @@ namespace ppp
                 }
 
                 log::warn("Unknown buffer usage: {0}", usage);
-                return string::to_string<debug_scratch_string>(usage);
+                return string::to_string<debug_temp_string>(usage);
+            }
+
+            //-------------------------------------------------------------------------
+            debug_temp_string blend_func_factor_to_string(const u32 sfactor)
+            {
+                switch (sfactor)
+                {
+                case GL_ZERO: return "GL_ZERO";
+                case GL_ONE: return "GL_ONE";
+                case GL_SRC_COLOR: return "GL_SRC_COLOR";
+                case GL_ONE_MINUS_SRC_COLOR: return "GL_ONE_MINUS_SRC_COLOR";
+                case GL_DST_COLOR: return "GL_DST_COLOR";
+                case GL_ONE_MINUS_DST_COLOR: return "GL_ONE_MINUS_DST_COLOR";
+                case GL_SRC_ALPHA: return "GL_SRC_ALPHA";
+                case GL_DST_ALPHA: return "GL_DST_ALPHA";
+                case GL_ONE_MINUS_DST_ALPHA: return "GL_ONE_MINUS_DST_ALPHA";
+                case GL_CONSTANT_COLOR: return "GL_CONSTANT_COLOR";
+                case GL_ONE_MINUS_CONSTANT_COLOR: return "GL_ONE_MINUS_CONSTANT_COLOR";
+                case GL_SRC_ALPHA_SATURATE: return "GL_SRC_ALPHA_SATURATE";
+                }
+
+                log::warn("Unknown blend func sfactor: {0}", sfactor);
+                return string::to_string<debug_temp_string>(sfactor);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string cull_type_to_string(const u32 cullType)
+            debug_temp_string cull_type_to_string(const u32 cullType)
             {
                 switch (cullType)
                 {
@@ -271,11 +355,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown cull type: {0}", cullType);
-                return string::to_string<debug_scratch_string>(cullType);
+                return string::to_string<debug_temp_string>(cullType);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string front_face_to_string(const u32 frontFace)
+            debug_temp_string front_face_to_string(const u32 frontFace)
             {
                 switch (frontFace)
                 {
@@ -284,11 +368,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown front face type: {0}", frontFace);
-                return string::to_string<debug_scratch_string>(frontFace);
+                return string::to_string<debug_temp_string>(frontFace);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string depth_function_to_string(const u32 depthFn)
+            debug_temp_string depth_function_to_string(const u32 depthFn)
             {
                 switch (depthFn)
                 {
@@ -303,11 +387,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown depth function: {0}", depthFn);
-                return string::to_string<debug_scratch_string>(depthFn);
+                return string::to_string<debug_temp_string>(depthFn);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string fill_mode_to_string(const u32 fillMode)
+            debug_temp_string fill_mode_to_string(const u32 fillMode)
             {
                 switch (fillMode)
                 {
@@ -317,11 +401,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown fill mode: {0}", fillMode);
-                return string::to_string<debug_scratch_string>(fillMode);
+                return string::to_string<debug_temp_string>(fillMode);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string enable_to_string(const u32 enable)
+            debug_temp_string enable_to_string(const u32 enable)
             {
                 switch (enable)
                 {
@@ -329,14 +413,18 @@ namespace ppp
                 case GL_CULL_FACE: return "Cull Face";
                 case GL_DEPTH_TEST: return "Depth Test";
                 case GL_STENCIL_TEST: return "Stencil Test";
+#if _DEBUG
+                case GL_DEBUG_OUTPUT: return "Debug Output";
+                case GL_DEBUG_OUTPUT_SYNCHRONOUS: return "Debug Output Synchronous";
+#endif
                 }
 
                 log::warn("Unknown state, this list is incomplete maybe you need to add another element: {0}", enable);
-                return string::to_string<debug_scratch_string>(enable);
+                return string::to_string<debug_temp_string>(enable);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string disable_to_string(const u32 disable)
+            debug_temp_string disable_to_string(const u32 disable)
             {
                 switch (disable)
                 {
@@ -347,11 +435,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown state, this list is incomplete maybe you need to add another element: {0}", disable);
-                return string::to_string<debug_scratch_string>(disable);
+                return string::to_string<debug_temp_string>(disable);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string blit_framebuffer_mask(const u32 mask)
+            debug_temp_string blit_framebuffer_mask(const u32 mask)
             {
                 switch (mask)
                 {
@@ -361,11 +449,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown mask, this list is incomplete maybe you need to add another element: {0}", mask);
-                return string::to_string<debug_scratch_string>(mask);
+                return string::to_string<debug_temp_string>(mask);
             }
             
             //-------------------------------------------------------------------------
-            debug_scratch_string blit_framebuffer_filter(const u32 filter)
+            debug_temp_string blit_framebuffer_filter(const u32 filter)
             {
                 switch (filter)
                 {
@@ -374,7 +462,7 @@ namespace ppp
                 }
 
                 log::warn("Unknown filter, this list is incomplete maybe you need to add another element: {0}", filter);
-                return string::to_string<debug_scratch_string>(filter);
+                return string::to_string<debug_temp_string>(filter);
             }
 
 #pragma region FUNCTION LIBRARY
@@ -398,6 +486,21 @@ namespace ppp
 #endif
 
                 GL_CALL(glViewport(x, y, width, height));
+            }
+            //-------------------------------------------------------------------------
+            void function_library::scissor(s32 x, s32 y, s64 width, s64 height)
+            {
+                assert(width > 0 && width < (s32)std::numeric_limits<u16>().max() && "Invalid width given for scissor resize");
+                assert(height > 0 && height < (s32)std::numeric_limits<u16>().max() && "Invalid height given for scissor resize");
+
+                GL_LOG("glScissor");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tx: {0}", x);
+                GL_LOG("\ty: {0}", y);
+                GL_LOG("\twidth: {0}", width);
+                GL_LOG("\theight: {0}", height);
+#endif
+                GL_CALL(glScissor(x, y, width, height));
             }
             //-------------------------------------------------------------------------
             void function_library::read_pixels(s32 x, s32 y, s32 width, s32 height, u32 format, u32 type, void* data)
@@ -476,6 +579,16 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            void function_library::blend_func(u32 sfactor, u32 dfactor)
+            {
+                GL_LOG("glBlendFunc");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tsfactor: {0}", blend_func_factor_to_string(sfactor));
+                GL_LOG("\tdfactor: {0}", blend_func_factor_to_string(dfactor));
+#endif
+                glBlendFunc(sfactor, dfactor);
+            }
+            //-------------------------------------------------------------------------
             void function_library::cull_face(u32 mode)
             {
                 GL_LOG("glCullFace");
@@ -515,6 +628,15 @@ namespace ppp
 #endif
 
                 GL_CALL(glPolygonMode(face, mode));
+            }
+            //-------------------------------------------------------------------------
+            void function_library::line_width(f32 width)
+            {
+                GL_LOG("glLineWidth");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\twidth: {0}", width);
+#endif
+                glLineWidth(width);
             }
 
             //-------------------------------------------------------------------------
@@ -590,6 +712,17 @@ namespace ppp
 
                 GL_CALL(glBindVertexArray(arrayID));
             }
+            //-------------------------------------------------------------------------
+            void function_library::vertex_attrib_divisor(u32 index, u32 divisor)
+            {
+                GL_LOG("glVertexAttribDivisor");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tindex: {0}", index);
+                GL_LOG("\tdivisor: {0}", divisor);
+#endif
+
+                GL_CALL(glVertexAttribDivisor(index, divisor));
+            }
 
             //-------------------------------------------------------------------------
             // Drawing
@@ -618,6 +751,33 @@ namespace ppp
 
                 GL_CALL(glDrawArrays(mode, first, gsl::narrow<GLsizei>(count)));
             }
+            //-------------------------------------------------------------------------
+            void function_library::draw_elements_instanced(u32 mode, u64 count, u32 type, const void* indices, u64 instance_count)
+            {
+                GL_LOG("glDrawElementsInstanced");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tmode: {0}", mode);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\ttype: {0}", type);
+                GL_LOG("\tindices: {0}", fmt::ptr(indices));
+                GL_LOG("\tinstance_count: {0}", instance_count);
+#endif
+
+                GL_CALL(glDrawElementsInstanced(mode, gsl::narrow<GLsizei>(count), type, indices, gsl::narrow<GLsizei>(instance_count)));
+            }
+            //-------------------------------------------------------------------------
+            void function_library::draw_arrays_instanced(u32 mode, s32 first, u64 count, u64 instance_count)
+            {
+                GL_LOG("glDrawArraysInstanced");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tmode: {0}", mode);
+                GL_LOG("\tfirst: {0}", first);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tinstance_count: {0}", instance_count);
+#endif
+
+                GL_CALL(glDrawArraysInstanced(mode, first, gsl::narrow<GLsizei>(count), gsl::narrow<GLsizei>(instance_count)));
+            }
 
             //-------------------------------------------------------------------------
             // Device State
@@ -640,7 +800,7 @@ namespace ppp
             {
                 GL_LOG("glGetIntegerv");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
-                GL_LOG("\tpname: {0}", pname);
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
 #endif
 
                 GL_CALL(glGetIntegerv(pname, data));
@@ -777,6 +937,73 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            // Renderbuffers
+            //-------------------------------------------------------------------------
+            void function_library::generate_renderbuffers(u64 count, u32* renderbuffers)
+            {
+                GL_LOG("glGenRenderbuffers");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tbuffers: {0}", fmt::ptr(renderbuffers));
+#endif
+
+                glGenRenderbuffers(gsl::narrow<GLsizei>(count), renderbuffers);
+            }
+            //-------------------------------------------------------------------------
+            void function_library::bind_renderbuffer(u32 target, s32 renderbuffer)
+            {
+                assert(target == GL_RENDERBUFFER && "Target must be GL_RENDERBUFFER!");
+
+                GL_LOG("glBindRenderBuffer");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\ttarget: {0}", renderbuffer_target_to_string(target));
+                GL_LOG("\trenderbuffer: {0}", renderbuffer);
+#endif
+                glBindRenderbuffer(target, renderbuffer);
+            }
+            //-------------------------------------------------------------------------
+            void function_library::renderbuffer_storage(u32 target, u32 internal_format, u64 width, u64 height)
+            {
+                assert(width > 0 && width < (s32)std::numeric_limits<u16>().max() && "Invalid width given for renderbuffer size");
+                assert(height > 0 && height < (s32)std::numeric_limits<u16>().max() && "Invalid height given for renderbuffer size");
+
+                assert(target == GL_RENDERBUFFER && "Target must be GL_RENDERBUFFER!");
+
+                GL_LOG("glRenderbufferStorage");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\ttarget: {0}", renderbuffer_target_to_string(target));
+                GL_LOG("\tinternal format: {0}", internal_format_to_string(internal_format));
+                GL_LOG("\twidth: {0}", width);
+                GL_LOG("\theight: {0}", height);
+#endif
+                glRenderbufferStorage(target, internal_format, gsl::narrow<GLsizei>(width), gsl::narrow<GLsizei>(height));
+            }
+            //-------------------------------------------------------------------------
+            void function_library::framebuffer_renderbuffer(u32 target, u32 attachement, u32 renderbuffer_target, u32 renderbuffer)
+            {
+                assert(renderbuffer_target == GL_RENDERBUFFER && "Target must be GL_RENDERBUFFER!");
+
+                GL_LOG("glFramebufferRenderbuffer");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\ttarget: {0}", framebuffer_target_to_string(target));
+                GL_LOG("\tattachment: {0}", framebuffer_attachment_to_string(attachement));
+                GL_LOG("\trenderbuffer_target: {0}", renderbuffer_target_to_string(renderbuffer_target));
+                GL_LOG("\trenderbuffer: {0}", renderbuffer);
+#endif
+                glFramebufferRenderbuffer(target, attachement, renderbuffer_target, renderbuffer);
+            }
+            //-------------------------------------------------------------------------
+            void function_library::delete_renderbuffers(u64 count, const u32* renderbuffers)
+            {
+                GL_LOG("glDeleteRenderbuffers");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tbuffers: {0}", fmt::ptr(renderbuffers));
+#endif
+                glDeleteRenderbuffers(gsl::narrow<GLsizei>(count), renderbuffers);
+            }
+
+            //-------------------------------------------------------------------------
             void function_library::delete_buffers(u64 count, const u32* buffers)
             {
                 GL_LOG("glDeleteBuffers");
@@ -808,6 +1035,18 @@ namespace ppp
 #endif
 
                 GL_CALL(glBindBuffer(target, index));
+            }
+            //-------------------------------------------------------------------------
+            void function_library::bind_buffer_base(u32 target, u32 index, u32 buffer)
+            {
+                GL_LOG("glBindBufferBase");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\ttarget: {0}", buffer_target_to_string(target));
+                GL_LOG("\tindex: {0}", index);
+                GL_LOG("\tbuffer: {0}", buffer);
+#endif
+
+                GL_CALL(glBindBufferBase(target, index, buffer));
             }
             //-------------------------------------------------------------------------
             void function_library::buffer_data(u32 target, u32 size, const void* data, u32 usage)
@@ -923,7 +1162,7 @@ namespace ppp
                 GL_LOG("glTexParameteri");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\ttarget: {0}", texture_target_to_string(target));
-                GL_LOG("\tpname: {0}", pname);
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
                 GL_LOG("\tparam: {0}", param);
 #endif
 
@@ -1012,7 +1251,7 @@ namespace ppp
                 GL_LOG("glGetShaderiv");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\tshader: {0}", shader);
-                GL_LOG("\tpname: {0}", pname);
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
 #endif
 
                 GL_CALL(glGetShaderiv(shader, pname, params));
@@ -1088,7 +1327,7 @@ namespace ppp
                 GL_LOG("glGetProgramiv");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\tprogram: {0}", program);
-                GL_LOG("\tpname: {0}", pname);
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
 #endif
 
                 GL_CALL(glGetProgramiv(program, pname, params));
@@ -1132,6 +1371,19 @@ namespace ppp
                 return location;
             }
 
+            //-------------------------------------------------------------------------
+            void function_library::uniform_matrix_2fv(s32 location, u64 count, bool transpose, const f32* value)
+            {
+                GL_LOG("glUniformMatrix2fv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\ttranspose: {0}", transpose);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+
+                GL_CALL(glUniformMatrix2fv(location, gsl::narrow<GLsizei>(count), transpose, value));
+            }
             //-------------------------------------------------------------------------
             void function_library::uniform_matrix_3fv(s32 location, u64 count, bool transpose, const f32* value)
             {
@@ -1307,6 +1559,18 @@ namespace ppp
                 GL_CALL(glUniform4i(location, x, y, z, w));
             }
             //-------------------------------------------------------------------------
+            void function_library::uniform_1iv(s32 location, u64 count, const s32* value)
+            {
+                GL_LOG("glUniform1iv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+
+                GL_CALL(glUniform1iv(location, gsl::narrow<GLsizei>(count), value));
+            }
+            //-------------------------------------------------------------------------
             void function_library::uniform_1ui(s32 location, u32 value)
             {
                 GL_LOG("glUniform1ui");
@@ -1316,6 +1580,17 @@ namespace ppp
 #endif
 
                 GL_CALL(glUniform1ui(location, value));
+            }
+            //-------------------------------------------------------------------------
+            void function_library::uniform_1uiv(s32 location, u64 count, const u32* value)
+            {
+                GL_LOG("glUniform1uiv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+                GL_CALL(glUniform1uiv(location, gsl::narrow<GLsizei>(count), value));
             }
 #pragma endregion
 #pragma region MOCK FUNCTION LIBRARY
@@ -1339,10 +1614,24 @@ namespace ppp
 #endif
             }
             //-------------------------------------------------------------------------
+            void mock_function_library::scissor(s32 x, s32 y, s64 width, s64 height)
+            {
+                assert(width > 0 && width < (s32)std::numeric_limits<u16>().max() && "Invalid width given for scissor resize");
+                assert(height > 0 && height < (s32)std::numeric_limits<u16>().max() && "Invalid height given for scissor resize");
+
+                GL_LOG("glScissor");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tx: {0}", x);
+                GL_LOG("\ty: {0}", y);
+                GL_LOG("\twidth: {0}", width);
+                GL_LOG("\theight: {0}", height);
+#endif
+            }
+            //-------------------------------------------------------------------------
             void mock_function_library::read_pixels(s32 x, s32 y, s32 width, s32 height, u32 format, u32 type, void* data)
             {
-                assert(width > 0 && width < (s32)std::numeric_limits<u16>().max() && "Invalid width given for viewport resize");
-                assert(height > 0 && height < (s32)std::numeric_limits<u16>().max() && "Invalid height given for viewport resize");
+                assert(width > 0 && width < (s32)std::numeric_limits<u16>().max() && "Invalid width given for pixel size");
+                assert(height > 0 && height < (s32)std::numeric_limits<u16>().max() && "Invalid height given for pixel size");
 
                 GL_LOG("glReadPixels");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
@@ -1401,6 +1690,15 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            void mock_function_library::blend_func(u32 sfactor, u32 dfactor)
+            {
+                GL_LOG("glBlendFunc");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tsfactor: {0}", blend_func_factor_to_string(sfactor));
+                GL_LOG("\tdfactor: {0}", blend_func_factor_to_string(dfactor));
+#endif
+            }
+            //-------------------------------------------------------------------------
             void mock_function_library::cull_face(u32 mode)
             {
                 GL_LOG("glCullFace");
@@ -1431,6 +1729,14 @@ namespace ppp
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\tface: {0}", cull_type_to_string(face));
                 GL_LOG("\tmode: {0}", fill_mode_to_string(mode));
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::line_width(f32 width)
+            {
+                GL_LOG("glLineWidth");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\twidth: {0}", width);
 #endif
             }
 
@@ -1495,6 +1801,15 @@ namespace ppp
                 GL_LOG("\tarray: {0}", arrayID);
 #endif
             }
+            //-------------------------------------------------------------------------
+            void mock_function_library::vertex_attrib_divisor(u32 index, u32 divisor)
+            {
+                GL_LOG("glVertexAttribDivisor");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tindex: {0}", index);
+                GL_LOG("\tdivisor: {0}", divisor);
+#endif
+            }
 
             //-------------------------------------------------------------------------
             // Drawing
@@ -1519,6 +1834,29 @@ namespace ppp
                 GL_LOG("\tcount: {0}", count);
 #endif
             }
+            //-------------------------------------------------------------------------
+            void mock_function_library::draw_elements_instanced(u32 mode, u64 count, u32 type, const void* indices, u64 instance_count)
+            {
+                GL_LOG("glDrawElementsInstanced");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tmode: {0}", mode);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\ttype: {0}", type);
+                GL_LOG("\tindices: {0}", fmt::ptr(indices));
+                GL_LOG("\tinstance_count: {0}", instance_count);
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::draw_arrays_instanced(u32 mode, s32 first, u64 count, u64 instance_count)
+            {
+                GL_LOG("glDrawArraysInstanced");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tmode: {0}", mode);
+                GL_LOG("\tfirst: {0}", first);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tinstance_count: {0}", instance_count);
+#endif
+            }
 
             //-------------------------------------------------------------------------
             // Device State
@@ -1540,7 +1878,7 @@ namespace ppp
             {
                 GL_LOG("glGetIntegerv");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
-                GL_LOG("\tpname: {0}", pname);
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
 
                 GL_LOG("\toutput data: {0}", *data);
 #endif
@@ -1659,6 +1997,67 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            // Renderbuffers
+            //-------------------------------------------------------------------------
+            void mock_function_library::generate_renderbuffers(u64 count, u32* renderbuffers)
+            {
+                GL_LOG("glGenRenderbuffers");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tbuffers: {0}", fmt::ptr(renderbuffers));
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::bind_renderbuffer(u32 target, s32 renderbuffer)
+            {
+                assert(target == GL_RENDERBUFFER && "Target must be GL_RENDERBUFFER!");
+
+                GL_LOG("glBindRenderBuffer");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\ttarget: {0}", renderbuffer_target_to_string(target));
+                GL_LOG("\trenderbuffer: {0}", renderbuffer);
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::renderbuffer_storage(u32 target, u32 internal_format, u64 width, u64 height)
+            {
+                assert(width > 0 && width < (s32)std::numeric_limits<u16>().max() && "Invalid width given for renderbuffer size");
+                assert(height > 0 && height < (s32)std::numeric_limits<u16>().max() && "Invalid height given for renderbuffer size");
+
+                assert(target == GL_RENDERBUFFER && "Target must be GL_RENDERBUFFER!");
+
+                GL_LOG("glRenderbufferStorage");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\ttarget: {0}", renderbuffer_target_to_string(target));
+                GL_LOG("\tinternal format: {0}", internal_format_to_string(internal_format));
+                GL_LOG("\twidth: {0}", width);
+                GL_LOG("\theight: {0}", height);
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::framebuffer_renderbuffer(u32 target, u32 attachement, u32 renderbuffer_target, u32 renderbuffer)
+            {
+                assert(renderbuffer_target == GL_RENDERBUFFER && "Target must be GL_RENDERBUFFER!");
+
+                GL_LOG("glFramebufferRenderbuffer");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\ttarget: {0}", framebuffer_target_to_string(target));
+                GL_LOG("\tattachment: {0}", framebuffer_attachment_to_string(attachement));
+                GL_LOG("\trenderbuffer_target: {0}", renderbuffer_target_to_string(renderbuffer_target));
+                GL_LOG("\trenderbuffer: {0}", renderbuffer);
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::delete_renderbuffers(u64 count, const u32* renderbuffers)
+            {
+                GL_LOG("glDeleteRenderbuffers");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tbuffers: {0}", fmt::ptr(renderbuffers));
+#endif
+            }
+
+            //-------------------------------------------------------------------------
             void mock_function_library::delete_buffers(u64 count, const u32* buffers)
             {
                 GL_LOG("glDeleteBuffers");
@@ -1683,6 +2082,16 @@ namespace ppp
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\ttarget: {0}", buffer_target_to_string(target));
                 GL_LOG("\tindex: {0}", index);
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::bind_buffer_base(u32 target, u32 index, u32 buffer)
+            {
+                GL_LOG("glBindBufferBase");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\ttarget: {0}", buffer_target_to_string(target));
+                GL_LOG("\tindex: {0}", index);
+                GL_LOG("\tbuffer: {0}", buffer);
 #endif
             }
             //-------------------------------------------------------------------------
@@ -1783,7 +2192,7 @@ namespace ppp
                 GL_LOG("glTexParameteri");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\ttarget: {0}", texture_target_to_string(target));
-                GL_LOG("\tpname: {0}", pname);
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
                 GL_LOG("\tparam: {0}", param);
 #endif
             }
@@ -1858,7 +2267,7 @@ namespace ppp
                 GL_LOG("glGetShaderiv");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\tshader: {0}", shader);
-                GL_LOG("\tpname: {0}", pname);
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
 
                 GL_LOG("\toutput params: {0}", *params);
 #endif
@@ -1919,7 +2328,7 @@ namespace ppp
                 GL_LOG("glGetProgramiv");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\tprogram: {0}", program);
-                GL_LOG("\tpname: {0}", pname);
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
 #endif
             }
             //-------------------------------------------------------------------------
@@ -1953,6 +2362,17 @@ namespace ppp
                 return location;
             }
 
+            //-------------------------------------------------------------------------
+            void mock_function_library::uniform_matrix_2fv(s32 location, u64 count, bool transpose, const f32* value)
+            {
+                GL_LOG("glUniformMatrix2fv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\ttranspose: {0}", transpose);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+            }
             //-------------------------------------------------------------------------
             void mock_function_library::uniform_matrix_3fv(s32 location, u64 count, bool transpose, const f32* value)
             {
@@ -2100,12 +2520,32 @@ namespace ppp
 #endif
             }
             //-------------------------------------------------------------------------
+            void mock_function_library::uniform_1iv(s32 location, u64 count, const s32* value)
+            {
+                GL_LOG("glUniform1iv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
+#endif
+            }
+            //-------------------------------------------------------------------------
             void mock_function_library::uniform_1ui(s32 location, u32 value)
             {
                 GL_LOG("glUniform1ui");
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\tlocation: {0}", location);
                 GL_LOG("\tvalue: {0}", value);
+#endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::uniform_1uiv(s32 location, u64 count, const u32* value)
+            {
+                GL_LOG("glUniform1uiv");
+#if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tlocation: {0}", location);
+                GL_LOG("\tcount: {0}", count);
+                GL_LOG("\tvalue: {0}", fmt::ptr(value));
 #endif
             }
 
