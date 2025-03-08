@@ -79,7 +79,7 @@ namespace ppp
         if (!material_pool::initialize())   { log::error("Failed to initialize material pool");  return -1; }
         if (!geometry_pool::initialize())   { log::error("Failed to initialize geometry pool");  return -1; }      
 
-        auto unlit_texture = shader_pool::tags::unlit_texture();
+        auto unlit_texture = shader_pool::tags::unlit::texture();
 
         material::shader(string::restore_sid(unlit_texture));
 
@@ -129,6 +129,11 @@ namespace ppp
 
             if (device::can_draw())
             {
+                context.camera_position_font = camera_manager::get_camera_position(camera_manager::tags::font());
+                context.camera_lookat_font = camera_manager::get_camera_lookat(camera_manager::tags::font());
+                context.camera_position_active = camera_manager::get_camera_position();
+                context.camera_lookat_active = camera_manager::get_camera_lookat();
+
                 context.mat_proj_font = camera_manager::get_proj(camera_manager::tags::font());
                 context.mat_view_font = camera_manager::get_view(camera_manager::tags::font());
                 context.mat_proj_active = camera_manager::get_proj();

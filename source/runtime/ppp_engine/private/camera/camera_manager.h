@@ -33,6 +33,11 @@ namespace ppp
         camera* set_camera(string::string_id camera_tag, const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up, const glm::mat4& proj);
         camera* set_as_active_camera(string::string_id camera_tag);
 
+        const glm::vec3& get_camera_position();
+        const glm::vec3& get_camera_position(string::string_id camera_tag);
+        const glm::vec3& get_camera_lookat();
+        const glm::vec3& get_camera_lookat(string::string_id camera_tag);
+
         const glm::mat4& get_view();
         const glm::mat4& get_view(string::string_id camera_tag);
         const glm::mat4& get_proj();

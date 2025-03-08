@@ -8,9 +8,12 @@
 
 #include "resources/shader_pool.h"
 #include "resources/material_pool.h"
+#include "resources/lights_pool.h"
 
 #include "util/log.h"
 #include "util/color_ops.h"
+
+#include "string/string_conversions.h"
 
 #include <glad/glad.h>
 
@@ -73,6 +76,68 @@ namespace ppp
                 log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
                 return GL_UNSIGNED_INT;
             }
+
+            //-------------------------------------------------------------------------
+            static void push_all_light_dependent_uniforms(u32 shader_program, const glm::vec3& camera_position, const glm::vec3& camera_target)
+            {
+                if (lights_pool::point_lights().empty() == false
+                 || lights_pool::directional_lights().empty() == false)
+                {
+                    shaders::push_uniform(shader_program, string::store_sid("u_view_position"), camera_position);
+                    //shaders::push_uniform(shader_program, string::store_sid("u_view_target"), camera_target);
+                }
+            }
+
+            //-------------------------------------------------------------------------
+            static void push_all_light_uniforms(u32 shader_program)
+            {
+                if (lights_pool::ambient_lights().empty() == false)
+                {
+                    for (auto& ambient_light : lights_pool::ambient_lights())
+                    {
+                        shaders::push_uniform(shader_program, string::store_sid("u_ambient_light.color"), ambient_light.color);
+                        shaders::push_uniform(shader_program, string::store_sid("u_ambient_light.intensity"), ambient_light.intensity);
+                    }
+                }
+
+                if (lights_pool::point_lights().empty() == false)
+                {
+                    constexpr u64 max_nr_point_lights = 8;
+
+                    u64 nr_active_point_lights = std::min(lights_pool::point_lights().size(), max_nr_point_lights);
+
+                    shaders::push_uniform(shader_program, string::store_sid("u_num_point_lights"), static_cast<s32>(nr_active_point_lights));
+
+                    for (s32 i = 0; i < nr_active_point_lights; ++i)
+                    {
+                        auto& point_light = lights_pool::point_lights()[i];
+
+                        temp_string base_name = temp_string("u_point_lights[") + string::to_string<temp_string>(i) + temp_string("]");
+
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".position"), point_light.position);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".color"), point_light.color);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".intensity"), point_light.intensity);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".specular_color"), point_light.specular_color);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".specular_enabled"), point_light.specular_enabled);
+
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".range"), point_light.range);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".falloff"), point_light.falloff);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".threshold"), point_light.threshold);
+                    }
+                }
+
+                if (lights_pool::directional_lights().empty() == false)
+                {
+                    for (auto& dir_light : lights_pool::directional_lights())
+                    {
+                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.direction"), dir_light.direction);
+                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.color"), dir_light.color);
+                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.intensity"), dir_light.intensity);
+                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.specular_color"), dir_light.specular_color);
+                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.specular_enabled"), dir_light.specular_enabled);
+                    }
+                }
+            }
         }
 
         // Batch Renderer
@@ -110,7 +175,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void batch_renderer::render(const glm::mat4& vp)
+        void batch_renderer::render(const glm::vec3& camera_position, const glm::vec3& camera_target, const glm::mat4& vp)
         {
             if (!has_drawing_data())
             {
@@ -119,6 +184,8 @@ namespace ppp
             }
 
             opengl::api::instance().use_program(shader_program());
+
+            internal::push_all_light_dependent_uniforms(shader_program(), camera_position, camera_target);
 
             shaders::push_uniform(shader_program(), string::store_sid("u_view_proj"), vp);
 
@@ -268,6 +335,9 @@ namespace ppp
                 while (batch != nullptr)
                 {
                     batch->bind();
+
+                    internal::push_all_light_uniforms(shader_program());
+
                     batch->submit();
                     batch->draw(topology, shader_program());
                     batch->unbind();
@@ -300,6 +370,8 @@ namespace ppp
                 while (batch != nullptr)
                 {
                     batch->bind();
+                 
+                    internal::push_all_light_uniforms(shader_program());
 
                     shaders::push_uniform_array(shader_program(), string::store_sid("s_images"), samplers.size(), samplers.data());
 

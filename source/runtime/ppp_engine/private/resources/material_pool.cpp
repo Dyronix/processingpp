@@ -69,19 +69,24 @@ namespace ppp
         bool initialize()
         {
             // Add all materials
-            add_new_material(resources::material(shader_pool::tags::unlit_color()));
-            add_new_material(resources::material(shader_pool::tags::instance_unlit_color()));
-            
-            add_new_material(resources::material(shader_pool::tags::unlit_texture()));
-            add_new_material(resources::material(shader_pool::tags::instance_unlit_texture()));
-            
-            add_new_material(resources::material(shader_pool::tags::unlit_font()));
-            
-            add_new_material(resources::material(shader_pool::tags::unlit_normal()));
-            add_new_material(resources::material(shader_pool::tags::instance_unlit_normal()));
-            
-            add_new_material(resources::material(shader_pool::tags::lit_specular()));
-            add_new_material(resources::material(shader_pool::tags::instance_lit_specular()));
+            // 
+            // batched
+            // unlit
+            add_new_material(resources::material(shader_pool::tags::unlit::color()));
+            add_new_material(resources::material(shader_pool::tags::unlit::texture()));
+            add_new_material(resources::material(shader_pool::tags::unlit::font())); 
+            add_new_material(resources::material(shader_pool::tags::unlit::normal()));         
+            // lit
+            add_new_material(resources::material(shader_pool::tags::lit::color()));
+            add_new_material(resources::material(shader_pool::tags::lit::specular()));
+            // instanced
+            // unlit
+            add_new_material(resources::material(shader_pool::tags::unlit::instance_normal()));
+            add_new_material(resources::material(shader_pool::tags::unlit::instance_color()));
+            add_new_material(resources::material(shader_pool::tags::unlit::instance_texture()));
+            // lit
+            add_new_material(resources::material(shader_pool::tags::lit::instance_color()));
+            add_new_material(resources::material(shader_pool::tags::lit::instance_specular()));
 
             return true;
         }

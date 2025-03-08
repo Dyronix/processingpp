@@ -9,10 +9,8 @@ namespace ppp
     bool _animate_scene = false;
     bool _no_testing = false;
 
-    constexpr int _window_width = 1280;
-    constexpr int _window_height = 720;
-    constexpr int _canvas_width = 600;
-    constexpr int _canvas_height = 600;
+    constexpr int _window_width = 240;
+    constexpr int _window_height = 160;
 
     image::image _image_container;
     image::image _image_wall;

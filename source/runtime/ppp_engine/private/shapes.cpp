@@ -526,8 +526,8 @@ namespace ppp
         void build_primitive_geometry(std::function<void()> callback)
         {
             string::string_id tag = render::draw_mode() == render::render_draw_mode::BATCHED
-                ? shader_pool::tags::unlit_color()
-                : shader_pool::tags::instance_unlit_color();
+                ? shader_pool::tags::unlit::color()
+                : shader_pool::tags::unlit::instance_color();
 
             render::begin_geometry_builder(tag);
 
@@ -540,8 +540,8 @@ namespace ppp
         void build_textured_geometry(std::function<void()> callback)
         {
             string::string_id tag = render::draw_mode() == render::render_draw_mode::BATCHED
-                ? shader_pool::tags::unlit_texture()
-                : shader_pool::tags::instance_unlit_texture();
+                ? shader_pool::tags::unlit::texture()
+                : shader_pool::tags::unlit::instance_texture();
 
             render::begin_geometry_builder(tag);
 

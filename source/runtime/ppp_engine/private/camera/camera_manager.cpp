@@ -113,6 +113,78 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        const glm::vec3& get_camera_position()
+        {
+            static glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+
+            if (g_ctx.active_camera)
+            {
+                pos = g_ctx.active_camera->eye;
+            }
+            else
+            {
+                pos = glm::vec3(0.0f, 0.0f, 0.0f);
+            }
+
+            return pos;
+        }
+
+        //-------------------------------------------------------------------------
+        const glm::vec3& get_camera_position(string::string_id camera_tag)
+        {
+            static glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+
+            camera* c = camera_by_tag(camera_tag);
+
+            if (c)
+            {
+                pos = c->eye;
+            }
+            else
+            {
+                pos = glm::vec3(0.0f, 0.0f, 0.0f);
+            }
+
+            return pos;
+        }
+
+        //-------------------------------------------------------------------------
+        const glm::vec3& get_camera_lookat()
+        {
+            static glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
+
+            if (g_ctx.active_camera)
+            {
+                target = g_ctx.active_camera->target;
+            }
+            else
+            {
+                target = glm::vec3(0.0f, 0.0f, 0.0f);
+            }
+
+            return target;
+        }
+
+        //-------------------------------------------------------------------------
+        const glm::vec3& get_camera_lookat(string::string_id camera_tag)
+        {
+            static glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
+
+            camera* c = camera_by_tag(camera_tag);
+
+            if (c)
+            {
+                target = c->target;
+            }
+            else
+            {
+                target = glm::vec3(0.0f, 0.0f, 0.0f);
+            }
+
+            return target;
+        }
+
+        //-------------------------------------------------------------------------
         const glm::mat4& get_view()
         {
             static glm::mat4 view = glm::mat4(1.0f);

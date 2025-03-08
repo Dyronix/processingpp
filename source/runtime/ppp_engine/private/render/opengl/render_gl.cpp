@@ -170,6 +170,7 @@ namespace ppp
         {
             // drawing
             render_draw_mode            draw_mode = render_draw_mode::BATCHED;
+            render_rendering_mode       rendering_mode = render_rendering_mode::FORWARD;
             render_scissor              scissor = {};
 
             // shaders
@@ -180,6 +181,7 @@ namespace ppp
 
             // frame buffer
             string::string_id           main_framebuffer_tag = string::string_id::create_invalid();
+            string::string_id           shadow_framebuffer_tag = string::string_id::create_invalid();
 
             // renderers
             instance_renderers_hash_map instance_renderers = {};
@@ -333,7 +335,7 @@ namespace ppp
             g_ctx.font_renderer = memory::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<texture_batch_renderer>>(
                 pos_tex_col_layout().data(),
                 pos_tex_col_layout().size(),
-                shader_pool::tags::unlit_font());
+                shader_pool::tags::unlit::font());
 
             return true;
         }
@@ -412,6 +414,11 @@ namespace ppp
         //-------------------------------------------------------------------------
         void render(const render_context& context)
         {
+            auto& cam_pos_active = context.camera_position_active;
+            auto& cam_tar_active = context.camera_lookat_active;
+            auto& cam_pos_font = context.camera_position_font;
+            auto& cam_tar_font = context.camera_lookat_font;
+
             auto system_framebuffer = framebuffer_pool::get_system();
             auto target_framebuffer = framebuffer_pool::get({ g_ctx.main_framebuffer_tag, true });
 
@@ -430,7 +437,7 @@ namespace ppp
             const glm::mat4& cam_font_v = context.mat_view_font;
             glm::mat4 cam_font_vp = cam_font_p * cam_font_v;
 
-            g_ctx.font_renderer->render(cam_font_vp);
+            g_ctx.font_renderer->render(cam_pos_font, cam_tar_font, cam_font_vp);
 
             const glm::mat4& cam_active_p = context.mat_proj_active;
             const glm::mat4& cam_active_v = context.mat_view_active;
@@ -438,12 +445,12 @@ namespace ppp
 
             for (auto& pair : g_ctx.batch_renderers)
             {
-                pair.second->render(cam_active_vp);
+                pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp);
             }
 
             for (auto& pair : g_ctx.instance_renderers)
             {
-                pair.second->render(cam_active_vp);
+                pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp);
             }
 
             target_framebuffer->bind(framebuffer_bound_target::READ);
@@ -481,9 +488,21 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void rendering_mode(render_rendering_mode mode)
+        {
+            g_ctx.rendering_mode = mode;
+        }
+
+        //-------------------------------------------------------------------------
         render_draw_mode draw_mode()
         {
             return g_ctx.draw_mode;
+        }
+
+        //-------------------------------------------------------------------------
+        render_rendering_mode rendering_mode()
+        {
+            return g_ctx.rendering_mode;
         }
 
         //-------------------------------------------------------------------------

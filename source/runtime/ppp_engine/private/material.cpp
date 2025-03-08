@@ -16,12 +16,12 @@ namespace ppp
         namespace tags
         {
             //-------------------------------------------------------------------------
-            // batched
+            // unlit
             std::string_view unlit_color()
             {
                 auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::unlit_color()
-                    : shader_pool::tags::instance_unlit_color();
+                    ? shader_pool::tags::unlit::color()
+                    : shader_pool::tags::unlit::instance_color();
 
                 return string::restore_sid(sid);
             }
@@ -29,15 +29,15 @@ namespace ppp
             std::string_view unlit_texture()
             {
                 auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::unlit_texture()
-                    : shader_pool::tags::instance_unlit_texture();
+                    ? shader_pool::tags::unlit::texture()
+                    : shader_pool::tags::unlit::instance_texture();
 
                 return string::restore_sid(sid);
             }
             //-------------------------------------------------------------------------
             std::string_view unlit_font()
             {
-                auto sid = shader_pool::tags::unlit_font();
+                auto sid = shader_pool::tags::unlit::font();
 
                 return string::restore_sid(sid);
             }
@@ -45,18 +45,28 @@ namespace ppp
             std::string_view unlit_normal()
             {
                 auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::unlit_normal()
-                    : shader_pool::tags::instance_unlit_normal();
+                    ? shader_pool::tags::unlit::normal()
+                    : shader_pool::tags::unlit::instance_normal();
 
                 return string::restore_sid(sid);
             }
 
             //-------------------------------------------------------------------------
+            // lit
+            std::string_view lit_color()
+            {
+                auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
+                    ? shader_pool::tags::lit::color()
+                    : shader_pool::tags::lit::instance_color();
+
+                return string::restore_sid(sid);
+            }
+            //-------------------------------------------------------------------------
             std::string_view lit_specular()
             {
                 auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::lit_specular()
-                    : shader_pool::tags::instance_lit_specular();
+                    ? shader_pool::tags::lit::specular()
+                    : shader_pool::tags::lit::instance_specular();
 
                 return string::restore_sid(sid);
             }
@@ -70,23 +80,29 @@ namespace ppp
             {
                 shader_tag_vertex_type_map = std::initializer_list<std::pair<const string::string_id, render::vertex_type>>
                 {
-                    {shader_pool::tags::unlit_color(),              render::vertex_type::POSITION_COLOR},
-                    {shader_pool::tags::instance_unlit_color(),     render::vertex_type::POSITION},
-
-                    {shader_pool::tags::unlit_texture(),            render::vertex_type::POSITION_TEXCOORD_COLOR},
-                    {shader_pool::tags::instance_unlit_texture(),   render::vertex_type::POSITION_TEXCOORD},
-
-                    {shader_pool::tags::unlit_font(),               render::vertex_type::POSITION_TEXCOORD_COLOR},
-
-                    {shader_pool::tags::unlit_normal(),             render::vertex_type::POSITION_NORMAL_COLOR},
-                    {shader_pool::tags::instance_unlit_normal(),    render::vertex_type::POSITION_NORMAL},
-
-                    {shader_pool::tags::lit_specular(),             render::vertex_type::POSITION_NORMAL_COLOR},
-                    {shader_pool::tags::instance_lit_specular(),    render::vertex_type::POSITION_NORMAL}
+                    // batched
+                    // unlit
+                    {shader_pool::tags::unlit::color(),              render::vertex_type::POSITION_COLOR},
+                    {shader_pool::tags::unlit::texture(),            render::vertex_type::POSITION_TEXCOORD_COLOR},
+                    {shader_pool::tags::unlit::font(),               render::vertex_type::POSITION_TEXCOORD_COLOR},
+                    {shader_pool::tags::unlit::normal(),             render::vertex_type::POSITION_NORMAL_COLOR},                 
+                    // lit
+                    {shader_pool::tags::lit::color(),                render::vertex_type::POSITION_NORMAL_COLOR},
+                    {shader_pool::tags::lit::specular(),             render::vertex_type::POSITION_NORMAL_COLOR},
+                    // instanced
+                    // unlit
+                    {shader_pool::tags::unlit::instance_color(),     render::vertex_type::POSITION},
+                    {shader_pool::tags::unlit::instance_texture(),   render::vertex_type::POSITION_TEXCOORD},
+                    {shader_pool::tags::unlit::instance_normal(),    render::vertex_type::POSITION_NORMAL},
+                    // lit
+                    {shader_pool::tags::lit::instance_color(),       render::vertex_type::POSITION_NORMAL},
+                    {shader_pool::tags::lit::instance_specular(),    render::vertex_type::POSITION_NORMAL}
+                    
                 };
             }
 
             graphics_hash_map<string::string_id, render::vertex_type>   shader_tag_vertex_type_map;
+
             string::string_id                                           active_shader_tag;
         } g_ctx;
 
@@ -181,8 +197,8 @@ namespace ppp
         shader_program normal_material()
         {
             string::string_id tag = render::draw_mode() == render::render_draw_mode::BATCHED 
-                ? shader_pool::tags::unlit_normal()
-                : shader_pool::tags::instance_unlit_normal();
+                ? shader_pool::tags::unlit::normal()
+                : shader_pool::tags::unlit::instance_normal();
 
             g_ctx.active_shader_tag = tag;
 
@@ -195,8 +211,8 @@ namespace ppp
         shader_program specular_material()
         {
             string::string_id tag = render::draw_mode() == render::render_draw_mode::BATCHED
-                ? shader_pool::tags::lit_specular()
-                : shader_pool::tags::instance_lit_specular();
+                ? shader_pool::tags::lit::specular()
+                : shader_pool::tags::lit::instance_specular();
 
             g_ctx.active_shader_tag = tag;
 

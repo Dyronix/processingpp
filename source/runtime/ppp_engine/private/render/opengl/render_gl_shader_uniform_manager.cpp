@@ -11,6 +11,7 @@
 #include <glm/gtc/type_ptr.hpp >
 
 #include <unordered_map>
+#include <optional>
 
 namespace ppp
 {
@@ -63,12 +64,15 @@ namespace ppp
 
                     shader_guard guard(m_shader_program_id); // Automatically binds the shader program
 
-                    for (const auto& pair : m_deferred_uniforms)
+                    for (auto& pair : m_deferred_uniforms)
                     {
-                        apply_uniform(pair.second);
-                    }
+                        if (pair.second)
+                        {
+                            apply_uniform(*pair.second);
 
-                    m_deferred_uniforms.clear();
+                            pair.second = {};
+                        }
+                    }
                 }
 
             private:
@@ -342,8 +346,8 @@ namespace ppp
                 }
 
             private:
-                temp_hash_map<string::string_id, shader_uniform> m_deferred_uniforms;
-                temp_hash_map<string::string_id, u32> m_shader_uniform_locations;
+                global_hash_map<string::string_id, std::optional<shader_uniform>> m_deferred_uniforms;
+                global_hash_map<string::string_id, u32> m_shader_uniform_locations;
 
                 u32 m_shader_program_id;
             };

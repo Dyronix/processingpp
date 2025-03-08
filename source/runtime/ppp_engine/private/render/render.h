@@ -38,8 +38,14 @@ namespace ppp
 
         struct render_context
         {
+            glm::vec3 camera_position_font;
+            glm::vec3 camera_lookat_font;
+
             glm::mat4 mat_view_font;
             glm::mat4 mat_proj_font;
+
+            glm::vec3 camera_position_active;
+            glm::vec3 camera_lookat_active;
 
             glm::mat4 mat_view_active;
             glm::mat4 mat_proj_active;
@@ -54,8 +60,10 @@ namespace ppp
         
         // Drawing mode (BATCHED | INSTANCING)
         void draw_mode(render_draw_mode mode);
+        void rendering_mode(render_rendering_mode mode);
 
         render_draw_mode draw_mode();
+        render_rendering_mode rendering_mode();
 
         // Shader
         void push_active_shader(string::string_id tag, vertex_type type);

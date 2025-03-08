@@ -27,7 +27,7 @@ namespace ppp
 
         public:
             virtual void                begin() = 0;
-            virtual void                render(const glm::mat4& vp) = 0;
+            virtual void                render(const glm::vec3& camera_position, const glm::vec3& camera_target, const glm::mat4& vp) = 0;
             virtual void                end() = 0;
             virtual void                terminate() = 0;
 

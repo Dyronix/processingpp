@@ -10,15 +10,15 @@ namespace ppp
 {
     namespace trigonometry
     {
-        enum class AngleMode
+        enum class angle_mode_type
         {
             DEGREES,
             RADIANS
         };
 
-        void angle_mode(AngleMode mode);
+        void angle_mode(angle_mode_type mode);
 
-        AngleMode angle_mode();
+        angle_mode_type angle_mode();
 
         template<typename T>
         T degrees(T rad)

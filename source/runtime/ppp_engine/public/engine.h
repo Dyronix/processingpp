@@ -12,6 +12,7 @@
 #include "material.h"
 #include "mathematics.h"
 #include "model.h"
+#include "lights.h"
 #include "random.h"
 #include "rendering.h"
 #include "shapes.h"

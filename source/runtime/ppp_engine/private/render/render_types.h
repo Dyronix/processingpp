@@ -52,5 +52,11 @@ namespace ppp
             INSTANCED,
             BATCHED
         };
+
+        enum class render_rendering_mode
+        {
+            FORWARD,
+            DEFERRED
+        };
     }
 }

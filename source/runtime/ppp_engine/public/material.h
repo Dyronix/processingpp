@@ -15,6 +15,7 @@ namespace ppp
             std::string_view unlit_font();
             std::string_view unlit_normal();
 
+            std::string_view lit_color();
             std::string_view lit_specular();
         }
 

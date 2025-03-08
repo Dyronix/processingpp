@@ -276,7 +276,7 @@ namespace ppp
         void draw(image_id image_id, float x, float y, float width, float height)
         {
             auto prev_shader = render::active_shader();
-            auto curr_shader = shader_pool::tags::unlit_texture();
+            auto curr_shader = shader_pool::tags::unlit::texture();
 
             material::shader(string::restore_sid(curr_shader));
 
@@ -306,7 +306,7 @@ namespace ppp
 
             transform_stack::pop();
 
-            curr_shader = shader_pool::tags::unlit_color();
+            curr_shader = shader_pool::tags::unlit::color();
 
             material::shader(string::restore_sid(curr_shader));
 

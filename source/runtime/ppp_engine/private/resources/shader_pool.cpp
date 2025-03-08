@@ -18,73 +18,93 @@ namespace ppp
     {
         namespace tags
         {
-            //-------------------------------------------------------------------------
-            // batched
-            string::string_id unlit_color()
+            namespace unlit
             {
-                static const string::string_id s_unlit_color = string::store_sid("unlit_color");
+                //-------------------------------------------------------------------------
+                // batched
+                string::string_id color()
+                {
+                    static const string::string_id s_color = string::store_sid("unlit_color");
 
-                return s_unlit_color;
-            }
-            //-------------------------------------------------------------------------
-            string::string_id unlit_texture()
-            {
-                static const string::string_id s_unlit_texture = string::store_sid("unlit_texture");
+                    return s_color;
+                }
+                //-------------------------------------------------------------------------
+                string::string_id texture()
+                {
+                    static const string::string_id s_texture = string::store_sid("unlit_texture");
 
-                return s_unlit_texture;
-            }
-            //-------------------------------------------------------------------------
-            string::string_id unlit_font()
-            {
-                static const string::string_id s_unlit_font = string::store_sid("unlit_font");
+                    return s_texture;
+                }
+                //-------------------------------------------------------------------------
+                string::string_id font()
+                {
+                    static const string::string_id s_font = string::store_sid("unlit_font");
 
-                return s_unlit_font;
-            }
-            //-------------------------------------------------------------------------
-            string::string_id unlit_normal()
-            {
-                static const string::string_id s_unlit_normal = string::store_sid("unlit_normal");
+                    return s_font;
+                }
+                //-------------------------------------------------------------------------
+                string::string_id normal()
+                {
+                    static const string::string_id s_normal = string::store_sid("unlit_normal");
 
-                return s_unlit_normal;
-            }
+                    return s_normal;
+                }
 
-            //-------------------------------------------------------------------------
-            string::string_id lit_specular()
-            {
-                static const string::string_id s_lit_specular = string::store_sid("lit_specular");
+                //-------------------------------------------------------------------------
+                // instanced
+                string::string_id instance_color()
+                {
+                    static const string::string_id s_instance_color = string::store_sid("instance_unlit_color");
 
-                return s_lit_specular;
-            }
+                    return s_instance_color;
+                }
+                //-------------------------------------------------------------------------
+                string::string_id instance_texture()
+                {
+                    static const string::string_id s_instance_texture = string::store_sid("instance_unlit_texture");
 
-            //-------------------------------------------------------------------------
-            // instanced
-            string::string_id instance_unlit_color()
-            {
-                static const string::string_id s_instance_unlit_color = string::store_sid("instance_unlit_color");
+                    return s_instance_texture;
+                }
+                //-------------------------------------------------------------------------
+                string::string_id instance_normal()
+                {
+                    static const string::string_id s_instance_normal = string::store_sid("instance_unlit_normal");
 
-                return s_instance_unlit_color;
-            }
-            //-------------------------------------------------------------------------
-            string::string_id instance_unlit_texture()
-            {
-                static const string::string_id s_instance_unlit_texture = string::store_sid("instance_unlit_texture");
-
-                return s_instance_unlit_texture;
-            }
-            //-------------------------------------------------------------------------
-            string::string_id instance_unlit_normal()
-            {
-                static const string::string_id s_instance_unlit_normal = string::store_sid("instance_unlit_normal");
-
-                return s_instance_unlit_normal;
+                    return s_instance_normal;
+                }
             }
 
-            //-------------------------------------------------------------------------
-            string::string_id instance_lit_specular()
+            namespace lit
             {
-                static const string::string_id s_instance_lit_specular = string::store_sid("instance_lit_specular");
+                //-------------------------------------------------------------------------
+                // batched
+                string::string_id color()
+                {
+                    static const string::string_id s_color = string::store_sid("lit_color");
 
-                return s_instance_lit_specular;
+                    return s_color;
+                }
+                string::string_id specular()
+                {
+                    static const string::string_id s_specular = string::store_sid("lit_specular");
+
+                    return s_specular;
+                }
+
+                //-------------------------------------------------------------------------
+                // instanced
+                string::string_id instance_color()
+                {
+                    static const string::string_id s_instance_color = string::store_sid("instance_lit_color");
+
+                    return s_instance_color;
+                }
+                string::string_id instance_specular()
+                {
+                    static const string::string_id s_instance_specular = string::store_sid("instance_lit_specular");
+
+                    return s_instance_specular;
+                }
             }
         }
 
@@ -100,19 +120,24 @@ namespace ppp
         {
             memory::persistent_graphics_tagged_allocator<render::shaders::shader_program> graphics_allocator;
 
-            g_ctx.shaders_hash_map.emplace(tags::unlit_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code()));
-            g_ctx.shaders_hash_map.emplace(tags::instance_unlit_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::instance_unlit_color_vertex_shader_code(), render::shaders::unlit_color_pixel_shader_code()));
-            
-            g_ctx.shaders_hash_map.emplace(tags::unlit_texture(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit_texture_vertex_shader_code(), render::shaders::unlit_texture_pixel_shader_code()));
-            g_ctx.shaders_hash_map.emplace(tags::instance_unlit_texture(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::instance_unlit_texture_vertex_shader_code(), render::shaders::unlit_texture_pixel_shader_code()));
+            // batched
+            // unlit
+            g_ctx.shaders_hash_map.emplace(tags::unlit::color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::color_vertex_shader_code(), render::shaders::unlit::color_pixel_shader_code()));           
+            g_ctx.shaders_hash_map.emplace(tags::unlit::texture(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::texture_vertex_shader_code(), render::shaders::unlit::texture_pixel_shader_code()));
+            g_ctx.shaders_hash_map.emplace(tags::unlit::font(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::font_vertex_shader_code(), render::shaders::unlit::font_pixel_shader_code()));
+            g_ctx.shaders_hash_map.emplace(tags::unlit::normal(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::normal_vertex_shader_code(), render::shaders::unlit::normal_pixel_shader_code()));            
+            // lit
+            g_ctx.shaders_hash_map.emplace(tags::lit::color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::lit::color_vertex_shader_code(), render::shaders::lit::color_pixel_shader_code()));
+            g_ctx.shaders_hash_map.emplace(tags::lit::specular(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::lit::specular_vertex_shader_code(), render::shaders::lit::specular_pixel_shader_code()));
 
-            g_ctx.shaders_hash_map.emplace(tags::unlit_font(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit_font_vertex_shader_code(), render::shaders::unlit_font_pixel_shader_code()));
-
-            g_ctx.shaders_hash_map.emplace(tags::unlit_normal(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit_normal_vertex_shader_code(), render::shaders::unlit_normal_pixel_shader_code()));
-            g_ctx.shaders_hash_map.emplace(tags::instance_unlit_normal(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::instance_unlit_normal_vertex_shader_code(), render::shaders::unlit_normal_pixel_shader_code()));
-            
-            g_ctx.shaders_hash_map.emplace(tags::lit_specular(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::specular_vertex_shader_code(), render::shaders::specular_pixel_shader_code()));
-            g_ctx.shaders_hash_map.emplace(tags::instance_lit_specular(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::instance_specular_vertex_shader_code(), render::shaders::specular_pixel_shader_code()));
+            // instanced
+            // unlit
+            g_ctx.shaders_hash_map.emplace(tags::unlit::instance_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::instance_color_vertex_shader_code(), render::shaders::unlit::color_pixel_shader_code()));
+            g_ctx.shaders_hash_map.emplace(tags::unlit::instance_texture(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::instance_texture_vertex_shader_code(), render::shaders::unlit::texture_pixel_shader_code()));
+            g_ctx.shaders_hash_map.emplace(tags::unlit::instance_normal(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::instance_normal_vertex_shader_code(), render::shaders::unlit::normal_pixel_shader_code()));
+            // lit
+            //g_ctx.shaders_hash_map.emplace(tags::lit::instance_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::lit::instance_color_vertex_shader_code(), render::shaders::lit::color_pixel_shader_code()));
+            g_ctx.shaders_hash_map.emplace(tags::lit::instance_specular(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::lit::instance_specular_vertex_shader_code(), render::shaders::lit::specular_pixel_shader_code()));
 
             return true;
         }
@@ -130,6 +155,7 @@ namespace ppp
             return it != std::cend(g_ctx.shaders_hash_map);
         }
 
+        //-------------------------------------------------------------------------
         u32 add_shader_program(string::string_id tag, std::string_view vs_source, std::string_view fs_source)
         {
             auto it = g_ctx.shaders_hash_map.find(tag);

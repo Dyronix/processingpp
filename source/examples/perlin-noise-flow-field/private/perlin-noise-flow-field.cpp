@@ -62,7 +62,7 @@ namespace ppp
 
     void setup()
     {
-        trigonometry::angle_mode(trigonometry::AngleMode::RADIANS);
+        trigonometry::angle_mode(trigonometry::angle_mode_type::RADIANS);
 
         keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
 

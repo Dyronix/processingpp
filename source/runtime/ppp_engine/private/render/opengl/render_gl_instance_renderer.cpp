@@ -112,7 +112,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void instance_renderer::render(const glm::mat4& vp)
+        void instance_renderer::render(const glm::vec3& camera_position, const glm::vec3& camera_target, const glm::mat4& vp)
         {
             if (!has_drawing_data())
             {

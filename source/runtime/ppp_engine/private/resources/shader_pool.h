@@ -12,20 +12,30 @@ namespace ppp
     {
         namespace tags
         {
-            // batched
-            string::string_id unlit_color();
-            string::string_id unlit_texture();
-            string::string_id unlit_font();
-            string::string_id unlit_normal();
+            namespace unlit
+            {
+                // batched
+                string::string_id color();
+                string::string_id texture();
+                string::string_id font();
+                string::string_id normal();
 
-            string::string_id lit_specular();
+                // instanced
+                string::string_id instance_color();
+                string::string_id instance_texture();
+                string::string_id instance_normal();
+            }
 
-            // instanced
-            string::string_id instance_unlit_color();
-            string::string_id instance_unlit_texture();
-            string::string_id instance_unlit_normal();
-                  
-            string::string_id instance_lit_specular();
+            namespace lit
+            {
+                // batched
+                string::string_id color();
+                string::string_id specular();
+
+                // instanced
+                string::string_id instance_color();
+                string::string_id instance_specular();
+            }
         }
 
         bool initialize();

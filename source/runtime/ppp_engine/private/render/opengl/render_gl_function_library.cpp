@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <gsl/narrow>
 
-#define ENABLE_GL_FUNCTION_LOGGING 1
+#define ENABLE_GL_FUNCTION_LOGGING 0
 #define ENABLE_GL_PARAMETER_LOGGING 1
 
 #if ENABLE_GL_FUNCTION_LOGGING

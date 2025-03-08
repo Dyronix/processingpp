@@ -1,19 +1,263 @@
 #include "engine.h"
 
+#include <sstream>
+
 namespace ppp
 {
+    bool _generate_new_data = false;
+    bool _no_close_after_x_frames = false;
+    bool _no_testing = false;
+
     constexpr int _window_width = 1280;
     constexpr int _window_height = 720;
     constexpr int _canvas_width = 600;
     constexpr int _canvas_height = 600;
 
-    image::image _image_container;
-    image::image _image_wall;
-    image::image _image_awesomeface;
+    constexpr int _total_shape_count = 8;
+
+    int _shape_vis = 0;
+    int _show_all = 1;
+    int _show_floor = 1;
+
+    int _interpolation = 24;
+
+    int _enable_normal = 0;
+
+    material::shader_program _material_lit;
+
+    void append_lights()
+    {
+        lights::ambient_light_desc ambient_desc =
+        {
+            0.1f,   // ambient_desc.r
+            0.1f,   // ambient_desc.g
+            0.1f,   // ambient_desc.b
+            0.2f    // intensity
+        };
+
+        lights::ambient_light(ambient_desc);
+
+        //lights::directional_light_desc directional_desc =
+        //{
+        //    -0.2f, // directional_desc.dirx
+        //    -1.0f, // directional_desc.diry
+        //    -0.3f, // directional_desc.dirz
+        //    0.8f, // directional_desc.r
+        //    0.8f, // directional_desc.b
+        //    0.8f, // directional_desc.b
+        //    1.0f, // directional_desc.intensity
+        //    1.0f, // directional_desc.spec_r
+        //    1.0f, // directional_desc.spec_g
+        //    1.0f, // directional_desc.spec_b
+        //    false, // directional_desc.spec_enabled
+        //    false // directional_desc.cast_shadows
+        //};
+
+        //lights::directional_light(directional_desc);
+
+        lights::point_light_desc point_desc =
+        {
+            0.0f, // point_desc.x
+            0.0f, // point_desc.y
+            0.0f, // point_desc.z
+            0.8f, // point_desc.r
+            0.8f, // point_desc.b
+            0.8f, // point_desc.b
+            10.0f, // point_desc.intensity
+            1.0f, // point_desc.spec_r
+            1.0f, // point_desc.spec_g
+            1.0f, // point_desc.spec_b
+            false, // point_desc.spec_enabled
+            false, // point_desc.cast_shadows
+            100.0f, // point_desc.range
+            200.0f, // point_desc.falloff
+            0.02f // point_desc.threshold
+        };
+
+        float start_x = -120.0f; // Initial x position to start grid from
+        float start_y = 40.0f;    // Initial y position for the grid row
+        float x_spacing = 80.0f; // Horizontal spacing between shapes
+
+        for(int i = 0; i < 4; i++)
+        {
+            // lights
+            point_desc.x = start_x;
+            point_desc.y = start_y;
+            point_desc.z = 100.0f;
+
+            lights::point_light(point_desc);
+            start_x += x_spacing;
+        }
+    }
+
+    void draw_lights()
+    {
+        float start_x = -120.0f; // Initial x position to start grid from
+        float start_y = 40.0f;    // Initial y position for the grid row
+        float x_spacing = 80.0f; // Horizontal spacing between shapes
+
+        transform::push();
+        transform::translate(start_x, start_y, 100.0f);
+        for (int i = 0; i < 4; i++)
+        {
+            // shapes
+            shapes::box(5.0f, 5.0f, 5.0f);
+            transform::translate(x_spacing, 0.0f);
+
+        }
+        transform::pop();
+    }
+
+    void draw_shapes_grid()
+    {
+
+        float start_x = -120.0f; // Initial x position to start grid from
+        float start_y = 40.0f;    // Initial y position for the grid row
+        float x_spacing = 80.0f; // Horizontal spacing between shapes
+        float y_spacing = -80.0f; // Vertical spacing between rows
+
+        if (_show_all)
+        {
+            transform::push();
+
+            // Row 1
+            transform::translate(start_x, start_y);
+            shapes::box(50.0f, 50.0f, 50.0f);
+            transform::translate(x_spacing, 0.0f);
+            shapes::plane(50.0f, 50.0f);
+            transform::translate(x_spacing, 0.0f);
+            shapes::cylinder(25.0f, 50.0f, _interpolation);
+            transform::translate(x_spacing, 0.0f);
+            shapes::sphere(25.0f, _interpolation);
+
+            // Move to next row and reset x position
+            transform::translate(-3 * x_spacing, y_spacing);
+
+            // Row 2
+            shapes::torus(25.0f, 10.0f, _interpolation, _interpolation);
+            transform::translate(x_spacing, 0.0f);
+            shapes::cone(25.0f, 50.0f, _interpolation, true);
+            transform::translate(x_spacing, 0.0f);
+            shapes::tetrahedron(25.0f, 25.0f);
+            transform::translate(x_spacing, 0.0f);
+            shapes::octahedron(25.0f, 25.0f);
+
+            transform::pop();
+        }
+        else
+        {
+            transform::push();
+
+            // Row 1
+            transform::translate(start_x, start_y);
+            if (_shape_vis == 0) { shapes::box(50.0f, 50.0f, 50.0f); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 1) { shapes::plane(50.0f, 50.0f); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 2) { shapes::cylinder(25.0f, 50.0f, _interpolation); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 3) { shapes::sphere(25.0f, _interpolation); }
+
+            // Move to next row and reset x positiond
+            transform::translate(-3 * x_spacing, y_spacing);
+
+            // Row 2
+            if (_shape_vis == 4) { shapes::torus(25.0f, 10.0f, _interpolation, _interpolation); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 5) { shapes::cone(25.0f, 50.0f, _interpolation, true); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 6) { shapes::tetrahedron(25.0f, 25.0f); }
+            transform::translate(x_spacing, 0.0f);
+            if (_shape_vis == 7) { shapes::octahedron(25.0f, 25.0f); }
+
+            transform::pop();
+        }
+    }
+
+    void draw_floor()
+    {
+        if (_show_floor)
+        {
+            float start_x = -120.0f; // Initial x position to start grid from
+            float start_y = 40.0f;    // Initial y position for the grid row
+            float x_spacing = 80.0f; // Horizontal spacing between shapes
+            float y_spacing = -80.0f; // Vertical spacing between rows
+
+            transform::push();
+
+            transform::translate(start_x, start_y);
+            transform::translate(x_spacing * 2 - 40.0f, y_spacing - 40.0f);
+
+            transform::rotate(1.0f, 0.0f, 0.0f, -90.0f);
+
+            shapes::plane(400.0f, 400.0f);
+
+            transform::pop();
+        }
+    }
 
     void setup_input_events()
     {
         keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
+
+        keyboard::add_key_pressed_callback(
+            [](keyboard::key_code key)
+        {
+            if (key == keyboard::key_code::KEY_SPACE)
+            {
+                bool show_all_shapes = _show_all > 0;
+                show_all_shapes = !show_all_shapes;
+                _show_all = show_all_shapes ? 1 : 0;
+            }
+
+            else if (key == keyboard::key_code::KEY_UP && _show_all == 0)
+            {
+                _shape_vis = (_shape_vis + 1) % _total_shape_count;
+            }
+            else if (key == keyboard::key_code::KEY_DOWN && _show_all == 0)
+            {
+                _shape_vis = (_shape_vis - 1) < 0 ? _total_shape_count - 1 : _shape_vis - 1;
+            }
+
+            else if (key == keyboard::key_code::KEY_1)
+            {
+                _interpolation = 4;
+            }
+            else if (key == keyboard::key_code::KEY_2)
+            {
+                _interpolation = 8;
+            }
+            else if (key == keyboard::key_code::KEY_3)
+            {
+                _interpolation = 12;
+            }
+            else if (key == keyboard::key_code::KEY_4)
+            {
+                _interpolation = 24;
+            }
+
+            else if (key == keyboard::key_code::KEY_F)
+            {
+                _show_floor = _show_floor == 1 ? 0 : 1;
+                environment::print("show floor: %d", _show_floor);
+            }
+            else if (key == keyboard::key_code::KEY_N)
+            {
+                _enable_normal = _enable_normal == 1 ? 0 : 1;
+                environment::print("enable normal: %d", _enable_normal);
+
+                if (_enable_normal)
+                {
+                    material::normal_material();
+                    lights::no_lights();
+                }
+                else
+                {
+                    material::shader("lit");
+                    append_lights();
+                }
+            }
+        });
     }
 
     app_params entry(int argc, char** argv)
@@ -25,24 +269,36 @@ namespace ppp
         app_params.window_width = _window_width;
         app_params.window_height = _window_height;
 
+        _generate_new_data = has_argument(argc, argv, "--generate-new-data");
+        _no_close_after_x_frames = has_argument(argc, argv, "--no-close");
+        _no_testing = has_argument(argc, argv, "--no-testing");
+
         return app_params;
     }
 
     void setup()
     {
+        std::string vs_path = "local:/content/shaders/lit.vs";
+        std::string ps_path = "local:/content/shaders/lit.fs";
+
+        _material_lit = material::load_shader("lit", vs_path, ps_path);
+
         setup_input_events();
+
+        rendering::enable_batched_draw_mode();
 
         shapes::enable_wireframe_mode(false);
         shapes::enable_solid_mode(true);
+        shapes::normal_mode(shapes::normal_mode_type::FLAT);
 
         camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
         camera::set_scene_camera(20, -40, 400);
 
-        _image_container = image::load("local:content/t_container.jpg");
-        _image_wall = image::load("local:content/t_wall.jpg");
-        _image_awesomeface = image::load("local:content/t_awesomeface.jpg");
+        material::shader("lit");
 
-        rendering::enable_batched_draw_mode();
+        trigonometry::angle_mode(trigonometry::angle_mode_type::DEGREES);
+
+        append_lights();
     }
 
     void draw()
@@ -59,42 +315,12 @@ namespace ppp
 
         camera::orbit_control(options);
 
-        color::fill({ 255,255,255,255 });
+        color::fill({ 255,0,0,255 });
 
-        int grid_width = 2;
-        int grid_height = 1;
-        int grid_depth = 1;
+        draw_shapes_grid();
+        draw_lights();
+        draw_floor();
 
-        float cube_x_offset = 60.0f;
-        float cube_y_offset = 60.0f;
-        float cube_z_offset = 60.0f;
-
-        float start_x = (-1.0f * cube_x_offset) * (grid_width / 2);
-        float start_y = (-1.0f * cube_y_offset) * (grid_height / 2);
-        float start_z = (-1.0f * cube_z_offset) * (grid_depth / 2);
-
-        for (int layer = 0; layer < grid_depth; ++layer)
-        {
-            for (int row = 0; row < grid_height; ++row)
-            {
-                for (int col = 0; col < grid_width; ++col)
-                {
-                    transform::push();
-
-                    material::reset_textures();
-                    material::texture((layer + row + col) % 2 ? _image_wall.id : _image_container.id);
-                    material::texture(_image_awesomeface.id);
-
-                    transform::translate(
-                        start_x + col * cube_x_offset,
-                        start_y + row * cube_y_offset,
-                        start_z + layer * cube_z_offset
-                    );
-
-                    shapes::box(50.0f, 50.0f, 50.0f);
-                    transform::pop();
-                }
-            }
-        }
+        color::fill({ 0,0,0,255 });
     }
 }

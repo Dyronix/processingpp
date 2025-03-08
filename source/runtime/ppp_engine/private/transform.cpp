@@ -21,8 +21,17 @@ namespace ppp
         {
             switch (trigonometry::angle_mode())
             {
-            case trigonometry::AngleMode::DEGREES: transform_stack::rotate(trigonometry::radians(angle)); break;
-            case trigonometry::AngleMode::RADIANS: transform_stack::rotate(angle); break;
+            case trigonometry::angle_mode_type::DEGREES: transform_stack::rotate(trigonometry::radians(angle)); break;
+            case trigonometry::angle_mode_type::RADIANS: transform_stack::rotate(angle); break;
+            }
+        }
+
+        void rotate(float axisx, float axisy, float axisz, float angle)
+        {
+            switch (trigonometry::angle_mode())
+            {
+            case trigonometry::angle_mode_type::DEGREES: transform_stack::rotate({ axisx, axisy, axisz }, trigonometry::radians(angle)); break;
+            case trigonometry::angle_mode_type::RADIANS: transform_stack::rotate({ axisx, axisy, axisz }, angle); break;
             }
         }
         

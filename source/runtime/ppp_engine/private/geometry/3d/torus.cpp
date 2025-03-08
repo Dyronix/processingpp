@@ -85,23 +85,28 @@ namespace ppp
             }
         }
         //-------------------------------------------------------------------------
-        static void make_normals(geometry* self)
+        static void make_normals(geometry* self, s32 detail_x, s32 detail_y)
         {
-            for (size_t i = 0; i < self->vertex_count(); i++) 
+            for (s32 i = 0; i <= detail_y; i++)
             {
-                const glm::vec3& p = self->vertex_positions()[i];
-                float theta = std::atan2(p.y, p.x);
-                float phi = std::asin(p.z / std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z));
+                f32 v = static_cast<f32>(i) / detail_y;
+                f32 phi = constants::two_pi() * v;
+                f32 cos_phi = std::cos(phi);
+                f32 sin_phi = std::sin(phi);
 
-                // Compute the normal as in the original JavaScript code
-                glm::vec3 n(
-                    std::cos(phi) * std::cos(theta),
-                    std::cos(phi) * std::sin(theta),
-                    std::sin(phi)
-                );
+                for (s32 j = 0; j <= detail_x; j++)
+                {
+                    f32 u = static_cast<f32>(j) / detail_x;
+                    f32 theta = constants::two_pi() * u;
+                    f32 cos_theta = std::cos(theta);
+                    f32 sin_theta = std::sin(theta);
 
-                // Store the normal in the geometry object
-                self->vertex_normals().push_back(n);
+                    // Calculate the position (vertex) of the torus
+                    const glm::vec3 n = glm::vec3(cos_phi * cos_theta, cos_phi * sin_theta, sin_phi);
+
+                    // Store the vertex in the geometry object
+                    self->vertex_normals().push_back(n);
+                }
             }
         }
 
@@ -128,7 +133,7 @@ namespace ppp
 
                     make_vertices(self, tube_ratio, detail_x, detail_y);
                     make_uvs(self, detail_x, detail_y);
-                    make_normals(self);
+                    make_normals(self, detail_x, detail_y);
                 };
 
                 return geometry_pool::add_new_geometry(geometry(gid, smooth_normals, create_geom_fn));

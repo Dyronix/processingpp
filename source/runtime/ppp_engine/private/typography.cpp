@@ -97,7 +97,7 @@ namespace ppp
 
             font_character_item make_font_character(s32 character, render::texture_id texture_id, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y)
             {
-                resources::imaterial* mat_font = material_pool::get_or_create_material_instance(shader_pool::tags::unlit_font());
+                resources::imaterial* mat_font = material_pool::get_or_create_material_instance(shader_pool::tags::unlit::font());
 
                 temp_stringstream stream;
 

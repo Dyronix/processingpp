@@ -21,7 +21,7 @@ namespace ppp
 
         public:
             void begin() override;
-            void render(const glm::mat4& vp) override;
+            void render(const glm::vec3& camera_position, const glm::vec3& camera_target, const glm::mat4& vp) override;
             void end() override;
             void terminate() override;
 
