@@ -90,6 +90,7 @@ namespace ppp
                 virtual void texture_image_2D(u32 target, s32 level, s32 internalformat, u64 width, u64 height, s32 border, u32 format, u32 type, const void* data) = 0;
                 virtual void texture_sub_image_2D(u32 target, s32 level, s32 xoffset, s32 yoffset, u64 width, u64 height, u32 format, u32 type, const void* data) = 0;
                 virtual void set_texture_integer_parameter(u32 target, u32 pname, s32 param) = 0;
+                virtual void set_texture_float_array_parameter(u32 target, u32 pname, f32* param) = 0;
 
                 // Shaders
                 virtual u32 create_shader(u32 shaderType) = 0;
@@ -216,6 +217,7 @@ namespace ppp
                 void texture_image_2D(u32 target, s32 level, s32 internalformat, u64 width, u64 height, s32 border, u32 format, u32 type, const void* data) override;
                 void texture_sub_image_2D(u32 target, s32 level, s32 xoffset, s32 yoffset, u64 width, u64 height, u32 format, u32 type, const void* data) override;
                 void set_texture_integer_parameter(u32 target, u32 pname, s32 param) override;
+                void set_texture_float_array_parameter(u32 target, u32 pname, f32* param) override;
 
                 // Shaders
                 u32 create_shader(u32 shaderType) override;
@@ -342,6 +344,7 @@ namespace ppp
                 void texture_image_2D(u32 target, s32 level, s32 internalformat, u64 width, u64 height, s32 border, u32 format, u32 type, const void* data) override;
                 void texture_sub_image_2D(u32 target, s32 level, s32 xoffset, s32 yoffset, u64 width, u64 height, u32 format, u32 type, const void* data) override;
                 void set_texture_integer_parameter(u32 target, u32 pname, s32 param) override;
+                void set_texture_float_array_parameter(u32 target, u32 pname, f32* param) override;
 
                 // Shaders
                 u32 create_shader(u32 shaderType) override;

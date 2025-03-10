@@ -88,8 +88,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        instance_renderer::instance_renderer(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
-            : base_renderer(layouts, layout_count, shader_tag)
+        instance_renderer::instance_renderer(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
+            : base_renderer(shader_tag)
             , m_instance_data_map()
             , m_instance_layouts(instance_layouts)
             , m_instance_layout_count(instance_layout_count)
@@ -120,9 +120,11 @@ namespace ppp
                 return;
             }
 
-            opengl::api::instance().use_program(shader_program());
+            const auto& program = shader_program();
 
-            shaders::push_uniform(shader_program(), string::store_sid("u_view_proj"), vp);
+            opengl::api::instance().use_program(program->id());
+
+            shaders::push_uniform(program->id(), string::store_sid("u_view_proj"), vp);
 
             for (auto& pair : m_instance_data_map)
             {
@@ -230,7 +232,7 @@ namespace ppp
         {
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
 
-            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe"), GL_FALSE);
+            shaders::push_uniform(shader_program()->id(), string::store_sid("u_wireframe"), GL_FALSE);
 
             on_render(topology, drawing_data);
         }
@@ -241,16 +243,16 @@ namespace ppp
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_LINE);
             opengl::api::instance().line_width(internal::_wireframe_linewidth);
 
-            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe"), GL_TRUE);
-            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe_color"), color::convert_color(internal::_wireframe_linecolor));
+            shaders::push_uniform(shader_program()->id(), string::store_sid("u_wireframe"), GL_TRUE);
+            shaders::push_uniform(shader_program()->id(), string::store_sid("u_wireframe_color"), color::convert_color(internal::_wireframe_linecolor));
 
             on_render(topology, drawing_data);
         }
 
         // Primitive Instance Renderer
         //-------------------------------------------------------------------------
-        primitive_instance_renderer::primitive_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
-            :instance_renderer(layouts, layout_cout, instance_layouts, instance_layout_count, shader_tag)
+        primitive_instance_renderer::primitive_instance_renderer(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
+            :instance_renderer(instance_layouts, instance_layout_count, shader_tag)
         {
 
         }
@@ -264,11 +266,13 @@ namespace ppp
             auto inst = drawing_data.first_instance();
             if (inst != nullptr)
             {
+                const auto& program = shader_program();
+
                 while (inst != nullptr)
                 {
                     inst->bind();
                     inst->submit();
-                    inst->draw(topology, shader_program());
+                    inst->draw(topology, program->id());
                     inst->unbind();
 
                     inst = drawing_data.next_instance();
@@ -278,8 +282,8 @@ namespace ppp
 
         // Texture Instance Renderer
         //-------------------------------------------------------------------------
-        texture_instance_renderer::texture_instance_renderer(const attribute_layout* layouts, u64 layout_cout, const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
-            :instance_renderer(layouts, layout_cout, instance_layouts, instance_layout_count, shader_tag)
+        texture_instance_renderer::texture_instance_renderer(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
+            :instance_renderer(instance_layouts, instance_layout_count, shader_tag)
         {
 
         }
@@ -296,11 +300,13 @@ namespace ppp
                 const auto& samplers = material()->samplers();
                 const auto& textures = material()->textures();
 
+                const auto& program = shader_program();
+
                 while (inst != nullptr)
                 {
                     inst->bind();
 
-                    shaders::push_uniform_array(shader_program(), string::store_sid("s_images"), samplers.size(), samplers.data());
+                    shaders::push_uniform_array(program->id(), string::store_sid("s_images"), samplers.size(), samplers.data());
 
                     s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
@@ -311,7 +317,7 @@ namespace ppp
                     }
 
                     inst->submit();
-                    inst->draw(topology, shader_program());
+                    inst->draw(topology, program->id());
                     inst->unbind();
 
                     inst = drawing_data.next_instance();

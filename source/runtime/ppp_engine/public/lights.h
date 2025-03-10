@@ -8,52 +8,43 @@ namespace ppp
 
         enum class light_type
         {
-            AMBIENT,
             POINT,
             DIRECTIONAL
-        };
-
-        struct ambient_light_desc
-        {
-            float r, g, b;
-            float intensity = 1.0f;
-        };
-
-        struct directional_light_desc
-        {
-            float   dirx, diry, dirz;
-            float   r, g, b;
-            float   intensity = 1.0f;
-            float   spec_r, spec_g, spec_b = 1.0f;
-            bool    spec_enabled = false;
-            bool    cast_shadows = false;
         };
 
         struct point_light_desc
         {
             float   x, y, z;
-            float   r, g, b;
-            float   intensity = 1.0f;
-            float   spec_r, spec_g, spec_b = 1.0f;
-            bool    spec_enabled = false;
+            float   ambient_r, ambient_g, ambient_b = 1.0f;
+            float   diffuse_r, diffuse_g, diffuse_b = 1.0f;
+            float   specular_r, specular_g, specular_b = 1.0f;
+            bool    specular_enabled = false;
             bool    cast_shadows = false;
-            float   range = 100.0f;
-            float   falloff = 200.0f;
-            float   threshold = 0.02f;
+            float   max_range = 400.0f;
+            float   falloff_start = 250.0f;
+        };
+
+        struct directional_light_desc
+        {
+            float   dir_x, dir_y, dir_z;
+            float   ambient_r, ambient_g, ambient_b = 1.0f;
+            float   diffuse_r, diffuse_g, diffuse_b = 1.0f;
+            float   specular_r, specular_g, specular_b = 1.0f;
+            bool    specular_enabled = false;
+            bool    cast_shadows = false;
         };
 
         void no_lights();
 
-        light_id ambient_light(const ambient_light_desc& desc);
         light_id directional_light(const directional_light_desc& desc);
         light_id point_light(const point_light_desc& desc);
 
         void light_position(light_id id, light_type type, float x, float y, float z);
         void light_direction(light_id id, light_type type, float x, float y, float z);
-        void light_intensity(light_id id, light_type type, float intensity);
+        void light_ambient(light_id id, light_type type, float r, float g, float b);
+        void light_diffuse(light_id id, light_type type, float r, float g, float b);
+        void light_specular(light_id id, light_type type, float r, float g, float b);
+        void light_enable_specular(light_id id, light_type type, bool enable);
         void light_enable_shadows(light_id id, light_type type, bool enable);
-        void light_range(light_id id, light_type, float range);
-        void light_falloff(light_id id, light_type type, float falloff);
-        void light_specular_color(light_id id, light_type type, float r, float g, float b);
     }
 }

@@ -66,7 +66,7 @@ namespace ppp
         render_rendering_mode rendering_mode();
 
         // Shader
-        void push_active_shader(string::string_id tag, vertex_type type);
+        void push_active_shader(string::string_id tag);
 
         string::string_id active_shader();
 

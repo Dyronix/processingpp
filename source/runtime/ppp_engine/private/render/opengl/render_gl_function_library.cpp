@@ -1168,6 +1168,18 @@ namespace ppp
 
                 GL_CALL(glTexParameteri(target, pname, param));
             }
+            //-------------------------------------------------------------------------
+            void function_library::set_texture_float_array_parameter(u32 target, u32 pname, f32* param)
+            {
+                GL_LOG("glTexParameterfv");
+                #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\ttarget: {0}", texture_target_to_string(target));
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
+                GL_LOG("\tparam: {0}", param);
+                #endif
+
+                GL_CALL(glTexParameterfv(target, pname, param));
+            }
 
             //-------------------------------------------------------------------------
             // Shaders
@@ -2195,6 +2207,16 @@ namespace ppp
                 GL_LOG("\tpname: {0}", pname_to_string(pname));
                 GL_LOG("\tparam: {0}", param);
 #endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::set_texture_float_array_parameter(u32 target, u32 pname, f32* param)
+            {
+                GL_LOG("glTexParameterfv");
+                #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\ttarget: {0}", texture_target_to_string(target));
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
+                GL_LOG("\tparam: {0}", param);
+                #endif
             }
 
             //-------------------------------------------------------------------------

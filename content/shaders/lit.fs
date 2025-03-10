@@ -1,66 +1,46 @@
 #version 460 core
 
 in vec3 v_position;
+in vec2 v_texcoord;
 in vec3 v_normal;
 in vec4 v_color;
 
 out vec4 frag_color;
 
-uniform vec3 u_view_position;
-uniform vec3 u_view_target;
-
-struct AmbientLight
-{
-    vec3 color;
-    float intensity;
-};
-
-uniform AmbientLight u_ambient_light;
 struct DirectionalLight
 {
     vec3 direction;
-    vec3 color;
-    float intensity;
-    vec3 specular_color;
-    int specular_enabled;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    int  specular_enabled;
 };
 
-uniform DirectionalLight u_directional_light;
 struct PointLight
 {
     vec3 position;
-    vec3 color;
-    float intensity;
-    vec3 specular_color;
-    int specular_enabled;
-    float range;        // the maximum effective range of the light
-    float falloff;      // a value controlling the decay (try values in a sensible range)
-    float threshold;    // the desired attenuation at the range (e.g., 0.01)
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    int  specular_enabled;
+
+    float constant;
+    float linear;
+    float quadratic;
 };
+
+uniform vec3 u_view_position;
+uniform vec3 u_view_target;
+
+uniform DirectionalLight u_directional_light;
 
 uniform int u_num_point_lights;
 uniform PointLight u_point_lights[8]; 
 
-vec3 compute_attenuation_coefficients(float range, float falloff, float threshold) 
-{
-    // Constant term is fixed at 1.0.
-    float Kc = 1.0;
-    // Map falloff to the linear term.
-    float Kl = falloff / range;
-    // Determine quadratic term so that at d = range, attenuation is 1/threshold.
-    float Kq = (1.0/threshold - Kc - falloff) / (range * range);
-
-    return vec3(Kc, Kl, Kq);
-}
-
-float compute_attenuation(float d, vec3 coeffs) 
-{
-    // Compute attenuation factor given distance d and coefficients.
-    float denom = coeffs.x + coeffs.y * d + coeffs.z * d * d;
-
-    return 1.0 / denom;
-}
-
+vec3 calc_dir_light(DirectionalLight light, vec3 normal, vec3 view_direction);
+vec3 calc_point_light(PointLight light, vec3 normal, vec3 fragment_position, vec3 view_direction);
 
 void main() 
 {   
@@ -68,70 +48,76 @@ void main()
     vec3 norm = normalize(v_normal);
     vec3 view_direction = normalize(u_view_position - v_position);
 
-    // Ambient
-    // Ambient Light | Ambient contribution
-    //
-    float ambient_strength = u_ambient_light.intensity;
-    vec3 ambient_light_result = (ambient_strength * u_ambient_light.color) * v_color.rgb;
-
-    // Directional
-    // Directional Light | Diffuse contribution.
-    //
-    vec3 dir_light_dir = normalize(-u_directional_light.direction);
-    float dir_diff_amount = max(dot(norm, dir_light_dir), 0.0) * u_directional_light.intensity;
-    vec3 dir_diffuse = (dir_diff_amount * u_directional_light.color) * v_color.rgb;
-
-    // Directional Light | Specular contribution.
-    //
-    float shininess = 32.0;
-    vec3 dir_specular = vec3(0.0);
-    if(u_directional_light.specular_enabled == 1)
+    // == =====================================================
+    // Our lighting is set up in 2 phases: directional and point lights
+    // For each phase, a calculate function is defined that calculates the corresponding color
+    // per lamp. In the main() function we take all the calculated colors and sum them up for
+    // this fragment's final color.
+    // == =====================================================
+    // phase 1: directional lighting
+    vec3 result = calc_dir_light(u_directional_light, norm, view_direction);
+    // phase 2: point lights
+    for(int i = 0; i < u_num_point_lights; i++)
     {
-        vec3 dir_reflection_dir = reflect(-u_directional_light.direction, norm);
-        float dir_spec_amount = pow(max(dot(view_direction, dir_reflection_dir), 0.0), shininess);
-        dir_specular = dir_spec_amount * u_directional_light.specular_color;
+        result += calc_point_light(u_point_lights[i], norm, v_position, view_direction);    
     }
-
-    // Directional Light | Sum contributions from this directional light.
-    //
-    vec3 directional_light_result = dir_diffuse + dir_specular;
-
-    // Point
-    vec3 point_light_result = vec3(0.0);
-    for (int i = 0; i < u_num_point_lights; i++)
-    {
-        // Point Light | Diffuse contribution.
-        //
-        vec3 point_light_dir = normalize(u_point_lights[i].position - v_position);
-        float point_diff_amount = max(dot(norm, point_light_dir), 0.0) * u_point_lights[i].intensity;
-        vec3 point_diffuse = (point_diff_amount * u_point_lights[i].color) * v_color.rgb;
-        
-        // Point Light | Specular contribution.
-        //
-        float shininess = 32.0;
-        vec3 point_specular = vec3(0.0);
-        if(u_point_lights[i].specular_enabled == 1)
-        {
-            vec3 point_reflection_dir = reflect(-point_light_dir, norm);
-            float point_spec_amount = pow(max(dot(view_direction, point_reflection_dir), 0.0), shininess);
-            point_specular = u_point_lights[i].specular_color * point_spec_amount * v_color.rgb;
-        }
-        
-        // Point Light | Attenuation contribution.
-        //
-        float dist          = length(u_point_lights[i].position - v_position);
-        vec3  coeff         = compute_attenuation_coefficients(u_point_lights[i].range, u_point_lights[i].falloff, u_point_lights[i].threshold);
-        float attenuation   = compute_attenuation(dist, coeff);
-                                   
-        point_diffuse       *= attenuation;
-        point_specular      *= attenuation;
-        
-        // Point Light | Sum contributions from this point light.
-        //
-        point_light_result += point_diffuse + point_specular;
-    }
-
-    // --- Final Color ---
-    vec3 result = ambient_light_result + directional_light_result + point_light_result;
+    
     frag_color = vec4(result, 1.0);
+}
+
+// calculates the color when using a directional light.
+vec3 calc_dir_light(DirectionalLight light, vec3 normal, vec3 view_direction)
+{
+    vec3 light_dir = normalize(-light.direction);
+
+    // ambient shading
+    vec3 ambient = light.ambient * v_color.rgb;
+    // diffuse shading
+    float diff = max(dot(normal, light_dir), 0.0);
+    vec3 diffuse = light.diffuse * diff * v_color.rgb;
+    // specular shading
+    vec3 specular = vec3(0.0, 0.0, 0.0);
+    if(light.specular_enabled == 1)
+    {
+        vec3  reflect_dir = reflect(-light_dir, normal);
+        float shininess = 32.0;
+        float spec = pow(max(dot(view_direction, reflect_dir), 0.0), shininess);
+
+        specular = light.specular * spec;
+    }
+
+    // combine results
+    return (ambient + diffuse + specular);
+}
+
+// calculates the color when using a point light.
+vec3 calc_point_light(PointLight light, vec3 normal, vec3 fragment_position, vec3 view_direction)
+{
+    vec3 light_dir = normalize(light.position - fragment_position);
+
+    // ambient shading
+    vec3 ambient = light.ambient * v_color.rgb;
+    // diffuse shading
+    float diff = max(dot(normal, light_dir), 0.0);
+    vec3 diffuse = light.diffuse * diff * v_color.rgb;
+    // specular shading
+    vec3 specular = vec3(0.0, 0.0, 0.0);
+    if(light.specular_enabled == 1)
+    {
+        vec3  reflect_dir = reflect(-light_dir, normal);
+        float shininess = 32.0;
+        float spec = pow(max(dot(view_direction, reflect_dir), 0.0), shininess);
+
+        specular = light.specular * spec;
+    }
+    // attenuation
+    float dist = length(light.position - fragment_position);
+    float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));      
+
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
+
+    // combine results
+    return (ambient + diffuse + specular);
 }

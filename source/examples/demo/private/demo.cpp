@@ -27,16 +27,6 @@ namespace ppp
 
     void append_lights()
     {
-        lights::ambient_light_desc ambient_desc =
-        {
-            0.1f,   // ambient_desc.r
-            0.1f,   // ambient_desc.g
-            0.1f,   // ambient_desc.b
-            0.2f    // intensity
-        };
-
-        lights::ambient_light(ambient_desc);
-
         //lights::directional_light_desc directional_desc =
         //{
         //    -0.2f, // directional_desc.dirx
@@ -57,36 +47,56 @@ namespace ppp
 
         lights::point_light_desc point_desc =
         {
-            0.0f, // point_desc.x
-            0.0f, // point_desc.y
-            0.0f, // point_desc.z
-            0.8f, // point_desc.r
-            0.8f, // point_desc.b
-            0.8f, // point_desc.b
-            10.0f, // point_desc.intensity
-            1.0f, // point_desc.spec_r
-            1.0f, // point_desc.spec_g
-            1.0f, // point_desc.spec_b
-            false, // point_desc.spec_enabled
-            false, // point_desc.cast_shadows
-            100.0f, // point_desc.range
-            200.0f, // point_desc.falloff
-            0.02f // point_desc.threshold
+            0.0f, 0.0f, 0.0f,       // position
+            0.05f, 0.05f, 0.05f,    // ambient          
+            0.8f, 0.8f, 0.8f,       // diffuse
+            1.0f, 1.0f, 1.0f,       // specular          
+            false,                  // specular enabled
+            false,                  // cast shadows
+            800.0f,                 // max range
+            350.0f                  // falloff start
         };
 
         float start_x = -120.0f; // Initial x position to start grid from
-        float start_y = 40.0f;    // Initial y position for the grid row
         float x_spacing = 80.0f; // Horizontal spacing between shapes
 
         for(int i = 0; i < 4; i++)
         {
-            // lights
-            point_desc.x = start_x;
-            point_desc.y = start_y;
-            point_desc.z = 100.0f;
+            switch (i)
+            {
+            case 0:
+                // lights
+                point_desc.x = start_x + (i * x_spacing);
+                point_desc.y = 40.0f;
+                point_desc.z = 100.0f;
 
-            lights::point_light(point_desc);
-            start_x += x_spacing;
+                lights::point_light(point_desc);
+                break;
+            //case 1:
+            //    // lights
+            //    point_desc.x = start_x + (i * x_spacing);
+            //    point_desc.y = 40.0f;
+            //    point_desc.z = 100.0f;
+
+            //    lights::point_light(point_desc);
+            //    break;
+            //case 2:
+            //    // lights
+            //    point_desc.x = start_x + (i * x_spacing);
+            //    point_desc.y = 40.0f;
+            //    point_desc.z = 100.0f;
+
+            //    lights::point_light(point_desc);
+            //    break;
+            case 3:
+                // lights
+                point_desc.x = start_x + (i * x_spacing);
+                point_desc.y = 40.0f;
+                point_desc.z = 100.0f;
+
+                lights::point_light(point_desc);
+                break;
+            }
         }
     }
 
@@ -248,12 +258,10 @@ namespace ppp
 
                 if (_enable_normal)
                 {
-                    material::normal_material();
                     lights::no_lights();
                 }
                 else
                 {
-                    material::shader("lit");
                     append_lights();
                 }
             }
@@ -281,7 +289,7 @@ namespace ppp
         std::string vs_path = "local:/content/shaders/lit.vs";
         std::string ps_path = "local:/content/shaders/lit.fs";
 
-        _material_lit = material::load_shader("lit", vs_path, ps_path);
+        _material_lit = material::load_shader("lit", vs_path, ps_path, material::shading_model::LIT);
 
         setup_input_events();
 
@@ -315,11 +323,21 @@ namespace ppp
 
         camera::orbit_control(options);
 
+        if (_enable_normal)
+        {
+            material::normal_material();
+        }
+        else
+        {
+            material::shader("lit");
+        }
         color::fill({ 255,0,0,255 });
-
         draw_shapes_grid();
-        draw_lights();
         draw_floor();
+
+        material::shader(material::tags::unlit_color());
+        color::fill({ 255, 255, 255, 255 });
+        draw_lights();
 
         color::fill({ 0,0,0,255 });
     }

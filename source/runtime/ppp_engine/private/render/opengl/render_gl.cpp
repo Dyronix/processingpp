@@ -3,6 +3,7 @@
 #include "render/render_instance.h"
 #include "render/render_batch_renderer.h"
 #include "render/render_instance_renderer.h"
+#include "render/render_shader.h"
 
 #include "render/helpers/render_vertex_layouts.h"
 #include "render/helpers/render_instance_layouts.h"
@@ -177,8 +178,6 @@ namespace ppp
             string::string_id           fill_user_shader = string::string_id::create_invalid();
             string::string_id           stroke_user_shader = string::string_id::create_invalid();
 
-            vertex_type                 fill_user_vertex_type = vertex_type::POSITION_TEXCOORD_NORMAL_COLOR;
-
             // frame buffer
             string::string_id           main_framebuffer_tag = string::string_id::create_invalid();
             string::string_id           shadow_framebuffer_tag = string::string_id::create_invalid();
@@ -216,17 +215,13 @@ namespace ppp
 
                     if (item->has_textures() == false)
                     {
-                        renderer = memory::make_unique<primitive_batch_renderer, memory::persistent_graphics_tagged_allocator<primitive_batch_renderer>>(
-                            g_ctx.fill_user_shader.is_none() ? pos_col_layout().data() : fill_user_layout(g_ctx.fill_user_vertex_type),
-                            g_ctx.fill_user_shader.is_none() ? pos_col_layout().size() : fill_user_layout_count(g_ctx.fill_user_vertex_type),
-                            shader_tag);
+                        assert(g_ctx.fill_user_shader.is_none() == false);
+
+                        renderer = memory::make_unique<primitive_batch_renderer, memory::persistent_graphics_tagged_allocator<primitive_batch_renderer>>(shader_tag);
                     }
                     else
                     {
-                        renderer = memory::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<texture_batch_renderer>>(
-                            g_ctx.fill_user_shader.is_none() ? pos_tex_col_layout().data() : fill_user_layout(g_ctx.fill_user_vertex_type),
-                            g_ctx.fill_user_shader.is_none() ? pos_tex_col_layout().size() : fill_user_layout_count(g_ctx.fill_user_vertex_type),
-                            shader_tag);
+                        renderer = memory::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<texture_batch_renderer>>(shader_tag);
                     }
 
                     if (_geometry_builder.is_active())
@@ -248,8 +243,6 @@ namespace ppp
                     if (item->has_textures() == false)
                     {
                         renderer = memory::make_unique<primitive_instance_renderer, memory::persistent_graphics_tagged_allocator<primitive_instance_renderer>>(
-                            g_ctx.fill_user_shader.is_none() ? pos_layout().data() : fill_user_layout(g_ctx.fill_user_vertex_type),
-                            g_ctx.fill_user_shader.is_none() ? pos_layout().size() : fill_user_layout_count(g_ctx.fill_user_vertex_type),
                             color_world_layout().data(),
                             color_world_layout().size(),
                             shader_tag);
@@ -257,8 +250,6 @@ namespace ppp
                     else
                     {
                         renderer = memory::make_unique<texture_instance_renderer, memory::persistent_graphics_tagged_allocator<texture_instance_renderer>>(
-                            g_ctx.fill_user_shader.is_none() ? pos_tex_layout().data() : fill_user_layout(g_ctx.fill_user_vertex_type),
-                            g_ctx.fill_user_shader.is_none() ? pos_tex_layout().size() : fill_user_layout_count(g_ctx.fill_user_vertex_type),
                             color_world_matid_layout().data(),
                             color_world_matid_layout().size(),
                             shader_tag);
@@ -270,7 +261,6 @@ namespace ppp
                     }
 
                     renderer->draw_policy(render_draw_policy::CUSTOM);
-
                     g_ctx.instance_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
@@ -332,10 +322,7 @@ namespace ppp
             g_ctx.scissor.height = h;
             g_ctx.scissor.enable = false;
 
-            g_ctx.font_renderer = memory::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<texture_batch_renderer>>(
-                pos_tex_col_layout().data(),
-                pos_tex_col_layout().size(),
-                shader_pool::tags::unlit::font());
+            g_ctx.font_renderer = memory::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<texture_batch_renderer>>(shader_pool::tags::unlit::font());
 
             return true;
         }
@@ -506,10 +493,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void push_active_shader(string::string_id tag, vertex_type type)
+        void push_active_shader(string::string_id tag)
         {
             g_ctx.fill_user_shader = tag;
-            g_ctx.fill_user_vertex_type = type;
         }
 
         //-------------------------------------------------------------------------

@@ -19,6 +19,12 @@ namespace ppp
             std::string_view lit_specular();
         }
 
+        enum class shading_model
+        {
+            LIT,
+            UNLIT
+        };
+
         using shader_program_id = unsigned int;
 
         struct shader_program
@@ -47,10 +53,10 @@ namespace ppp
         shader_program normal_material();
         shader_program specular_material();
 
-        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source);
-        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, std::string_view geometry_source);
-        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path);
-        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, std::string_view geometry_path);
+        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, shading_model shading_model = shading_model::UNLIT);
+        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, std::string_view geometry_source, shading_model shading_model = shading_model::UNLIT);
+        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, shading_model shading_model = shading_model::UNLIT);
+        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, std::string_view geometry_path, shading_model shading_model = shading_model::UNLIT);
         
         shader_program get_shader(std::string_view tag);
     }

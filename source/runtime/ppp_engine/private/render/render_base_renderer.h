@@ -2,8 +2,11 @@
 
 #include "render/render_item.h"
 #include "render/render_types.h"
+#include "render/render_shader.h"
 
 #include "util/types.h"
+
+#include "memory/memory_types.h"
 
 #include "string/string_id.h"
 
@@ -15,6 +18,8 @@ namespace ppp
     namespace resources
     {
         class imaterial;
+
+        using shader_program = std::shared_ptr<render::shaders::shader_program>;
     }
 
     namespace render
@@ -22,7 +27,7 @@ namespace ppp
         class base_renderer
         {
         public:
-            base_renderer(const attribute_layout* layouts, u64 layout_count, string::string_id shader_tag);
+            base_renderer(string::string_id shader_tag);
             virtual ~base_renderer();
 
         public:
@@ -42,25 +47,19 @@ namespace ppp
             bool                        solid_rendering_supported() const;
             bool                        wireframe_rendering_supported() const;
 
-            u32                         shader_program() const;
-
+            resources::shader_program   shader_program() const;
             resources::imaterial*       material() const;
 
 
         protected:
-            s32                         rasterization_mode() const { return m_rasterization_mode; }
+            s32                         rasterization_mode() const;
 
-            const attribute_layout*     layouts() const { return m_layouts; }
-            u64                         layout_count() const { return m_layout_count; }
+            const attribute_layout*     layouts() const;
+            u64                         layout_count() const;
 
         private:
-            string::string_id           m_user_shader_tag;
-            string::string_id           m_shader_tag;
-
-            s32                         m_rasterization_mode;
-
-            const attribute_layout*     m_layouts;
-            u64                         m_layout_count;
+            class impl;
+            global_unique_ptr<impl>     m_pimpl;
         };
     }
 }

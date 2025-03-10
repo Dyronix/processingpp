@@ -91,15 +91,6 @@ namespace ppp
             //-------------------------------------------------------------------------
             static void push_all_light_uniforms(u32 shader_program)
             {
-                if (lights_pool::ambient_lights().empty() == false)
-                {
-                    for (auto& ambient_light : lights_pool::ambient_lights())
-                    {
-                        shaders::push_uniform(shader_program, string::store_sid("u_ambient_light.color"), ambient_light.color);
-                        shaders::push_uniform(shader_program, string::store_sid("u_ambient_light.intensity"), ambient_light.intensity);
-                    }
-                }
-
                 if (lights_pool::point_lights().empty() == false)
                 {
                     constexpr u64 max_nr_point_lights = 8;
@@ -115,14 +106,14 @@ namespace ppp
                         temp_string base_name = temp_string("u_point_lights[") + string::to_string<temp_string>(i) + temp_string("]");
 
                         shaders::push_uniform(shader_program, string::store_sid(base_name + ".position"), point_light.position);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".color"), point_light.color);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".intensity"), point_light.intensity);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".specular_color"), point_light.specular_color);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".ambient"), point_light.ambient);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".diffuse"), point_light.diffuse);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".specular"), point_light.specular);
                         shaders::push_uniform(shader_program, string::store_sid(base_name + ".specular_enabled"), point_light.specular_enabled);
 
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".range"), point_light.range);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".falloff"), point_light.falloff);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".threshold"), point_light.threshold);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".constant"), point_light.constant);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".linear"), point_light.linear);
+                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".quadratic"), point_light.quadratic);
                     }
                 }
 
@@ -131,9 +122,9 @@ namespace ppp
                     for (auto& dir_light : lights_pool::directional_lights())
                     {
                         shaders::push_uniform(shader_program, string::store_sid("u_directional_light.direction"), dir_light.direction);
-                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.color"), dir_light.color);
-                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.intensity"), dir_light.intensity);
-                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.specular_color"), dir_light.specular_color);
+                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.ambient"), dir_light.ambient);
+                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.diffuse"), dir_light.diffuse);
+                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.specular"), dir_light.specular);
                         shaders::push_uniform(shader_program, string::store_sid("u_directional_light.specular_enabled"), dir_light.specular_enabled);
                     }
                 }
@@ -153,8 +144,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        batch_renderer::batch_renderer(const attribute_layout* layouts, u64 layout_count, string::string_id shader_tag)
-            : base_renderer(layouts, layout_count, shader_tag)
+        batch_renderer::batch_renderer(string::string_id shader_tag)
+            : base_renderer(shader_tag)
             , m_drawing_data_map()
             , m_buffer_policy(render_buffer_policy::IMMEDIATE)
             , m_render_policy(render_draw_policy::BUILD_IN)
@@ -183,11 +174,16 @@ namespace ppp
                 return;
             }
 
-            opengl::api::instance().use_program(shader_program());
+            const auto& program = shader_program();
 
-            internal::push_all_light_dependent_uniforms(shader_program(), camera_position, camera_target);
+            opengl::api::instance().use_program(program->id());
 
-            shaders::push_uniform(shader_program(), string::store_sid("u_view_proj"), vp);
+            if (program->shading_model() == shading_model_type::LIT)
+            {
+                internal::push_all_light_dependent_uniforms(program->id(), camera_position, camera_target);
+            }
+
+            shaders::push_uniform(program->id(), string::store_sid("u_view_proj"), vp);
 
             for (auto& pair : m_drawing_data_map)
             {
@@ -298,7 +294,7 @@ namespace ppp
         {
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
 
-            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe"), GL_FALSE);
+            shaders::push_uniform(shader_program()->id(), string::store_sid("u_wireframe"), GL_FALSE);
 
             on_render(topology, drawing_data);
         }
@@ -309,16 +305,16 @@ namespace ppp
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_LINE);
             opengl::api::instance().line_width(internal::_wireframe_linewidth);
 
-            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe"), GL_TRUE);
-            shaders::push_uniform(shader_program(), string::store_sid("u_wireframe_color"), color::convert_color(internal::_wireframe_linecolor));
+            shaders::push_uniform(shader_program()->id(), string::store_sid("u_wireframe"), GL_TRUE);
+            shaders::push_uniform(shader_program()->id(), string::store_sid("u_wireframe_color"), color::convert_color(internal::_wireframe_linecolor));
 
             on_render(topology, drawing_data);
         }
 
         // Primitive Batch Renderer
         //-------------------------------------------------------------------------
-        primitive_batch_renderer::primitive_batch_renderer(const attribute_layout* layouts, u64 layout_cout, string::string_id shader_tag)
-            :batch_renderer(layouts, layout_cout, shader_tag)
+        primitive_batch_renderer::primitive_batch_renderer(string::string_id shader_tag)
+            :batch_renderer(shader_tag)
         {
 
         }
@@ -332,14 +328,19 @@ namespace ppp
             auto batch = drawing_data.first_batch();
             if (batch != nullptr)
             {
+                const auto& program = shader_program();
+
                 while (batch != nullptr)
                 {
                     batch->bind();
 
-                    internal::push_all_light_uniforms(shader_program());
+                    if (program->shading_model() == shading_model_type::LIT)
+                    {
+                        internal::push_all_light_uniforms(program->id());
+                    }
 
                     batch->submit();
-                    batch->draw(topology, shader_program());
+                    batch->draw(topology, program->id());
                     batch->unbind();
 
                     batch = drawing_data.next_batch();
@@ -349,8 +350,8 @@ namespace ppp
 
         // Texture Batch Renderer
         //-------------------------------------------------------------------------
-        texture_batch_renderer::texture_batch_renderer(const attribute_layout* layouts, u64 layout_cout, string::string_id shader_tag)
-            :batch_renderer(layouts, layout_cout, shader_tag)
+        texture_batch_renderer::texture_batch_renderer(string::string_id shader_tag)
+            :batch_renderer(shader_tag)
         {
 
         }
@@ -367,13 +368,18 @@ namespace ppp
                 const auto& samplers = material()->samplers();
                 const auto& textures = material()->textures();
 
+                const auto& program = shader_program();
+
                 while (batch != nullptr)
                 {
                     batch->bind();
                  
-                    internal::push_all_light_uniforms(shader_program());
+                    internal::push_all_light_uniforms(program->id());
 
-                    shaders::push_uniform_array(shader_program(), string::store_sid("s_images"), samplers.size(), samplers.data());
+                    if (program->shading_model() == shading_model_type::LIT)
+                    {
+                        shaders::push_uniform_array(program->id(), string::store_sid("s_images"), samplers.size(), samplers.data());
+                    }
 
                     s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
@@ -384,7 +390,7 @@ namespace ppp
                     }
 
                     batch->submit();
-                    batch->draw(topology, shader_program());
+                    batch->draw(topology, program->id());
                     batch->unbind();
 
                     batch = drawing_data.next_batch();

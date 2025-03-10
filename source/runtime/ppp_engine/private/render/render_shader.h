@@ -4,6 +4,8 @@
 
 #include "memory/memory_types.h"
 
+#include "render/render_types.h"
+
 #include <memory>
 
 namespace ppp
@@ -15,17 +17,21 @@ namespace ppp
             class shader_program
             {
             public:
-                shader_program(std::string_view vs_source, std::string_view fs_source);
-                shader_program(std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source);
+                shader_program(shading_model_type smtype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source);
+                shader_program(shading_model_type smtype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source);
                 ~shader_program();
 
-                void bind() const;
-                void unbind() const;
+                void                bind() const;
+                void                unbind() const;
 
-                u32 id() const;
+                u32                 id() const;
+                
+                shading_model_type  shading_model() const;
+                vertex_type         vertex_format() const;
 
             private:
-                u32 m_program_id = 0;
+                class impl;
+                global_unique_ptr<impl> m_pimpl;
             };
         }
     }

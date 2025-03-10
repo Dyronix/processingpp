@@ -13,6 +13,20 @@ namespace ppp
 {
     namespace material
     {
+        namespace conversions
+        {
+            render::shading_model_type to_shading_model_type(shading_model shading_model)
+            {
+                switch (shading_model)
+                {
+                case shading_model::LIT: return render::shading_model_type::LIT;
+                case shading_model::UNLIT: return render::shading_model_type::UNLIT;
+                }
+
+                log::error("Unknown shading model!");
+                exit(EXIT_FAILURE);
+            }
+        }
         namespace tags
         {
             //-------------------------------------------------------------------------
@@ -75,33 +89,9 @@ namespace ppp
         struct context
         {
             context()
-                : shader_tag_vertex_type_map()
-                , active_shader_tag(string::string_id::create_invalid())
+                : active_shader_tag(string::string_id::create_invalid())
             {
-                shader_tag_vertex_type_map = std::initializer_list<std::pair<const string::string_id, render::vertex_type>>
-                {
-                    // batched
-                    // unlit
-                    {shader_pool::tags::unlit::color(),              render::vertex_type::POSITION_COLOR},
-                    {shader_pool::tags::unlit::texture(),            render::vertex_type::POSITION_TEXCOORD_COLOR},
-                    {shader_pool::tags::unlit::font(),               render::vertex_type::POSITION_TEXCOORD_COLOR},
-                    {shader_pool::tags::unlit::normal(),             render::vertex_type::POSITION_NORMAL_COLOR},                 
-                    // lit
-                    {shader_pool::tags::lit::color(),                render::vertex_type::POSITION_NORMAL_COLOR},
-                    {shader_pool::tags::lit::specular(),             render::vertex_type::POSITION_NORMAL_COLOR},
-                    // instanced
-                    // unlit
-                    {shader_pool::tags::unlit::instance_color(),     render::vertex_type::POSITION},
-                    {shader_pool::tags::unlit::instance_texture(),   render::vertex_type::POSITION_TEXCOORD},
-                    {shader_pool::tags::unlit::instance_normal(),    render::vertex_type::POSITION_NORMAL},
-                    // lit
-                    {shader_pool::tags::lit::instance_color(),       render::vertex_type::POSITION_NORMAL},
-                    {shader_pool::tags::lit::instance_specular(),    render::vertex_type::POSITION_NORMAL}
-                    
-                };
             }
-
-            graphics_hash_map<string::string_id, render::vertex_type>   shader_tag_vertex_type_map;
 
             string::string_id                                           active_shader_tag;
         } g_ctx;
@@ -185,12 +175,7 @@ namespace ppp
 
             g_ctx.active_shader_tag = sid_tag;
 
-            auto it = g_ctx.shader_tag_vertex_type_map.find(sid_tag);
-            auto vertex_type = it == std::cend(g_ctx.shader_tag_vertex_type_map)
-                ? render::vertex_type::POSITION_TEXCOORD_NORMAL_COLOR
-                : it->second;
-
-            render::push_active_shader(sid_tag, vertex_type);
+            render::push_active_shader(sid_tag);
         }
 
         //-------------------------------------------------------------------------
@@ -202,7 +187,7 @@ namespace ppp
 
             g_ctx.active_shader_tag = tag;
 
-            render::push_active_shader(tag, g_ctx.shader_tag_vertex_type_map.at(tag));
+            render::push_active_shader(tag);
 
             return get_shader(string::restore_sid(tag));
         }
@@ -216,49 +201,68 @@ namespace ppp
 
             g_ctx.active_shader_tag = tag;
 
-            render::push_active_shader(tag, g_ctx.shader_tag_vertex_type_map.at(tag));
+            render::push_active_shader(tag);
             
             return get_shader(string::restore_sid(tag));
         }
 
         //-------------------------------------------------------------------------
-        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source)
+        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, shading_model shading_model)
         {
             auto sid_tag = string::store_sid(tag);
-
-            u32 shader_program_id = shader_pool::add_shader_program(sid_tag, vertex_source, fragment_source);
-
-            material_pool::add_new_material(resources::material(sid_tag));
-
-            return { shader_program_id };
-        }
-
-        //-------------------------------------------------------------------------
-        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, std::string_view geometry_source)
-        {
-            auto sid_tag = string::store_sid(tag);
-
-            u32 shader_program_id = shader_pool::add_shader_program(sid_tag, vertex_source, fragment_source, geometry_source);
-
-            material_pool::add_new_material(resources::material(sid_tag));
-
-            return { shader_program_id };
-        }
-
-        //-------------------------------------------------------------------------
-        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path)
-        {
-            auto sid_tag = string::store_sid(tag);
+            auto vertex_format = shading_model == shading_model::LIT
+                ? render::vertex_type::POSITION_TEXCOORD_NORMAL_COLOR
+                : render::vertex_type::POSITION_TEXCOORD_COLOR;
 
             if (shader_pool::has_shader(sid_tag))
             {
-                return { shader_pool::get_shader_program(sid_tag) };
+                return { shader_pool::get_shader_program(sid_tag)->id() };
+            }
+
+            u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), vertex_format, vertex_source, fragment_source);
+
+            material_pool::add_new_material(resources::material(sid_tag));
+
+            return { shader_program_id };
+        }
+
+        //-------------------------------------------------------------------------
+        shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, std::string_view geometry_source, shading_model shading_model)
+        {
+            auto sid_tag = string::store_sid(tag);
+            auto vertex_format = shading_model == shading_model::LIT 
+                ? render::vertex_type::POSITION_TEXCOORD_NORMAL_COLOR
+                : render::vertex_type::POSITION_TEXCOORD_COLOR;
+
+            if (shader_pool::has_shader(sid_tag))
+            {
+                return { shader_pool::get_shader_program(sid_tag)->id() };
+            }
+
+            u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), vertex_format, vertex_source, fragment_source, geometry_source);
+
+            material_pool::add_new_material(resources::material(sid_tag));
+
+            return { shader_program_id };
+        }
+
+        //-------------------------------------------------------------------------
+        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, shading_model shading_model)
+        {
+            auto sid_tag = string::store_sid(tag);
+            auto vertex_format = shading_model == shading_model::LIT
+                ? render::vertex_type::POSITION_TEXCOORD_NORMAL_COLOR
+                : render::vertex_type::POSITION_TEXCOORD_COLOR;
+
+            if (shader_pool::has_shader(sid_tag))
+            {
+                return { shader_pool::get_shader_program(sid_tag)->id() };
             }
 
             auto vs_buffer = fileio::read_text_file(vertex_path);
             auto fs_buffer = fileio::read_text_file(fragment_path);
 
-            u32 shader_program_id = shader_pool::add_shader_program(sid_tag, vs_buffer.c_str(), fs_buffer.c_str());
+            u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), vertex_format, vs_buffer.c_str(), fs_buffer.c_str());
 
             material_pool::add_new_material(resources::material(sid_tag));
 
@@ -266,21 +270,23 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, std::string_view geometry_path)
+        shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, std::string_view geometry_path, shading_model shading_model)
         {
-            shader_program shader_program = get_shader(tag);
-            if (shader_program.id != -1)
-            {
-                return shader_program;
-            }
-
             auto sid_tag = string::store_sid(tag);
+            auto vertex_format = shading_model == shading_model::LIT
+                ? render::vertex_type::POSITION_TEXCOORD_NORMAL_COLOR
+                : render::vertex_type::POSITION_TEXCOORD_COLOR;
+
+            if (shader_pool::has_shader(sid_tag))
+            {
+                return { shader_pool::get_shader_program(sid_tag)->id() };
+            }
 
             auto vs_buffer = fileio::read_text_file(vertex_path);
             auto gs_buffer = fileio::read_text_file(geometry_path);
             auto fs_buffer = fileio::read_text_file(fragment_path);
 
-            u32 shader_program_id = shader_pool::add_shader_program(sid_tag, vs_buffer.c_str(), fs_buffer.c_str(), gs_buffer.c_str());
+            u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), vertex_format, vs_buffer.c_str(), fs_buffer.c_str(), gs_buffer.c_str());
 
             material_pool::add_new_material(resources::material(sid_tag));
                         
@@ -298,7 +304,7 @@ namespace ppp
 
                 assert(shader_pool::has_shader(material->shader_tag()));
 
-                return { shader_pool::get_shader_program(material->shader_tag()) };
+                return { shader_pool::get_shader_program(material->shader_tag())->id() };
             }
 
             return { -1u };

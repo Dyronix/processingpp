@@ -1,7 +1,6 @@
 #include "resources/shader_pool.h"
 #include "render/render_shader_compiler.h"
 #include "render/render_shader_library.h"
-#include "render/render_shader.h"
 
 #include "memory/memory_types.h"
 #include "memory/memory_placement_new.h"
@@ -112,32 +111,46 @@ namespace ppp
 
         struct context
         {
+            //-------------------------------------------------------------------------
+            void add_shader_program(string::string_id sid, render::shading_model_type smtype, render::vertex_type vtype, std::string_view vs_source, std::string_view fs_source)
+            {
+                memory::persistent_graphics_tagged_allocator<render::shaders::shader_program> graphics_allocator;
+
+                shaders_hash_map.emplace(sid, std::allocate_shared<render::shaders::shader_program>(graphics_allocator, smtype, vtype, vs_source, fs_source));
+            }
+
+            //-------------------------------------------------------------------------
+            void add_shader_program(string::string_id sid, render::shading_model_type smtype, render::vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view gs_source)
+            {
+                memory::persistent_graphics_tagged_allocator<render::shaders::shader_program> graphics_allocator;
+
+                shaders_hash_map.emplace(sid, std::allocate_shared<render::shaders::shader_program>(graphics_allocator, smtype, vtype, vs_source, fs_source, gs_source));
+            }
+
             shaders_hash_map shaders_hash_map;
         } g_ctx;
 
         //-------------------------------------------------------------------------
         bool initialize()
         {
-            memory::persistent_graphics_tagged_allocator<render::shaders::shader_program> graphics_allocator;
-
             // batched
             // unlit
-            g_ctx.shaders_hash_map.emplace(tags::unlit::color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::color_vertex_shader_code(), render::shaders::unlit::color_pixel_shader_code()));           
-            g_ctx.shaders_hash_map.emplace(tags::unlit::texture(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::texture_vertex_shader_code(), render::shaders::unlit::texture_pixel_shader_code()));
-            g_ctx.shaders_hash_map.emplace(tags::unlit::font(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::font_vertex_shader_code(), render::shaders::unlit::font_pixel_shader_code()));
-            g_ctx.shaders_hash_map.emplace(tags::unlit::normal(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::normal_vertex_shader_code(), render::shaders::unlit::normal_pixel_shader_code()));            
+            g_ctx.add_shader_program(tags::unlit::color(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_COLOR, render::shaders::unlit::color_vertex_shader_code(), render::shaders::unlit::color_pixel_shader_code());
+            g_ctx.add_shader_program(tags::unlit::texture(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_TEXCOORD_COLOR, render::shaders::unlit::texture_vertex_shader_code(), render::shaders::unlit::texture_pixel_shader_code());
+            g_ctx.add_shader_program(tags::unlit::font(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_TEXCOORD_COLOR, render::shaders::unlit::font_vertex_shader_code(), render::shaders::unlit::font_pixel_shader_code());
+            g_ctx.add_shader_program(tags::unlit::normal(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_NORMAL_COLOR, render::shaders::unlit::normal_vertex_shader_code(), render::shaders::unlit::normal_pixel_shader_code());
             // lit
-            g_ctx.shaders_hash_map.emplace(tags::lit::color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::lit::color_vertex_shader_code(), render::shaders::lit::color_pixel_shader_code()));
-            g_ctx.shaders_hash_map.emplace(tags::lit::specular(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::lit::specular_vertex_shader_code(), render::shaders::lit::specular_pixel_shader_code()));
+            g_ctx.add_shader_program(tags::lit::color(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL_COLOR, render::shaders::lit::color_vertex_shader_code(), render::shaders::lit::color_pixel_shader_code());
+            g_ctx.add_shader_program(tags::lit::specular(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL_COLOR, render::shaders::lit::specular_vertex_shader_code(), render::shaders::lit::specular_pixel_shader_code());
 
             // instanced
             // unlit
-            g_ctx.shaders_hash_map.emplace(tags::unlit::instance_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::instance_color_vertex_shader_code(), render::shaders::unlit::color_pixel_shader_code()));
-            g_ctx.shaders_hash_map.emplace(tags::unlit::instance_texture(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::instance_texture_vertex_shader_code(), render::shaders::unlit::texture_pixel_shader_code()));
-            g_ctx.shaders_hash_map.emplace(tags::unlit::instance_normal(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::unlit::instance_normal_vertex_shader_code(), render::shaders::unlit::normal_pixel_shader_code()));
+            g_ctx.add_shader_program(tags::unlit::instance_color(), render::shading_model_type::UNLIT, render::vertex_type::POSITION, render::shaders::unlit::instance_color_vertex_shader_code(), render::shaders::unlit::color_pixel_shader_code());
+            g_ctx.add_shader_program(tags::unlit::instance_texture(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_TEXCOORD, render::shaders::unlit::instance_texture_vertex_shader_code(), render::shaders::unlit::texture_pixel_shader_code());
+            g_ctx.add_shader_program(tags::unlit::instance_normal(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_NORMAL, render::shaders::unlit::instance_normal_vertex_shader_code(), render::shaders::unlit::normal_pixel_shader_code());
             // lit
-            //g_ctx.shaders_hash_map.emplace(tags::lit::instance_color(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::lit::instance_color_vertex_shader_code(), render::shaders::lit::color_pixel_shader_code()));
-            g_ctx.shaders_hash_map.emplace(tags::lit::instance_specular(), std::allocate_shared<render::shaders::shader_program>(graphics_allocator, render::shaders::lit::instance_specular_vertex_shader_code(), render::shaders::lit::specular_pixel_shader_code()));
+            //g_ctx.add_shader_program(tags::lit::instance_color(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL, render::shaders::lit::instance_color_vertex_shader_code(), render::shaders::lit::color_pixel_shader_code());
+            g_ctx.add_shader_program(tags::lit::instance_specular(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL, render::shaders::lit::instance_specular_vertex_shader_code(), render::shaders::lit::specular_pixel_shader_code());
 
             return true;
         }
@@ -156,12 +169,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        u32 add_shader_program(string::string_id tag, std::string_view vs_source, std::string_view fs_source)
+        u32 add_shader_program(string::string_id tag, render::shading_model_type smtype, render::vertex_type vtype, std::string_view vs_source, std::string_view fs_source)
         {
             auto it = g_ctx.shaders_hash_map.find(tag);
             if(it == std::cend(g_ctx.shaders_hash_map))
             {
-                auto shader_program = std::make_shared<render::shaders::shader_program>(vs_source, fs_source);
+                auto shader_program = std::make_shared<render::shaders::shader_program>(smtype, vtype, vs_source, fs_source);
                 auto shader_program_id = shader_program->id();
                 g_ctx.shaders_hash_map.emplace(tag, shader_program);
                 return shader_program_id;
@@ -175,12 +188,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        u32 add_shader_program(string::string_id tag, std::string_view vs_source, std::string_view fs_source, std::string_view gs_source)
+        u32 add_shader_program(string::string_id tag, render::shading_model_type smtype, render::vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view gs_source)
         {
             auto it = g_ctx.shaders_hash_map.find(tag);
             if (it == std::cend(g_ctx.shaders_hash_map))
             {
-                auto shader_program = std::make_shared<render::shaders::shader_program>(vs_source, fs_source, gs_source);
+                auto shader_program = std::make_shared<render::shaders::shader_program>(smtype, vtype, vs_source, fs_source, gs_source);
                 auto shader_program_id = shader_program->id();
                 g_ctx.shaders_hash_map.emplace(tag, shader_program);
                 return shader_program_id;
@@ -194,16 +207,16 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        u32 get_shader_program(string::string_id tag)
+        std::shared_ptr<render::shaders::shader_program> get_shader_program(string::string_id tag)
         {
             auto it = g_ctx.shaders_hash_map.find(tag);
             if (it != std::cend(g_ctx.shaders_hash_map))
             {
-                return it->second->id();
+                return it->second;
             }
 
             log::error("Unable to find shader with tag: {}", string::restore_sid(tag));
-            return 0;
+            return nullptr;
         }
     }
 }

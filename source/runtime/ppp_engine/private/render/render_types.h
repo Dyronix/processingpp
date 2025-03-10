@@ -23,6 +23,12 @@ namespace ppp
             POSITION_TEXCOORD_NORMAL_COLOR
         };
 
+        enum class shading_model_type
+        {
+            LIT,
+            UNLIT
+        };
+
         enum class image_filter_type
         {
             NEAREST,

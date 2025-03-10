@@ -15,7 +15,6 @@ namespace ppp
             {
                 switch (type)
                 {
-                case light_type::AMBIENT: return string::store_sid("Ambient");
                 case light_type::POINT: return string::store_sid("Point");
                 case light_type::DIRECTIONAL: return string::store_sid("Directional");
                     break;
@@ -29,26 +28,8 @@ namespace ppp
 
         struct context
         {
-            graphics_vector<ambient_light>      ambient_lights;
             graphics_vector<point_light>        point_lights;
             graphics_vector<directional_light>  directional_lights;
-
-            //-------------------------------------------------------------------------
-            ambient_light* find_ambient_light(light_id id)
-            {
-                auto it = std::find_if(std::begin(g_ctx.ambient_lights), std::end(g_ctx.ambient_lights),
-                    [id](const ambient_light& light)
-                {
-                    return id == light.id;
-                });
-
-                if (it == std::cend(ambient_lights))
-                {
-                    return nullptr;
-                }
-
-                return &(*it);
-            }
 
             //-------------------------------------------------------------------------
             point_light* find_point_light(light_id id)
@@ -88,35 +69,25 @@ namespace ppp
         //-------------------------------------------------------------------------
         void clear()
         {
-            g_ctx.ambient_lights.clear();
             g_ctx.point_lights.clear();
             g_ctx.directional_lights.clear();
         }
 
         //-------------------------------------------------------------------------
-        light_id add_ambient_light(const glm::vec3& color, f32 intensity)
+        light_id add_directional_light(const glm::vec3& direction, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular, bool specular_enabled, bool cast_shadows)
         {
-            light_id light_id = g_ctx.ambient_lights.size() + g_ctx.point_lights.size() + g_ctx.directional_lights.size();
+            light_id light_id = g_ctx.point_lights.size() + g_ctx.directional_lights.size();
 
-            g_ctx.ambient_lights.push_back(ambient_light{ light_id, intensity, color });
+            g_ctx.directional_lights.push_back(directional_light{light_id, direction, ambient, diffuse, specular, specular_enabled, cast_shadows});
 
             return light_id;
         }
         //-------------------------------------------------------------------------
-        light_id add_directional_light(const glm::vec3& direction, const glm::vec3& color, f32 intensity, const glm::vec3& specular_color, bool specular_enabled, bool cast_shadows)
+        light_id add_point_light(const glm::vec3& position, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular, bool specular_enabled, bool cast_shadows, f32 constant, f32 linear, f32 quadratic)
         {
-            light_id light_id = g_ctx.ambient_lights.size() + g_ctx.point_lights.size() + g_ctx.directional_lights.size();
+            light_id light_id = g_ctx.point_lights.size() + g_ctx.directional_lights.size();
 
-            g_ctx.directional_lights.push_back(directional_light{ light_id, intensity, direction, color, specular_color, specular_enabled, cast_shadows });
-
-            return light_id;
-        }
-        //-------------------------------------------------------------------------
-        light_id add_point_light(const glm::vec3& position, const glm::vec3& color, f32 intensity, const glm::vec3& specular_color, bool specular_enabled, bool cast_shadows, f32 range, f32 falloff, f32 threshold)
-        {
-            light_id light_id = g_ctx.ambient_lights.size() + g_ctx.point_lights.size() + g_ctx.directional_lights.size();
-
-            g_ctx.point_lights.push_back(point_light{ light_id, intensity, position, color, specular_color, specular_enabled, cast_shadows, range, falloff, threshold });
+            g_ctx.point_lights.push_back(point_light{light_id, position, ambient, diffuse, specular, specular_enabled, cast_shadows, constant, linear, quadratic});
 
             return light_id;
         }
@@ -156,34 +127,99 @@ namespace ppp
             }
         }
         //-------------------------------------------------------------------------
-        void light_intensity(light_id id, light_type type, f32 intensity)
+        void light_enable_specular(light_id id, light_type type, bool enable)
         {
             switch (type)
             {
-            case light_type::AMBIENT:
+            case light_type::POINT:
             {
-                auto ambient = g_ctx.find_ambient_light(id);
-                if (ambient) 
-                    ambient->intensity = intensity;
+                auto point = g_ctx.find_point_light(id);
+                if (point)
+                    point->specular_enabled = enable;
                 break;
             }
             case light_type::DIRECTIONAL:
             {
                 auto dir = g_ctx.find_directional_light(id);
-                if (dir) 
-                    dir->intensity = intensity;
-                break;
-            }
-            case light_type::POINT:
-            {
-                auto point = g_ctx.find_point_light(id);
-                if (point) 
-                    point->intensity = intensity;
+                if (dir)
+                    dir->specular_enabled = enable;
                 break;
             }
 
             default:
-                log::warn("Unable to change intensity for light of type: {}", conversions::to_string(type).str());
+                log::warn("Unable to enable/disable specular for light of type: {}", conversions::to_string(type).str());
+            }
+        }
+        //-------------------------------------------------------------------------
+        void light_ambient(light_id id, light_type type, const glm::vec3& ambient_color)
+        {
+            switch (type)
+            {
+            case light_type::POINT:
+            {
+                auto point = g_ctx.find_point_light(id);
+                if (point)
+                    point->ambient = ambient_color;
+                break;
+            }
+            case light_type::DIRECTIONAL:
+            {
+                auto dir = g_ctx.find_directional_light(id);
+                if (dir)
+                    dir->ambient = ambient_color;
+                break;
+            }
+
+            default:
+                log::warn("Unable to change specular color for light of type: {}", conversions::to_string(type).str());
+            }
+        }
+        //-------------------------------------------------------------------------
+        void light_diffuse(light_id id, light_type type, const glm::vec3& diffuse_color)
+        {
+            switch (type)
+            {
+            case light_type::POINT:
+            {
+                auto point = g_ctx.find_point_light(id);
+                if (point)
+                    point->diffuse = diffuse_color;
+                break;
+            }
+            case light_type::DIRECTIONAL:
+            {
+                auto dir = g_ctx.find_directional_light(id);
+                if (dir)
+                    dir->diffuse = diffuse_color;
+                break;
+            }
+
+            default:
+                log::warn("Unable to change specular color for light of type: {}", conversions::to_string(type).str());
+            }
+        }
+        //-------------------------------------------------------------------------
+        void light_specular(light_id id, light_type type, const glm::vec3& specular_color)
+        {
+            switch (type)
+            {
+            case light_type::POINT:
+            {
+                auto point = g_ctx.find_point_light(id);
+                if (point)
+                    point->specular = specular_color;
+                break;
+            }
+            case light_type::DIRECTIONAL:
+            {
+                auto dir = g_ctx.find_directional_light(id);
+                if (dir)
+                    dir->specular = specular_color;
+                break;
+            }
+
+            default:
+                log::warn("Unable to change specular color for light of type: {}", conversions::to_string(type).str());
             }
         }
         //-------------------------------------------------------------------------
@@ -210,70 +246,7 @@ namespace ppp
                     log::warn("Unable to enable/disable shadows for light of type: {}", conversions::to_string(type).str());
             }
         }
-        //-------------------------------------------------------------------------
-        void light_range(light_id id, light_type type, f32 range)
-        {
-            switch (type)
-            {
-            case light_type::POINT:
-            {
-                auto point = g_ctx.find_point_light(id);
-                if (point)
-                    point->range = range;
-                break;
-            }
 
-            default:
-                log::warn("Unable to change range for light of type: {}", conversions::to_string(type).str());
-            }
-        }
-        //-------------------------------------------------------------------------
-        void light_falloff(light_id id, light_type type, f32 falloff)
-        {
-            switch (type)
-            {
-            case light_type::POINT:
-            {
-                auto point = g_ctx.find_point_light(id);
-                if (point) 
-                    point->falloff = falloff;
-                break;
-            }
-
-            default:
-                log::warn("Unable to change falloff for light of type: {}", conversions::to_string(type).str());
-            }
-        }
-        //-------------------------------------------------------------------------
-        void light_specular_color(light_id id, light_type type, const glm::vec3& specular_color)
-        {
-            switch (type)
-            {
-            case light_type::POINT:
-            {
-                auto point = g_ctx.find_point_light(id);
-                if (point)
-                    point->specular_color = specular_color;
-                break;
-            }
-            case light_type::DIRECTIONAL:
-            {
-                auto dir = g_ctx.find_directional_light(id);
-                if (dir) 
-                    dir->specular_color = specular_color;
-                break;
-            }
-
-            default:
-                log::warn("Unable to change specular color for light of type: {}", conversions::to_string(type).str());
-            }
-        }
-
-        //-------------------------------------------------------------------------
-        const graphics_vector<ambient_light>& ambient_lights()
-        {
-            return g_ctx.ambient_lights;
-        }
         //-------------------------------------------------------------------------
         const graphics_vector<point_light>& point_lights()
         {
