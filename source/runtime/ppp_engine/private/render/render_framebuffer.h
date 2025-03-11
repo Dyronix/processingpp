@@ -48,7 +48,18 @@ namespace ppp
             WRITE
         };
 
-        class framebuffer
+        class iframebuffer
+        {
+        public:
+            virtual ~iframebuffer() = default;
+
+            virtual void bind(framebuffer_bound_target target = framebuffer_bound_target::READ_WRITE) const = 0;
+
+            virtual s32 width() const = 0;
+            virtual s32 height() const = 0;
+        };
+
+        class framebuffer : public iframebuffer
         {
         public:
             constexpr static s32 min_framebuffer_width() { return 32; }
@@ -56,13 +67,13 @@ namespace ppp
 
         public:
             framebuffer(const framebuffer_descriptor& desc);
-            ~framebuffer();
+            ~framebuffer() override;
 
-            void bind(framebuffer_bound_target target = framebuffer_bound_target::READ_WRITE) const;
+            void bind(framebuffer_bound_target target = framebuffer_bound_target::READ_WRITE) const override;
             void unbind() const;
 
-            s32 width() const;
-            s32 height() const;
+            s32 width() const override;
+            s32 height() const override;
 
             bool has_depth_texture() const;
             bool has_depth() const;
@@ -73,16 +84,16 @@ namespace ppp
             global_unique_ptr<impl> m_pimpl;
         };
 
-        class default_framebuffer
+        class default_framebuffer : public iframebuffer
         {
         public:
             default_framebuffer(s32 width, s32 height);
-            ~default_framebuffer();
+            ~default_framebuffer() override;
 
-            void bind(framebuffer_bound_target target = framebuffer_bound_target::READ_WRITE) const;
+            void bind(framebuffer_bound_target target = framebuffer_bound_target::READ_WRITE) const override;
 
-            s32 width() const;
-            s32 height() const;
+            s32 width() const override;
+            s32 height() const override;
 
         private:
             class impl;

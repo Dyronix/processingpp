@@ -8,6 +8,9 @@ namespace ppp
     {
         class forward_shading_pass : public render_pass
         {
+        public:
+            ~forward_shading_pass() override;
+
             void begin_frame(const render_context& context) override;
             void render(const render_context& context) override;
             void end_frame(const render_context& context) override;

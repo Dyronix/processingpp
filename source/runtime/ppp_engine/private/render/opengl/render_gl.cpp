@@ -5,6 +5,7 @@
 #include "render/render_instance_renderer.h"
 #include "render/render_shader.h"
 #include "render/render_context.h"
+#include "render/render_scissor.h"
 
 #include "render/helpers/render_vertex_layouts.h"
 #include "render/helpers/render_instance_layouts.h"
@@ -118,9 +119,6 @@ namespace ppp
             }
         }
 
-        using instance_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<instance_renderer>>;
-        using batch_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<batch_renderer>>;
-
         using font_renderer = graphics_unique_ptr<texture_batch_renderer>;
 
         //-------------------------------------------------------------------------
@@ -155,17 +153,6 @@ namespace ppp
         };
 
         geometry_builder _geometry_builder;
-
-        //-------------------------------------------------------------------------
-        struct render_scissor
-        {
-            s32     x = -1;
-            s32     y = -1;
-            s32     width = -1;
-            s32     height = -1;
-
-            bool    enable = false;
-        };
 
         //-------------------------------------------------------------------------
         struct context
@@ -400,7 +387,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void render(const render_context& context)
+        void render(const camera::camera_context* context)
         {
             auto shadow_framebuffer = framebuffer_pool::get({ g_ctx.shadow_framebuffer_tag, true, true });
 

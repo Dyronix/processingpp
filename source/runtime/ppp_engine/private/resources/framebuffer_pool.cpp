@@ -12,6 +12,22 @@ namespace ppp
 {
     namespace framebuffer_pool
     {
+        namespace tags
+        {
+            //-------------------------------------------------------------------------
+            string::string_id shadow_map()
+            {
+                static const string::string_id s_shadow_map_fb = string::store_sid("shadow_map_framebuffer");
+                return s_shadow_map_fb;
+            }
+            //-------------------------------------------------------------------------
+            string::string_id forward_shading()
+            {
+                static const string::string_id s_forward_shading_fb = string::store_sid("forward_shading_framebuffer");
+                return s_forward_shading_fb;
+            }
+        }
+
         using framebuffers_arr              = graphics_vector<graphics_unique_ptr<render::framebuffer>>;
         using active_framebuffers_hash_map  = graphics_hash_map<string::string_id, render::framebuffer*>;
         using default_framebuffer_ptr       = graphics_unique_ptr<render::default_framebuffer>;
@@ -96,7 +112,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const render::framebuffer* bind(const framebuffer_description& desc, render::framebuffer_bound_target target)
+        const render::iframebuffer* bind(const framebuffer_description& desc, render::framebuffer_bound_target target)
         {
             auto fb = get(desc);
             fb->bind(target);
@@ -104,7 +120,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const render::framebuffer* unbind(const framebuffer_description& desc)
+        const render::iframebuffer* unbind(const framebuffer_description& desc)
         {
             auto fb = get(desc);
             fb->unbind();
@@ -112,7 +128,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const render::framebuffer* get(const framebuffer_description& desc)
+        const render::iframebuffer* get(const framebuffer_description& desc)
         {
             // 1) Check if we already have a framebuffer with the same (tag, withDepth) in use.
             for (auto& fb : g_ctx.framebuffers)
@@ -144,7 +160,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const render::default_framebuffer* get_system()
+        const render::iframebuffer* get_system()
         {
             return g_ctx.default_framebuffer.get();
         }

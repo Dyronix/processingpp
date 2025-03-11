@@ -10,6 +10,12 @@ namespace ppp
 {
     namespace framebuffer_pool
     {
+        namespace tags
+        {
+            string::string_id shadow_map();
+            string::string_id forward_shading();
+        }
+
         struct framebuffer_description
         {
             string::string_id tag;
@@ -36,11 +42,11 @@ namespace ppp
         void                                release(const render::framebuffer* framebuffer);
         void                                release(const framebuffer_description& desc);
 
-        const render::framebuffer*          bind(const framebuffer_description& desc, render::framebuffer_bound_target target = render::framebuffer_bound_target::READ_WRITE);
-        const render::framebuffer*          unbind(const framebuffer_description& desc);
+        const render::iframebuffer*         bind(const framebuffer_description& desc, render::framebuffer_bound_target target = render::framebuffer_bound_target::READ_WRITE);
+        const render::iframebuffer*         unbind(const framebuffer_description& desc);
 
-        const render::framebuffer*          get(const framebuffer_description& desc);
-        const render::default_framebuffer*  get_system();
+        const render::iframebuffer*         get(const framebuffer_description& desc);
+        const render::iframebuffer*         get_system();
     }
 }
 

@@ -1,22 +1,40 @@
 #pragma once
 
+#include "memory/memory_types.h"
+#include "memory/memory_unique_ptr_util.h"
+
+#include "string/string_id.h"
+
 namespace ppp
 {
+    namespace camera
+    {
+        struct camera_context;
+    }
+
     namespace render
     {
+        using instance_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<instance_renderer>>;
+        using batch_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<batch_renderer>>;
+
+        struct render_scissor;
+
         struct render_context
         {
-            glm::vec3 camera_position_font;
-            glm::vec3 camera_lookat_font;
+            explicit operator bool() const
+            {
+                return camera_context != nullptr
+                    && scissor != nullptr
+                    && batch_renderers != nullptr
+                    && instance_renderers != nullptr
+            }
 
-            glm::mat4 mat_view_font;
-            glm::mat4 mat_proj_font;
+            camera::camera_context*         camera_context = nullptr; 
 
-            glm::vec3 camera_position_active;
-            glm::vec3 camera_lookat_active;
+            render_scissor*                 scissor = nullptr;
 
-            glm::mat4 mat_view_active;
-            glm::mat4 mat_proj_active;
+            batch_renderers_hash_map*       batch_renderers = nullptr;
+            instance_renderers_hash_map*    instance_renderers = nullptr;
         };
     }
 }

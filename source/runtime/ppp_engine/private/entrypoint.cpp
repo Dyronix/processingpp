@@ -6,10 +6,11 @@
 
 #include "device/device.h"
 #include "render/render.h"
+
+#include "camera/camera_context.h"
 #include "camera/camera_manager.h"
 
 #include "memory/memory_tracker.h"
-
 #include "memory/heaps/heap.h"
 
 #include "resources/texture_pool.h"
@@ -121,7 +122,7 @@ namespace ppp
     //-------------------------------------------------------------------------
     s32 run(const app_params& app_params)
     {
-        render::render_context context;
+        camera::camera_context context;
 
         while (!device::should_close())
         {
