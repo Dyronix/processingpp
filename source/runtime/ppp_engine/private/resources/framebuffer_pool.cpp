@@ -33,11 +33,27 @@ namespace ppp
             constexpr bool with_depth = true;
             constexpr bool without_depth = false;
 
+            render::framebuffer_descriptor fbo_desc = 
+            {
+                width, height,
+                {
+                    {render::attachment_type::COLOR, render::attachment_format::RGBA8, false},
+                    {render::attachment_type::DEPTH, render::attachment_format::DEPTH24, false}
+                }
+            };
+
+            render::framebuffer_descriptor shadow_fbo_desc = 
+            {
+                1024, 1024,
+                {
+                    {render::attachment_type::DEPTH, render::attachment_format::DEPTH24, true} // Depth sampled = true
+                }
+            };
+
             g_ctx.framebuffers.reserve(4);
-            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, with_depth));
-            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, with_depth));
-            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, without_depth));
-            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(width, height, without_depth));
+            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(fbo_desc));
+            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(fbo_desc));
+            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(shadow_fbo_desc));
 
             return true;
         }
@@ -102,7 +118,9 @@ namespace ppp
             for (auto& fb : g_ctx.framebuffers)
             {
                 auto it = g_ctx.framebuffers_in_use.find(desc.tag);
-                if (it != std::cend(g_ctx.framebuffers_in_use) && fb->has_depth() == desc.require_depth)
+                if (it != std::cend(g_ctx.framebuffers_in_use) 
+                    && fb->has_depth() == desc.require_depth
+                    && fb->has_depth_texture() == desc.require_sampled_depth)
                 {
                     return it->second;
                 }
@@ -112,7 +130,9 @@ namespace ppp
             for (auto& fb : g_ctx.framebuffers) 
             {
                 auto it = g_ctx.framebuffers_in_use.find(desc.tag);
-                if (it == std::cend(g_ctx.framebuffers_in_use) && fb->has_depth() == desc.require_depth)
+                if (it == std::cend(g_ctx.framebuffers_in_use) 
+                    && fb->has_depth() == desc.require_depth
+                    && fb->has_depth_texture() == desc.require_sampled_depth)
                 {
                     g_ctx.framebuffers_in_use[desc.tag] = fb.get();
                     return fb.get();

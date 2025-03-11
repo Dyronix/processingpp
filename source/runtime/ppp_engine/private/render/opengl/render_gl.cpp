@@ -4,6 +4,7 @@
 #include "render/render_batch_renderer.h"
 #include "render/render_instance_renderer.h"
 #include "render/render_shader.h"
+#include "render/render_context.h"
 
 #include "render/helpers/render_vertex_layouts.h"
 #include "render/helpers/render_instance_layouts.h"
@@ -179,8 +180,8 @@ namespace ppp
             string::string_id           stroke_user_shader = string::string_id::create_invalid();
 
             // frame buffer
-            string::string_id           main_framebuffer_tag = string::string_id::create_invalid();
-            string::string_id           shadow_framebuffer_tag = string::string_id::create_invalid();
+            string::string_id           main_framebuffer_tag = string::store_sid("main_framebuffer");
+            string::string_id           shadow_framebuffer_tag = string::store_sid("shadow_framebuffer");
 
             // renderers
             instance_renderers_hash_map instance_renderers = {};
@@ -401,13 +402,15 @@ namespace ppp
         //-------------------------------------------------------------------------
         void render(const render_context& context)
         {
+            auto shadow_framebuffer = framebuffer_pool::get({ g_ctx.shadow_framebuffer_tag, true, true });
+
             auto& cam_pos_active = context.camera_position_active;
             auto& cam_tar_active = context.camera_lookat_active;
             auto& cam_pos_font = context.camera_position_font;
             auto& cam_tar_font = context.camera_lookat_font;
 
             auto system_framebuffer = framebuffer_pool::get_system();
-            auto target_framebuffer = framebuffer_pool::get({ g_ctx.main_framebuffer_tag, true });
+            auto target_framebuffer = framebuffer_pool::get({ g_ctx.main_framebuffer_tag, true, false });
 
             f32 w = static_cast<f32>(target_framebuffer->width());
             f32 h = static_cast<f32>(target_framebuffer->height());

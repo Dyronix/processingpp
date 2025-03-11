@@ -90,6 +90,10 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_features.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_framebuffer.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_context.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shadow_pass.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_forward_shading_pass.h
     ## render-opengl
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_storage_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_vertex_buffer.cpp
@@ -113,6 +117,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_function_library.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_api.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_api.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_shadow_pass.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_forward_shading_pass.cpp
     ## render-helpers
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.cpp
@@ -129,7 +135,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_instance_layouts.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_instance_layouts.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_event_dispatcher.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_event_dispatcher.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_event_dispatcher.h  
     # geometry
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.cpp

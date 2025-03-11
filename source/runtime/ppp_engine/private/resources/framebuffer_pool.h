@@ -15,6 +15,7 @@ namespace ppp
             string::string_id tag;
 
             bool require_depth;
+            bool require_sampled_depth;
 
             //-------------------------------------------------------------------------
             bool operator==(const framebuffer_description& other) const

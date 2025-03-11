@@ -13,6 +13,25 @@ namespace ppp
 {
     namespace render
     {
+        namespace conversions
+        {
+            debug_temp_string to_error_message(u32 status)
+            {
+                switch (status)
+                {
+                case GL_FRAMEBUFFER_UNDEFINED:                      return "GL_FRAMEBUFFER_UNDEFINED | the specified framebuffer is the default read or draw framebuffer, but the default framebuffer does not exist.";
+                case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:          return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT | any of the framebuffer attachment points are framebuffer incomplete.";
+                case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:  return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT | the framebuffer does not have at least one image attached to it.";
+                case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:         return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER | the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for any color attachment point(s) named by GL_DRAW_BUFFERi.";
+                case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:         return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER | GL_READ_BUFFER is not GL_NONE and the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for the color attachment point named by GL_READ_BUFFER.";
+                case GL_FRAMEBUFFER_UNSUPPORTED:                    return "GL_FRAMEBUFFER_UNSUPPORTED | the combination of internal formats of the attached images violates an implementation-dependent set of restrictions.";
+                case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:         return "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE | the value of GL_RENDERBUFFER_SAMPLES is not the same for all attached renderbuffers or the value of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is not the same for all attached textures";
+                case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:       return "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS | any framebuffer attachment is layered, and any populated attachment is not layered, or all populated color attachments are not from textures of the same target";
+                }
+
+                return "Unknown status";
+            }
+        }
         constexpr s32 _min_frame_buffer_width = 32;
         constexpr s32 _min_frame_buffer_height = 32;
         
@@ -57,8 +76,7 @@ namespace ppp
                             opengl::api::instance().generate_textures(1, &depth_texture);
                             opengl::api::instance().bind_texture(GL_TEXTURE_2D, depth_texture);
 
-                            opengl::api::instance().texture_image_2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-                            opengl::api::instance().framebuffer_texture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_texture, 0);
+                            opengl::api::instance().texture_image_2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
                             opengl::api::instance().set_texture_integer_parameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                             opengl::api::instance().set_texture_integer_parameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                             opengl::api::instance().set_texture_integer_parameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -67,7 +85,7 @@ namespace ppp
                             f32 border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
                             opengl::api::instance().set_texture_float_array_parameter(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &border_color[0]);
 
-                            opengl::api::instance().framebuffer_texture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_attachment, 0);
+                            opengl::api::instance().framebuffer_texture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_texture, 0);
 
                             m_depth_attachment = depth_texture;
                             m_depth_is_texture = true;
@@ -79,7 +97,6 @@ namespace ppp
                             opengl::api::instance().bind_renderbuffer(GL_RENDERBUFFER, depth_rbo);
                             opengl::api::instance().renderbuffer_storage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, m_width, m_height);
                             opengl::api::instance().framebuffer_renderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_rbo);
-                            opengl::api::instance().framebuffer_renderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth_attachment);
 
                             m_depth_attachment = depth_rbo;
                             m_depth_is_texture = false;
@@ -87,9 +104,11 @@ namespace ppp
                     }
                 }
 
-                if (opengl::api::instance().check_framebuffer_status(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+                auto framebuffer_status = opengl::api::instance().check_framebuffer_status(GL_FRAMEBUFFER);
+                if (framebuffer_status != GL_FRAMEBUFFER_COMPLETE)
                 {
-                    log::error("FramebufferStatus != FRAMEBUFFER_COMPLETE");
+                    log::error("FramebufferStatus != FRAMEBUFFER_COMPLETE: {0} | {1}", framebuffer_status, conversions::to_error_message(framebuffer_status));
+                    opengl::api::instance().bind_framebuffer(GL_FRAMEBUFFER, 0);
                     return;
                 }
 
