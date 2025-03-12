@@ -29,6 +29,10 @@ namespace ppp
                 temp_string normal_vertex_shader_code();
                 temp_string normal_pixel_shader_code();
                 temp_string instance_normal_vertex_shader_code();
+
+                temp_string shadow_depth_vertex_shader_code();
+                temp_string shadow_depth_fragment_shader_code();
+                temp_string instance_shadow_depth_vertex_shader_code();
             }
 
             namespace lit

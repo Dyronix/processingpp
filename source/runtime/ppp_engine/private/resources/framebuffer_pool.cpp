@@ -136,30 +136,48 @@ namespace ppp
             return fb->second;
         }
 
-        //-------------------------------------------------------------------------
         const render::iframebuffer* get(string::string_id tag, s32 flags)
         {
-            // 1) Check if we already have a framebuffer with the same (tag, withDepth) in use.
-            for (auto& fb : g_ctx.framebuffers)
+            // 1) Check if there's already a framebuffer in use for this tag 
+            auto it = g_ctx.framebuffers_in_use.find(tag);
+            if (it != g_ctx.framebuffers_in_use.end())
             {
-                auto it = g_ctx.framebuffers_in_use.find(tag);
-                if (it != std::cend(g_ctx.framebuffers_in_use) 
-                    && fb->has_depth() == static_cast<bool>(flags & framebuffer_flags::DEPTH)
-                    && fb->has_depth_texture() == static_cast<bool>(flags & framebuffer_flags::SAMPLED_DEPTH)
-                    && fb->has_color_attachment() == static_cast<bool>(flags & framebuffer_flags::COLOR))
+                auto fb = it->second;
+                // Check if fb meets the required flag criteria
+                if ((!(flags & framebuffer_flags::DEPTH) || fb->has_depth()) &&
+                    (!(flags & framebuffer_flags::SAMPLED_DEPTH) || (fb->has_depth() && fb->has_depth_texture())) &&
+                    (!(flags & framebuffer_flags::COLOR) || fb->has_color_attachment()))
                 {
-                    return it->second;
+                    return fb;
                 }
             }
 
-            // 2) Otherwise find a free one with the same depth requirement
-            for (auto& fb : g_ctx.framebuffers) 
+            // 2) Look for a free framebuffer that meets the flag criteria.
+            for (auto& fb : g_ctx.framebuffers)
             {
-                auto it = g_ctx.framebuffers_in_use.find(tag);
-                if (it == std::cend(g_ctx.framebuffers_in_use) 
-                    && fb->has_depth() == static_cast<bool>(flags & framebuffer_flags::DEPTH)
-                    && fb->has_depth_texture() == static_cast<bool>(flags & framebuffer_flags::SAMPLED_DEPTH)
-                    && fb->has_color_attachment() == static_cast<bool>(flags & framebuffer_flags::COLOR))
+                // Skip if this framebuffer is already in use.
+                if (std::any_of(g_ctx.framebuffers_in_use.begin(), g_ctx.framebuffers_in_use.end(),
+                    [fb_ptr = fb.get()](const auto& pair) { return pair.second == fb_ptr; }))
+                {
+                    continue;
+                }
+
+                bool meetsCriteria = true;
+                if (flags & framebuffer_flags::DEPTH)
+                {
+                    meetsCriteria &= fb->has_depth();
+                }
+                if (flags & framebuffer_flags::SAMPLED_DEPTH)
+                {
+                    // SAMPLED_DEPTH implies both depth and a depth texture.
+                    meetsCriteria &= (fb->has_depth() && fb->has_depth_texture());
+                }
+                if (flags & framebuffer_flags::COLOR)
+                {
+                    meetsCriteria &= fb->has_color_attachment();
+                }
+
+                if (meetsCriteria)
                 {
                     g_ctx.framebuffers_in_use[tag] = fb.get();
                     return fb.get();
@@ -169,6 +187,7 @@ namespace ppp
             log::error("No framebuffers available for tag: {}", string::restore_sid(tag));
             return nullptr;
         }
+
 
         //-------------------------------------------------------------------------
         const render::iframebuffer* get_system()

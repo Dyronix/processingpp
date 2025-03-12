@@ -336,7 +336,7 @@ namespace ppp
 
             g_ctx.render_pipeline.add_pass(memory::make_unique<shadow_pass, memory::persistent_graphics_tagged_allocator<shadow_pass>>());
             g_ctx.render_pipeline.add_pass(memory::make_unique<forward_shading_pass, memory::persistent_graphics_tagged_allocator<forward_shading_pass>>());
-            //g_ctx.render_pipeline.add_pass(memory::make_unique<ui_pass, memory::persistent_graphics_tagged_allocator<ui_pass>>());
+            g_ctx.render_pipeline.add_pass(memory::make_unique<ui_pass, memory::persistent_graphics_tagged_allocator<ui_pass>>());
             g_ctx.render_pipeline.add_pass(memory::make_unique<blit_pass, memory::persistent_graphics_tagged_allocator<blit_pass>>(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
 
             return true;
@@ -378,22 +378,18 @@ namespace ppp
                 pair.second->begin();
             }
 
-            g_ctx.render_pipeline.begin(make_render_context(context));
-
             broadcast_on_draw_begin();
         }
 
         //-------------------------------------------------------------------------
         void render(const camera::camera_context* context)
         {
-            g_ctx.render_pipeline.render(make_render_context(context));
+            g_ctx.render_pipeline.execute(make_render_context(context));
         }
 
         //-------------------------------------------------------------------------
         void end(const camera::camera_context* context)
         {
-            g_ctx.render_pipeline.end(make_render_context(context));
-
             broadcast_on_draw_end();
         }
 

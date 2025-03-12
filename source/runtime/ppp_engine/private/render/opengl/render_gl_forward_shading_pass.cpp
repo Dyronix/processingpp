@@ -29,15 +29,6 @@ namespace ppp
         {
             assert(context && "Invalid render context");
 
-            for (auto& pair : *context.batch_renderers)
-            {
-                pair.second->begin();
-            }
-            for (auto& pair : *context.instance_renderers)
-            {
-                pair.second->begin();
-            }
-
             auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
             
             framebuffer->bind();

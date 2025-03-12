@@ -48,6 +48,13 @@ namespace ppp
 
                     return s_normal;
                 }
+                //-------------------------------------------------------------------------
+                string::string_id shadow()
+                {
+                    static const string::string_id s_shadow = string::store_sid("unlit_shadow");
+
+                    return s_shadow;
+                }
 
                 //-------------------------------------------------------------------------
                 // instanced
@@ -70,6 +77,13 @@ namespace ppp
                     static const string::string_id s_instance_normal = string::store_sid("instance_unlit_normal");
 
                     return s_instance_normal;
+                }
+                //-------------------------------------------------------------------------
+                string::string_id instance_shadow()
+                {
+                    static const string::string_id s_instance_shadow = string::store_sid("instance_unlit_shadow");
+
+                    return s_instance_shadow;
                 }
             }
 
@@ -139,6 +153,7 @@ namespace ppp
             g_ctx.add_shader_program(tags::unlit::texture(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_TEXCOORD_COLOR, render::shaders::unlit::texture_vertex_shader_code(), render::shaders::unlit::texture_pixel_shader_code());
             g_ctx.add_shader_program(tags::unlit::font(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_TEXCOORD_COLOR, render::shaders::unlit::font_vertex_shader_code(), render::shaders::unlit::font_pixel_shader_code());
             g_ctx.add_shader_program(tags::unlit::normal(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_NORMAL_COLOR, render::shaders::unlit::normal_vertex_shader_code(), render::shaders::unlit::normal_pixel_shader_code());
+            g_ctx.add_shader_program(tags::unlit::shadow(), render::shading_model_type::UNLIT, render::vertex_type::POSITION, render::shaders::unlit::shadow_depth_vertex_shader_code(), render::shaders::unlit::shadow_depth_fragment_shader_code());
             // lit
             g_ctx.add_shader_program(tags::lit::color(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL_COLOR, render::shaders::lit::color_vertex_shader_code(), render::shaders::lit::color_pixel_shader_code());
             g_ctx.add_shader_program(tags::lit::specular(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL_COLOR, render::shaders::lit::specular_vertex_shader_code(), render::shaders::lit::specular_pixel_shader_code());
@@ -148,6 +163,7 @@ namespace ppp
             g_ctx.add_shader_program(tags::unlit::instance_color(), render::shading_model_type::UNLIT, render::vertex_type::POSITION, render::shaders::unlit::instance_color_vertex_shader_code(), render::shaders::unlit::color_pixel_shader_code());
             g_ctx.add_shader_program(tags::unlit::instance_texture(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_TEXCOORD, render::shaders::unlit::instance_texture_vertex_shader_code(), render::shaders::unlit::texture_pixel_shader_code());
             g_ctx.add_shader_program(tags::unlit::instance_normal(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_NORMAL, render::shaders::unlit::instance_normal_vertex_shader_code(), render::shaders::unlit::normal_pixel_shader_code());
+            g_ctx.add_shader_program(tags::unlit::instance_shadow(), render::shading_model_type::UNLIT, render::vertex_type::POSITION, render::shaders::unlit::instance_shadow_depth_vertex_shader_code(), render::shaders::unlit::shadow_depth_fragment_shader_code());
             // lit
             //g_ctx.add_shader_program(tags::lit::instance_color(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL, render::shaders::lit::instance_color_vertex_shader_code(), render::shaders::lit::color_pixel_shader_code());
             g_ctx.add_shader_program(tags::lit::instance_specular(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL, render::shaders::lit::instance_specular_vertex_shader_code(), render::shaders::lit::specular_pixel_shader_code());

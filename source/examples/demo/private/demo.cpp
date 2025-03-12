@@ -27,77 +27,71 @@ namespace ppp
 
     void append_lights()
     {
-        //lights::directional_light_desc directional_desc =
-        //{
-        //    -0.2f, // directional_desc.dirx
-        //    -1.0f, // directional_desc.diry
-        //    -0.3f, // directional_desc.dirz
-        //    0.8f, // directional_desc.r
-        //    0.8f, // directional_desc.b
-        //    0.8f, // directional_desc.b
-        //    1.0f, // directional_desc.intensity
-        //    1.0f, // directional_desc.spec_r
-        //    1.0f, // directional_desc.spec_g
-        //    1.0f, // directional_desc.spec_b
-        //    false, // directional_desc.spec_enabled
-        //    false // directional_desc.cast_shadows
-        //};
-
-        //lights::directional_light(directional_desc);
-
-        lights::point_light_desc point_desc =
+        lights::directional_light_desc directional_desc =
         {
-            0.0f, 0.0f, 0.0f,       // position
+            -0.2f, -1.0f, -0.3f,    // direction
             0.05f, 0.05f, 0.05f,    // ambient          
             0.8f, 0.8f, 0.8f,       // diffuse
             1.0f, 1.0f, 1.0f,       // specular          
             false,                  // specular enabled
-            false,                  // cast shadows
-            800.0f,                 // max range
-            350.0f                  // falloff start
+            true,                   // cast shadows
         };
 
-        float start_x = -120.0f; // Initial x position to start grid from
-        float x_spacing = 80.0f; // Horizontal spacing between shapes
+        lights::directional_light(directional_desc);
 
-        for(int i = 0; i < 4; i++)
-        {
-            switch (i)
-            {
-            case 0:
-                // lights
-                point_desc.x = start_x + (i * x_spacing);
-                point_desc.y = 40.0f;
-                point_desc.z = 100.0f;
+        //lights::point_light_desc point_desc =
+        //{
+        //    0.0f, 0.0f, 0.0f,       // position
+        //    0.05f, 0.05f, 0.05f,    // ambient          
+        //    0.8f, 0.8f, 0.8f,       // diffuse
+        //    1.0f, 1.0f, 1.0f,       // specular          
+        //    false,                  // specular enabled
+        //    false,                  // cast shadows
+        //    800.0f,                 // max range
+        //    350.0f                  // falloff start
+        //};
 
-                lights::point_light(point_desc);
-                break;
-            //case 1:
-            //    // lights
-            //    point_desc.x = start_x + (i * x_spacing);
-            //    point_desc.y = 40.0f;
-            //    point_desc.z = 100.0f;
+        //float start_x = -120.0f; // Initial x position to start grid from
+        //float x_spacing = 80.0f; // Horizontal spacing between shapes
 
-            //    lights::point_light(point_desc);
-            //    break;
-            //case 2:
-            //    // lights
-            //    point_desc.x = start_x + (i * x_spacing);
-            //    point_desc.y = 40.0f;
-            //    point_desc.z = 100.0f;
+        //for(int i = 0; i < 4; i++)
+        //{
+        //    switch (i)
+        //    {
+        //    case 0:
+        //        // lights
+        //        point_desc.x = start_x + (i * x_spacing);
+        //        point_desc.y = 40.0f;
+        //        point_desc.z = 100.0f;
 
-            //    lights::point_light(point_desc);
-            //    break;
-            case 3:
-                // lights
-                point_desc.x = start_x + (i * x_spacing);
-                point_desc.y = 40.0f;
-                point_desc.z = 100.0f;
+        //        lights::point_light(point_desc);
+        //        break;
+        //    //case 1:
+        //    //    // lights
+        //    //    point_desc.x = start_x + (i * x_spacing);
+        //    //    point_desc.y = 40.0f;
+        //    //    point_desc.z = 100.0f;
 
-                lights::point_light(point_desc);
-                break;
-            }
-        }
+        //    //    lights::point_light(point_desc);
+        //    //    break;
+        //    //case 2:
+        //    //    // lights
+        //    //    point_desc.x = start_x + (i * x_spacing);
+        //    //    point_desc.y = 40.0f;
+        //    //    point_desc.z = 100.0f;
+
+        //    //    lights::point_light(point_desc);
+        //    //    break;
+        //    case 3:
+        //        // lights
+        //        point_desc.x = start_x + (i * x_spacing);
+        //        point_desc.y = 40.0f;
+        //        point_desc.z = 100.0f;
+
+        //        lights::point_light(point_desc);
+        //        break;
+        //    }
+        //}
     }
 
     void draw_lights()
@@ -337,7 +331,7 @@ namespace ppp
 
         material::shader(material::tags::unlit_color());
         color::fill({ 255, 255, 255, 255 });
-        draw_lights();
+        //draw_lights();
 
         color::fill({ 0,0,0,255 });
     }

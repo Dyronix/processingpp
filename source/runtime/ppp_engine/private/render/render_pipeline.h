@@ -15,9 +15,7 @@ namespace ppp
         public:
             void add_pass(graphics_unique_ptr<render_pass> pass);
 
-            void begin(const render_context& context);
-            void render(const render_context& context);
-            void end(const render_context& context);
+            void execute(const render_context& context);
 
         private:
             graphics_vector<graphics_unique_ptr<render_pass>> m_passes;
