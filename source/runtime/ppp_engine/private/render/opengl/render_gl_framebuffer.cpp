@@ -290,6 +290,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void default_framebuffer::unbind() const
+        {
+            // Nothing to implement
+            // We should not unbind the default framebuffer
+        }
+
+        //-------------------------------------------------------------------------
         s32 default_framebuffer::width() const
         {
             return m_pimpl->m_width;

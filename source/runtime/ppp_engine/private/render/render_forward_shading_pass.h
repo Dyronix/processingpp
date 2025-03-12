@@ -17,6 +17,9 @@ namespace ppp
 
             void setup(const render_context& context) override;
             void cleanup(const render_context& context) override;
+
+        private:
+            const iframebuffer* m_framebuffer;
         };
     }
 }

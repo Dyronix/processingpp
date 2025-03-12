@@ -12,9 +12,11 @@ namespace ppp
     namespace render
     {
         //-------------------------------------------------------------------------
-        blit_pass::blit_pass(string::string_id src, string::string_id dst)
-            :m_source(src)
+        blit_pass::blit_pass(string::string_id src, s32 src_flags, string::string_id dst, s32 dst_flags)
+            :m_src(src)
+            ,m_src_flags(src_flags)
             ,m_dst(dst)
+            ,m_dst_flags(dst_flags)
         {}
         //-------------------------------------------------------------------------
         blit_pass::~blit_pass() = default;
@@ -30,8 +32,10 @@ namespace ppp
         {
             // Retrieve the target framebuffer (your off-screen/main framebuffer)
             // and the system framebuffer (e.g., the default window framebuffer).
-            auto target_framebuffer = framebuffer_pool::get({ m_source, true, false });
-            auto system_framebuffer = m_dst.is_none() ? framebuffer_pool::get_system() : framebuffer_pool::get({ m_source, true, false });;
+            auto target_framebuffer = framebuffer_pool::get(m_src, m_src_flags);
+            auto system_framebuffer = m_dst.is_none() || m_dst_flags == -1 
+                ? framebuffer_pool::get_system() 
+                : framebuffer_pool::get(m_dst, m_dst_flags);
 
             // Bind the target framebuffer for reading.
             target_framebuffer->bind(framebuffer_bound_target::READ);

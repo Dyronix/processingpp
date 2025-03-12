@@ -39,10 +39,10 @@ namespace ppp
             }
 
             // Bind the main framebuffer.
-            auto framebuffer = framebuffer_pool::bind({ framebuffer_pool::tags::forward_shading(), true });
+            m_framebuffer->bind();
 
             // Set viewport and clear the framebuffer.
-            opengl::api::instance().viewport(0, 0, framebuffer->width(), framebuffer->height());
+            opengl::api::instance().viewport(0, 0, m_framebuffer->width(), m_framebuffer->height());
             opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
             opengl::api::instance().clear_depth(1.0);
             opengl::api::instance().clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -56,10 +56,10 @@ namespace ppp
             {
                 opengl::api::instance().enable(GL_SCISSOR_TEST);
                 opengl::api::instance().scissor(
-                    std::clamp(context.scissor->x, 0, framebuffer->width()),
-                    std::clamp(context.scissor->y, 0, framebuffer->height()),
-                    std::clamp(context.scissor->width, framebuffer::min_framebuffer_width(), framebuffer->width()),
-                    std::clamp(context.scissor->height, framebuffer::min_framebuffer_height(), framebuffer->height())
+                    std::clamp(context.scissor->x, 0, m_framebuffer->width()),
+                    std::clamp(context.scissor->y, 0, m_framebuffer->height()),
+                    std::clamp(context.scissor->width, framebuffer::min_framebuffer_width(), m_framebuffer->width()),
+                    std::clamp(context.scissor->height, framebuffer::min_framebuffer_height(), m_framebuffer->height())
                 );
             }
             else
@@ -102,48 +102,24 @@ namespace ppp
             {
                 pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp);
             }
-
-            // Blit the rendered image from the forward shading framebuffer to the system framebuffer.
-            auto target_framebuffer = framebuffer_pool::get({ framebuffer_pool::tags::forward_shading(), true, false});
-            auto system_framebuffer = framebuffer_pool::get_system();
-
-            target_framebuffer->bind(framebuffer_bound_target::READ);
-            system_framebuffer->bind(framebuffer_bound_target::WRITE);
-
-            opengl::api::instance().blit_framebuffer(
-                0,
-                0,
-                target_framebuffer->width(),
-                target_framebuffer->height(),
-                0,
-                0,
-                system_framebuffer->width(),
-                system_framebuffer->height(),
-                GL_COLOR_BUFFER_BIT,
-                GL_NEAREST
-            );
-
-            system_framebuffer->bind();
         }
 
         //-------------------------------------------------------------------------
         void forward_shading_pass::end_frame(const render_context& context)
         {
-            framebuffer_pool::unbind({ framebuffer_pool::tags::forward_shading(), true });
+            framebuffer_pool::unbind(framebuffer_pool::tags::forward_shading());
         }
 
         //-------------------------------------------------------------------------
         void forward_shading_pass::setup(const render_context& context)
         {
-            // One-time setup logic (if any) can be added here.
-            // For example, initializing resources that persist for the life of this pass.
+            m_framebuffer = framebuffer_pool::get(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
         }
 
         //-------------------------------------------------------------------------
         void forward_shading_pass::cleanup(const render_context& context)
         {
-            // One-time cleanup logic (if any) can be added here.
-            // For example, releasing resources allocated in setup.
+            framebuffer_pool::release(m_framebuffer);
         }
     }
 }

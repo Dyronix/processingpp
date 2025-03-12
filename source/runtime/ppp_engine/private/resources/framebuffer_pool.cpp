@@ -46,15 +46,12 @@ namespace ppp
         {
             g_ctx.default_framebuffer = memory::make_unique<render::default_framebuffer, memory::persistent_graphics_tagged_allocator<render::default_framebuffer>>(width, height);
 
-            constexpr bool with_depth = true;
-            constexpr bool without_depth = false;
-
             render::framebuffer_descriptor fbo_desc = 
             {
                 width, height,
                 {
-                    {render::attachment_type::COLOR, render::attachment_format::RGBA8, false},
-                    {render::attachment_type::DEPTH, render::attachment_format::DEPTH24, false}
+                    {render::attachment_type::COLOR, render::attachment_format::RGBA8, false},      // Depth sampled = false
+                    {render::attachment_type::DEPTH, render::attachment_format::DEPTH24, false}     // Depth sampled = false
                 }
             };
 
@@ -62,7 +59,15 @@ namespace ppp
             {
                 1024, 1024,
                 {
-                    {render::attachment_type::DEPTH, render::attachment_format::DEPTH24, true} // Depth sampled = true
+                    {render::attachment_type::DEPTH, render::attachment_format::DEPTH24, true}      // Depth sampled = true
+                }
+            };
+
+            render::framebuffer_descriptor blit_desc =
+            {
+                width, height,
+                {
+                    {render::attachment_type::COLOR, render::attachment_format::RGBA8},
                 }
             };
 
@@ -70,6 +75,7 @@ namespace ppp
             g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(fbo_desc));
             g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(fbo_desc));
             g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(shadow_fbo_desc));
+            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(blit_desc));
 
             return true;
         }
@@ -81,7 +87,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void release(const render::framebuffer* framebuffer)
+        void release(const render::iframebuffer* framebuffer)
         {
             auto it = std::find_if(std::cbegin(g_ctx.framebuffers_in_use), std::cend(g_ctx.framebuffers_in_use),
                 [framebuffer](const auto& pair)
@@ -99,44 +105,36 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void release(const framebuffer_description& desc)
+        const render::iframebuffer* bind(string::string_id tag, render::framebuffer_bound_target target)
         {
-            auto it = g_ctx.framebuffers_in_use.find(desc.tag);
-            if (it != std::cend(g_ctx.framebuffers_in_use))
-            {
-                // Make sure the frame buffer is unbound when we release it from the list
-                it->second->unbind();
+            assert(g_ctx.framebuffers_in_use.find(tag) != std::cend(g_ctx.framebuffers_in_use));
 
-                g_ctx.framebuffers_in_use.erase(it);
-            }
+            auto fb = g_ctx.framebuffers_in_use.find(tag);
+            fb->second->bind(target);
+            return fb->second;
         }
 
         //-------------------------------------------------------------------------
-        const render::iframebuffer* bind(const framebuffer_description& desc, render::framebuffer_bound_target target)
+        const render::iframebuffer* unbind(string::string_id tag)
         {
-            auto fb = get(desc);
-            fb->bind(target);
-            return fb;
+            assert(g_ctx.framebuffers_in_use.find(tag) != std::cend(g_ctx.framebuffers_in_use));
+
+            auto fb = g_ctx.framebuffers_in_use.find(tag);
+            fb->second->unbind();
+            return fb->second;
         }
 
         //-------------------------------------------------------------------------
-        const render::iframebuffer* unbind(const framebuffer_description& desc)
-        {
-            auto fb = get(desc);
-            fb->unbind();
-            return fb;
-        }
-
-        //-------------------------------------------------------------------------
-        const render::iframebuffer* get(const framebuffer_description& desc)
+        const render::iframebuffer* get(string::string_id tag, s32 flags)
         {
             // 1) Check if we already have a framebuffer with the same (tag, withDepth) in use.
             for (auto& fb : g_ctx.framebuffers)
             {
-                auto it = g_ctx.framebuffers_in_use.find(desc.tag);
+                auto it = g_ctx.framebuffers_in_use.find(tag);
                 if (it != std::cend(g_ctx.framebuffers_in_use) 
-                    && fb->has_depth() == desc.require_depth
-                    && fb->has_depth_texture() == desc.require_sampled_depth)
+                    && fb->has_depth() == (flags & framebuffer_flags::DEPTH)
+                    && fb->has_depth_texture() == (flags & framebuffer_flags::SAMPLED_DEPTH)
+                    && fb->has_color_attachment() == (flags & framebuffer_flags::COLOR))
                 {
                     return it->second;
                 }
@@ -145,17 +143,18 @@ namespace ppp
             // 2) Otherwise find a free one with the same depth requirement
             for (auto& fb : g_ctx.framebuffers) 
             {
-                auto it = g_ctx.framebuffers_in_use.find(desc.tag);
+                auto it = g_ctx.framebuffers_in_use.find(tag);
                 if (it == std::cend(g_ctx.framebuffers_in_use) 
-                    && fb->has_depth() == desc.require_depth
-                    && fb->has_depth_texture() == desc.require_sampled_depth)
+                    && fb->has_depth() == (flags & framebuffer_flags::DEPTH)
+                    && fb->has_depth_texture() == (flags & framebuffer_flags::SAMPLED_DEPTH)
+                    && fb->has_color_attachment() == (flags & framebuffer_flags::COLOR))
                 {
-                    g_ctx.framebuffers_in_use[desc.tag] = fb.get();
+                    g_ctx.framebuffers_in_use[tag] = fb.get();
                     return fb.get();
                 }
             }
 
-            log::error("No framebuffers available for tag: {}", string::restore_sid(desc.tag));
+            log::error("No framebuffers available for tag: {}", string::restore_sid(tag));
             return nullptr;
         }
 

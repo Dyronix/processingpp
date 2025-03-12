@@ -8,6 +8,13 @@
 
 namespace ppp
 {
+    namespace framebuffer_flags
+    {
+        constexpr s32 DEPTH = BIT(0);
+        constexpr s32 SAMPLED_DEPTH = BIT(1);
+        constexpr s32 COLOR = BIT(2);
+    }
+
     namespace framebuffer_pool
     {
         namespace tags
@@ -16,48 +23,15 @@ namespace ppp
             string::string_id forward_shading();
         }
 
-        struct framebuffer_description
-        {
-            string::string_id tag;
-
-            bool require_depth;
-            bool require_sampled_depth;
-
-            //-------------------------------------------------------------------------
-            bool operator==(const framebuffer_description& other) const
-            {
-                return tag == other.tag && require_depth == other.require_depth;
-            }
-
-            //-------------------------------------------------------------------------
-            bool operator!=(const framebuffer_description& other) const
-            {
-                return !(*this == other);
-            }
-        };
-
         bool                                initialize(s32 width, s32 height);
         void                                terminate();
 
-        void                                release(const render::framebuffer* framebuffer);
-        void                                release(const framebuffer_description& desc);
+        void                                release(const render::iframebuffer* framebuffer);
 
-        const render::iframebuffer*         bind(const framebuffer_description& desc, render::framebuffer_bound_target target = render::framebuffer_bound_target::READ_WRITE);
-        const render::iframebuffer*         unbind(const framebuffer_description& desc);
+        const render::iframebuffer*         bind(string::string_id tag, render::framebuffer_bound_target target = render::framebuffer_bound_target::READ_WRITE);
+        const render::iframebuffer*         unbind(string::string_id tag);
 
-        const render::iframebuffer*         get(const framebuffer_description& desc);
+        const render::iframebuffer*         get(string::string_id tag, s32 flags);
         const render::iframebuffer*         get_system();
     }
-}
-
-namespace std
-{
-    template<>
-    struct hash<ppp::framebuffer_pool::framebuffer_description>
-    {
-        u64 operator()(const ppp::framebuffer_pool::framebuffer_description& s) const
-        {
-            return s.tag;
-        }
-    };
 }

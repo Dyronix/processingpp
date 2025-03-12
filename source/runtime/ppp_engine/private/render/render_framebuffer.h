@@ -30,7 +30,7 @@ namespace ppp
             attachment_type type;
             attachment_format format;
 
-            bool sampled; // Determines whether it should be a texture (true) or a renderbuffer (false)
+            bool sampled = false; // Determines whether it should be a texture (true) or a renderbuffer (false)
         };
 
         struct framebuffer_descriptor
@@ -54,6 +54,7 @@ namespace ppp
             virtual ~iframebuffer() = default;
 
             virtual void bind(framebuffer_bound_target target = framebuffer_bound_target::READ_WRITE) const = 0;
+            virtual void unbind() const = 0;
 
             virtual s32 width() const = 0;
             virtual s32 height() const = 0;
@@ -70,7 +71,7 @@ namespace ppp
             ~framebuffer() override;
 
             void bind(framebuffer_bound_target target = framebuffer_bound_target::READ_WRITE) const override;
-            void unbind() const;
+            void unbind() const override;
 
             s32 width() const override;
             s32 height() const override;
@@ -91,6 +92,7 @@ namespace ppp
             ~default_framebuffer() override;
 
             void bind(framebuffer_bound_target target = framebuffer_bound_target::READ_WRITE) const override;
+            void unbind() const override;
 
             s32 width() const override;
             s32 height() const override;
