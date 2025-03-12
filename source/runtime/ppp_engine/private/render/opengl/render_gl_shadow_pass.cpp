@@ -24,17 +24,5 @@ namespace ppp
         {
 
         }
-
-        //-------------------------------------------------------------------------
-        void shadow_pass::setup(const render_context& context)
-        {
-
-        }
-
-        //-------------------------------------------------------------------------
-        void shadow_pass::cleanup(const render_context& context)
-        {
-
-        }
     }
 }

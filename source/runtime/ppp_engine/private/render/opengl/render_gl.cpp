@@ -6,6 +6,12 @@
 #include "render/render_shader.h"
 #include "render/render_context.h"
 #include "render/render_scissor.h"
+#include "render/render_pipeline.h"
+
+#include "render/render_shadow_pass.h"
+#include "render/render_forward_shading_pass.h"
+#include "render/render_blit_pass.h"
+#include "render/render_ui_pass.h"
 
 #include "render/helpers/render_vertex_layouts.h"
 #include "render/helpers/render_instance_layouts.h"
@@ -170,6 +176,9 @@ namespace ppp
             string::string_id           main_framebuffer_tag = string::store_sid("main_framebuffer");
             string::string_id           shadow_framebuffer_tag = string::store_sid("shadow_framebuffer");
 
+            // rendering
+            render_pipeline             render_pipeline;
+
             // renderers
             instance_renderers_hash_map instance_renderers = {};
             batch_renderers_hash_map    batch_renderers = {};
@@ -180,6 +189,19 @@ namespace ppp
             s32                         major = 0;
             s32                         minor = 0;
         } g_ctx;
+
+        //-------------------------------------------------------------------------
+        render_context make_render_context(const camera::camera_context* camera_context)
+        {
+            render_context render_context;
+            render_context.camera_context = camera_context;
+            render_context.font_renderer = g_ctx.font_renderer.get();
+            render_context.batch_renderers = &g_ctx.batch_renderers;
+            render_context.instance_renderers = &g_ctx.instance_renderers;
+            render_context.scissor = &g_ctx.scissor;
+
+            return render_context;
+        }
 
         //-------------------------------------------------------------------------
         void submit_custom_render_item(topology_type topology, const irender_item* item, const glm::vec4& color)
@@ -312,15 +334,17 @@ namespace ppp
 
             g_ctx.font_renderer = memory::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<texture_batch_renderer>>(shader_pool::tags::unlit::font());
 
+            g_ctx.render_pipeline.add_pass(memory::make_unique<shadow_pass, memory::persistent_graphics_tagged_allocator<shadow_pass>>());
+            g_ctx.render_pipeline.add_pass(memory::make_unique<forward_shading_pass, memory::persistent_graphics_tagged_allocator<forward_shading_pass>>());
+            //g_ctx.render_pipeline.add_pass(memory::make_unique<ui_pass, memory::persistent_graphics_tagged_allocator<ui_pass>>());
+            g_ctx.render_pipeline.add_pass(memory::make_unique<blit_pass, memory::persistent_graphics_tagged_allocator<blit_pass>>(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
+
             return true;
         }
 
         //-------------------------------------------------------------------------
         void terminate()
         {
-            // Release the framebuffer
-            framebuffer_pool::release({ g_ctx.main_framebuffer_tag, true});
-
             // Font
             g_ctx.font_renderer->terminate();
 
@@ -339,7 +363,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void begin()
+        void begin(const camera::camera_context* context)
         {
             // Font
             g_ctx.font_renderer->begin();
@@ -354,34 +378,7 @@ namespace ppp
                 pair.second->begin();
             }
 
-            auto framebuffer = framebuffer_pool::bind({ g_ctx.main_framebuffer_tag, true });
-
-            // Clear the background to black
-            opengl::api::instance().viewport(0, 0, framebuffer->width(), framebuffer->height());
-
-            opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
-            opengl::api::instance().clear_depth(1.0);
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            // Reset to the user clear color
-            glm::vec4 bg_color = brush::background();
-            opengl::api::instance().clear_color(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-
-            if (g_ctx.scissor.enable)
-            {
-                opengl::api::instance().enable(GL_SCISSOR_TEST);
-                opengl::api::instance().scissor(
-                    std::clamp(g_ctx.scissor.x, 0, framebuffer->width()),
-                    std::clamp(g_ctx.scissor.y, 0, framebuffer->height()),
-                    std::clamp(g_ctx.scissor.width, framebuffer::min_framebuffer_width(), framebuffer->width()),
-                    std::clamp(g_ctx.scissor.height, framebuffer::min_framebuffer_height(), framebuffer->height()));
-            }
-            else
-            {
-                opengl::api::instance().disable(GL_SCISSOR_TEST);
-            }
-
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            g_ctx.render_pipeline.begin(make_render_context(context));
 
             broadcast_on_draw_begin();
         }
@@ -389,73 +386,15 @@ namespace ppp
         //-------------------------------------------------------------------------
         void render(const camera::camera_context* context)
         {
-            auto shadow_framebuffer = framebuffer_pool::get({ g_ctx.shadow_framebuffer_tag, true, true });
-
-            auto& cam_pos_active = context.camera_position_active;
-            auto& cam_tar_active = context.camera_lookat_active;
-            auto& cam_pos_font = context.camera_position_font;
-            auto& cam_tar_font = context.camera_lookat_font;
-
-            auto system_framebuffer = framebuffer_pool::get_system();
-            auto target_framebuffer = framebuffer_pool::get({ g_ctx.main_framebuffer_tag, true, false });
-
-            f32 w = static_cast<f32>(target_framebuffer->width());
-            f32 h = static_cast<f32>(target_framebuffer->height());
-
-            opengl::api::instance().disable(GL_BLEND);
-            opengl::api::instance().enable(GL_CULL_FACE);
-            opengl::api::instance().enable(GL_DEPTH_TEST);
-
-            opengl::api::instance().blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            opengl::api::instance().cull_face(GL_BACK);
-            opengl::api::instance().depth_func(GL_LESS);
-
-            const glm::mat4& cam_font_p = context.mat_proj_font;
-            const glm::mat4& cam_font_v = context.mat_view_font;
-            glm::mat4 cam_font_vp = cam_font_p * cam_font_v;
-
-            g_ctx.font_renderer->render(cam_pos_font, cam_tar_font, cam_font_vp);
-
-            const glm::mat4& cam_active_p = context.mat_proj_active;
-            const glm::mat4& cam_active_v = context.mat_view_active;
-            glm::mat4 cam_active_vp = cam_active_p * cam_active_v;
-
-            for (auto& pair : g_ctx.batch_renderers)
-            {
-                pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp);
-            }
-
-            for (auto& pair : g_ctx.instance_renderers)
-            {
-                pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp);
-            }
-
-            target_framebuffer->bind(framebuffer_bound_target::READ);
-            system_framebuffer->bind(framebuffer_bound_target::WRITE);
-
-            opengl::api::instance().blit_framebuffer(
-                0, 
-                0, 
-                target_framebuffer->width(), 
-                target_framebuffer->height(), 
-                
-                0, 
-                0, 
-                system_framebuffer->width(), 
-                system_framebuffer->height(), 
-                
-                GL_COLOR_BUFFER_BIT, 
-                GL_NEAREST);
-            
-            system_framebuffer->bind();
+            g_ctx.render_pipeline.render(make_render_context(context));
         }
 
         //-------------------------------------------------------------------------
-        void end()
+        void end(const camera::camera_context* context)
         {
-            broadcast_on_draw_end();
+            g_ctx.render_pipeline.end(make_render_context(context));
 
-            framebuffer_pool::unbind({ g_ctx.main_framebuffer_tag, true });
+            broadcast_on_draw_end();
         }
 
         //-------------------------------------------------------------------------

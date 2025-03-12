@@ -14,6 +14,10 @@ namespace ppp
 
     namespace render
     {
+        class texture_batch_renderer;
+        class instance_renderer;
+        class batch_renderer;
+
         using instance_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<instance_renderer>>;
         using batch_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<batch_renderer>>;
 
@@ -25,14 +29,16 @@ namespace ppp
             {
                 return camera_context != nullptr
                     && scissor != nullptr
+                    && font_renderer != nullptr
                     && batch_renderers != nullptr
-                    && instance_renderers != nullptr
+                    && instance_renderers != nullptr;
             }
 
-            camera::camera_context*         camera_context = nullptr; 
+            const camera::camera_context*   camera_context = nullptr; 
 
-            render_scissor*                 scissor = nullptr;
+            const render_scissor*           scissor = nullptr;
 
+            texture_batch_renderer*         font_renderer = nullptr;
             batch_renderers_hash_map*       batch_renderers = nullptr;
             instance_renderers_hash_map*    instance_renderers = nullptr;
         };

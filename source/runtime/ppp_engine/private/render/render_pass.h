@@ -14,9 +14,6 @@ namespace ppp
             virtual void begin_frame(const render_context& context) = 0;
             virtual void render(const render_context& context) = 0;
             virtual void end_frame(const render_context& context) = 0;
-
-            virtual void setup(const render_context& context) = 0;
-            virtual void cleanup(const render_context& context) = 0;
         };
     }
 }

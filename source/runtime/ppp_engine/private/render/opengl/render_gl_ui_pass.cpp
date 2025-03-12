@@ -1,6 +1,5 @@
-#include "render/render_forward_shading_pass.h"
+#include "render/render_ui_pass.h"
 #include "render/render_batch_renderer.h"
-#include "render/render_instance_renderer.h"
 #include "render/render_context.h"
 #include "render/render_scissor.h"
 
@@ -22,31 +21,20 @@ namespace ppp
     namespace render
     {
         //-------------------------------------------------------------------------
-        forward_shading_pass::~forward_shading_pass() = default;
+        ui_pass::~ui_pass() = default;
 
         //-------------------------------------------------------------------------
-        void forward_shading_pass::begin_frame(const render_context& context)
+        void ui_pass::begin_frame(const render_context& context)
         {
-            assert(context && "Invalid render context");
+            context.font_renderer->begin();
 
-            for (auto& pair : *context.batch_renderers)
-            {
-                pair.second->begin();
-            }
-            for (auto& pair : *context.instance_renderers)
-            {
-                pair.second->begin();
-            }
-
-            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
-            
+            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::ui(), framebuffer_flags::COLOR);
             framebuffer->bind();
 
             // Set viewport and clear the framebuffer.
             opengl::api::instance().viewport(0, 0, framebuffer->width(), framebuffer->height());
-            opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
-            opengl::api::instance().clear_depth(1.0);
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 0.0f);
+            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
 
             // Set the background clear color from the brush.
             glm::vec4 bg_color = brush::background();
@@ -69,19 +57,16 @@ namespace ppp
             }
 
             // Clear buffers after scissor state is set.
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
         }
 
         //-------------------------------------------------------------------------
-        void forward_shading_pass::render(const render_context& context)
+        void ui_pass::render(const render_context& context)
         {
-            // Retrieve camera parameters.
-            auto& cam_pos_active = context.camera_context->camera_position_active;
-            auto& cam_tar_active = context.camera_context->camera_lookat_active;
+            auto& cam_pos_font = context.camera_context->camera_position_font;
+            auto& cam_tar_font = context.camera_context->camera_lookat_font;
 
-            // Configure OpenGL state.
             opengl::api::instance().disable(GL_BLEND);
-
             opengl::api::instance().enable(GL_CULL_FACE);
             opengl::api::instance().enable(GL_DEPTH_TEST);
 
@@ -89,27 +74,17 @@ namespace ppp
             opengl::api::instance().cull_face(GL_BACK);
             opengl::api::instance().depth_func(GL_LESS);
 
-            // Render batched and instanced geometry.
-            const glm::mat4& cam_active_p = context.camera_context->mat_proj_active;
-            const glm::mat4& cam_active_v = context.camera_context->mat_view_active;
+            const glm::mat4& cam_font_p = context.camera_context->mat_proj_font;
+            const glm::mat4& cam_font_v = context.camera_context->mat_view_font;
+            glm::mat4 cam_font_vp = cam_font_p * cam_font_v;
 
-            glm::mat4 cam_active_vp = cam_active_p * cam_active_v;
-
-            for (auto& pair : *context.batch_renderers)
-            {
-                pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp);
-            }
-
-            for (auto& pair : *context.instance_renderers)
-            {
-                pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp);
-            }
+            context.font_renderer->render(cam_pos_font, cam_tar_font, cam_font_vp);
         }
 
         //-------------------------------------------------------------------------
-        void forward_shading_pass::end_frame(const render_context& context)
+        void ui_pass::end_frame(const render_context& context)
         {
-            framebuffer_pool::unbind(framebuffer_pool::tags::forward_shading());
+            context.font_renderer->end();
         }
     }
 }

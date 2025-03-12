@@ -21,6 +21,8 @@ namespace ppp
         {
             string::string_id shadow_map();
             string::string_id forward_shading();
+            string::string_id ui();
+            string::string_id blit();
         }
 
         bool                                initialize(s32 width, s32 height);

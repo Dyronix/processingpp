@@ -142,13 +142,13 @@ namespace ppp
 
                 // render
                 // ------
-                render::begin();
+                render::begin(&context);
 
                 draw();
 
-                render::render(context);
+                render::render(&context);
 
-                render::end();
+                render::end(&context);
 
                 // swap front/back buffers
                 // -----

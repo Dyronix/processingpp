@@ -12,11 +12,10 @@ namespace ppp
     namespace render
     {
         //-------------------------------------------------------------------------
-        blit_pass::blit_pass(string::string_id src, s32 src_flags, string::string_id dst, s32 dst_flags)
+        blit_pass::blit_pass(string::string_id src, s32 flags, string::string_id dst)
             :m_src(src)
-            ,m_src_flags(src_flags)
             ,m_dst(dst)
-            ,m_dst_flags(dst_flags)
+            ,m_flags(flags)
         {}
         //-------------------------------------------------------------------------
         blit_pass::~blit_pass() = default;
@@ -32,16 +31,26 @@ namespace ppp
         {
             // Retrieve the target framebuffer (your off-screen/main framebuffer)
             // and the system framebuffer (e.g., the default window framebuffer).
-            auto target_framebuffer = framebuffer_pool::get(m_src, m_src_flags);
-            auto system_framebuffer = m_dst.is_none() || m_dst_flags == -1 
+            auto target_framebuffer = framebuffer_pool::get(m_src, m_flags);
+            auto system_framebuffer = m_dst.is_none() || m_flags == -1
                 ? framebuffer_pool::get_system() 
-                : framebuffer_pool::get(m_dst, m_dst_flags);
+                : framebuffer_pool::get(m_dst, m_flags);
 
             // Bind the target framebuffer for reading.
             target_framebuffer->bind(framebuffer_bound_target::READ);
 
             // Bind the system framebuffer for writing.
             system_framebuffer->bind(framebuffer_bound_target::WRITE);
+
+            u32 copy_flags = 0;
+            if (m_flags | framebuffer_flags::COLOR)
+            {
+                copy_flags |= GL_COLOR_BUFFER_BIT;
+            }
+            if (m_flags | framebuffer_flags::DEPTH || m_flags | framebuffer_flags::SAMPLED_DEPTH)
+            {
+                copy_flags |= GL_DEPTH_BUFFER_BIT;
+            }
 
             // Perform the blit operation.
             opengl::api::instance().blit_framebuffer(
@@ -53,7 +62,7 @@ namespace ppp
                 0,
                 system_framebuffer->width(),
                 system_framebuffer->height(),
-                GL_COLOR_BUFFER_BIT,
+                copy_flags,
                 GL_NEAREST
             );
 
@@ -65,18 +74,6 @@ namespace ppp
         void blit_pass::end_frame(const render_context& context)
         {
             // No specific end-of-frame operations needed.
-        }
-
-        //-------------------------------------------------------------------------
-        void blit_pass::setup(const render_context& context)
-        {
-            // One-time setup (if necessary) can be performed here.
-        }
-
-        //-------------------------------------------------------------------------
-        void blit_pass::cleanup(const render_context& context)
-        {
-            // Clean up any resources if needed.
         }
     }
 }

@@ -42,8 +42,8 @@ namespace ppp
         public:
             //-------------------------------------------------------------------------
             impl(const framebuffer_descriptor& desc)
-                :m_width(desc.width)
-                ,m_height(desc.height)
+                :m_width(std::max(desc.width, _min_frame_buffer_width))
+                ,m_height(std::max(desc.height, _min_frame_buffer_height))
                 ,m_framebuffer_id(0)
                 ,m_depth_attachment(0)
                 ,m_depth_is_texture(false)

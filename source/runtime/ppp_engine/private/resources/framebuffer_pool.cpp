@@ -26,6 +26,18 @@ namespace ppp
                 static const string::string_id s_forward_shading_fb = string::store_sid("forward_shading_framebuffer");
                 return s_forward_shading_fb;
             }
+            //-------------------------------------------------------------------------
+            string::string_id ui()
+            {
+                static const string::string_id s_ui_fb = string::store_sid("ui_framebuffer");
+                return s_ui_fb;
+            }
+            //-------------------------------------------------------------------------
+            string::string_id blit()
+            {
+                static const string::string_id s_blit_fb = string::store_sid("blit_framebuffer");
+                return s_blit_fb;
+            }
         }
 
         using framebuffers_arr              = graphics_vector<graphics_unique_ptr<render::framebuffer>>;
@@ -50,7 +62,7 @@ namespace ppp
             {
                 width, height,
                 {
-                    {render::attachment_type::COLOR, render::attachment_format::RGBA8, false},      // Depth sampled = false
+                    {render::attachment_type::COLOR, render::attachment_format::RGBA8, false},      
                     {render::attachment_type::DEPTH, render::attachment_format::DEPTH24, false}     // Depth sampled = false
                 }
             };
@@ -132,9 +144,9 @@ namespace ppp
             {
                 auto it = g_ctx.framebuffers_in_use.find(tag);
                 if (it != std::cend(g_ctx.framebuffers_in_use) 
-                    && fb->has_depth() == (flags & framebuffer_flags::DEPTH)
-                    && fb->has_depth_texture() == (flags & framebuffer_flags::SAMPLED_DEPTH)
-                    && fb->has_color_attachment() == (flags & framebuffer_flags::COLOR))
+                    && fb->has_depth() == static_cast<bool>(flags & framebuffer_flags::DEPTH)
+                    && fb->has_depth_texture() == static_cast<bool>(flags & framebuffer_flags::SAMPLED_DEPTH)
+                    && fb->has_color_attachment() == static_cast<bool>(flags & framebuffer_flags::COLOR))
                 {
                     return it->second;
                 }
@@ -145,9 +157,9 @@ namespace ppp
             {
                 auto it = g_ctx.framebuffers_in_use.find(tag);
                 if (it == std::cend(g_ctx.framebuffers_in_use) 
-                    && fb->has_depth() == (flags & framebuffer_flags::DEPTH)
-                    && fb->has_depth_texture() == (flags & framebuffer_flags::SAMPLED_DEPTH)
-                    && fb->has_color_attachment() == (flags & framebuffer_flags::COLOR))
+                    && fb->has_depth() == static_cast<bool>(flags & framebuffer_flags::DEPTH)
+                    && fb->has_depth_texture() == static_cast<bool>(flags & framebuffer_flags::SAMPLED_DEPTH)
+                    && fb->has_color_attachment() == static_cast<bool>(flags & framebuffer_flags::COLOR))
                 {
                     g_ctx.framebuffers_in_use[tag] = fb.get();
                     return fb.get();

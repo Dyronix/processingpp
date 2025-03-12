@@ -6,10 +6,12 @@ namespace ppp
 {
     namespace render
     {
-        class shadow_pass : public render_pass
+        class iframebuffer;
+
+        class ui_pass : public render_pass
         {
         public:
-            ~shadow_pass() override;
+            ~ui_pass() override;
 
             void begin_frame(const render_context& context) override;
             void render(const render_context& context) override;

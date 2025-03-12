@@ -21,7 +21,6 @@ namespace ppp
             RGBA8,
             RGB8,
             DEPTH24,      // 24-bit depth buffer
-            DEPTH32F,     // 32-bit floating-point depth buffer
             DEPTH_STENCIL // Combined depth & stencil
         };
 
