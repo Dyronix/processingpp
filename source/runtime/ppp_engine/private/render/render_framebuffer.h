@@ -79,6 +79,9 @@ namespace ppp
             bool has_depth() const;
             bool has_color_attachment() const;
 
+            const graphics_vector<u32>& color_attachments() const;
+            const u32 depth_attachment() const;
+
         private:
             class impl;
             global_unique_ptr<impl> m_pimpl;

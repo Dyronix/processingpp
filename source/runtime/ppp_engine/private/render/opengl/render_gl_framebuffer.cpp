@@ -241,6 +241,18 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        const graphics_vector<u32>& framebuffer::color_attachments() const
+        {
+            return m_pimpl->m_color_attachments;
+        }
+
+        //-------------------------------------------------------------------------
+        const u32 framebuffer::depth_attachment() const
+        {
+            return m_pimpl->m_depth_attachment;
+        }
+
+        //-------------------------------------------------------------------------
         // DEFAULT FRAMEBUFFER
         class default_framebuffer::impl
         {

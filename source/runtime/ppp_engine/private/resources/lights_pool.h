@@ -58,5 +58,8 @@ namespace ppp
 
         const graphics_vector<point_light>& point_lights();
         const graphics_vector<directional_light>& directional_lights();
+
+        bool has_point_lights_with_shadow();
+        bool has_directional_lights_with_shadow();
     }
 }

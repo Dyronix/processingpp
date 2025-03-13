@@ -75,13 +75,15 @@ namespace ppp
             for (auto& pair : *context.batch_renderers)
             {
                 pair.second->user_shader_program(shader_pool::tags::unlit::shadow());
-                pair.second->render(light_pos_active, light_tar_active, light_active_vp);
+                pair.second->render(light_pos_active, light_tar_active, light_active_vp, light_active_vp);
+                pair.second->reset_user_shader_program();
             }
 
             for (auto& pair : *context.instance_renderers)
             {
                 pair.second->user_shader_program(shader_pool::tags::unlit::shadow());
                 pair.second->render(light_pos_active, light_tar_active, light_active_vp);
+                pair.second->reset_user_shader_program();
             }
         }
 

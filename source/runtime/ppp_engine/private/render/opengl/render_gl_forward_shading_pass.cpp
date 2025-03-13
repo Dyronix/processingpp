@@ -8,6 +8,8 @@
 #include "render/opengl/render_gl_api.h"
 
 #include "resources/framebuffer_pool.h"
+#include "resources/lights_pool.h"
+#include "resources/shader_pool.h"
 
 #include "camera/camera_context.h"
 
@@ -16,6 +18,9 @@
 
 #include <algorithm>
 #include <glad/glad.h>
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace ppp
 {
@@ -66,9 +71,18 @@ namespace ppp
         //-------------------------------------------------------------------------
         void forward_shading_pass::render(const render_context& context)
         {
+            assert(lights_pool::directional_lights().size() == 1);
+
+            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH);
+
+            auto& dir_light = lights_pool::directional_lights()[0];
+
             // Retrieve camera parameters.
             auto& cam_pos_active = context.camera_context->camera_position_active;
             auto& cam_tar_active = context.camera_context->camera_lookat_active;
+
+            glm::vec3 light_pos_active = -dir_light.direction * 100.0f;
+            glm::vec3 light_tar_active = glm::vec3(0.0f);
 
             // Configure OpenGL state.
             opengl::api::instance().disable(GL_BLEND);
@@ -81,6 +95,13 @@ namespace ppp
             opengl::api::instance().depth_func(GL_LESS);
 
             // Render batched and instanced geometry.
+            f32 near_plane = 1.0f, far_plane = 1000.0f;
+            const glm::mat4 light_active_p = glm::ortho(-framebuffer->width() / 2.0f, framebuffer->width() / 2.0f, -framebuffer->height() / 2.0f, framebuffer->height() / 2.0f, near_plane, far_plane);;
+            const glm::mat4 light_active_v = glm::lookAt(light_pos_active, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+
+            glm::mat4 light_active_vp = light_active_p * light_active_v;
+
+            // Render batched and instanced geometry.
             const glm::mat4& cam_active_p = context.camera_context->mat_proj_active;
             const glm::mat4& cam_active_v = context.camera_context->mat_view_active;
 
@@ -88,7 +109,7 @@ namespace ppp
 
             for (auto& pair : *context.batch_renderers)
             {
-                pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp);
+                pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp, light_active_vp);
             }
 
             for (auto& pair : *context.instance_renderers)

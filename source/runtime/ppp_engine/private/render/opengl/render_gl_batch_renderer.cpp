@@ -9,6 +9,7 @@
 #include "resources/shader_pool.h"
 #include "resources/material_pool.h"
 #include "resources/lights_pool.h"
+#include "resources/framebuffer_pool.h"
 
 #include "util/log.h"
 #include "util/color_ops.h"
@@ -85,6 +86,18 @@ namespace ppp
                 {
                     shaders::push_uniform(shader_program, string::store_sid("u_view_position"), camera_position);
                     //shaders::push_uniform(shader_program, string::store_sid("u_view_target"), camera_target);
+                }
+            }
+
+            //-------------------------------------------------------------------------
+            static void push_all_shadow_dependent_uniforms(u32 shader_program, const glm::mat4& lightvp)
+            {
+                if (lights_pool::directional_lights().empty() == false)
+                {
+                    if (lights_pool::has_directional_lights_with_shadow())
+                    {
+                        shaders::push_uniform(shader_program, string::store_sid("u_light_vp"), lightvp);
+                    }
                 }
             }
 
@@ -166,7 +179,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void batch_renderer::render(const glm::vec3& camera_position, const glm::vec3& camera_target, const glm::mat4& vp)
+        void batch_renderer::render(const glm::vec3& camera_position, const glm::vec3& camera_target, const glm::mat4& lightvp, const glm::mat4& vp)
         {
             if (!has_drawing_data())
             {
@@ -181,6 +194,7 @@ namespace ppp
             if (program->shading_model() == shading_model_type::LIT)
             {
                 internal::push_all_light_dependent_uniforms(program->id(), camera_position, camera_target);
+                internal::push_all_shadow_dependent_uniforms(program->id(), lightvp);
             }
 
             shaders::push_uniform(program->id(), string::store_sid("u_view_proj"), vp);
@@ -337,6 +351,19 @@ namespace ppp
                     if (program->shading_model() == shading_model_type::LIT)
                     {
                         internal::push_all_light_uniforms(program->id());
+
+                        if (lights_pool::directional_lights().empty() == false)
+                        {
+                            if (lights_pool::has_directional_lights_with_shadow())
+                            {
+                                const framebuffer* shadow_framebuffer = static_cast<const framebuffer*>(framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
+
+                                shaders::push_uniform(program->id(), string::store_sid("u_shadow_map"), 0);
+
+                                opengl::api::instance().activate_texture(GL_TEXTURE0);
+                                opengl::api::instance().bind_texture(GL_TEXTURE_2D, shadow_framebuffer->depth_attachment());
+                            }
+                        }
                     }
 
                     batch->submit();
@@ -381,12 +408,24 @@ namespace ppp
                         shaders::push_uniform_array(program->id(), string::store_sid("s_images"), samplers.size(), samplers.data());
                     }
 
-                    s32 i = 0;
                     s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                    for (int i = 0; i < textures.size(); ++i)
+                    for (s32 i = 0; i < textures.size(); ++i)
                     {
                         opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * i));
                         opengl::api::instance().bind_texture(GL_TEXTURE_2D, textures[i]);
+                    }
+
+                    if (lights_pool::directional_lights().empty() == false)
+                    {
+                        if (lights_pool::has_directional_lights_with_shadow())
+                        {
+                            const framebuffer* shadow_framebuffer = static_cast<const framebuffer*>(framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
+
+                            shaders::push_uniform(program->id(), string::store_sid("u_shadow_map"), (s32)samplers.size());
+
+                            opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * textures.size()));
+                            opengl::api::instance().bind_texture(GL_TEXTURE_2D, shadow_framebuffer->depth_attachment());
+                        }
                     }
 
                     batch->submit();

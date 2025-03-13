@@ -28,8 +28,35 @@ namespace ppp
 
         struct context
         {
+            bool                                point_lights_with_shadow_enabled = false;
+            bool                                directional_lights_with_shadow_enabled = false;
+
             graphics_vector<point_light>        point_lights;
             graphics_vector<directional_light>  directional_lights;
+
+            //-------------------------------------------------------------------------
+            s32 count_point_lights_shadow_enabled() const
+            {
+                s32 num = std::count_if(std::cbegin(point_lights), std::cend(point_lights),
+                    [](const point_light& light)
+                    {
+                        return light.cast_shadows;
+                    });
+
+                return num;
+            }
+
+            //-------------------------------------------------------------------------
+            s32 count_directional_lights_shadow_enabled() const
+            {
+                s32 num = std::count_if(std::cbegin(directional_lights), std::cend(directional_lights),
+                    [](const directional_light& light)
+                    {
+                        return light.cast_shadows;
+                    });
+
+                return num;
+            }
 
             //-------------------------------------------------------------------------
             point_light* find_point_light(light_id id)
@@ -79,6 +106,7 @@ namespace ppp
             light_id light_id = g_ctx.point_lights.size() + g_ctx.directional_lights.size();
 
             g_ctx.directional_lights.push_back(directional_light{light_id, direction, ambient, diffuse, specular, specular_enabled, cast_shadows});
+            g_ctx.directional_lights_with_shadow_enabled = g_ctx.count_directional_lights_shadow_enabled() > 0;
 
             return light_id;
         }
@@ -88,6 +116,7 @@ namespace ppp
             light_id light_id = g_ctx.point_lights.size() + g_ctx.directional_lights.size();
 
             g_ctx.point_lights.push_back(point_light{light_id, position, ambient, diffuse, specular, specular_enabled, cast_shadows, constant, linear, quadratic});
+            g_ctx.point_lights_with_shadow_enabled = g_ctx.count_point_lights_shadow_enabled() > 0;
 
             return light_id;
         }
@@ -231,14 +260,20 @@ namespace ppp
                 {
                     auto point = g_ctx.find_point_light(id);
                     if (point)
+                    {
                         point->cast_shadows = enable;
+                        g_ctx.point_lights_with_shadow_enabled = g_ctx.count_point_lights_shadow_enabled() > 0;
+                    }
                     break;
                 }
                 case light_type::DIRECTIONAL:
                 {
                     auto dir = g_ctx.find_directional_light(id);
-                    if (dir) 
+                    if (dir)
+                    {
                         dir->cast_shadows = enable;
+                        g_ctx.directional_lights_with_shadow_enabled = g_ctx.count_directional_lights_shadow_enabled() > 0;
+                    }
                     break;
                 }
 
@@ -256,6 +291,18 @@ namespace ppp
         const graphics_vector<directional_light>& directional_lights()
         {
             return g_ctx.directional_lights;
+        }
+
+        //-------------------------------------------------------------------------
+        bool has_point_lights_with_shadow()
+        {
+            return g_ctx.point_lights_with_shadow_enabled;
+        }
+
+        //-------------------------------------------------------------------------
+        bool has_directional_lights_with_shadow()
+        {
+            return g_ctx.directional_lights_with_shadow_enabled;
         }
     }
 }
