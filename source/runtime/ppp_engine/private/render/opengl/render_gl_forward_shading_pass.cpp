@@ -40,6 +40,7 @@ namespace ppp
 
             // Set viewport and clear the framebuffer.
             opengl::api::instance().viewport(0, 0, framebuffer->width(), framebuffer->height());
+            opengl::api::instance().cull_face(GL_BACK);
             opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
             opengl::api::instance().clear_depth(1.0);
             opengl::api::instance().clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -81,7 +82,7 @@ namespace ppp
             auto& cam_pos_active = context.camera_context->camera_position_active;
             auto& cam_tar_active = context.camera_context->camera_lookat_active;
 
-            glm::vec3 light_pos_active = -dir_light.direction * 100.0f;
+            glm::vec3 light_pos_active = -dir_light.direction * 500.0f;
             glm::vec3 light_tar_active = glm::vec3(0.0f);
 
             // Configure OpenGL state.
@@ -95,7 +96,7 @@ namespace ppp
             opengl::api::instance().depth_func(GL_LESS);
 
             // Render batched and instanced geometry.
-            f32 near_plane = 1.0f, far_plane = 1000.0f;
+            f32 near_plane = 0.01f, far_plane = 1000.0f;
             const glm::mat4 light_active_p = glm::ortho(-framebuffer->width() / 2.0f, framebuffer->width() / 2.0f, -framebuffer->height() / 2.0f, framebuffer->height() / 2.0f, near_plane, far_plane);;
             const glm::mat4 light_active_v = glm::lookAt(light_pos_active, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
 
@@ -109,12 +110,12 @@ namespace ppp
 
             for (auto& pair : *context.batch_renderers)
             {
-                pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp, light_active_vp);
+                pair.second->render(cam_pos_active, cam_tar_active, light_active_vp, cam_active_vp);
             }
 
             for (auto& pair : *context.instance_renderers)
             {
-                pair.second->render(cam_pos_active, cam_tar_active, cam_active_vp);
+                pair.second->render(cam_pos_active, cam_tar_active, light_active_vp, cam_active_vp);
             }
         }
 

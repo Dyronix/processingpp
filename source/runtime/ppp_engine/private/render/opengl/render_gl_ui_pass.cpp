@@ -78,7 +78,7 @@ namespace ppp
             const glm::mat4& cam_font_v = context.camera_context->mat_view_font;
             glm::mat4 cam_font_vp = cam_font_p * cam_font_v;
 
-            context.font_renderer->render(cam_pos_font, cam_tar_font, cam_font_vp);
+            context.font_renderer->render(cam_pos_font, cam_tar_font, glm::mat4(1.0f), cam_font_vp);
         }
 
         //-------------------------------------------------------------------------

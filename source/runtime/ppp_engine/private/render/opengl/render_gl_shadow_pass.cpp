@@ -38,6 +38,7 @@ namespace ppp
 
             // Set viewport and clear the framebuffer.
             opengl::api::instance().viewport(0, 0, framebuffer->width(), framebuffer->height());
+            opengl::api::instance().cull_face(GL_FRONT);
             opengl::api::instance().clear(GL_DEPTH_BUFFER_BIT);
             opengl::api::instance().clear_depth(1.0);
         }
@@ -52,7 +53,7 @@ namespace ppp
             auto& dir_light = lights_pool::directional_lights()[0];
 
             // Retrieve camera parameters.
-            glm::vec3 light_pos_active = -dir_light.direction * 100.0f;
+            glm::vec3 light_pos_active = -dir_light.direction * 500.0f;
             glm::vec3 light_tar_active = glm::vec3(0.0f);
 
             // Configure OpenGL state.
@@ -66,7 +67,7 @@ namespace ppp
             opengl::api::instance().depth_func(GL_LESS);
 
             // Render batched and instanced geometry.
-            f32 near_plane = 1.0f, far_plane = 1000.0f;
+            f32 near_plane = 0.01f, far_plane = 1000.0f;
             const glm::mat4 light_active_p = glm::ortho(-framebuffer->width() / 2.0f, framebuffer->width() / 2.0f, -framebuffer->height() / 2.0f, framebuffer->height() / 2.0f, near_plane, far_plane);;
             const glm::mat4 light_active_v = glm::lookAt(light_pos_active, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
 
@@ -82,7 +83,7 @@ namespace ppp
             for (auto& pair : *context.instance_renderers)
             {
                 pair.second->user_shader_program(shader_pool::tags::unlit::shadow());
-                pair.second->render(light_pos_active, light_tar_active, light_active_vp);
+                pair.second->render(light_pos_active, light_tar_active, light_active_vp, light_active_vp);
                 pair.second->reset_user_shader_program();
             }
         }

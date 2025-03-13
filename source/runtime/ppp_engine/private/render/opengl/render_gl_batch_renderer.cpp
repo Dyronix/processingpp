@@ -358,6 +358,7 @@ namespace ppp
                             {
                                 const framebuffer* shadow_framebuffer = static_cast<const framebuffer*>(framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
 
+                                shaders::push_uniform(program->id(), string::store_sid("u_shadows_enabled"), 1);
                                 shaders::push_uniform(program->id(), string::store_sid("u_shadow_map"), 0);
 
                                 opengl::api::instance().activate_texture(GL_TEXTURE0);

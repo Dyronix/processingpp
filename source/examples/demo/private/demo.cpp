@@ -24,12 +24,17 @@ namespace ppp
     int _enable_normal = 0;
 
     material::shader_program _material_lit;
+    lights::light_id _dir_light;
+
+    float _dirx = -0.2f;
+    float _diry = -1.0f;
+    float _dirz = -0.3f;
 
     void append_lights()
     {
         lights::directional_light_desc directional_desc =
         {
-            -0.2f, -1.0f, -0.3f,    // direction
+            _dirx, _diry, _dirz,    // direction
             0.05f, 0.05f, 0.05f,    // ambient          
             0.8f, 0.8f, 0.8f,       // diffuse
             1.0f, 1.0f, 1.0f,       // specular          
@@ -37,7 +42,7 @@ namespace ppp
             true,                   // cast shadows
         };
 
-        lights::directional_light(directional_desc);
+        _dir_light = lights::directional_light(directional_desc);
 
         //lights::point_light_desc point_desc =
         //{
@@ -258,6 +263,31 @@ namespace ppp
                 {
                     append_lights();
                 }
+            }
+        });
+
+        keyboard::add_key_down_callback(
+            [](keyboard::key_code key)
+        {
+            if (key == keyboard::key_code::KEY_W)
+            {
+                _diry += 1.0f * environment::delta_time();
+                lights::light_direction(_dir_light, lights::light_type::DIRECTIONAL, _dirx, _diry, _dirz);
+            }
+            else if (key == keyboard::key_code::KEY_A)
+            {
+                _dirz += 1.0f * environment::delta_time();
+                lights::light_direction(_dir_light, lights::light_type::DIRECTIONAL, _dirx, _diry, _dirz);
+            }
+            else if (key == keyboard::key_code::KEY_S)
+            {
+                _diry -= 1.0f * environment::delta_time();
+                lights::light_direction(_dir_light, lights::light_type::DIRECTIONAL, _dirx, _diry, _dirz);
+            }
+            else if (key == keyboard::key_code::KEY_D)
+            {
+                _dirz -= 1.0f * environment::delta_time();
+                lights::light_direction(_dir_light, lights::light_type::DIRECTIONAL, _dirx, _diry, _dirz);
             }
         });
     }
