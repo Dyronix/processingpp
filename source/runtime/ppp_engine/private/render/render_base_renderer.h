@@ -6,7 +6,7 @@
 
 #include "util/types.h"
 
-#include "memory/memory_types.h"
+
 
 #include "string/string_id.h"
 
@@ -59,7 +59,7 @@ namespace ppp
 
         private:
             class impl;
-            global_unique_ptr<impl>     m_pimpl;
+            std::unique_ptr<impl>     m_pimpl;
         };
     }
 }

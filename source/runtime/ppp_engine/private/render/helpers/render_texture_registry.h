@@ -2,7 +2,7 @@
 
 #include "util/types.h"
 
-#include "memory/memory_types.h"
+#include <unordered_map>
 
 namespace ppp
 {
@@ -22,8 +22,8 @@ namespace ppp
             void reset();
             void release();
 
-            const graphics_vector<s32>& samplers() const;
-            const graphics_vector<u32>& textures() const;
+            const std::vector<s32>& samplers() const;
+            const std::vector<u32>& textures() const;
 
             u64 active_sampler_count() const;
             u64 active_texture_count() const;
@@ -31,10 +31,10 @@ namespace ppp
             u32 max_texture_count() const;
 
         private:
-            graphics_hash_map<u32, s32> m_image_to_sampler_map;
+            std::unordered_map<u32, s32> m_image_to_sampler_map;
 
-            graphics_vector<u32> m_images;
-            graphics_vector<s32> m_samplers;
+            std::vector<u32> m_images;
+            std::vector<s32> m_samplers;
 
             const s32 m_max_texture_count;
         };

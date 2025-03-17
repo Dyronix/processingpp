@@ -3,7 +3,7 @@
 #include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
-#include "memory/memory_placement_new.h"
+
 
 #include "util/log.h"
 
@@ -179,7 +179,7 @@ namespace ppp
                 private:
                     string::string_id m_name;    // Name of the uniform
                     object_type_tag m_type_id;   // Type identifier using type_tag
-                    temp_vector<u8> m_data;      // Binary data for the value
+                    std::vector<u8> m_data;      // Binary data for the value
                     u64 m_count;                 // Amount of elements in the array of elements
                     bool m_is_array;             // Is the uniform storing an array of elements
                 };
@@ -346,15 +346,15 @@ namespace ppp
                 }
 
             private:
-                global_hash_map<string::string_id, std::optional<shader_uniform>> m_deferred_uniforms;
-                global_hash_map<string::string_id, u32> m_shader_uniform_locations;
+                std::unordered_map<string::string_id, std::optional<shader_uniform>> m_deferred_uniforms;
+                std::unordered_map<string::string_id, u32> m_shader_uniform_locations;
 
                 u32 m_shader_program_id;
             };
 
             struct context_uniform_manager
             {
-                global_hash_map<u32, shader_uniform_manager> shader_umgr;
+                std::unordered_map<u32, shader_uniform_manager> shader_umgr;
             } g_umgr_ctx;
 
             //-------------------------------------------------------------------------

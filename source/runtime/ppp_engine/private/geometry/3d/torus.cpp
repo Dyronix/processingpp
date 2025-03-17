@@ -115,7 +115,7 @@ namespace ppp
         {
             f32 tube_ratio = tube_radius / radius;
 
-            temp_stringstream stream;
+            std::stringstream stream;
 
             stream << "torus|";
             stream << smooth_normals << "|";
@@ -123,7 +123,7 @@ namespace ppp
             stream << detail_x << "|";
             stream << detail_y;
 
-            const temp_string gid = stream.str();
+            const std::string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

@@ -116,7 +116,7 @@ namespace ppp
                     {
                         auto& point_light = lights_pool::point_lights()[i];
 
-                        temp_string base_name = temp_string("u_point_lights[") + string::to_string<temp_string>(i) + temp_string("]");
+                        std::string base_name = std::string("u_point_lights[") + string::to_string<std::string>(i) + std::string("]");
 
                         shaders::push_uniform(shader_program, string::store_sid(base_name + ".position"), point_light.position);
                         shaders::push_uniform(shader_program, string::store_sid(base_name + ".ambient"), point_light.ambient);

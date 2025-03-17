@@ -2,7 +2,7 @@
 
 #include "util/types.h"
 
-#include "memory/memory_types.h"
+
 
 #include <glm/glm.hpp>
 
@@ -56,8 +56,8 @@ namespace ppp
         void light_enable_specular(light_id id, light_type type, bool enable);
         void light_enable_shadows(light_id id, light_type type, bool enable);
 
-        const graphics_vector<point_light>& point_lights();
-        const graphics_vector<directional_light>& directional_lights();
+        const std::vector<point_light>& point_lights();
+        const std::vector<directional_light>& directional_lights();
 
         bool has_point_lights_with_shadow();
         bool has_directional_lights_with_shadow();

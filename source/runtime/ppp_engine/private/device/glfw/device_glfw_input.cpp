@@ -1,8 +1,8 @@
 #include "device/device_input.h"
 #include "render/render.h"
 
-#include "memory/memory_types.h"
-#include "memory/memory_placement_new.h"
+
+
 
 #include <unordered_set>
 
@@ -19,11 +19,11 @@ namespace ppp
         {
             struct input_context
             {
-                global_hash_map<u32, global_vector<keyboard::key_callback>>                 key_callbacks;
+                std::unordered_map<u32, std::vector<keyboard::key_callback>>                 key_callbacks;
 
-                global_vector<mouse::mouse_pos_callback>                                    mouse_pos_callbacks;
-                global_hash_map<u32, global_vector<mouse::mouse_button_scroll_callback>>    mouse_scroll_callbacks;
-                global_hash_map<u32, global_vector<mouse::mouse_button_callback>>           mouse_button_callbacks;
+                std::vector<mouse::mouse_pos_callback>                                       mouse_pos_callbacks;
+                std::unordered_map<u32, std::vector<mouse::mouse_button_scroll_callback>>    mouse_scroll_callbacks;
+                std::unordered_map<u32, std::vector<mouse::mouse_button_callback>>           mouse_button_callbacks;
             } g_ctx;
 
             namespace glfw

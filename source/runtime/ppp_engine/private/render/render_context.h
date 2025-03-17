@@ -1,7 +1,7 @@
 #pragma once
 
-#include "memory/memory_types.h"
-#include "memory/memory_unique_ptr_util.h"
+
+
 
 #include "string/string_id.h"
 
@@ -18,8 +18,8 @@ namespace ppp
         class instance_renderer;
         class batch_renderer;
 
-        using instance_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<instance_renderer>>;
-        using batch_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<batch_renderer>>;
+        using instance_renderers_hash_map = std::unordered_map<string::string_id, std::unique_ptr<instance_renderer>>;
+        using batch_renderers_hash_map = std::unordered_map<string::string_id, std::unique_ptr<batch_renderer>>;
 
         struct render_scissor;
 

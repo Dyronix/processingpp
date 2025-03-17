@@ -14,11 +14,11 @@
 #include "resources/geometry_pool.h"
 #include "resources/material_pool.h"
 
-#include "memory/memory_types.h"
-
 #include "string/string_conversions.h"
 
 #include "util/log.h"
+
+#include <sstream>
 
 namespace ppp
 {
@@ -69,20 +69,20 @@ namespace ppp
                 return m_geometry->index_count();
             }
 
-            const graphics_vector<glm::vec3>& vertex_positions() const override
+            const std::vector<glm::vec3>& vertex_positions() const override
             {
                 return m_geometry->vertex_positions();
             }
-            const graphics_vector<glm::vec3>& vertex_normals() const override
+            const std::vector<glm::vec3>& vertex_normals() const override
             {
                 return m_geometry->vertex_normals();
             }
-            const graphics_vector<glm::vec2>& vertex_uvs() const override
+            const std::vector<glm::vec2>& vertex_uvs() const override
             {
                 return m_geometry->vertex_uvs();
             }
 
-            const graphics_vector<render::face>& faces() const override
+            const std::vector<render::face>& faces() const override
             {
                 return m_geometry->faces();
             }
@@ -127,13 +127,13 @@ namespace ppp
         {
             static int s_model_counter = 0;
 
-            temp_stringstream stream;
+            std::stringstream stream;
 
             stream << conversions::to_string(file_type);
             stream << "|";
-            stream << string::to_string<temp_string>(s_model_counter++);
+            stream << string::to_string<std::string>(s_model_counter++);
 
-            const temp_string gid = stream.str();
+            const std::string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {
@@ -144,7 +144,7 @@ namespace ppp
                 case model_file_type::OBJ:
                     create_geom_fn = [model_string](geometry::geometry* self)
                     {
-                        transient_scratch_vector<std::string_view> lines;
+                        std::vector<std::string_view> lines;
 
                         size_t pos = 0, prev = 0;
                         while ((pos = model_string.find('\n', prev)) != std::string::npos)

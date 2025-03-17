@@ -7,6 +7,8 @@
 
 #include <glad/glad.h>
 #include <assert.h>
+#include <sstream>
+
 #include <gsl/narrow>
 
 #define ENABLE_GL_FUNCTION_LOGGING 0
@@ -25,7 +27,7 @@ namespace ppp
         namespace opengl
         {
             //-------------------------------------------------------------------------
-            debug_temp_string pname_to_string(const u32 pname)
+            std::string pname_to_string(const u32 pname)
             {
                 switch (pname)
                 {
@@ -43,11 +45,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown state, this list is incomplete maybe you need to add another element: {0}", pname);
-                return string::to_string<debug_temp_string>(pname);
+                return string::to_string<std::string>(pname);
             }
 
             //-------------------------------------------------------------------------
-            debug_temp_string pixeltype_to_string(const u32 pixelType)
+            std::string pixeltype_to_string(const u32 pixelType)
             {
                 switch (pixelType)
                 {
@@ -68,11 +70,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown pxiel type: {0}", pixelType);
-                return string::to_string<debug_temp_string>(pixelType);
+                return string::to_string<std::string>(pixelType);
             }
 
             //-------------------------------------------------------------------------
-            debug_temp_string format_to_string(const u32 format)
+            std::string format_to_string(const u32 format)
             {
                 switch (format)
                 {
@@ -86,11 +88,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown format: {0}", format);
-                return string::to_string<debug_temp_string>(format);
+                return string::to_string<std::string>(format);
             }
 
             //-------------------------------------------------------------------------
-            debug_temp_string internal_format_to_string(const u32 format)
+            std::string internal_format_to_string(const u32 format)
             {
                 switch (format)
                 {
@@ -156,11 +158,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown internal format: {0}", format);
-                return string::to_string<debug_temp_string>(format);
+                return string::to_string<std::string>(format);
             }
 
             //-------------------------------------------------------------------------
-            debug_temp_string buffer_target_to_string(const u32 target)
+            std::string buffer_target_to_string(const u32 target)
             {
                 switch (target)
                 {
@@ -181,11 +183,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown buffer target: {0}", target);
-                return string::to_string<debug_temp_string>(target);
+                return string::to_string<std::string>(target);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string texture_target_to_string(const u32 target)
+            std::string texture_target_to_string(const u32 target)
             {
                 switch (target)
                 {
@@ -209,11 +211,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown texture target: {0}", target);
-                return string::to_string<debug_temp_string>(target);
+                return string::to_string<std::string>(target);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string shadertype_to_string(const u32 shaderType)
+            std::string shadertype_to_string(const u32 shaderType)
             {
                 switch (shaderType)
                 {
@@ -226,11 +228,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown shader type: {0}", shaderType);
-                return string::to_string<debug_temp_string>(shaderType);
+                return string::to_string<std::string>(shaderType);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string framebuffer_target_to_string(const u32 target)
+            std::string framebuffer_target_to_string(const u32 target)
             {
                 switch (target)
                 {
@@ -240,17 +242,17 @@ namespace ppp
                 }
 
                 log::warn("Unknown framebuffer target: {0}", target);
-                return string::to_string<debug_temp_string>(target);
+                return string::to_string<std::string>(target);
             }
 
             //-------------------------------------------------------------------------
-            debug_temp_string framebuffer_attachment_to_string(const u32 attachment)
+            std::string framebuffer_attachment_to_string(const u32 attachment)
             {
                 for (int i = GL_COLOR_ATTACHMENT0; i <= GL_COLOR_ATTACHMENT31; i += (GL_COLOR_ATTACHMENT1 - GL_COLOR_ATTACHMENT0))
                 {
                     if (attachment == i)
                     {
-                        debug_temp_stringstream stream;
+                        std::stringstream stream;
                         stream << "Color Attachment";
                         stream << i;
                         return stream.str();
@@ -265,11 +267,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown renderbuffer attachment: {0}", attachment);
-                return string::to_string<debug_temp_string>(attachment);
+                return string::to_string<std::string>(attachment);
             }
 
             //-------------------------------------------------------------------------
-            debug_temp_string renderbuffer_target_to_string(const u32 target)
+            std::string renderbuffer_target_to_string(const u32 target)
             {
                 switch (target)
                 {
@@ -277,11 +279,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown renderbuffer target: {0}", target);
-                return string::to_string<debug_temp_string>(target);
+                return string::to_string<std::string>(target);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string drawbuffer_target_to_string(const u32 target)
+            std::string drawbuffer_target_to_string(const u32 target)
             {
                 switch (target)
                 {
@@ -298,11 +300,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown drawbuffer target: {0}", target);
-                return string::to_string<debug_temp_string>(target);
+                return string::to_string<std::string>(target);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string buffer_usage_to_string(const u32 usage)
+            std::string buffer_usage_to_string(const u32 usage)
             {
                 switch (usage)
                 {
@@ -318,11 +320,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown buffer usage: {0}", usage);
-                return string::to_string<debug_temp_string>(usage);
+                return string::to_string<std::string>(usage);
             }
 
             //-------------------------------------------------------------------------
-            debug_temp_string blend_func_factor_to_string(const u32 sfactor)
+            std::string blend_func_factor_to_string(const u32 sfactor)
             {
                 switch (sfactor)
                 {
@@ -341,11 +343,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown blend func sfactor: {0}", sfactor);
-                return string::to_string<debug_temp_string>(sfactor);
+                return string::to_string<std::string>(sfactor);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string cull_type_to_string(const u32 cullType)
+            std::string cull_type_to_string(const u32 cullType)
             {
                 switch (cullType)
                 {
@@ -355,11 +357,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown cull type: {0}", cullType);
-                return string::to_string<debug_temp_string>(cullType);
+                return string::to_string<std::string>(cullType);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string front_face_to_string(const u32 frontFace)
+            std::string front_face_to_string(const u32 frontFace)
             {
                 switch (frontFace)
                 {
@@ -368,11 +370,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown front face type: {0}", frontFace);
-                return string::to_string<debug_temp_string>(frontFace);
+                return string::to_string<std::string>(frontFace);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string depth_function_to_string(const u32 depthFn)
+            std::string depth_function_to_string(const u32 depthFn)
             {
                 switch (depthFn)
                 {
@@ -387,11 +389,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown depth function: {0}", depthFn);
-                return string::to_string<debug_temp_string>(depthFn);
+                return string::to_string<std::string>(depthFn);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string fill_mode_to_string(const u32 fillMode)
+            std::string fill_mode_to_string(const u32 fillMode)
             {
                 switch (fillMode)
                 {
@@ -401,11 +403,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown fill mode: {0}", fillMode);
-                return string::to_string<debug_temp_string>(fillMode);
+                return string::to_string<std::string>(fillMode);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string enable_to_string(const u32 enable)
+            std::string enable_to_string(const u32 enable)
             {
                 switch (enable)
                 {
@@ -420,11 +422,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown state, this list is incomplete maybe you need to add another element: {0}", enable);
-                return string::to_string<debug_temp_string>(enable);
+                return string::to_string<std::string>(enable);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string disable_to_string(const u32 disable)
+            std::string disable_to_string(const u32 disable)
             {
                 switch (disable)
                 {
@@ -435,11 +437,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown state, this list is incomplete maybe you need to add another element: {0}", disable);
-                return string::to_string<debug_temp_string>(disable);
+                return string::to_string<std::string>(disable);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string blit_framebuffer_mask(const u32 mask)
+            std::string blit_framebuffer_mask(const u32 mask)
             {
                 switch (mask)
                 {
@@ -449,11 +451,11 @@ namespace ppp
                 }
 
                 log::warn("Unknown mask, this list is incomplete maybe you need to add another element: {0}", mask);
-                return string::to_string<debug_temp_string>(mask);
+                return string::to_string<std::string>(mask);
             }
             
             //-------------------------------------------------------------------------
-            debug_temp_string blit_framebuffer_filter(const u32 filter)
+            std::string blit_framebuffer_filter(const u32 filter)
             {
                 switch (filter)
                 {
@@ -462,7 +464,7 @@ namespace ppp
                 }
 
                 log::warn("Unknown filter, this list is incomplete maybe you need to add another element: {0}", filter);
-                return string::to_string<debug_temp_string>(filter);
+                return string::to_string<std::string>(filter);
             }
 
 #pragma region FUNCTION LIBRARY

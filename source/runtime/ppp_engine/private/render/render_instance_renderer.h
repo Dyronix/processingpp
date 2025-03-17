@@ -3,7 +3,7 @@
 #include "render/render_base_renderer.h"
 #include "render/render_instance.h"
 
-#include "memory/memory_types.h"
+
 
 namespace ppp
 {
@@ -45,7 +45,7 @@ namespace ppp
             void wireframe_render(topology_type topology, instance_drawing_data& drawing_data);
 
         private:
-            using instance_data_map = graphics_hash_map<topology_type, instance_drawing_data>;
+            using instance_data_map = std::unordered_map<topology_type, instance_drawing_data>;
 
             instance_data_map m_instance_data_map;
 
@@ -55,7 +55,7 @@ namespace ppp
             render_buffer_policy m_buffer_policy;
             render_draw_policy m_render_policy;
 
-            graphics_vector<std::function<void(topology_type, instance_drawing_data&)>> m_render_fns;
+            std::vector<std::function<void(topology_type, instance_drawing_data&)>> m_render_fns;
         };
 
         class primitive_instance_renderer : public instance_renderer

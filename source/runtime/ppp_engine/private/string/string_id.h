@@ -2,9 +2,6 @@
 
 #include "util/types.h"
 
-#include "memory/memory_types.h"
-#include "memory/memory_manager.h"
-
 #include <functional>
 #include <ostream>
 #include <cstddef>

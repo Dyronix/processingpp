@@ -3,6 +3,7 @@
 #include "resources/geometry_pool.h"
 
 #include <array>
+#include <sstream>
 
 namespace ppp
 {
@@ -104,12 +105,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_box(bool smooth_normals)
         {
-            temp_stringstream stream;
+            std::stringstream stream;
 
             stream << "box|";
             stream << smooth_normals;
 
-            const temp_string gid = stream.str();
+            const std::string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "memory/memory_types.h"
+#include <memory>
+#include <vector>
 
 namespace ppp
 {
@@ -13,12 +14,14 @@ namespace ppp
         class render_pipeline 
         {
         public:
-            void add_pass(graphics_unique_ptr<render_pass> pass);
+            ~render_pipeline();
+
+            void add_pass(std::unique_ptr<render_pass> pass);
 
             void execute(const render_context& context);
 
         private:
-            graphics_vector<graphics_unique_ptr<render_pass>> m_passes;
+            std::vector<std::unique_ptr<render_pass>> m_passes;
         };
 
     }

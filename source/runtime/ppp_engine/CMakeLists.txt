@@ -2,41 +2,6 @@ add_library(processing_engine STATIC)
 
 # Sources
 target_sources(processing_engine PRIVATE 
-    # memory   
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_size.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_tracker.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_tracker.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_types.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_tags.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_manager.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_manager.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_placement_new.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_unique_ptr_util.h
-    # memory-heaps
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap_block.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap_block.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/iheap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/iheap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/free_list_heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/free_list_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/linear_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/linear_heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/double_buffered_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/double_buffered_heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/circular_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/circular_heap.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/stack_heap.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/stack_heap.h
-    # memory-allocators
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/tagged_heap_allocator.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/generic_heap_allocator.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/heap_allocator_policy.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/heap_allocator_policy.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/allocators/heap_allocator_deleter.h
     # fileio
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/fileio.cpp

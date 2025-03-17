@@ -3,7 +3,7 @@
 #include "render/render_item.h"
 #include "render/render_types.h"
 
-#include "memory/memory_types.h"
+
 
 #include <glm/glm.hpp>
 
@@ -56,7 +56,7 @@ namespace ppp
 
         private:
             class impl;
-            global_unique_ptr<impl> m_pimpl;
+            std::unique_ptr<impl> m_pimpl;
         };
 
         class batch_drawing_data
@@ -81,11 +81,11 @@ namespace ppp
             bool has_drawing_data() const;
 
         private:
-            using batch_arr = graphics_vector<batch>;
+            using batch_arr = std::vector<batch>;
 
         private:
             struct impl;
-            global_unique_ptr<impl> m_pimpl;
+            std::unique_ptr<impl> m_pimpl;
         };
     }
 }

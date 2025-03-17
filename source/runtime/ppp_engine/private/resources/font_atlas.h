@@ -2,8 +2,6 @@
 
 #include "util/types.h"
 
-#include <memory/memory_types.h>
-
 #include <glm/glm.hpp>
 
 #include <map>
@@ -30,7 +28,7 @@ namespace ppp
             u32 texture_width;
             u32 texture_height;
 
-            graphics_map<u32, font_character> characters;
+            std::map<u32, font_character> characters;
         };
 
         font_atlas make_font_atlas(FT_FaceRec_* face, u32 characters_to_load);

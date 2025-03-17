@@ -1,6 +1,6 @@
 #pragma once
 
-#include "memory/memory_types.h"
+
 
 #include "string/string_id.h"
 
@@ -10,7 +10,7 @@ namespace ppp
     {
         void add_wildcard(string::string_id wildcard, std::string_view value);
 
-        temp_string resolve_path(std::string_view filename);
+        std::string resolve_path(std::string_view filename);
 
         bool exists(std::string_view filename);
     }

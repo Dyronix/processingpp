@@ -3,7 +3,7 @@
 #include "render/render_base_renderer.h"
 #include "render/render_batch.h"
 
-#include "memory/memory_types.h"
+
 
 namespace ppp
 {
@@ -47,14 +47,14 @@ namespace ppp
             void wireframe_render(topology_type topology, batch_drawing_data& drawing_data);
 
         private:
-            using drawing_data_map = graphics_hash_map<topology_type, batch_drawing_data>;
+            using drawing_data_map = std::unordered_map<topology_type, batch_drawing_data>;
 
             drawing_data_map m_drawing_data_map;
 
             render_buffer_policy m_buffer_policy;
             render_draw_policy m_render_policy;
             
-            graphics_vector<std::function<void(topology_type, batch_drawing_data&)>> m_render_fns;
+            std::vector<std::function<void(topology_type, batch_drawing_data&)>> m_render_fns;
         };
 
         class primitive_batch_renderer : public batch_renderer

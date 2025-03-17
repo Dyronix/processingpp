@@ -3,9 +3,6 @@
 #include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
-#include "memory/memory_unique_ptr_util.h"
-#include "memory/memory_manager.h"
-
 #include "util/pointer_math.h"
 
 #include <glad/glad.h>
@@ -108,14 +105,14 @@ namespace ppp
             u64                             current_element_count;
             u64                             max_elements_to_set;
 
-            stage_vector<u8>                buffer;
+            std::vector<u8>                 buffer;
 
             u32                             ssbo;
         };
 
         //------------------------------------------------------------------------
         storage_buffer::storage_buffer(u64 element_count, u64 element_size)
-            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(element_count, element_size))
+            : m_pimpl(std::make_unique<impl>(element_count, element_size))
         {
 
         }
@@ -146,39 +143,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool storage_buffer::can_add(u64 max_elements_to_set) const
         {
-            using memory_policy = typename decltype(m_pimpl->buffer)::allocator_type::memory_policy;
-
-            auto heap = memory_policy::get_heap();
-            auto block_total_size = heap->block_total_size(); // in bytes
-
-            // Total number of elements after adding the new ones.
-            u64 new_element_count = active_element_count() + max_elements_to_set;
-
-            // Compute total bytes required (each element occupies m_pimpl->element_size bytes).
-            u64 required_bytes = new_element_count * m_pimpl->element_size;
-
-            // Current allocated capacity in bytes.
-            u64 current_capacity_bytes = m_pimpl->buffer.capacity();
-
-            // If the required bytes fit in the current allocation, no resize occurs.
-            if (required_bytes <= current_capacity_bytes)
-            {
-                return true;
-            }
-
-            // Otherwise, predict the new capacity based on a doubling strategy.
-            u64 predicted_capacity_bytes = (current_capacity_bytes == 0)
-                ? required_bytes
-                : current_capacity_bytes * 2;
-
-            // Ensure the predicted capacity is at least enough for the required bytes.
-            if (predicted_capacity_bytes < required_bytes)
-            {
-                predicted_capacity_bytes = required_bytes;
-            }
-
-            // Finally, check that the predicted new allocation stays within the block's total size.
-            return predicted_capacity_bytes <= block_total_size;
+            return true;
         }
 
         //-------------------------------------------------------------------------

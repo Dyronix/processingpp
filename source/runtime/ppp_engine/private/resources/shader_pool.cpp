@@ -2,8 +2,8 @@
 #include "render/render_shader_compiler.h"
 #include "render/render_shader_library.h"
 
-#include "memory/memory_types.h"
-#include "memory/memory_placement_new.h"
+
+
 
 #include "util/log.h"
 
@@ -121,24 +121,20 @@ namespace ppp
             }
         }
 
-        using shaders_hash_map = graphics_hash_map<string::string_id, std::shared_ptr<render::shaders::shader_program>>;
+        using shaders_hash_map = std::unordered_map<string::string_id, std::shared_ptr<render::shaders::shader_program>>;
 
         struct context
         {
             //-------------------------------------------------------------------------
             void add_shader_program(string::string_id sid, render::shading_model_type smtype, render::vertex_type vtype, std::string_view vs_source, std::string_view fs_source)
             {
-                memory::persistent_graphics_tagged_allocator<render::shaders::shader_program> graphics_allocator;
-
-                shaders_hash_map.emplace(sid, std::allocate_shared<render::shaders::shader_program>(graphics_allocator, smtype, vtype, vs_source, fs_source));
+                shaders_hash_map.emplace(sid, std::make_shared<render::shaders::shader_program>(smtype, vtype, vs_source, fs_source));
             }
 
             //-------------------------------------------------------------------------
             void add_shader_program(string::string_id sid, render::shading_model_type smtype, render::vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view gs_source)
             {
-                memory::persistent_graphics_tagged_allocator<render::shaders::shader_program> graphics_allocator;
-
-                shaders_hash_map.emplace(sid, std::allocate_shared<render::shaders::shader_program>(graphics_allocator, smtype, vtype, vs_source, fs_source, gs_source));
+                shaders_hash_map.emplace(sid, std::make_shared<render::shaders::shader_program>(smtype, vtype, vs_source, fs_source, gs_source));
             }
 
             shaders_hash_map shaders_hash_map;

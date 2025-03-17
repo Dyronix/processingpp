@@ -23,9 +23,6 @@
 #include "resources/shader_pool.h"
 #include "resources/framebuffer_pool.h"
 
-#include "memory/memory_placement_new.h"
-#include "memory/memory_unique_ptr_util.h"
-
 #include "util/log.h"
 #include "util/color_ops.h"
 #include "util/transform_stack.h"
@@ -41,6 +38,7 @@
 #include <array>
 #include <functional>
 #include <iostream>
+#include <sstream>
 
 #define LOG_GL_NOTIFICATIONS 0
 #define LOG_GL_LOW 0
@@ -64,9 +62,9 @@ namespace ppp
             //-------------------------------------------------------------------------
             void APIENTRY debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* uerParam)
             {
-                static debug_scratch_string             source_str = "UNKNOWN";
-                static debug_scratch_string             type_str = "UNKNOWN";
-                static debug_scratch_string             severity_str = "UNKNOWN";
+                static std::string             source_str = "UNKNOWN";
+                static std::string             type_str = "UNKNOWN";
+                static std::string             severity_str = "UNKNOWN";
 
                 switch (source)
                 {
@@ -125,7 +123,7 @@ namespace ppp
             }
         }
 
-        using font_renderer = graphics_unique_ptr<texture_batch_renderer>;
+        using font_renderer = std::unique_ptr<texture_batch_renderer>;
 
         //-------------------------------------------------------------------------
         class geometry_builder
@@ -221,17 +219,17 @@ namespace ppp
 
                 if (g_ctx.batch_renderers.find(shader_tag) == std::cend(g_ctx.batch_renderers))
                 {
-                    graphics_unique_ptr<batch_renderer> renderer = nullptr;
+                    std::unique_ptr<batch_renderer> renderer = nullptr;
 
                     if (item->has_textures() == false)
                     {
                         assert(g_ctx.fill_user_shader.is_none() == false);
 
-                        renderer = memory::make_unique<primitive_batch_renderer, memory::persistent_graphics_tagged_allocator<primitive_batch_renderer>>(shader_tag);
+                        renderer = std::make_unique<primitive_batch_renderer>(shader_tag);
                     }
                     else
                     {
-                        renderer = memory::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<texture_batch_renderer>>(shader_tag);
+                        renderer = std::make_unique<texture_batch_renderer>(shader_tag);
                     }
 
                     if (_geometry_builder.is_active())
@@ -249,17 +247,17 @@ namespace ppp
             {
                 if (g_ctx.instance_renderers.find(shader_tag) == std::cend(g_ctx.instance_renderers))
                 {
-                    graphics_unique_ptr<instance_renderer> renderer = nullptr;
+                    std::unique_ptr<instance_renderer> renderer = nullptr;
                     if (item->has_textures() == false)
                     {
-                        renderer = memory::make_unique<primitive_instance_renderer, memory::persistent_graphics_tagged_allocator<primitive_instance_renderer>>(
+                        renderer = std::make_unique<primitive_instance_renderer>(
                             color_world_layout().data(),
                             color_world_layout().size(),
                             shader_tag);
                     }
                     else
                     {
-                        renderer = memory::make_unique<texture_instance_renderer, memory::persistent_graphics_tagged_allocator<texture_instance_renderer>>(
+                        renderer = std::make_unique<texture_instance_renderer>(
                             color_world_matid_layout().data(),
                             color_world_matid_layout().size(),
                             shader_tag);
@@ -281,7 +279,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void parse_gl_version(const char* version_string)
         {
-            temp_stringstream ss(version_string);
+            std::stringstream ss(version_string);
             char dot;
             ss >> g_ctx.major >> dot >> g_ctx.minor;
         }
@@ -332,12 +330,12 @@ namespace ppp
             g_ctx.scissor.height = h;
             g_ctx.scissor.enable = false;
 
-            g_ctx.font_renderer = memory::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<texture_batch_renderer>>(shader_pool::tags::unlit::font());
+            g_ctx.font_renderer = std::make_unique<texture_batch_renderer>(shader_pool::tags::unlit::font());
 
-            g_ctx.render_pipeline.add_pass(memory::make_unique<shadow_pass, memory::persistent_graphics_tagged_allocator<shadow_pass>>());
-            g_ctx.render_pipeline.add_pass(memory::make_unique<forward_shading_pass, memory::persistent_graphics_tagged_allocator<forward_shading_pass>>());
-            g_ctx.render_pipeline.add_pass(memory::make_unique<ui_pass, memory::persistent_graphics_tagged_allocator<ui_pass>>());
-            g_ctx.render_pipeline.add_pass(memory::make_unique<blit_pass, memory::persistent_graphics_tagged_allocator<blit_pass>>(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
+            g_ctx.render_pipeline.add_pass(std::make_unique<shadow_pass>());
+            g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>());
+            g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>());
+            g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
 
             return true;
         }

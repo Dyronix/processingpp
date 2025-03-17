@@ -10,9 +10,6 @@
 #include "camera/camera_context.h"
 #include "camera/camera_manager.h"
 
-#include "memory/memory_tracker.h"
-#include "memory/heaps/heap.h"
-
 #include "resources/texture_pool.h"
 #include "resources/font_pool.h"
 #include "resources/shader_pool.h"
@@ -88,34 +85,7 @@ namespace ppp
 
         color::background(1.0f, 1.0f, 1.0f, 1.0f);
 
-#if _DEBUG
-        keyboard::add_key_pressed_callback(
-            [](keyboard::key_code key)
-            {
-                if (key == keyboard::key_code::KEY_F7)
-                {
-                    memory::peek();
-                }
-            });
-
-        keyboard::add_key_pressed_callback(
-            [](keyboard::key_code key)
-        {
-            if (key == keyboard::key_code::KEY_F8)
-            {
-                s32 frame_id = ppp::environment::frame_count();
-                
-                ppp::log::info("--- Frame id: {}", frame_id);
-
-                ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
-            }
-        });
-#endif
-
         setup();
-
-        memory::get_memory_manager().get_persistent_region().get_tagged_heap()->free_blocks(memory::tags::fileio);
-        memory::get_memory_manager().get_transient_region().free();
 
         return 0;
     }
@@ -126,8 +96,6 @@ namespace ppp
 
         while (!device::should_close())
         {
-            memory::start_frame(device::current_frame_index());
-
             if (device::can_draw())
             {
                 context.camera_position_font = camera_manager::get_camera_position(camera_manager::tags::font());
@@ -173,9 +141,6 @@ namespace ppp
                     clock::accurate_sleep_for(sleep_time);
                 }
             }
-
-            memory::get_memory_manager().get_persistent_region().get_frame_heap()->free();
-            memory::end_frame();
         }
 
         return 0;
@@ -234,10 +199,6 @@ namespace ppp
 
 int main(int argc, char** argv)
 {
-#ifdef _DEBUG
-    ppp::memory::enable_tracking();
-#endif
-
     for (int i = 0; i < argc; ++i)
     {
         ppp::log::info("Application argument: {}", argv[i]);
@@ -267,10 +228,6 @@ int main(int argc, char** argv)
         ppp::log::error("Failed to quit app");
         return result;
     }
-
-#ifdef _DEBUG
-    ppp::memory::disable_tracking();
-#endif
 
     return result;
 }

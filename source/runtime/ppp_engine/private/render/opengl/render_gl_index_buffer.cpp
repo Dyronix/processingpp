@@ -3,8 +3,8 @@
 #include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
-#include "memory/memory_types.h"
-#include "memory/memory_unique_ptr_util.h"
+
+
 
 #include <glad/glad.h>
 
@@ -94,14 +94,14 @@ namespace ppp
             u64                             current_index_count;
             u64                             max_elements_to_set;
 
-            stage_vector<u8>                buffer;
+            std::vector<u8>                buffer;
 
             u32                             ebo;
         };
 
         //-------------------------------------------------------------------------
         index_buffer::index_buffer(u64 index_count)
-            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(index_count))
+            : m_pimpl(std::make_unique<impl>(index_count))
         {}
 
         //-------------------------------------------------------------------------
@@ -130,17 +130,11 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool index_buffer::can_add(u64 max_elements_to_set) const
         {
-            using memory_policy = typename decltype(m_pimpl->buffer)::allocator_type::memory_policy;
-
-            auto heap = memory_policy::get_heap();
-            auto available_memory = heap->block_total_size();
-
             u64 new_index_count = active_index_count() + max_elements_to_set;
-            u64 indices_size = sizeof(index) * new_index_count;
 
             // Make sure we do not exceed the memory size of one block
             // Make sure we do not exceed the amount of indices we can store
-            return indices_size < available_memory && new_index_count < m_pimpl->index_count;
+            return new_index_count < m_pimpl->index_count;
         }
     
         //-------------------------------------------------------------------------

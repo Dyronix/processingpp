@@ -3,6 +3,7 @@
 #include "resources/geometry_pool.h"
 
 #include <array>
+#include <sstream>
 
 namespace ppp
 {
@@ -44,43 +45,43 @@ namespace ppp
             glm::vec3 F(0, -h, 0);  // Bottom
 
             // Upper faces (using top vertex A)
-            // Face 0: (A, C, B) — corresponds to original {0,2,1}
+            // Face 0: (A, C, B) ï¿½ corresponds to original {0,2,1}
             self->vertex_positions()[index++] = A;
             self->vertex_positions()[index++] = C;
             self->vertex_positions()[index++] = B;
 
-            // Face 1: (A, D, C) — corresponds to original {0,3,2}
+            // Face 1: (A, D, C) ï¿½ corresponds to original {0,3,2}
             self->vertex_positions()[index++] = A;
             self->vertex_positions()[index++] = D;
             self->vertex_positions()[index++] = C;
 
-            // Face 2: (A, E, D) — corresponds to original {0,4,3}
+            // Face 2: (A, E, D) ï¿½ corresponds to original {0,4,3}
             self->vertex_positions()[index++] = A;
             self->vertex_positions()[index++] = E;
             self->vertex_positions()[index++] = D;
 
-            // Face 3: (A, B, E) — corresponds to original {0,1,4}
+            // Face 3: (A, B, E) ï¿½ corresponds to original {0,1,4}
             self->vertex_positions()[index++] = A;
             self->vertex_positions()[index++] = B;
             self->vertex_positions()[index++] = E;
 
             // Lower faces (using bottom vertex F)
-            // Face 4: (F, B, C) — corresponds to original {5,1,2}
+            // Face 4: (F, B, C) ï¿½ corresponds to original {5,1,2}
             self->vertex_positions()[index++] = F;
             self->vertex_positions()[index++] = B;
             self->vertex_positions()[index++] = C;
 
-            // Face 5: (F, C, D) — corresponds to original {5,2,3}
+            // Face 5: (F, C, D) ï¿½ corresponds to original {5,2,3}
             self->vertex_positions()[index++] = F;
             self->vertex_positions()[index++] = C;
             self->vertex_positions()[index++] = D;
 
-            // Face 6: (F, D, E) — corresponds to original {5,3,4}
+            // Face 6: (F, D, E) ï¿½ corresponds to original {5,3,4}
             self->vertex_positions()[index++] = F;
             self->vertex_positions()[index++] = D;
             self->vertex_positions()[index++] = E;
 
-            // Face 7: (F, E, B) — corresponds to original {5,4,1}
+            // Face 7: (F, E, B) ï¿½ corresponds to original {5,4,1}
             self->vertex_positions()[index++] = F;
             self->vertex_positions()[index++] = E;
             self->vertex_positions()[index++] = B;
@@ -128,12 +129,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_octahedron(bool smooth_normals)
         {
-            temp_stringstream stream;
+            std::stringstream stream;
 
             stream << "octahedron|";
             stream << smooth_normals;
 
-            const temp_string gid = stream.str();
+            const std::string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

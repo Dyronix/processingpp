@@ -7,12 +7,13 @@
 #include <glm/gtc/epsilon.hpp>
 
 #include <string>
+#include <sstream>
 
 namespace ppp
 {
     namespace geometry
     {
-        static glm::vec3 get_face_normal(const graphics_vector<glm::vec3>& vertices, const graphics_vector<render::face>& faces, s32 face_id) 
+        static glm::vec3 get_face_normal(const std::vector<glm::vec3>& vertices, const std::vector<render::face>& faces, s32 face_id) 
         {
             auto& face = faces[face_id];
 
@@ -84,15 +85,15 @@ namespace ppp
         {
             if (m_smooth_normals)
             {
-                graphics_hash_map<temp_string, s32> vertex_indices;
-                graphics_vector<glm::vec3> unique_vertices;
+                std::unordered_map<std::string, s32> vertex_indices;
+                std::vector<glm::vec3> unique_vertices;
 
                 f32 power = std::pow(10.0f, round_to_precision);
 
                 auto rounded = [power](f32 v) { return std::round(v * power) / power; };
                 auto get_key = [rounded](const glm::vec3& vert) 
                 {
-                    temp_stringstream stream;
+                    std::stringstream stream;
 
                     stream << rounded(vert.x);
                     stream << ",";
@@ -106,7 +107,7 @@ namespace ppp
                 // loop through each vertex and add unique_vertices
                 for (const auto& v : m_vertex_positions)
                 {
-                    temp_string key = get_key(v);
+                    std::string key = get_key(v);
                     if (vertex_indices.find(key) == std::cend(vertex_indices))
                     {
                         vertex_indices.emplace(key, (s32)unique_vertices.size());
@@ -119,7 +120,7 @@ namespace ppp
                 {
                     for (render::index& fv : face)
                     {
-                        temp_string key = get_key(m_vertex_positions[fv]);
+                        std::string key = get_key(m_vertex_positions[fv]);
                         fv = vertex_indices[key];
                     }
                 }

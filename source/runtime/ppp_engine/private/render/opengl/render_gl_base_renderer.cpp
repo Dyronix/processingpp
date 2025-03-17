@@ -10,7 +10,7 @@
 #include "util/log.h"
 #include "util/color_ops.h"
 
-#include "memory/memory_unique_ptr_util.h"
+
 
 #include <glad/glad.h>
 
@@ -67,7 +67,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         base_renderer::base_renderer(string::string_id shader_tag)
-            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(shader_tag))
+            : m_pimpl(std::make_unique<impl>(shader_tag))
         {}
 
         //-------------------------------------------------------------------------

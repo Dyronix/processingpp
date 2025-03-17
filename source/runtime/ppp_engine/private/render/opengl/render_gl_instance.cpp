@@ -17,8 +17,8 @@
 
 #include "resources/material_pool.h"
 
-#include "memory/memory_placement_new.h"
-#include "memory/memory_unique_ptr_util.h"
+
+
 
 #include "util/types.h"
 #include "util/log.h"
@@ -344,7 +344,7 @@ namespace ppp
 
                 storage_buffer_ops::storage_data_addition_scope sdas(m_storage_buffer, 1);
 
-                scratch_vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
+                std::vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
 
                 size_t offset = 0;
 
@@ -435,8 +435,8 @@ namespace ppp
                 opengl::api::instance().generate_vertex_arrays(1, &m_vao);
                 opengl::api::instance().bind_vertex_array(m_vao);
 
-                m_buffer_manager = memory::make_unique<instance_buffer_manager, memory::persistent_graphics_tagged_allocator<instance_buffer_manager>>(instance, layouts, layout_count, instance_layouts, instance_layout_count);
-                m_material_manager = memory::make_unique<instance_material_manager, memory::persistent_graphics_tagged_allocator<instance_material_manager>>();
+                m_buffer_manager = std::make_unique<instance_buffer_manager>(instance, layouts, layout_count, instance_layouts, instance_layout_count);
+                m_material_manager = std::make_unique<instance_material_manager>();
 
                 if (instance->index_count() != 0)
                 {
@@ -517,7 +517,7 @@ namespace ppp
 
                     if (material_id != -1)
                     {
-                        temp_vector<u8> intermediate_unlit_texture_buffer;
+                        std::vector<u8> intermediate_unlit_texture_buffer;
 
                         intermediate_unlit_texture_buffer.reserve(sizeof(internal::unlit_texture_instance_data));
                         intermediate_unlit_texture_buffer.resize(sizeof(internal::unlit_texture_instance_data));
@@ -536,7 +536,7 @@ namespace ppp
                 }
                 else
                 {
-                    temp_vector<u8> intermediate_unlit_buffer;
+                    std::vector<u8> intermediate_unlit_buffer;
 
                     intermediate_unlit_buffer.reserve(sizeof(internal::unlit_instance_data));
                     intermediate_unlit_buffer.resize(sizeof(internal::unlit_instance_data));
@@ -551,8 +551,8 @@ namespace ppp
             u64 m_instance_id = 0;
             s32 m_instance_count = 0;
 
-            graphics_unique_ptr<instance_buffer_manager> m_buffer_manager;
-            graphics_unique_ptr<instance_material_manager> m_material_manager;
+            std::unique_ptr<instance_buffer_manager> m_buffer_manager;
+            std::unique_ptr<instance_material_manager> m_material_manager;
 
             u32 m_vao;
         };
@@ -560,7 +560,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         // Instance
         instance::instance(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
-            :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(instance, layouts, layout_count, instance_layouts, instance_layout_count))
+            :m_pimpl(std::make_unique<impl>(instance, layouts, layout_count, instance_layouts, instance_layout_count))
         {
 
         }
@@ -675,7 +675,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         // Instance Drawing Data
         instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
-            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(layouts, layout_count, instance_layouts, instance_layout_count, render_buffer_policy))
+            : m_pimpl(std::make_unique<impl>(layouts, layout_count, instance_layouts, instance_layout_count, render_buffer_policy))
         {
             assert(layouts != nullptr);
             assert(layout_count > 0);

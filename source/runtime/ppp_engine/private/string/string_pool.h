@@ -1,14 +1,12 @@
 #pragma once
 
-#include <memory/memory_types.h>
-
 #include <string>
 
 namespace ppp
 {
     namespace string
     {
-        using string_entry = global_string;
+        using string_entry = std::string;
 
         class string_id;
 

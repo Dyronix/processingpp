@@ -1,7 +1,7 @@
 #include "resources/font_pool.h"
 
-#include "memory/memory_types.h"
-#include "memory/memory_placement_new.h"
+
+
 
 #include <unordered_map>
 
@@ -9,7 +9,7 @@ namespace ppp
 {
     namespace font_pool
     {
-        using fonts = global_hash_map<string::string_id, font>;
+        using fonts = std::unordered_map<string::string_id, font>;
 
         struct context
         {

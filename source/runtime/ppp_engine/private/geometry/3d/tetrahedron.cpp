@@ -3,6 +3,7 @@
 #include "resources/geometry_pool.h"
 
 #include <array>
+#include <sstream>
 
 namespace ppp
 {
@@ -121,12 +122,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_tetrahedron(bool smooth_normals)
         {
-            temp_stringstream stream;
+            std::stringstream stream;
 
             stream << "tetrahedron|";
             stream << smooth_normals;
 
-            const temp_string gid = stream.str();
+            const std::string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

@@ -70,8 +70,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const graphics_vector<s32>& texture_registry::samplers() const { return m_samplers; }
-        const graphics_vector<u32>& texture_registry::textures() const { return m_images; }
+        const std::vector<s32>& texture_registry::samplers() const { return m_samplers; }
+        const std::vector<u32>& texture_registry::textures() const { return m_images; }
 
         //-------------------------------------------------------------------------
         u64 texture_registry::active_sampler_count() const { return has_reserved_texture_space() ? m_samplers.size() : 0; }

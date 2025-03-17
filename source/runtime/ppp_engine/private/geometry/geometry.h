@@ -2,13 +2,12 @@
 
 #include "util/types.h"
 
-#include "memory/memory_types.h"
-
 #include <glm/glm.hpp>
 
 #include <array>
 #include <vector>
 #include <functional>
+#include <string>
 
 namespace ppp
 {
@@ -28,27 +27,27 @@ namespace ppp
 
             void compute_normals(s32 round_to_precision = 3);
 
-            const graphics_vector<glm::vec3>& vertex_positions() const { return m_vertex_positions; }
-            const graphics_vector<glm::vec3>& vertex_normals() const { return m_vertex_normals; }
-            const graphics_vector<glm::vec2>& vertex_uvs() const { return m_vertex_uvs; }
+            const std::vector<glm::vec3>& vertex_positions() const { return m_vertex_positions; }
+            const std::vector<glm::vec3>& vertex_normals() const { return m_vertex_normals; }
+            const std::vector<glm::vec2>& vertex_uvs() const { return m_vertex_uvs; }
 
-            const graphics_vector<render::face>& faces() const { return m_faces; }
+            const std::vector<render::face>& faces() const { return m_faces; }
 
             const u64 id() const { return m_id; }
             
-            graphics_vector<glm::vec3>& vertex_positions() { return m_vertex_positions; }
-            graphics_vector<glm::vec3>& vertex_normals() { return m_vertex_normals; }
-            graphics_vector<glm::vec2>& vertex_uvs() { return m_vertex_uvs; }
+            std::vector<glm::vec3>& vertex_positions() { return m_vertex_positions; }
+            std::vector<glm::vec3>& vertex_normals() { return m_vertex_normals; }
+            std::vector<glm::vec2>& vertex_uvs() { return m_vertex_uvs; }
 
-            graphics_vector<render::face>& faces() { return m_faces; }
+            std::vector<render::face>& faces() { return m_faces; }
 
         private:
-            graphics_vector<glm::vec3> m_vertex_positions;
-            graphics_vector<glm::vec3> m_vertex_normals;
-            graphics_vector<glm::vec2> m_vertex_uvs;
-            graphics_vector<glm::vec4> m_vertex_colors;
+            std::vector<glm::vec3> m_vertex_positions;
+            std::vector<glm::vec3> m_vertex_normals;
+            std::vector<glm::vec2> m_vertex_uvs;
+            std::vector<glm::vec4> m_vertex_colors;
             
-            graphics_vector<render::face> m_faces;
+            std::vector<render::face> m_faces;
 
         private:
             bool m_smooth_normals; 

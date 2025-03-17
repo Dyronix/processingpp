@@ -31,8 +31,8 @@ namespace ppp
             bool                                point_lights_with_shadow_enabled = false;
             bool                                directional_lights_with_shadow_enabled = false;
 
-            graphics_vector<point_light>        point_lights;
-            graphics_vector<directional_light>  directional_lights;
+            std::vector<point_light>        point_lights;
+            std::vector<directional_light>  directional_lights;
 
             //-------------------------------------------------------------------------
             s32 count_point_lights_shadow_enabled() const
@@ -283,12 +283,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const graphics_vector<point_light>& point_lights()
+        const std::vector<point_light>& point_lights()
         {
             return g_ctx.point_lights;
         }
         //-------------------------------------------------------------------------
-        const graphics_vector<directional_light>& directional_lights()
+        const std::vector<directional_light>& directional_lights()
         {
             return g_ctx.directional_lights;
         }

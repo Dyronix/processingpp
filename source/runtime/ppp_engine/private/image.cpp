@@ -28,6 +28,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <assert.h>
+#include <sstream>
 
 namespace ppp
 {
@@ -63,20 +64,20 @@ namespace ppp
                     return m_geometry->index_count();
                 }
 
-                const graphics_vector<glm::vec3>& vertex_positions() const override
+                const std::vector<glm::vec3>& vertex_positions() const override
                 {
                     return m_geometry->vertex_positions();
                 }
-                const graphics_vector<glm::vec3>& vertex_normals() const override
+                const std::vector<glm::vec3>& vertex_normals() const override
                 {
                     return m_geometry->vertex_normals();
                 }
-                const graphics_vector<glm::vec2>& vertex_uvs() const override
+                const std::vector<glm::vec2>& vertex_uvs() const override
                 {
                     return m_geometry->vertex_uvs();
                 }
 
-                const graphics_vector<render::face>& faces() const override
+                const std::vector<render::face>& faces() const override
                 {
                     return m_geometry->faces();
                 }
@@ -109,12 +110,12 @@ namespace ppp
             //-------------------------------------------------------------------------
             geometry::geometry* make_image(u32 image_id)
             {
-                temp_stringstream stream;
+                std::stringstream stream;
 
                 stream << "image|";
                 stream << image_id;
 
-                const temp_string gid = stream.str();
+                const std::string gid = stream.str();
 
                 if (!geometry_pool::has_geometry(gid))
                 {

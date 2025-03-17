@@ -1,7 +1,7 @@
 #pragma once
 
 #include "util/types.h"
-#include "memory/memory_types.h"
+
 #include "resources/font_atlas.h"
 #include "string/string_id.h"
 

@@ -4,7 +4,7 @@
 
 #include "render/helpers/render_texture_registry.h"
 
-#include "memory/memory_types.h"
+
 
 #include "string/string_id.h"
 
@@ -18,8 +18,8 @@ namespace ppp
 {
     namespace resources
     {
-        using sampler_ids = graphics_vector<s32>;
-        using texture_ids = graphics_vector<render::texture_id>;
+        using sampler_ids = std::vector<s32>;
+        using texture_ids = std::vector<render::texture_id>;
 
         class imaterial
         {

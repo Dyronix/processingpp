@@ -21,7 +21,7 @@ namespace ppp
             s32 left;
             s32 top;
 
-            temp_vector<u8> blob;
+            std::vector<u8> blob;
         };
 
         struct glyph_info
@@ -65,9 +65,9 @@ namespace ppp
             return glyph_info;
         }
 
-        temp_vector<glyph_info> load_glyph_info(FT_FaceRec_* face, u32 characters_to_load)
+        std::vector<glyph_info> load_glyph_info(FT_FaceRec_* face, u32 characters_to_load)
         {
-            temp_vector<glyph_info> glyph_info;
+            std::vector<glyph_info> glyph_info;
 
             glyph_info.reserve(characters_to_load);
 
@@ -85,7 +85,7 @@ namespace ppp
             return glyph_info;
         }
 
-        std::optional<font_atlas_dimensions> try_packing_glyphs(const temp_vector<glyph_info>& info, font_atlas_dimensions dimensions)
+        std::optional<font_atlas_dimensions> try_packing_glyphs(const std::vector<glyph_info>& info, font_atlas_dimensions dimensions)
         {
             u32 pen_x = 0;
             u32 pen_y = 0;
@@ -115,7 +115,7 @@ namespace ppp
             return dimensions;
         }
 
-        font_atlas_dimensions pack_glyphs(const temp_vector<glyph_info>& info, font_atlas_dimensions dimensions)
+        font_atlas_dimensions pack_glyphs(const std::vector<glyph_info>& info, font_atlas_dimensions dimensions)
         {
             // Try packing glyphs into the current atlas dimensions
             auto result = try_packing_glyphs(info, dimensions);
@@ -145,7 +145,7 @@ namespace ppp
             return c;
         }
 
-        font_atlas build_atlas(const temp_vector<glyph_info>& info)
+        font_atlas build_atlas(const std::vector<glyph_info>& info)
         {
             // Start with an initial atlas size (e.g., 128x128)
             font_atlas_dimensions atlas_dimensions = pack_glyphs(info, { 128, 128 });
@@ -157,7 +157,7 @@ namespace ppp
             atlas.texture_height = atlas_dimensions.height;
             atlas.characters = {};
 
-            temp_vector<u8> atlas_buffer(atlas.texture_width * atlas.texture_height, 0);
+            std::vector<u8> atlas_buffer(atlas.texture_width * atlas.texture_height, 0);
 
             u32 pen_x = 0;
             u32 pen_y = 0;

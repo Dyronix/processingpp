@@ -6,6 +6,7 @@
 #include "util/transform_stack.h"
 
 #include <array>
+#include <sstream>
 
 namespace ppp
 {
@@ -20,12 +21,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* extrude_point(const glm::vec3* vertices, s32 vertex_count, f32 extrusion_width)
         {
-            temp_stringstream stream;
+            std::stringstream stream;
 
             stream << (extrusion_width > 0 ? "point_out_stroke|" : "point_in_stroke");
             stream << extrusion_width;
 
-            const temp_string gid = stream.str();
+            const std::string gid = stream.str();
 
             geometry* geom = nullptr;
 
@@ -44,7 +45,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_2d_point()
         {
-            const temp_string gid = "point_2d";
+            const std::string gid = "point_2d";
 
             if (!geometry_pool::has_geometry(gid))
             {

@@ -1,17 +1,17 @@
 #include "resources/material_pool.h"
 #include "resources/shader_pool.h"
 #include "util/log.h"
-#include "memory/memory_tracker.h"
-#include "memory/memory_placement_new.h"
+
+
 #include "string/string_id.h"
 
 namespace ppp
 {
     namespace material_pool
     {
-        using materials_hash_map            = graphics_hash_map<string::string_id, resources::material>;
-        using material_instances_hash_map   = graphics_hash_map<u64, resources::material_instance>;
-        using registred_images_hash_map     = graphics_hash_map<string::string_id, graphics_vector<render::texture_id>>;
+        using materials_hash_map            = std::unordered_map<string::string_id, resources::material>;
+        using material_instances_hash_map   = std::unordered_map<u64, resources::material_instance>;
+        using registred_images_hash_map     = std::unordered_map<string::string_id, std::vector<render::texture_id>>;
 
         struct context
         {
@@ -52,7 +52,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            const graphics_vector<render::texture_id>& images(string::string_id shader_tag)
+            const std::vector<render::texture_id>& images(string::string_id shader_tag)
             {
                 auto it = g_ctx.registered_images.find(shader_tag);
                 if (it != std::cend(g_ctx.registered_images))
@@ -60,7 +60,7 @@ namespace ppp
                     return it->second;
                 }
 
-                static graphics_vector<render::texture_id> empty_ids;
+                static std::vector<render::texture_id> empty_ids;
                 return empty_ids;
             }
         }

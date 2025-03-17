@@ -3,8 +3,6 @@
 
 #include "string/string_ops.h"
 
-#include "memory/memory_placement_new.h"
-
 #include "util/log.h"
 
 #include <fstream>
@@ -15,7 +13,7 @@ namespace ppp
     {
 		struct context
 		{
-			global_hash_map<string::string_id, global_string> wildcards;
+			std::unordered_map<string::string_id, std::string> wildcards;
 		} g_ctx;
 
 		//-------------------------------------------------------------------------
@@ -27,12 +25,12 @@ namespace ppp
 		}
 
 		//-------------------------------------------------------------------------
-		temp_string resolve_path(std::string_view filename)
+		std::string resolve_path(std::string_view filename)
 		{
-			temp_string		resolved_path;
+			std::string		resolved_path;
 
 			file_info_view	file_info_view(filename);
-
+			 
 			for (const auto& p : g_ctx.wildcards)
 			{
 				std::string_view sv_wildcard = string::restore_sid(p.first);
@@ -40,17 +38,17 @@ namespace ppp
 
 				if (file_info_view.path().find(sv_wildcard) != std::string::npos)
 				{
-					resolved_path = string::string_replace<temp_string>(file_info_view.path(), sv_wildcard, sv_path);
+					resolved_path = string::string_replace<std::string>(file_info_view.path(), sv_wildcard, sv_path);
 				}
 			}
 
-			return file_info<memory::persistent_frame_allocator<char>>::make_full_path(resolved_path, file_info_view.filename(), file_info_view.extension());
+			return file_info::make_full_path(resolved_path, file_info_view.filename(), file_info_view.extension());
 		}
 
 		//-------------------------------------------------------------------------
 		bool exists(std::string_view filename)
 		{
-			const temp_string path = resolve_path(filename);
+			const std::string path = resolve_path(filename);
 
 			std::ifstream f(path.c_str());
 			bool good = f.good();

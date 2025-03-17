@@ -1,14 +1,14 @@
 #include "render/helpers/render_event_dispatcher.h"
 
-#include "memory/memory_types.h"
-#include "memory/memory_placement_new.h"
+
+
 
 namespace ppp
 {
     namespace render
     {
-        using draw_begin_subscriptions = global_vector<std::function<void()>>;
-        using draw_end_subscriptions = global_vector<std::function<void()>>;
+        using draw_begin_subscriptions = std::vector<std::function<void()>>;
+        using draw_end_subscriptions = std::vector<std::function<void()>>;
 
         struct context_event_dispatcher
         {

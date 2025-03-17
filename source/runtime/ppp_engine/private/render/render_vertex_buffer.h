@@ -4,7 +4,7 @@
 
 #include "util/log.h"
 
-#include "memory/memory_types.h"
+
 
 #include <vector>
 #include <functional>
@@ -49,7 +49,7 @@ namespace ppp
 
         private:
             class impl;
-            global_unique_ptr<impl>         m_pimpl;
+            std::unique_ptr<impl>         m_pimpl;
         };
     }
 }

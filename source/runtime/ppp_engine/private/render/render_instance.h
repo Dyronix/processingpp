@@ -56,7 +56,7 @@ namespace ppp
 
         private:
             class impl;
-            global_unique_ptr<impl> m_pimpl;
+            std::unique_ptr<impl> m_pimpl;
         };
 
         class instance_drawing_data
@@ -82,11 +82,11 @@ namespace ppp
             bool has_drawing_data() const;
 
         private:
-            using instance_map = graphics_vector<instance>;
+            using instance_map = std::vector<instance>;
 
         private:
             struct impl;
-            global_unique_ptr<impl> m_pimpl;
+            std::unique_ptr<impl> m_pimpl;
         };
     }
 }

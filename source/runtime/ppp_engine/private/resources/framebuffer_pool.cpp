@@ -2,9 +2,9 @@
 
 #include "util/log.h"
 
-#include "memory/memory_placement_new.h"
-#include "memory/memory_types.h"
-#include "memory/memory_unique_ptr_util.h"
+
+
+
 
 #include <unordered_map>
 
@@ -40,9 +40,9 @@ namespace ppp
             }
         }
 
-        using framebuffers_arr              = graphics_vector<graphics_unique_ptr<render::framebuffer>>;
-        using active_framebuffers_hash_map  = graphics_hash_map<string::string_id, render::framebuffer*>;
-        using default_framebuffer_ptr       = graphics_unique_ptr<render::default_framebuffer>;
+        using framebuffers_arr              = std::vector<std::unique_ptr<render::framebuffer>>;
+        using active_framebuffers_hash_map  = std::unordered_map<string::string_id, render::framebuffer*>;
+        using default_framebuffer_ptr       = std::unique_ptr<render::default_framebuffer>;
 
         struct context
         {
@@ -56,7 +56,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool initialize(s32 width, s32 height)
         {
-            g_ctx.default_framebuffer = memory::make_unique<render::default_framebuffer, memory::persistent_graphics_tagged_allocator<render::default_framebuffer>>(width, height);
+            g_ctx.default_framebuffer = std::make_unique<render::default_framebuffer>(width, height);
 
             render::framebuffer_descriptor fbo_desc = 
             {
@@ -84,10 +84,10 @@ namespace ppp
             };
 
             g_ctx.framebuffers.reserve(4);
-            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(fbo_desc));
-            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(fbo_desc));
-            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(shadow_fbo_desc));
-            g_ctx.framebuffers.emplace_back(memory::make_unique<render::framebuffer, memory::persistent_graphics_tagged_allocator<render::framebuffer>>(blit_desc));
+            g_ctx.framebuffers.emplace_back(std::make_unique<render::framebuffer>(fbo_desc));
+            g_ctx.framebuffers.emplace_back(std::make_unique<render::framebuffer>(fbo_desc));
+            g_ctx.framebuffers.emplace_back(std::make_unique<render::framebuffer>(shadow_fbo_desc));
+            g_ctx.framebuffers.emplace_back(std::make_unique<render::framebuffer>(blit_desc));
 
             return true;
         }

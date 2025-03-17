@@ -3,7 +3,7 @@
 #include "util/types.h"
 #include "util/log.h"
 
-#include "memory/memory_types.h"
+
 
 #include <glm/glm.hpp>
 
@@ -107,11 +107,11 @@ namespace ppp
             virtual u64 vertex_count() const = 0;
             virtual u64 index_count() const = 0;
 
-            virtual const graphics_vector<glm::vec3>& vertex_positions() const = 0;
-            virtual const graphics_vector<glm::vec3>& vertex_normals() const = 0;
-            virtual const graphics_vector<glm::vec2>& vertex_uvs() const = 0;
+            virtual const std::vector<glm::vec3>& vertex_positions() const = 0;
+            virtual const std::vector<glm::vec3>& vertex_normals() const = 0;
+            virtual const std::vector<glm::vec2>& vertex_uvs() const = 0;
 
-            virtual const graphics_vector<face>& faces() const = 0;
+            virtual const std::vector<face>& faces() const = 0;
 
             virtual const u64 geometry_id() const = 0;
             virtual const u64 material_id() const = 0;
@@ -122,7 +122,7 @@ namespace ppp
         namespace conversions
         {
             //-------------------------------------------------------------------------
-            inline temp_string to_string(attribute_type type)
+            inline std::string to_string(attribute_type type)
             {
                 switch (type)
                 {

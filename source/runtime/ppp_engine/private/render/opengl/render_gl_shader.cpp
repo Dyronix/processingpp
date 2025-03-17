@@ -37,13 +37,13 @@ namespace ppp
 
             //-------------------------------------------------------------------------
             shader_program::shader_program(shading_model_type smtype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source)
-                :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(smtype, vtype, vs_source, fs_source))
+                :m_pimpl(std::make_unique<impl>(smtype, vtype, vs_source, fs_source))
             {
             }
 
             //-------------------------------------------------------------------------
             shader_program::shader_program(shading_model_type smtype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source)
-                :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(smtype, vtype, vs_source, fs_source, geometry_source))
+                :m_pimpl(std::make_unique<impl>(smtype, vtype, vs_source, fs_source, geometry_source))
             {
             }
 

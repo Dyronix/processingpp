@@ -2,8 +2,6 @@
 #include "device/device.h"
 #include "render/render.h"
 #include "string/string_id.h"
-#include "memory/memory_types.h"
-#include "memory/memory_tracker.h"
 #include "util/log.h"
 #include "util/types.h"
 #include <filesystem>
@@ -100,7 +98,7 @@ namespace ppp
         {
             if (internal::cwd().is_none())
             {
-                temp_string s_cwd = std::filesystem::current_path().string<char, std::char_traits<char>, memory::persistent_frame_allocator<char>>();
+                std::string s_cwd = std::filesystem::current_path().string();
 
                 internal::cwd() = string::store_sid(s_cwd);
             }

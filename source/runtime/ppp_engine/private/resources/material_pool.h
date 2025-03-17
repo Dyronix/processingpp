@@ -4,7 +4,7 @@
 
 #include "resources/material.h"
 
-#include "memory/memory_types.h"
+
 
 namespace ppp
 {
@@ -15,7 +15,7 @@ namespace ppp
             void add_image(string::string_id shader_tag, render::texture_id image);
             void reset_images(string::string_id shader_tag);
 
-            const graphics_vector<render::texture_id>& images(string::string_id shader_tag);
+            const std::vector<render::texture_id>& images(string::string_id shader_tag);
         }
 
         bool initialize();

@@ -59,7 +59,7 @@ namespace ppp
         }
 
         template<typename TVertexType>
-        static void extrude_vertices(graphics_vector<glm::vec3>& new_vertices, const glm::mat4& world, const TVertexType& center, const TVertexType* vertices, s32 vertex_count, f32 extrusion_width)
+        static void extrude_vertices(std::vector<glm::vec3>& new_vertices, const glm::mat4& world, const TVertexType& center, const TVertexType* vertices, s32 vertex_count, f32 extrusion_width)
         {
             for (s32 i = 0; i < vertex_count; ++i)
             {
@@ -91,7 +91,7 @@ namespace ppp
             }
         }
 
-        static void extrude_indices(graphics_vector<render::face>& faces, s32 original_vertex_count)
+        static void extrude_indices(std::vector<render::face>& faces, s32 original_vertex_count)
         {
             constexpr s32 vertices_per_extrusion_segment = 2;
 

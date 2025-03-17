@@ -2,7 +2,7 @@
 
 #include "util/types.h"
 
-#include "memory/memory_types.h"
+#include <memory>
 
 namespace ppp
 {
@@ -37,7 +37,7 @@ namespace ppp
             s32 width;
             s32 height;
 
-            temp_vector<framebuffer_attachment> attachments;
+            std::vector<framebuffer_attachment> attachments;
         };
 
         enum class framebuffer_bound_target
@@ -79,12 +79,12 @@ namespace ppp
             bool has_depth() const;
             bool has_color_attachment() const;
 
-            const graphics_vector<u32>& color_attachments() const;
+            const std::vector<u32>& color_attachments() const;
             const u32 depth_attachment() const;
 
         private:
             class impl;
-            global_unique_ptr<impl> m_pimpl;
+            std::unique_ptr<impl> m_pimpl;
         };
 
         class default_framebuffer : public iframebuffer
@@ -101,7 +101,7 @@ namespace ppp
 
         private:
             class impl;
-            global_unique_ptr<impl> m_pimpl;
+            std::unique_ptr<impl> m_pimpl;
         };
     }
 }

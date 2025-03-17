@@ -2,7 +2,7 @@
 
 #include "string/string_id.h"
 
-#include "memory/memory_types.h"
+
 
 #include <functional>
 #include <utility>
@@ -14,7 +14,7 @@ namespace ppp
     {
         namespace string_pool
         {
-            using entry_map = global_hash_map<string_id, string_entry>;
+            using entry_map = std::unordered_map<string_id, string_entry>;
 
             //-------------------------------------------------------------------------
             entry_map load_entry_map()

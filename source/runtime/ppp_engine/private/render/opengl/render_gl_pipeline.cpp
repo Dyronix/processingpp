@@ -6,7 +6,10 @@ namespace ppp
     namespace render
     {
         //-------------------------------------------------------------------------
-        void render_pipeline::add_pass(graphics_unique_ptr<render_pass> pass)
+        render_pipeline::~render_pipeline() = default;
+
+        //-------------------------------------------------------------------------
+        void render_pipeline::add_pass(std::unique_ptr<render_pass> pass)
         {
             m_passes.push_back(std::move(pass));
         }

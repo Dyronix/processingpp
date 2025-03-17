@@ -1,6 +1,6 @@
 #include "resources/geometry_pool.h"
 
-#include "memory/memory_placement_new.h"
+
 
 #include "util/log.h"
 
@@ -23,7 +23,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         struct context
         {
-            global_hash_map<u64, geometry::geometry, geometry_id_hasher> geometry_map;
+            std::unordered_map<u64, geometry::geometry, geometry_id_hasher> geometry_map;
         } g_ctx;
 
         //-------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 #include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
-#include "memory/memory_unique_ptr_util.h"
+
 
 #include "util/log.h"
 
@@ -15,7 +15,7 @@ namespace ppp
     {
         namespace conversions
         {
-            debug_temp_string to_error_message(u32 status)
+            std::string to_error_message(u32 status)
             {
                 switch (status)
                 {
@@ -180,7 +180,7 @@ namespace ppp
 
             u32 m_framebuffer_id;
 
-            graphics_vector<u32> m_color_attachments;
+            std::vector<u32> m_color_attachments;
             u32 m_depth_attachment = 0;
             
             bool m_depth_is_texture = false;
@@ -188,7 +188,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         framebuffer::framebuffer(const framebuffer_descriptor& desc)
-            :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(desc))
+            :m_pimpl(std::make_unique<impl>(desc))
         {
 
         }
@@ -241,7 +241,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const graphics_vector<u32>& framebuffer::color_attachments() const
+        const std::vector<u32>& framebuffer::color_attachments() const
         {
             return m_pimpl->m_color_attachments;
         }
@@ -288,7 +288,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         default_framebuffer::default_framebuffer(s32 width, s32 height)
-            :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(width, height))
+            :m_pimpl(std::make_unique<impl>(width, height))
         {
 
         }

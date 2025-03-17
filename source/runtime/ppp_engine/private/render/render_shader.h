@@ -2,11 +2,10 @@
 
 #include "util/types.h"
 
-#include "memory/memory_types.h"
-
 #include "render/render_types.h"
 
 #include <memory>
+#include <string>
 
 namespace ppp
 {
@@ -31,7 +30,7 @@ namespace ppp
 
             private:
                 class impl;
-                global_unique_ptr<impl> m_pimpl;
+                std::unique_ptr<impl> m_pimpl;
             };
         }
     }

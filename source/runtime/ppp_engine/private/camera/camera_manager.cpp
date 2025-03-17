@@ -2,7 +2,7 @@
 
 #include "util/log.h"
 
-#include "memory/memory_placement_new.h"
+
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -34,7 +34,7 @@ namespace ppp
             }
         }
 
-        using camera_map = global_hash_map<string::string_id, camera>;
+        using camera_map = std::unordered_map<string::string_id, camera>;
         using camera_tag = string::string_id;
                
         struct context

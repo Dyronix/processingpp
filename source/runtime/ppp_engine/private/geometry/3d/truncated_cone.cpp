@@ -214,7 +214,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry* make_truncated_cone(bool smooth_normals, f32 in_bottom_radius, f32 in_top_radius, f32 in_height, s32 in_detail_x, s32 in_detail_y, bool in_top_cap, bool in_bottom_cap)
         {
-            temp_stringstream stream;
+            std::stringstream stream;
 
             stream << "truncated_cone|";
             stream << smooth_normals << "|";
@@ -225,7 +225,7 @@ namespace ppp
             stream << in_top_cap << "|";
             stream << in_bottom_cap;
 
-            const temp_string gid = stream.str();
+            const std::string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

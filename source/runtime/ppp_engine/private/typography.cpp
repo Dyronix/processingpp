@@ -57,20 +57,20 @@ namespace ppp
                     return m_geometry->index_count();
                 }
 
-                const graphics_vector<glm::vec3>& vertex_positions() const override
+                const std::vector<glm::vec3>& vertex_positions() const override
                 {
                     return m_geometry->vertex_positions();
                 }
-                const graphics_vector<glm::vec3>& vertex_normals() const override
+                const std::vector<glm::vec3>& vertex_normals() const override
                 {
                     return m_geometry->vertex_normals();
                 }
-                const graphics_vector<glm::vec2>& vertex_uvs() const override
+                const std::vector<glm::vec2>& vertex_uvs() const override
                 {
                     return m_geometry->vertex_uvs();
                 }
 
-                const graphics_vector<render::face>& faces() const override
+                const std::vector<render::face>& faces() const override
                 {
                     return m_geometry->faces();
                 }
@@ -99,13 +99,13 @@ namespace ppp
             {
                 resources::imaterial* mat_font = material_pool::get_or_create_material_instance(shader_pool::tags::unlit::font());
 
-                temp_stringstream stream;
+                std::stringstream stream;
 
                 stream << "font_character_item|";
                 stream << character << "|";
                 stream << texture_id;
 
-                const temp_string gid = stream.str();
+                const std::string gid = stream.str();
 
                 if (!geometry_pool::has_geometry(gid))
                 {

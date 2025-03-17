@@ -6,9 +6,9 @@
 
 #include "geometry/geometry.h"
 
-#include "memory/memory_tracker.h"
-#include "memory/heaps/linear_heap.h"
-#include "memory/heaps/heap.h"
+
+
+
 
 #include "string/string_ops.h"
 #include "string/string_conversions.h"
@@ -21,18 +21,18 @@ namespace ppp
     namespace model
     {
         //-------------------------------------------------------------------------
-        geometry::geometry* parse_obj(geometry::geometry* geom, const transient_scratch_vector<std::string_view>& buffer)
+        geometry::geometry* parse_obj(geometry::geometry* geom, const std::vector<std::string_view>& buffer)
         {
-            transient_scratch_hash_map<transient_scratch_string, transient_scratch_hash_map<transient_scratch_string, s32>> used_verts;
+            std::unordered_map<std::string, std::unordered_map<std::string, s32>> used_verts;
 
-            transient_scratch_hash_map<transient_scratch_string, transient_scratch_vector<glm::vec3>> loaded_verts;
-            transient_scratch_hash_map<transient_scratch_string, transient_scratch_vector<glm::vec2>> loaded_tex;
+            std::unordered_map<std::string, std::vector<glm::vec3>> loaded_verts;
+            std::unordered_map<std::string, std::vector<glm::vec2>> loaded_tex;
 
-            transient_scratch_string current_material;
+            std::string current_material;
 
             for (std::string_view line : buffer) 
             {
-                auto tokens = string::split_string<transient_scratch_string>(line, " \t\n\r\f\v");
+                auto tokens = string::split_string<std::string>(line, " \t\n\r\f\v");
 
                 if (tokens.empty())
                 {
@@ -62,15 +62,15 @@ namespace ppp
                 {
                     for (u64 tri = 3; tri < tokens.size(); ++tri) 
                     {
-                        transient_scratch_vector<u32> face;
-                        transient_scratch_vector<u64> vertex_tokens = { 1, tri - 1, tri };
+                        std::vector<u32> face;
+                        std::vector<u64> vertex_tokens = { 1, tri - 1, tri };
 
                         for (const auto& token_index : vertex_tokens) 
                         {
-                            transient_scratch_string vert_string = tokens[token_index];
+                            std::string vert_string = tokens[token_index];
 
-                            auto vert_parts_s = string::split_string<transient_scratch_string>(vert_string, "/");
-                            auto vert_parts = transient_scratch_vector<s32>{};
+                            auto vert_parts_s = string::split_string<std::string>(vert_string, "/");
+                            auto vert_parts = std::vector<s32>{};
 
                             for(const auto& part_s : vert_parts_s)
                             {

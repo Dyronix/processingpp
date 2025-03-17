@@ -6,8 +6,6 @@
 #include "util/log.h"
 #include "util/types.h"
 
-#include "memory/memory_types.h"
-
 #include <string>
 #include <fstream>
 
@@ -18,11 +16,11 @@ namespace ppp
     namespace fileio
     {
 		//-------------------------------------------------------------------------
-		template<typename TAlloc = memory::persistent_fileio_tagged_allocator<std::byte>>
+		template<typename TAlloc = std::allocator<std::byte>>
 		std::vector<std::byte, TAlloc> read_binary_file(std::string_view filename)
 		{
 			// Load file from disk
-			const temp_string path = vfs::resolve_path(filename);
+			const std::string path = vfs::resolve_path(filename);
 
 			std::ifstream file(path.c_str(), std::ios::binary | std::ios::ate);
 			if (!file.is_open())
@@ -49,11 +47,11 @@ namespace ppp
 		}
 
 		//-------------------------------------------------------------------------
-		template<typename TAlloc = memory::persistent_fileio_tagged_allocator<char>>
+		template<typename TAlloc = std::allocator<char>>
 		std::basic_string<char, std::char_traits<char>, TAlloc> read_text_file(std::string_view filename)
 		{
 			// Load file from disk
-			const temp_string path = vfs::resolve_path(filename);
+			const std::string path = vfs::resolve_path(filename);
 
 			std::ifstream file(path.c_str(), std::ios::binary | std::ios::ate);
 			if (!file.is_open())

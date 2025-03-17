@@ -2,7 +2,7 @@
 
 #include "util/types.h"
 
-#include "memory/memory_types.h"
+
 
 #include <string>
 
@@ -13,7 +13,7 @@ namespace ppp
 {
     namespace render
     {
-        temp_string gl_get_error_message(u32 error);
+        std::string gl_get_error_message(u32 error);
 
         u32         gl_check_error();
 

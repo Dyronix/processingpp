@@ -3,7 +3,7 @@
 #include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
-#include "memory/memory_unique_ptr_util.h"
+
 
 #include <glad/glad.h>
 
@@ -147,14 +147,14 @@ namespace ppp
             u64                             current_vertex_count;
             u64                             max_elements_to_set;
             
-            stage_vector<u8>                buffer;
+            std::vector<u8>                buffer;
 
             u32                             vbo;
         };
 
         //-------------------------------------------------------------------------
         vertex_buffer::vertex_buffer(u64 vertex_count, const attribute_layout* layouts, u64 layout_count, u64 layout_id_offset)
-            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(vertex_count, layouts, layout_count, layout_id_offset))
+            : m_pimpl(std::make_unique<impl>(vertex_count, layouts, layout_count, layout_id_offset))
         {
 
         }
@@ -185,17 +185,11 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool vertex_buffer::can_add(u64 max_elements_to_set) const
         {
-            using memory_policy = typename decltype(m_pimpl->buffer)::allocator_type::memory_policy;
-
-            auto heap = memory_policy::get_heap();
-            auto available_memory = heap->block_total_size();
-
             u64 new_vertex_count = active_vertex_count() + max_elements_to_set;
-            u64 vertices_size = calculate_total_size_layout(m_pimpl->layouts, m_pimpl->layout_count) * new_vertex_count;
 
             // Make sure we do not exceed the memory size of one block
             // Make sure we do not exceed the amount of vertices we can store
-            return vertices_size < available_memory && new_vertex_count < m_pimpl->vertex_count;
+            return new_vertex_count < m_pimpl->vertex_count;
         }
     
         //-------------------------------------------------------------------------

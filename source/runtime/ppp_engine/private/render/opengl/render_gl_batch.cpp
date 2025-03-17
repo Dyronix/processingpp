@@ -15,7 +15,7 @@
 
 #include "resources/material_pool.h"
 
-#include "memory/memory_unique_ptr_util.h"
+
 
 #include "util/types.h"
 #include "util/log.h"
@@ -375,7 +375,7 @@ namespace ppp
 
                 storage_buffer_ops::storage_data_addition_scope sdas(m_storage_buffer, 1);
 
-                scratch_vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
+                std::vector<u8> material_data(m_storage_buffer.element_size_in_bytes());
 
                 size_t offset = 0;
 
@@ -464,8 +464,8 @@ namespace ppp
                 opengl::api::instance().generate_vertex_arrays(1, &m_vao);
                 opengl::api::instance().bind_vertex_array(m_vao);
 
-                m_buffer_manager = memory::make_unique<batch_buffer_manager, memory::persistent_graphics_tagged_allocator<batch_buffer_manager>>(size_vertex_buffer, size_index_buffer, layouts, layout_count);
-                m_material_manager = memory::make_unique<batch_material_manager, memory::persistent_graphics_tagged_allocator<batch_material_manager>>();
+                m_buffer_manager = std::make_unique<batch_buffer_manager>(size_vertex_buffer, size_index_buffer, layouts, layout_count);
+                m_material_manager = std::make_unique<batch_material_manager>();
 
                 opengl::api::instance().bind_vertex_array(0);
             }
@@ -531,8 +531,8 @@ namespace ppp
                 }
             }
 
-            graphics_unique_ptr<batch_buffer_manager> m_buffer_manager;
-            graphics_unique_ptr<batch_material_manager> m_material_manager;
+            std::unique_ptr<batch_buffer_manager> m_buffer_manager;
+            std::unique_ptr<batch_material_manager> m_material_manager;
 
             u32 m_vao;
         };
@@ -540,7 +540,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         // Batch
         batch::batch(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
-            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
+            : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
         {}
         //-------------------------------------------------------------------------
         batch::~batch() = default;
@@ -660,7 +660,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
-            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(size_vertex_buffer, size_index_buffer, layouts, layout_count, render_buffer_policy))
+            : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count, render_buffer_policy))
         {
         }
 
@@ -688,9 +688,6 @@ namespace ppp
             {
                 m_pimpl->batches[m_pimpl->push_batch].bind();
                 m_pimpl->batches[m_pimpl->push_batch].submit();
-
-                // clear all the memory in the staging area
-                memory::get_memory_manager().get_persistent_region().get_tagged_heap()->free_blocks(memory::tags::stage);
 
                 if (m_pimpl->batches.size() <= m_pimpl->push_batch + 1)
                 {

@@ -1,16 +1,12 @@
 #include "util/transform_stack.h"
 
-#include "memory/memory_types.h" 
-#include "memory/memory_placement_new.h" 
-#include "memory/memory_manager.h"
-
 #include <glm/ext/matrix_transform.hpp>
 
 namespace ppp
 {
     namespace transform_stack
     {
-        using model_matrices_arr = temp_vector<glm::mat4>;
+        using model_matrices_arr = std::vector<glm::mat4>;
 
         static model_matrices_arr& model_matrices()
         {
