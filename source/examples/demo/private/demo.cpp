@@ -26,15 +26,51 @@ namespace ppp
     material::shader_program _material_lit;
     lights::light_id _dir_light;
 
-    float _dirx = -0.2f;
-    float _diry = -1.0f;
-    float _dirz = -0.3f;
+    // Initial light direction values.
+    const float _initial_dir_x = -0.2f;
+    const float _initial_dir_y = -1.0f;
+    const float _initial_dir_z = -0.3f;
+
+    // Compute the horizontal magnitude from the X and Z components.
+    float _initial_magnitude = std::sqrt(_initial_dir_x * _initial_dir_x + _initial_dir_y * _initial_dir_y + _initial_dir_z * _initial_dir_z);
+
+    // Normalize the initial direction.
+    float _norm_x = _initial_dir_x / _initial_magnitude;
+    float _norm_y = _initial_dir_y / _initial_magnitude;
+    float _norm_z = _initial_dir_z / _initial_magnitude;
+
+    // Calculate initial yaw (angle in the XZ plane) and pitch (angle from horizontal).
+    float _initial_yaw = std::atan2(_norm_z, _norm_x);
+    float _initial_pitch = std::asin(_norm_y);
+
+    // Global variables to track the current angles.
+    float _current_yaw = _initial_yaw;
+    float _current_pitch = _initial_pitch;
+
+    // Rotation speeds (radians per second).
+    const float _yaw_speed = 1.0f;   // Automatic horizontal rotation speed.
+    const float _pitch_speed = 0.5f; // Speed for pitch adjustment.
+
+    void update_directional_light()
+    {
+        // Automatically update the yaw.
+        _current_yaw += _yaw_speed * environment::delta_time();
+
+        // Compute the new directional vector from spherical coordinates.
+        float new_dir_x = std::cos(_current_pitch) * std::cos(_current_yaw);
+        float new_dir_y = std::sin(_current_pitch);
+        float new_dir_z = std::cos(_current_pitch) * std::sin(_current_yaw);
+
+        // Update the light's direction.
+        lights::light_direction(_dir_light, lights::light_type::DIRECTIONAL, new_dir_x, new_dir_y, new_dir_z);
+    }
 
     void append_lights()
     {
         lights::directional_light_desc directional_desc =
         {
-            _dirx, _diry, _dirz,    // direction
+            _initial_dir_x, _initial_dir_y, _initial_dir_z,    // direction
+
             0.05f, 0.05f, 0.05f,    // ambient          
             0.8f, 0.8f, 0.8f,       // diffuse
             1.0f, 1.0f, 1.0f,       // specular          
@@ -119,7 +155,6 @@ namespace ppp
 
     void draw_shapes_grid()
     {
-
         float start_x = -120.0f; // Initial x position to start grid from
         float start_y = 40.0f;    // Initial y position for the grid row
         float x_spacing = 80.0f; // Horizontal spacing between shapes
@@ -266,30 +301,30 @@ namespace ppp
             }
         });
 
-        keyboard::add_key_down_callback(
-            [](keyboard::key_code key)
-        {
-            if (key == keyboard::key_code::KEY_W)
+        // Keyboard callback for adjusting pitch (vertical movement).
+        keyboard::add_key_down_callback([](keyboard::key_code key)
             {
-                _diry += 1.0f * environment::delta_time();
-                lights::light_direction(_dir_light, lights::light_type::DIRECTIONAL, _dirx, _diry, _dirz);
-            }
-            else if (key == keyboard::key_code::KEY_A)
-            {
-                _dirz += 1.0f * environment::delta_time();
-                lights::light_direction(_dir_light, lights::light_type::DIRECTIONAL, _dirx, _diry, _dirz);
-            }
-            else if (key == keyboard::key_code::KEY_S)
-            {
-                _diry -= 1.0f * environment::delta_time();
-                lights::light_direction(_dir_light, lights::light_type::DIRECTIONAL, _dirx, _diry, _dirz);
-            }
-            else if (key == keyboard::key_code::KEY_D)
-            {
-                _dirz -= 1.0f * environment::delta_time();
-                lights::light_direction(_dir_light, lights::light_type::DIRECTIONAL, _dirx, _diry, _dirz);
-            }
-        });
+                if (key == keyboard::key_code::KEY_W)
+                {
+                    // Decrease pitch to move the light downward.
+                    _current_pitch -= _pitch_speed * environment::delta_time();
+                    // Clamp to a minimum (e.g., -89° in radians ~ -1.55334).
+                    if (_current_pitch < -1.55334f)
+                    {
+                        _current_pitch = -1.55334f;
+                    }
+                }
+                else if (key == keyboard::key_code::KEY_S)
+                {
+                    // Increase pitch to move the light upward.
+                    _current_pitch += _pitch_speed * environment::delta_time();
+                    // Clamp to a maximum (e.g., 89° in radians ~ 1.55334).
+                    if (_current_pitch > 1.55334f)
+                    {
+                        _current_pitch = 1.55334f;
+                    }
+                }
+            });
     }
 
     app_params entry(int argc, char** argv)
@@ -355,6 +390,7 @@ namespace ppp
         {
             material::shader("lit");
         }
+
         color::fill({ 255,0,0,255 });
         draw_shapes_grid();
         draw_floor();
@@ -364,5 +400,7 @@ namespace ppp
         //draw_lights();
 
         color::fill({ 0,0,0,255 });
+
+        update_directional_light();
     }
 }
