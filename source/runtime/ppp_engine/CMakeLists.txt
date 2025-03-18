@@ -228,6 +228,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/image.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/lights.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/file.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/entrypoint.cpp)
 
 target_sources(processing_engine PUBLIC 
@@ -250,6 +251,7 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/model.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/engine.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/lights.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/file.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/entrypoint.h)
 
 # Create the project filters

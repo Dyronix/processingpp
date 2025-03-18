@@ -8,6 +8,7 @@
 #include "data.h"
 #include "environment.h"
 #include "events.h"
+#include "file.h"
 #include "image.h"
 #include "material.h"
 #include "mathematics.h"
