@@ -28,14 +28,7 @@ namespace ppp
         public:
             void append_drawing_data(topology_type topology, const irender_item* item, const glm::vec4& color, const glm::mat4& world);
 
-            void buffer_policy(render_buffer_policy policy);
-            void draw_policy(render_draw_policy policy);
-
-        public:
             bool has_drawing_data() const;
-
-            render_buffer_policy buffer_policy() const;
-            render_draw_policy draw_policy() const;
 
         protected:
             virtual void on_render(topology_type topology, instance_drawing_data& drawing_data) = 0;
@@ -51,9 +44,6 @@ namespace ppp
 
             const attribute_layout* m_instance_layouts;
             u64 m_instance_layout_count;
-
-            render_buffer_policy m_buffer_policy;
-            render_draw_policy m_render_policy;
 
             std::vector<std::function<void(topology_type, instance_drawing_data&)>> m_render_fns;
         };

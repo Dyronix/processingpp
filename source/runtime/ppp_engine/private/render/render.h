@@ -60,10 +60,6 @@ namespace ppp
 
         string::string_id active_shader();
 
-        // Geometry Builder
-        void begin_geometry_builder(string::string_id tag);
-        void end_geometry_builder();
-
         // Rasterization
         void push_solid_rendering(bool enable);
         void push_wireframe_rendering(bool enable);

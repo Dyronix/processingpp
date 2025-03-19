@@ -41,11 +41,11 @@ namespace ppp
     {
         namespace internal
         {
-            shape_mode_type _rect_mode = shape_mode_type::CORNER;
-            shape_mode_type _ellipse_mode = shape_mode_type::CENTER;
-            shape_mode_type _triangle_mode = shape_mode_type::CENTER;
+            shape_mode_type _rect_mode      = shape_mode_type::CORNER;
+            shape_mode_type _ellipse_mode   = shape_mode_type::CENTER;
+            shape_mode_type _triangle_mode  = shape_mode_type::CENTER;
 
-            normal_mode_type _normal_mode = normal_mode_type::FLAT;
+            normal_mode_type _normal_mode   = normal_mode_type::FLAT;
         }
 
         //-------------------------------------------------------------------------
@@ -119,15 +119,15 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void rect_mode(shape_mode_type mode)
-        {
-            internal::_rect_mode = mode;
-        }
-
-        //-------------------------------------------------------------------------
         void ellipse_mode(shape_mode_type mode)
         {
             internal::_ellipse_mode = mode;
+        }
+
+        //-------------------------------------------------------------------------
+        void rect_mode(shape_mode_type mode)
+        {
+            internal::_rect_mode = mode;
         }
 
         //-------------------------------------------------------------------------
@@ -155,7 +155,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void ellipse(float x, float y, float w, float h, int detail)
+        std::size_t circle(float x, float y, float r, int detail)
+        {
+            return ellipse(x, y, r, r, detail);
+        }
+
+        //-------------------------------------------------------------------------
+        std::size_t ellipse(float x, float y, float w, float h, int detail)
         {
             geometry::geometry* geom = geometry::make_ellipse(detail);
 
@@ -200,16 +206,12 @@ namespace ppp
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
             }
+
+            return geom->id();
         }
         
         //-------------------------------------------------------------------------
-        void circle(float x, float y, float r, int detail)
-        {
-            ellipse(x, y, r, r, detail);
-        }
-        
-        //-------------------------------------------------------------------------
-        void line(float x1, float y1, float x2, float y2)
+        std::size_t line(float x1, float y1, float x2, float y2)
         {
             geometry::geometry* geom = geometry::make_line(x1, y1, x2, y2);
 
@@ -227,10 +229,12 @@ namespace ppp
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
             }
+
+            return geom->id();
         }
         
         //-------------------------------------------------------------------------
-        void point(float x, float y)
+        std::size_t point(float x, float y)
         {
             geometry::geometry* geom = geometry::make_2d_point();
 
@@ -259,55 +263,12 @@ namespace ppp
                 
                 transform::pop();
             }
+
+            return geom->id();
         }
 
         //-------------------------------------------------------------------------
-        void polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
-        {
-            geometry::geometry* geom = geometry::make_polygon(x1, y1, x2, y2, x3, y3, x4, y4);
-
-            shape s = create_shape(geom);
-
-            transform::push();
-
-            if (internal::_rect_mode == shape_mode_type::CORNER)
-            {
-                glm::vec2 center = geometry::rectanglular_center_translation(x1, y1, x2, y2, x3, y3, x4, y4);
-
-                transform::translate(-center.x, -center.y);
-            }
-
-            render::submit_render_item(render::topology_type::TRIANGLES, &s);
-
-            glm::mat4 world = transform_stack::active_world();
-
-            transform::pop();
-
-            if (render::brush::stroke_enabled())
-            {
-                constexpr bool outer_stroke = true;
-
-                auto stroke_item = geometry::extrude_polygon(world, geom, render::brush::stroke_width());
-
-                shape stroke_shape = create_shape(stroke_item);
-                
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
-            }
-
-            if (render::brush::inner_stroke_enabled())
-            {
-                constexpr bool outer_stroke = false;
-
-                auto stroke_item = geometry::extrude_polygon(world, geom, -render::brush::inner_stroke_width());
-
-                shape stroke_shape = create_shape(stroke_item);
-
-                render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
-            }
-        }
-        
-        //-------------------------------------------------------------------------
-        void rect(float x, float y, float w, float h)
+        std::size_t rect(float x, float y, float w, float h)
         {
             geometry::geometry* geom = geometry::make_rectangle();
 
@@ -352,16 +313,18 @@ namespace ppp
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
             }
+
+            return geom->id();
         }
         
         //-------------------------------------------------------------------------
-        void square(float x, float y, float s)
+        std::size_t square(float x, float y, float s)
         {
-            rect(x, y, s, s);
+            return rect(x, y, s, s);
         }
         
         //-------------------------------------------------------------------------
-        void triangle(float x1, float y1, float x2, float y2, float x3, float y3)
+        std::size_t triangle(float x1, float y1, float x2, float y2, float x3, float y3)
         {
             geometry::geometry* geom = geometry::make_triangle(x1, y1, x2, y2, x3, y3);
 
@@ -403,23 +366,59 @@ namespace ppp
 
                 render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
             }
+
+            return geom->id();
         }
 
         //-------------------------------------------------------------------------
-        void point(float x, float y, float z)
+        std::size_t polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
         {
-            geometry::geometry* geom = geometry::make_3d_point();
+            geometry::geometry* geom = geometry::make_polygon(x1, y1, x2, y2, x3, y3, x4, y4);
 
             shape s = create_shape(geom);
 
             transform::push();
-            transform::translate(x, y, z);
-            render::submit_render_item(render::topology_type::POINTS, &s);
+
+            if (internal::_rect_mode == shape_mode_type::CORNER)
+            {
+                glm::vec2 center = geometry::rectanglular_center_translation(x1, y1, x2, y2, x3, y3, x4, y4);
+
+                transform::translate(-center.x, -center.y);
+            }
+
+            render::submit_render_item(render::topology_type::TRIANGLES, &s);
+
+            glm::mat4 world = transform_stack::active_world();
+
             transform::pop();
+
+            if (render::brush::stroke_enabled())
+            {
+                constexpr bool outer_stroke = true;
+
+                auto stroke_item = geometry::extrude_polygon(world, geom, render::brush::stroke_width());
+
+                shape stroke_shape = create_shape(stroke_item);
+
+                render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
+            }
+
+            if (render::brush::inner_stroke_enabled())
+            {
+                constexpr bool outer_stroke = false;
+
+                auto stroke_item = geometry::extrude_polygon(world, geom, -render::brush::inner_stroke_width());
+
+                shape stroke_shape = create_shape(stroke_item);
+
+                render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
+            }
+
+            return geom->id();
         }
 
         //-------------------------------------------------------------------------
-        void box(float width, float height, float depth)
+        std::size_t box(float width, float height, float depth)
         {
             geometry::geometry* geom = geometry::make_box(internal::_normal_mode == normal_mode_type::SMOOTH);
 
@@ -429,62 +428,12 @@ namespace ppp
             transform::scale(width, height, depth);
             render::submit_render_item(render::topology_type::TRIANGLES, &s);
             transform::pop();
-        }
-        
-        //-------------------------------------------------------------------------
-        void cylinder(float radius, float height, int detail, bool bottom_cap, bool top_cap)
-        {
-            geometry::geometry* geom = geometry::make_cylinder(internal::_normal_mode == normal_mode_type::SMOOTH, top_cap, bottom_cap, detail);
 
-            shape s = create_shape(geom);
-
-            transform::push();
-            transform::scale(radius, height, radius);
-            render::submit_render_item(render::topology_type::TRIANGLES, &s);
-            transform::pop();
-        }
-        
-        //-------------------------------------------------------------------------
-        void plane(float width, float height)
-        {
-            geometry::geometry* geom = geometry::make_plane(internal::_normal_mode == normal_mode_type::SMOOTH);
-
-            shape s = create_shape(geom);
-
-            transform::push();
-            transform::scale(width, height, 1.0f);
-            render::submit_render_item(render::topology_type::TRIANGLES, &s);
-            transform::pop();
-        }
-        
-        //-------------------------------------------------------------------------
-        void sphere(float radius, int detail)
-        {
-            geometry::geometry* geom = geometry::make_sphere(internal::_normal_mode == normal_mode_type::SMOOTH, detail, detail);
-
-            shape s = create_shape(geom);
-
-            transform::push();
-            transform::scale(radius, radius, radius);
-            render::submit_render_item(render::topology_type::TRIANGLES, &s);
-            transform::pop();
-        }
-        
-        //-------------------------------------------------------------------------
-        void torus(float radius, float tube_radius, int detailx, int detaily)
-        {
-            geometry::geometry* geom = geometry::make_torus(internal::_normal_mode == normal_mode_type::SMOOTH, radius, tube_radius, detailx, detaily);
-
-            shape s = create_shape(geom);
-
-            transform::push();
-            transform::scale(radius, radius, radius);
-            render::submit_render_item(render::topology_type::TRIANGLES, &s);
-            transform::pop();
+            return geom->id();
         }
 
         //-------------------------------------------------------------------------
-        void cone(float radius, float height, int detail, bool cap)
+        std::size_t cone(float radius, float height, int detail, bool cap)
         {
             geometry::geometry* geom = geometry::make_cone(internal::_normal_mode == normal_mode_type::SMOOTH, cap, detail);
 
@@ -494,10 +443,87 @@ namespace ppp
             transform::scale(radius, height, radius);
             render::submit_render_item(render::topology_type::TRIANGLES, &s);
             transform::pop();
+
+            return geom->id();
+        }
+        
+        //-------------------------------------------------------------------------
+        std::size_t cylinder(float radius, float height, int detail, bool bottom_cap, bool top_cap)
+        {
+            geometry::geometry* geom = geometry::make_cylinder(internal::_normal_mode == normal_mode_type::SMOOTH, top_cap, bottom_cap, detail);
+
+            shape s = create_shape(geom);
+
+            transform::push();
+            transform::scale(radius, height, radius);
+            render::submit_render_item(render::topology_type::TRIANGLES, &s);
+            transform::pop();
+
+            return geom->id();
+        }
+        
+        //-------------------------------------------------------------------------
+        std::size_t plane(float width, float height)
+        {
+            geometry::geometry* geom = geometry::make_plane(internal::_normal_mode == normal_mode_type::SMOOTH);
+
+            shape s = create_shape(geom);
+
+            transform::push();
+            transform::scale(width, height, 1.0f);
+            render::submit_render_item(render::topology_type::TRIANGLES, &s);
+            transform::pop();
+
+            return geom->id();
+        }
+        
+        //-------------------------------------------------------------------------
+        std::size_t sphere(float radius, int detail)
+        {
+            geometry::geometry* geom = geometry::make_sphere(internal::_normal_mode == normal_mode_type::SMOOTH, detail, detail);
+
+            shape s = create_shape(geom);
+
+            transform::push();
+            transform::scale(radius, radius, radius);
+            render::submit_render_item(render::topology_type::TRIANGLES, &s);
+            transform::pop();
+
+            return geom->id();
+        }
+        
+        //-------------------------------------------------------------------------
+        std::size_t torus(float radius, float tube_radius, int detailx, int detaily)
+        {
+            geometry::geometry* geom = geometry::make_torus(internal::_normal_mode == normal_mode_type::SMOOTH, radius, tube_radius, detailx, detaily);
+
+            shape s = create_shape(geom);
+
+            transform::push();
+            transform::scale(radius, radius, radius);
+            render::submit_render_item(render::topology_type::TRIANGLES, &s);
+            transform::pop();
+
+            return geom->id();
         }
 
         //-------------------------------------------------------------------------
-        void tetrahedron(float width, float height)
+        std::size_t point(float x, float y, float z)
+        {
+            geometry::geometry* geom = geometry::make_3d_point();
+
+            shape s = create_shape(geom);
+
+            transform::push();
+            transform::translate(x, y, z);
+            render::submit_render_item(render::topology_type::POINTS, &s);
+            transform::pop();
+
+            return geom->id();
+        }
+
+        //-------------------------------------------------------------------------
+        std::size_t tetrahedron(float width, float height)
         {
             geometry::geometry* geom = geometry::make_tetrahedron(internal::_normal_mode == normal_mode_type::SMOOTH);
 
@@ -507,10 +533,12 @@ namespace ppp
             transform::scale(width, height, width);
             render::submit_render_item(render::topology_type::TRIANGLES, &s);
             transform::pop();
+
+            return geom->id();
         }
 
         //-------------------------------------------------------------------------
-        void octahedron(float width, float height)
+        std::size_t octahedron(float width, float height)
         {
             geometry::geometry* geom = geometry::make_octahedron(internal::_normal_mode == normal_mode_type::SMOOTH);
 
@@ -520,44 +548,8 @@ namespace ppp
             transform::scale(width, height, width);
             render::submit_render_item(render::topology_type::TRIANGLES, &s);
             transform::pop();
-        }
 
-        //-------------------------------------------------------------------------
-        void build_primitive_geometry(std::function<void()> callback)
-        {
-            string::string_id tag = render::draw_mode() == render::render_draw_mode::BATCHED
-                ? shader_pool::tags::unlit::color()
-                : shader_pool::tags::unlit::instance_color();
-
-            render::begin_geometry_builder(tag);
-
-            callback();
-
-            render::end_geometry_builder();
-        }
-
-        //-------------------------------------------------------------------------
-        void build_textured_geometry(std::function<void()> callback)
-        {
-            string::string_id tag = render::draw_mode() == render::render_draw_mode::BATCHED
-                ? shader_pool::tags::unlit::texture()
-                : shader_pool::tags::unlit::instance_texture();
-
-            render::begin_geometry_builder(tag);
-
-            callback();
-
-            render::end_geometry_builder();
-        }
-
-        //-------------------------------------------------------------------------
-        void build_custom_geometry(std::string_view tag, std::function<void()> callback)
-        {
-            render::begin_geometry_builder(string::string_id(tag));
-
-            callback();
-
-            render::end_geometry_builder();
+            return geom->id();
         }
     }
 }

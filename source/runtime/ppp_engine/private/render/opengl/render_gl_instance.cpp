@@ -650,9 +650,8 @@ namespace ppp
         // Instance Drawing Data Impl
         struct instance_drawing_data::impl
         {
-            impl(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
+            impl(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
                 : instances()
-                , buffer_policy(render_buffer_policy)
                 , layouts(layouts)
                 , layout_count(layout_count)
                 , instance_layouts(instance_layouts)
@@ -662,7 +661,6 @@ namespace ppp
             }
 
             instance_map                instances                 = {};
-            render_buffer_policy        buffer_policy             = render_buffer_policy::RETAINED;
 
             const attribute_layout*     layouts                   = nullptr;
             const u64                   layout_count              = 0;
@@ -674,8 +672,8 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         // Instance Drawing Data
-        instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
-            : m_pimpl(std::make_unique<impl>(layouts, layout_count, instance_layouts, instance_layout_count, render_buffer_policy))
+        instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+            : m_pimpl(std::make_unique<impl>(layouts, layout_count, instance_layouts, instance_layout_count))
         {
             assert(layouts != nullptr);
             assert(layout_count > 0);
@@ -720,17 +718,13 @@ namespace ppp
         //-------------------------------------------------------------------------
         void instance_drawing_data::reset()
         {
-            if (m_pimpl->buffer_policy == render_buffer_policy::IMMEDIATE)
+            for (instance& b : m_pimpl->instances)
             {
-                for (instance& b : m_pimpl->instances)
-                {
-                    b.reset();
-                }
+                b.reset();
             }
 
             m_pimpl->draw_instance = 0;
         }
-
 
         //-------------------------------------------------------------------------
         void instance_drawing_data::release()

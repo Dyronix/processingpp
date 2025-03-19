@@ -62,7 +62,7 @@ namespace ppp
         class instance_drawing_data
         {
         public:
-            instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy);
+            instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count);
             ~instance_drawing_data();
 
             instance_drawing_data(const instance_drawing_data& other) = delete;             // unique ptr, so we can delete

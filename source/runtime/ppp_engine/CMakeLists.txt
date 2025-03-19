@@ -193,6 +193,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/image.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/lights.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/io.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/time_date.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/entrypoint.cpp)
 
 target_sources(processing_engine PUBLIC 
@@ -202,6 +204,7 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/transform.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/color.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/environment.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/conversions.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/structure.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/constants.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/rendering.h
@@ -215,6 +218,9 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/model.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/engine.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/lights.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/vector.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/time_date.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/io.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/entrypoint.h)
 
 # Create the project filters

@@ -160,10 +160,21 @@ namespace ppp
         batch_renderer::batch_renderer(string::string_id shader_tag)
             : base_renderer(shader_tag)
             , m_drawing_data_map()
-            , m_buffer_policy(render_buffer_policy::IMMEDIATE)
-            , m_render_policy(render_draw_policy::BUILD_IN)
         {
-            draw_policy(m_render_policy);
+            m_render_fns.clear();
+
+            if (solid_rendering_supported())
+            {
+                m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
+                    solid_render(topology, drawing_data);
+                });
+            }
+            if (wireframe_rendering_supported())
+            {
+                m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
+                    wireframe_render(topology, drawing_data);
+                });
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -239,46 +250,10 @@ namespace ppp
                 s32 max_ver = max_vertices(topology);
                 s32 max_idx = max_indices(topology);
 
-                m_drawing_data_map.emplace(topology, batch_drawing_data(max_ver, max_idx, layouts(), layout_count(), m_buffer_policy));
+                m_drawing_data_map.emplace(topology, batch_drawing_data(max_ver, max_idx, layouts(), layout_count()));
             }
 
             m_drawing_data_map.at(topology).append(item, color, world);
-        }
-
-        //-------------------------------------------------------------------------
-        void batch_renderer::buffer_policy(render_buffer_policy render_buffer_policy)
-        {
-            m_buffer_policy = render_buffer_policy;
-        }
-
-        //-------------------------------------------------------------------------
-        void batch_renderer::draw_policy(render_draw_policy render_draw_policy)
-        {
-            m_render_policy = render_draw_policy;
-            m_render_fns.clear();
-
-            switch (render_draw_policy)
-            {
-            case render_draw_policy::BUILD_IN:
-                if (solid_rendering_supported())
-                {
-                    m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
-                        solid_render(topology, drawing_data);
-                    });
-                }
-                if (wireframe_rendering_supported())
-                {
-                    m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
-                        wireframe_render(topology, drawing_data);
-                    });
-                }
-                break;
-            case render_draw_policy::CUSTOM:
-                m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
-                    on_render(topology, drawing_data);
-                });
-                break;
-            }
         }
 
         //-------------------------------------------------------------------------
@@ -289,18 +264,6 @@ namespace ppp
             {
                 return pair.second.has_drawing_data();
             });
-        }
-
-        //-------------------------------------------------------------------------
-        render_buffer_policy batch_renderer::buffer_policy() const
-        {
-            return m_buffer_policy;
-        }
-
-        //-------------------------------------------------------------------------
-        render_draw_policy batch_renderer::draw_policy() const
-        {
-            return m_render_policy;
         }
 
         //-------------------------------------------------------------------------

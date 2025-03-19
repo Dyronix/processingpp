@@ -364,7 +364,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void tint(const color::Color& c)
+        void tint(const color::color& c)
         {
             render::brush::push_tint_enable(true);
             render::brush::push_tint_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));

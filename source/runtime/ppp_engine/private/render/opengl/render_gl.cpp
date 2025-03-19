@@ -126,39 +126,6 @@ namespace ppp
         using font_renderer = std::unique_ptr<texture_batch_renderer>;
 
         //-------------------------------------------------------------------------
-        class geometry_builder
-        {
-        public:
-            void activate(string::string_id tag)
-            {
-                m_is_active = true;
-                m_shader_tag = tag;
-            }
-
-            void deactivate()
-            {
-                m_is_active = false;
-                m_shader_tag = string::string_id::create_invalid();
-            }
-
-            bool is_active() const
-            {
-                return m_is_active;
-            }
-
-            string::string_id shader_tag() const
-            {
-                return m_shader_tag;
-            }
-
-        private:
-            bool m_is_active = false;
-            string::string_id m_shader_tag = string::string_id::create_invalid();
-        };
-
-        geometry_builder _geometry_builder;
-
-        //-------------------------------------------------------------------------
         struct context
         {
             // drawing
@@ -211,7 +178,7 @@ namespace ppp
                 return;
             }
 
-            string::string_id shader_tag = g_ctx.fill_user_shader.is_none() ? _geometry_builder.shader_tag() : g_ctx.fill_user_shader;
+            string::string_id shader_tag = g_ctx.fill_user_shader;
 
             if (g_ctx.draw_mode == render_draw_mode::BATCHED)
             {
@@ -232,12 +199,6 @@ namespace ppp
                         renderer = std::make_unique<texture_batch_renderer>(shader_tag);
                     }
 
-                    if (_geometry_builder.is_active())
-                    {
-                        renderer->buffer_policy(render_buffer_policy::RETAINED);
-                    }
-
-                    renderer->draw_policy(render_draw_policy::CUSTOM);
                     g_ctx.batch_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
@@ -263,12 +224,6 @@ namespace ppp
                             shader_tag);
                     }
 
-                    if (_geometry_builder.is_active())
-                    {
-                        renderer->buffer_policy(render_buffer_policy::RETAINED);
-                    }
-
-                    renderer->draw_policy(render_draw_policy::CUSTOM);
                     g_ctx.instance_renderers.emplace(shader_tag, std::move(renderer));
                 }
 
@@ -425,20 +380,6 @@ namespace ppp
         string::string_id active_shader()
         {
             return g_ctx.fill_user_shader;
-        }
-
-        //-------------------------------------------------------------------------
-        void begin_geometry_builder(string::string_id tag)
-        {
-            assert(!_geometry_builder.is_active() && "Construction of previous shape has not been finished, call end_geometry_builder first");
-
-            _geometry_builder.activate(tag);
-        }
-
-        //-------------------------------------------------------------------------
-        void end_geometry_builder()
-        {
-            _geometry_builder.deactivate();
         }
 
         //-------------------------------------------------------------------------
@@ -649,12 +590,6 @@ namespace ppp
         //-------------------------------------------------------------------------
         void submit_stroke_render_item(topology_type topology, const irender_item* item, bool outer)
         {
-            if (_geometry_builder.is_active())
-            {
-                log::warn("Stroking custom geometry is currently not supported");
-                return;
-            }
-
             if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false)
             {
                 // When there is no "stroke" and there is no "fill" the object would be invisible.

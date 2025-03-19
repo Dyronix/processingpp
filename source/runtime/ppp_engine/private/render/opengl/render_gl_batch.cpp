@@ -633,10 +633,9 @@ namespace ppp
         struct batch_drawing_data::impl
         {
             //-------------------------------------------------------------------------
-            impl(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
+            impl(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
                 : layouts(layouts)
                 , layout_count(layout_count)
-                , buffer_policy(render_buffer_policy)
             {
                 assert(size_vertex_buffer > 0);
                 assert(size_index_buffer > 0);
@@ -652,15 +651,14 @@ namespace ppp
             s32                         push_batch      = 0;
 
             batch_arr                   batches         = {};
-            render_buffer_policy        buffer_policy   = render_buffer_policy::RETAINED;
 
             const attribute_layout*     layouts         = nullptr;
             const u64                   layout_count    = 0;
         };
 
         //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
-            : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count, render_buffer_policy))
+        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
+            : m_pimpl(std::make_unique<impl>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
         {
         }
 
@@ -706,16 +704,12 @@ namespace ppp
         void batch_drawing_data::reset()
         {
             // We clear everything if we are in immediate mode
-            if (m_pimpl->buffer_policy == render_buffer_policy::IMMEDIATE)
+            for (batch& b : m_pimpl->batches)
             {
-                for (batch& b : m_pimpl->batches)
-                {
-                    b.reset();
-                }
-
-                m_pimpl->push_batch = 0;
+                b.reset();
             }
 
+            m_pimpl->push_batch = 0;
             m_pimpl->draw_batch = 0;
         }        
         //-------------------------------------------------------------------------

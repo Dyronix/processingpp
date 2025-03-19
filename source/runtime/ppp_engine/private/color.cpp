@@ -10,22 +10,22 @@ namespace ppp
 {
     namespace color
     {
-        int red(const Color& c)
+        int red(const color& c)
         {
             return c.red;
         }
 
-        int green(const Color& c)
+        int green(const color& c)
         {
             return c.green;
         }
 
-        int blue(const Color& c)
+        int blue(const color& c)
         {
             return c.blue;
         }
 
-        int alpha(const Color& c)
+        int alpha(const color& c)
         {
             return c.alpha;
         }
@@ -45,7 +45,7 @@ namespace ppp
             render::clear_color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
         }
 
-        void background(const Color& c)
+        void background(const color& c)
         {
             render::clear_color(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f);
         }
@@ -73,7 +73,7 @@ namespace ppp
             render::clear(render::COLOR_BUFFER_BIT);
         }
         
-        void clear(const Color& c)
+        void clear(const color& c)
         {
             background(c);
             render::clear(render::COLOR_BUFFER_BIT);
@@ -107,7 +107,7 @@ namespace ppp
             render::brush::push_fill_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
         }
 
-        void fill(const Color& c)
+        void fill(const color& c)
         {
             render::brush::push_fill_enable(true);
             render::brush::push_fill_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
@@ -131,7 +131,7 @@ namespace ppp
             render::brush::push_stroke_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
         }
 
-        void stroke(const Color& c)
+        void stroke(const color& c)
         {
             render::brush::push_stroke_enable(true);
             render::brush::push_stroke_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
@@ -161,7 +161,7 @@ namespace ppp
             render::brush::push_inner_stroke_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
         }
 
-        void inner_stroke(const Color& c)
+        void inner_stroke(const color& c)
         {
             render::brush::push_inner_stroke_enable(true);
             render::brush::push_inner_stroke_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
@@ -173,12 +173,12 @@ namespace ppp
             render::brush::push_inner_stroke_width(w);
         }
 
-        Color lerp_color(const Color& c1, const Color& c2, float t)
+        color lerp_color(const color& c1, const color& c2, float t)
         {
             // Clamp amt between 0 and 1 to prevent extrapolation
             t = std::clamp(t, 0.0f, 1.0f);
 
-            Color result;
+            color result;
 
             result.red = static_cast<int>(math::lerp((float)c1.red, (float)c2.red, t));
             result.green = static_cast<int>(math::lerp((float)c1.green, (float)c2.green, t));

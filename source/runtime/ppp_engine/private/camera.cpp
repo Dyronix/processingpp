@@ -272,8 +272,8 @@ namespace ppp
                 glm::vec3 cam_target = { internal::_active_camera.centerx,internal::_active_camera.centery,internal::_active_camera.centerz };
                 glm::vec3 cam_up = { internal::_active_camera.upx,internal::_active_camera.upy,internal::_active_camera.upz };
 
-                glm::vec3 right = glm::normalize(glm::cross(cam_target - cam_eye, cam_up)); // Right vector
-                glm::vec3 up = glm::normalize(up);                              // Up vector
+                glm::vec3 right = glm::normalize(glm::cross(cam_target - cam_eye, cam_up)); // Right vector3
+                glm::vec3 up = glm::normalize(up);                              // Up vector3
 
                 glm::vec3 pan_right = right * delta_x * ps * internal::_active_camera.radius * device::delta_time();
                 glm::vec3 pan_up = up * delta_y * ps * internal::_active_camera.radius * device::delta_time();

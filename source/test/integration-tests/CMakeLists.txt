@@ -1,4 +1,3 @@
-add_subdirectory(test-geometry-gpu)
 add_subdirectory(test-geometry-3d)
 add_subdirectory(test-geometry-2d)
 add_subdirectory(test-rendering-batched)

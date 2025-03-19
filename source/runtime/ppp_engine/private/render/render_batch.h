@@ -62,7 +62,7 @@ namespace ppp
         class batch_drawing_data
         {
         public:
-            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy);
+            batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count);
             ~batch_drawing_data();
 
             batch_drawing_data(const batch_drawing_data& other) = delete;             // unique ptr, so we can delete

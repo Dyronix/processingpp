@@ -41,18 +41,6 @@ namespace ppp
             REPEAT,
         };
 
-        enum class render_buffer_policy
-        {
-            IMMEDIATE,
-            RETAINED
-        };
-
-        enum class render_draw_policy
-        {
-            BUILD_IN,
-            CUSTOM
-        };
-
         enum class render_draw_mode
         {
             INSTANCED,

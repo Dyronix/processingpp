@@ -15,6 +15,19 @@ namespace ppp
     {
         using geometry_creation_fn = std::function<void(class geometry*)>;
 
+        struct bounding_box
+        {
+            glm::vec3 min;
+            glm::vec3 max;
+            glm::vec3 size;
+            glm::vec3 offset;
+
+            explicit operator bool() const
+            {
+                return glm::length(size) > 0;
+            }
+        };
+
         class geometry
         {
         public:
@@ -26,6 +39,7 @@ namespace ppp
             u64 index_count() const;
 
             void compute_normals(s32 round_to_precision = 3);
+            void compute_aabb();
 
             const std::vector<glm::vec3>& vertex_positions() const { return m_vertex_positions; }
             const std::vector<glm::vec3>& vertex_normals() const { return m_vertex_normals; }
@@ -41,6 +55,8 @@ namespace ppp
 
             std::vector<render::face>& faces() { return m_faces; }
 
+            const bounding_box& bounding_box() { if (!m_bounding_box) compute_aabb(); return m_bounding_box; }
+
         private:
             std::vector<glm::vec3> m_vertex_positions;
             std::vector<glm::vec3> m_vertex_normals;
@@ -48,6 +64,8 @@ namespace ppp
             std::vector<glm::vec4> m_vertex_colors;
             
             std::vector<render::face> m_faces;
+
+            bounding_box m_bounding_box;
 
         private:
             bool m_smooth_normals; 
