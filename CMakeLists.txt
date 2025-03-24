@@ -3,9 +3,8 @@ cmake_minimum_required(VERSION 3.28)
 project(processingpp)
 
 option(PPP_ENABLE_TESTING "Enable testing for the Processing framework" OFF)
-option(PPP_ENABLE_UNIT_TESTING "Enable testing for the Processing framework" OFF)
-option(PPP_ENABLE_INTEGRATION_TESTING "Enable testing for the Processing framework" OFF)
-option(PPP_HEADLESS "Enable testing for the Processing framework" OFF)
+
+MESSAGE(STATUS "PPP_ENABLE_TESTING: ${PPP_ENABLE_TESTING}")
 
 # Use C++ 17 as a standard
 set(CMAKE_CXX_STANDARD 17)
@@ -55,13 +54,23 @@ add_custom_target(copy-content ALL
 
 set_property(TARGET copy-content PROPERTY FOLDER "programs")
 
-if(PPP_ENABLE_TESTING OR PPP_ENABLE_INTEGRATION_TESTING)
+if(PPP_ENABLE_TESTING)
 
 	SET(SOURCE_TEST_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/test)
 	
 	MESSAGE(STATUS ${SOURCE_TEST_DIRECTORY})
 
 	add_subdirectory(${SOURCE_TEST_DIRECTORY})
+
+	# Run unit tests tests
+	# Add a custom target that always builds and runs the batch script
+	add_custom_target(unit-tests-run
+		COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --blue "Executing unit-tests-run.bat"
+		COMMAND "${SOURCE_TEST_DIRECTORY}/unit-tests-run.bat" ${SOURCE_TEST_DIRECTORY}
+		VERBATIM
+	)
+
+	set_property(TARGET unit-tests-run PROPERTY FOLDER "test/unit/tools")
 
 	# Run integration tests
 	# Add a custom target that always builds and runs the batch script
@@ -71,7 +80,7 @@ if(PPP_ENABLE_TESTING OR PPP_ENABLE_INTEGRATION_TESTING)
 		VERBATIM
 	)
 
-	set_property(TARGET integration-tests-run PROPERTY FOLDER "test")
+	set_property(TARGET integration-tests-run PROPERTY FOLDER "test/integration/tools")
 
 	# Generate new data for all the available tests
 	# Add a custom target that always builds and runs the batch script
@@ -81,6 +90,6 @@ if(PPP_ENABLE_TESTING OR PPP_ENABLE_INTEGRATION_TESTING)
 		VERBATIM
 	)
 
-	set_property(TARGET integration-tests-generate-data PROPERTY FOLDER "test")
+	set_property(TARGET integration-tests-generate-data PROPERTY FOLDER "test/integration/tools")
 
 endif()

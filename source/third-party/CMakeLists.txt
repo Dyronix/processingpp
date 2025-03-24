@@ -6,3 +6,7 @@ add_subdirectory(stb)
 add_subdirectory(noise)
 add_subdirectory(freetype)
 add_subdirectory(gsl)
+
+if(PPP_ENABLE_TESTING)
+    add_subdirectory(catch2)
+endif()

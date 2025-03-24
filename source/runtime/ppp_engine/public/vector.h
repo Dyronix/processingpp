@@ -101,7 +101,7 @@ namespace ppp
         }
         base_vec2& div(const base_vec2& v)
         {
-            if (v.x == 0 || v.y == 0 || v.z == 0)
+            if (v.x == 0 || v.y == 0)
             {
                 std::cerr << "Warning: Divide by zero in base_vec2::div(base_vec2)" << std::endl;
                 return *this;
