@@ -131,8 +131,6 @@ namespace ppp
 
         namespace input
         {
-            namespace keyboard
-            {
                 namespace callbacks
                 {
                     void key_pressed_callback(s32 key, s32 scancode, s32 mods)
@@ -220,10 +218,7 @@ namespace ppp
                 {
                     add_key_down_callback(ctx().window, callback);
                 }
-            }
 
-            namespace mouse
-            {
                 namespace callbacks
                 {
                     void mouse_pressed_callback(s32 mouse_button, s32 mods)
@@ -233,7 +228,7 @@ namespace ppp
 
                     void mouse_moved_callback(f32 xpos, f32 ypos)
                     {
-                        if (input::mouse::is_any_mouse_button_pressed())
+                        if (input::is_any_mouse_button_pressed())
                         {
                             for (const auto& c : ctx().dragging_callback)
                             {
@@ -406,7 +401,6 @@ namespace ppp
                     show_cursor(ctx().window);
                 }
             }
-        }
 
         bool initialize(s32 w, s32 h)
         {
@@ -451,17 +445,17 @@ namespace ppp
             glfwSwapInterval(1);
 
             // Register the key pressed callback so we can cache the last key that was pressed
-            input::keyboard::add_key_pressed_callback(input::keyboard::callbacks::key_pressed_callback);
+            input::add_key_pressed_callback(input::callbacks::key_pressed_callback);
 
             // Register the mouse button pressed callback so we can cache the last key that was pressed
-            input::mouse::add_mouse_pressed_callback(input::mouse::callbacks::mouse_pressed_callback);
+            input::add_mouse_pressed_callback(input::callbacks::mouse_pressed_callback);
 
             // Register the mouse move callback so we can check if we are dragging along the screen
-            input::mouse::add_mouse_moved_callback(input::mouse::callbacks::mouse_moved_callback);
+            input::add_mouse_moved_callback(input::callbacks::mouse_moved_callback);
 
             // Register the mouse scroll callback so we can check if we are scrolling
-            input::mouse::add_mouse_horizontal_wheel_callback(input::mouse::callbacks::scroll_x_callback);
-            input::mouse::add_mouse_vertical_wheel_callback(input::mouse::callbacks::scroll_y_callback);
+            input::add_mouse_horizontal_wheel_callback(input::callbacks::scroll_x_callback);
+            input::add_mouse_vertical_wheel_callback(input::callbacks::scroll_y_callback);
 
             internal::center_window(ctx().window);
 
@@ -481,8 +475,8 @@ namespace ppp
         {
             ctx().prev_mouse_x = ctx().current_mouse_x;
             ctx().prev_mouse_y = ctx().current_mouse_y;
-            ctx().current_mouse_x = input::mouse::mouse_x(ctx().window);
-            ctx().current_mouse_y = input::mouse::mouse_y(ctx().window);
+            ctx().current_mouse_x = input::mouse_x(ctx().window);
+            ctx().current_mouse_y = input::mouse_y(ctx().window);
 
             ctx().scroll_offset_x = 0.0f;
             ctx().scroll_offset_y = 0.0f;

@@ -4,8 +4,6 @@
 
 #include "render/helpers/render_texture_registry.h"
 
-
-
 #include "string/string_id.h"
 
 #include <glm/glm.hpp>

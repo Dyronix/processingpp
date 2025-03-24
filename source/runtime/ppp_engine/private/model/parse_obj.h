@@ -17,8 +17,5 @@ namespace ppp
         class geometry;
     }
 
-    namespace model
-    {
-        geometry::geometry* parse_obj(geometry::geometry* geom, const std::vector<std::string_view>& buffer);
-    }
+    geometry::geometry* parse_obj(geometry::geometry* geom, const std::vector<std::string_view>& buffer);
 }

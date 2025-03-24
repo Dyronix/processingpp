@@ -4,18 +4,15 @@
 
 namespace ppp
 {
-    namespace structure
-    {
-        void on_draw_begin(std::function<void()> draw_begin);
-        void on_draw_end(std::function<void()> draw_end);
+    void on_draw_begin(std::function<void()> draw_begin);
+    void on_draw_end(std::function<void()> draw_end);
 
-        void redraw();
+    void redraw();
 
-        void loop();
-        void no_loop();
+    void loop();
+    void no_loop();
 
-        bool is_looping();
+    bool is_looping();
 
-        void quit();
-    }
+    void quit();
 }

@@ -4114,7 +4114,7 @@ template <typename T> auto ptr(const std::shared_ptr<T>& p) -> const void* {
   **Example**::
 
     enum class color { red, green, blue };
-    auto s = fmt::format("{}", fmt::underlying(color::red));
+    auto s = fmt::format("{}", fmt::underlying(red));
   \endrst
  */
 template <typename Enum>

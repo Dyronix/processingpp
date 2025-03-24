@@ -183,11 +183,9 @@ namespace ppp
                 (min_vertex.z + max_vertex.z) / 2.0f);
 
             m_bounding_box = { min_vertex, max_vertex, size, offset };
-
-            return m_bounding_box;
         }
 
-        const bounding_box& geometry::bounding_box()
+        const bounding_box& geometry::aabb()
         { 
             if (!m_bounding_box)
             {

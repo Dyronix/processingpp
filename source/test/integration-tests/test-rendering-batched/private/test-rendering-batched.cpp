@@ -30,30 +30,30 @@ namespace ppp
     constexpr float _periodic_scale_z = 0.3f; // how tight the waves are in z-direction
 
     // colors for the top and bottom cubes
-    color::Color _color_top;
-    color::Color _color_bottom;
+    color _color_top;
+    color _color_bottom;
 
     void setup_input_events()
     {
-        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
+        set_quit_application_keycode(key_code::KEY_ESCAPE);
 
-        keyboard::add_key_pressed_callback(
-            [](keyboard::key_code key)
+        add_key_pressed_callback(
+            [](key_code key)
         {
-            if (key == keyboard::key_code::KEY_UP)
+            if (key == key_code::KEY_UP)
             {
                 _rows += 1;
             }
-            else if (key == keyboard::key_code::KEY_DOWN)
+            else if (key == key_code::KEY_DOWN)
             {
                 _rows -= 1;
             }
 
-            if (key == keyboard::key_code::KEY_RIGHT)
+            if (key == key_code::KEY_RIGHT)
             {
                 _cols += 1;
             }
-            else if (key == keyboard::key_code::KEY_LEFT)
+            else if (key == key_code::KEY_LEFT)
             {
                 _cols -= 1;
             }
@@ -62,7 +62,7 @@ namespace ppp
 
     void end_draw()
     {
-        if (environment::frame_count() == 5)
+        if (frame_count() == 5)
         {
             std::stringstream stream;
 
@@ -72,14 +72,14 @@ namespace ppp
 
             if (_generate_new_data)
             {
-                image::load_pixels(0, 0, _window_width, _window_height);
-                image::save_pixels(stream.str(), _window_width, _window_height);
+                load_pixels(0, 0, _window_width, _window_height);
+                save_pixels(stream.str(), _window_width, _window_height);
             }
 
             if (!_no_testing)
             {
-                auto test_frame = image::load(stream.str());
-                auto test_frame_pixels = image::load_pixels(test_frame.id);
+                auto test_frame = load(stream.str());
+                auto test_frame_pixels = load_pixels(test_frame.id);
 
                 size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
 
@@ -90,7 +90,7 @@ namespace ppp
                     test_frame_pixels,
                     total_size);
 
-                auto frame_pixels = image::load_pixels(0, 0, _window_width, _window_height);
+                auto frame_pixels = load_pixels(0, 0, _window_width, _window_height);
 
                 std::vector<unsigned char> active_frame_pixels(total_size);
                 memcpy_s(
@@ -101,24 +101,24 @@ namespace ppp
 
                 if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
                 {
-                    environment::print("[TEST FAILED][RBATCH] image buffers are not identical!");
+                    print("[TEST FAILED][RBATCH] image buffers are not identical!");
                 }
                 else
                 {
-                    environment::print("[TEST SUCCESS][RBATCH] image buffers are identical.");
+                    print("[TEST SUCCESS][RBATCH] image buffers are identical.");
                 }
             }
 
             if (!_no_close_after_x_frames)
             {
-                structure::quit();
+                quit();
             }
         }
     }
 
     app_params entry(int argc, char** argv)
     {
-        environment::print("Current working directory: %s", environment::cwd().data());
+        print("Current working directory: %s", cwd().data());
 
         app_params app_params;
 
@@ -137,27 +137,27 @@ namespace ppp
     {
         setup_input_events();
 
-        shapes::enable_wireframe_mode(false);
-        shapes::enable_solid_mode(true);
+        enable_wireframe_mode(false);
+        enable_solid_mode(true);
 
-        camera::perspective(55.0f, _window_width / _window_height, 0.1f, 1000.0f);
-        camera::set_scene_camera(20, -40, 600);
+        perspective(55.0f, _window_width / _window_height, 0.1f, 1000.0f);
+        set_scene_camera(20, -40, 600);
 
         _color_top = { 255, 0, 0, 255 };     // Red for top
         _color_bottom = { 0, 0, 255, 255 };  // Blue for bottom
 
-        structure::on_draw_end(end_draw);
+        on_draw_end(end_draw);
 
-        rendering::enable_batched_draw_mode();
+        enable_batched_draw_mode();
 
-        material::shader(material::tags::unlit_color());
+        shader(material::tags::unlit_color());
     }
 
     void draw()
     {
-        color::background(200);
+        background(200);
 
-        camera::orbit_scene_camera_options options;
+        orbit_control_options options;
 
         options.zoom_sensitivity = 200.0f;
         options.panning_sensitivity = 0.5f;
@@ -165,11 +165,11 @@ namespace ppp
         options.min_zoom = 1.0f;
         options.max_zoom = 600.0f;
 
-        camera::orbit_control(options);
+        orbit_control(options);
 
         // Calculate wave offsets based on frame count
-        float wave_offset_x = _animate_scene ? environment::frame_count() * _movement_speed_x : 0.0f;
-        float wave_offset_z = _animate_scene ? environment::frame_count() * _movement_speed_z : 0.0f;
+        float wave_offset_x = _animate_scene ? frame_count() * _movement_speed_x : 0.0f;
+        float wave_offset_z = _animate_scene ? frame_count() * _movement_speed_z : 0.0f;
 
         // Loop over grid of cubes (XZ plane)
         for (int x = 0; x < _cols; x++)
@@ -188,12 +188,12 @@ namespace ppp
 
                 // Color interpolation based on y position
                 float color_interp = math::map(y, (float)min_amplitude, (float)max_amplitude, 0.0f, 1.0f);
-                color::Color cube_color = color::lerp_color(_color_bottom, _color_top, color_interp);
-                color::fill(cube_color);
+                color cube_color = lerp_color(_color_bottom, _color_top, color_interp);
+                fill(cube_color);
 
                 // Position and draw the cube
-                transform::push();
-                transform::translate
+                push();
+                translate
                 (
                     (x - _cols / 2) * 35,  // X position (centered)
                     y,                     // Y position (height based on wave)
@@ -202,14 +202,14 @@ namespace ppp
 
                 if ((x * z) % 2)
                 {
-                    shapes::box(30, 30, 30); // Draw the cube with size 30
+                    box(30, 30, 30); // Draw the cube with size 30
                 }
                 else
                 {
-                    shapes::sphere(15);
+                    sphere(15);
                 }
 
-                transform::pop();
+                pop();
             }
         }
     }

@@ -10,8 +10,6 @@ struct FT_FaceRec_;
 
 namespace ppp
 {
-    namespace typography
-    {
         struct font_character
         {
             glm::ivec2 size;
@@ -32,5 +30,4 @@ namespace ppp
         };
 
         font_atlas make_font_atlas(FT_FaceRec_* face, u32 characters_to_load);
-    }
 }

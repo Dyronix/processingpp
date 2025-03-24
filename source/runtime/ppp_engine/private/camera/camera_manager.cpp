@@ -268,5 +268,11 @@ namespace ppp
             log::error("Unable to find camera for tag: {}", string::restore_sid(camera_tag));
             return nullptr;
         }
+
+        //-------------------------------------------------------------------------
+        camera* active_camera()
+        {
+            return g_ctx.active_camera;
+        }
     }
 }

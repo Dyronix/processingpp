@@ -44,5 +44,6 @@ namespace ppp
         const glm::mat4& get_proj(string::string_id camera_tag);
 
         camera* camera_by_tag(string::string_id camera_tag);
+        camera* active_camera();
     }
 }

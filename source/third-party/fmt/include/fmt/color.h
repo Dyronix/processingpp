@@ -481,7 +481,7 @@ inline void vprint(std::FILE* f, const text_style& ts, string_view fmt,
 
   **Example**::
 
-    fmt::print(fmt::emphasis::bold | fg(fmt::color::red),
+    fmt::print(fmt::emphasis::bold | fg(fmt::red),
                "Elapsed time: {0:.2f} seconds", 1.23);
   \endrst
  */
@@ -500,7 +500,7 @@ void print(std::FILE* f, const text_style& ts, const S& format_str,
 
   **Example**::
 
-    fmt::print(fmt::emphasis::bold | fg(fmt::color::red),
+    fmt::print(fmt::emphasis::bold | fg(fmt::red),
                "Elapsed time: {0:.2f} seconds", 1.23);
   \endrst
  */
@@ -527,7 +527,7 @@ inline std::basic_string<Char> vformat(
   **Example**::
 
     #include <fmt/color.h>
-    std::string message = fmt::format(fmt::emphasis::bold | fg(fmt::color::red),
+    std::string message = fmt::format(fmt::emphasis::bold | fg(fmt::red),
                                       "The answer is {}", 42);
   \endrst
 */
@@ -560,7 +560,7 @@ OutputIt vformat_to(
 
     std::vector<char> out;
     fmt::format_to(std::back_inserter(out),
-                   fmt::emphasis::bold | fg(fmt::color::red), "{}", 42);
+                   fmt::emphasis::bold | fg(fmt::red), "{}", 42);
   \endrst
 */
 template <typename OutputIt, typename S, typename... Args,
@@ -617,8 +617,8 @@ struct formatter<detail::styled_arg<T>, Char> : formatter<T, Char> {
   **Example**::
 
     fmt::print("Elapsed time: {0:.2f} seconds",
-               fmt::styled(1.23, fmt::fg(fmt::color::green) |
-                                 fmt::bg(fmt::color::blue)));
+               fmt::styled(1.23, fmt::fg(fmt::green) |
+                                 fmt::bg(fmt::blue)));
   \endrst
  */
 template <typename T>

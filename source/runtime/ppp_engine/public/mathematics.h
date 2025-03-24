@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vector.h"
+
 #include <cmath>
 
 namespace ppp
@@ -31,11 +33,23 @@ namespace ppp
         {
             return std::hypot(x1 - x2, y1 - y2);
         }
+        // Calculates the distance between two 2D points.
+        template<typename T>
+        T dist(const base_vec2<T>& v1, const base_vec2<T>& v2)
+        {
+            return std::hypot(v1.x - v2.x, v1.y - v2.y);
+        }
         // Calculates the distance between two 3D points.
         template<typename T>
         T dist(T x1, T y1, T z1, T x2, T y2, T z2)
         {
             return std::hypot(x1 - x2, y1 - y2, z1 - z2);
+        }
+        // Calculates the distance between two 3D points.
+        template<typename T>
+        T dist(const base_vec3<T>& v1, const base_vec3<T>& v2)
+        {
+            return std::hypot(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
         }
         // Calculates the value of Euler's number e (2.71828...) raised to the power of a number.
         template<typename T>
@@ -81,7 +95,7 @@ namespace ppp
         }
         // Re-maps a number from one range to another.
         template <typename T>
-        T map(T value, T in_min, T in_max, T out_min, T out_max) 
+        T map(T value, T in_min, T in_max, T out_min, T out_max)
         {
             return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min);
         }

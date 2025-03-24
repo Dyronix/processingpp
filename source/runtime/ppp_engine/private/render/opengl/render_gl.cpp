@@ -156,7 +156,7 @@ namespace ppp
         } g_ctx;
 
         //-------------------------------------------------------------------------
-        render_context make_render_context(const camera::camera_context* camera_context)
+        render_context make_render_context(const camera_context* camera_context)
         {
             render_context render_context;
             render_context.camera_context = camera_context;
@@ -316,7 +316,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void begin(const camera::camera_context* context)
+        void begin(const camera_context* context)
         {
             // Font
             g_ctx.font_renderer->begin();
@@ -335,13 +335,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void render(const camera::camera_context* context)
+        void render(const camera_context* context)
         {
             g_ctx.render_pipeline.execute(make_render_context(context));
         }
 
         //-------------------------------------------------------------------------
-        void end(const camera::camera_context* context)
+        void end(const camera_context* context)
         {
             broadcast_on_draw_end();
         }

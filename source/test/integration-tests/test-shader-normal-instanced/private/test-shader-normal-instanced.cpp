@@ -22,40 +22,40 @@ namespace ppp
 
     void setup_input_events()
     {
-        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
+        set_quit_application_keycode(key_code::KEY_ESCAPE);
 
-        keyboard::add_key_pressed_callback(
-            [](keyboard::key_code key)
+        add_key_pressed_callback(
+            [](key_code key)
         {
-            if (key == keyboard::key_code::KEY_SPACE)
+            if (key == key_code::KEY_SPACE)
             {
                 bool show_all_shapes = _show_all > 0;
                 show_all_shapes = !show_all_shapes;
                 _show_all = show_all_shapes ? 1 : 0;
             }
 
-            else if (key == keyboard::key_code::KEY_UP && _show_all == 0)
+            else if (key == key_code::KEY_UP && _show_all == 0)
             {
                 _shape_vis = (_shape_vis + 1) % _total_shape_count;
             }
-            else if (key == keyboard::key_code::KEY_DOWN && _show_all == 0)
+            else if (key == key_code::KEY_DOWN && _show_all == 0)
             {
                 _shape_vis = (_shape_vis - 1) < 0 ? _total_shape_count - 1 : _shape_vis - 1;
             }
 
-            else if (key == keyboard::key_code::KEY_1)
+            else if (key == key_code::KEY_1)
             {
                 _interpolation = 4;
             }
-            else if (key == keyboard::key_code::KEY_2)
+            else if (key == key_code::KEY_2)
             {
                 _interpolation = 8;
             }
-            else if (key == keyboard::key_code::KEY_3)
+            else if (key == key_code::KEY_3)
             {
                 _interpolation = 12;
             }
-            else if (key == keyboard::key_code::KEY_4)
+            else if (key == key_code::KEY_4)
             {
                 _interpolation = 24;
             }
@@ -64,7 +64,7 @@ namespace ppp
 
     void end_draw()
     {
-        if (environment::frame_count() == 5)
+        if (frame_count() == 5)
         {
             std::stringstream stream;
 
@@ -74,14 +74,14 @@ namespace ppp
 
             if (_generate_new_data)
             {
-                image::load_pixels(0, 0, _window_width, _window_height);
-                image::save_pixels(stream.str(), _window_width, _window_height);
+                load_pixels(0, 0, _window_width, _window_height);
+                save_pixels(stream.str(), _window_width, _window_height);
             }
 
             if (!_no_testing)
             {
-                auto test_frame = image::load(stream.str());
-                auto test_frame_pixels = image::load_pixels(test_frame.id);
+                auto test_frame = load(stream.str());
+                auto test_frame_pixels = load_pixels(test_frame.id);
 
                 size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
 
@@ -92,7 +92,7 @@ namespace ppp
                     test_frame_pixels,
                     total_size);
 
-                auto frame_pixels = image::load_pixels(0, 0, _window_width, _window_height);
+                auto frame_pixels = load_pixels(0, 0, _window_width, _window_height);
 
                 std::vector<unsigned char> active_frame_pixels(total_size);
                 memcpy_s(
@@ -103,24 +103,24 @@ namespace ppp
 
                 if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
                 {
-                    environment::print("[TEST FAILED][SINORMAL] image buffers are not identical!");
+                    print("[TEST FAILED][SINORMAL] image buffers are not identical!");
                 }
                 else
                 {
-                    environment::print("[TEST SUCCESS][SINORMAL] image buffers are identical.");
+                    print("[TEST SUCCESS][SINORMAL] image buffers are identical.");
                 }
             }
 
             if (!_no_close_after_x_frames)
             {
-                structure::quit();
+                quit();
             }
         }
     }
 
     app_params entry(int argc, char** argv)
     {
-        environment::print("Current working directory: %s", environment::cwd().data());
+        print("Current working directory: %s", cwd().data());
 
         app_params app_params;
 
@@ -138,17 +138,17 @@ namespace ppp
     {
         setup_input_events();
 
-        rendering::enable_instance_draw_mode();
+        enable_instance_draw_mode();
 
-        shapes::enable_wireframe_mode(false);
-        shapes::enable_solid_mode(true);
+        enable_wireframe_mode(false);
+        enable_solid_mode(true);
 
-        camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
-        camera::set_scene_camera(20, -40, 400);
+        perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
+        set_scene_camera(20, -40, 400);
 
-        material::normal_material();
+        normal_material();
 
-        structure::on_draw_end(end_draw);
+        on_draw_end(end_draw);
     }
 
     void draw_shapes_grid()
@@ -160,31 +160,31 @@ namespace ppp
             float x_spacing = 80.0f; // Horizontal spacing between shapes
             float y_spacing = -80.0f; // Vertical spacing between rows
 
-            transform::push();
+            push();
 
             // Row 1
-            transform::translate(start_x, start_y);
-            shapes::box(50.0f, 50.0f, 50.0f);
-            transform::translate(x_spacing, 0.0f);
-            shapes::plane(50.0f, 50.0f);
-            transform::translate(x_spacing, 0.0f);
-            shapes::cylinder(25.0f, 50.0f, _interpolation);
-            transform::translate(x_spacing, 0.0f);
-            shapes::sphere(25.0f, _interpolation);
+            translate(start_x, start_y);
+            box(50.0f, 50.0f, 50.0f);
+            translate(x_spacing, 0.0f);
+            plane(50.0f, 50.0f);
+            translate(x_spacing, 0.0f);
+            cylinder(25.0f, 50.0f, _interpolation);
+            translate(x_spacing, 0.0f);
+            sphere(25.0f, _interpolation);
 
             // Move to next row and reset x position
-            transform::translate(-3 * x_spacing, y_spacing);
+            translate(-3 * x_spacing, y_spacing);
 
             // Row 2
-            shapes::torus(25.0f, 10.0f, _interpolation, _interpolation);
-            transform::translate(x_spacing, 0.0f);
-            shapes::cone(25.0f, 50.0f, _interpolation, true);
-            transform::translate(x_spacing, 0.0f);
-            shapes::tetrahedron(25.0f, 25.0f);
-            transform::translate(x_spacing, 0.0f);
-            shapes::octahedron(25.0f, 25.0f);
+            torus(25.0f, 10.0f, _interpolation, _interpolation);
+            translate(x_spacing, 0.0f);
+            cone(25.0f, 50.0f, _interpolation, true);
+            translate(x_spacing, 0.0f);
+            tetrahedron(25.0f, 25.0f);
+            translate(x_spacing, 0.0f);
+            octahedron(25.0f, 25.0f);
 
-            transform::pop();
+            pop();
         }
         else
         {
@@ -193,40 +193,40 @@ namespace ppp
             float x_spacing = 80.0f; // Horizontal spacing between shapes
             float y_spacing = -80.0f; // Vertical spacing between rows
 
-            transform::push();
+            push();
 
             // Row 1
-            transform::translate(start_x, start_y);
-            if (_shape_vis == 0) { shapes::box(50.0f, 50.0f, 50.0f); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 1) { shapes::plane(50.0f, 50.0f); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 2) { shapes::cylinder(25.0f, 50.0f, _interpolation); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 3) { shapes::sphere(25.0f, _interpolation); }
+            translate(start_x, start_y);
+            if (_shape_vis == 0) { box(50.0f, 50.0f, 50.0f); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 1) { plane(50.0f, 50.0f); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 2) { cylinder(25.0f, 50.0f, _interpolation); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 3) { sphere(25.0f, _interpolation); }
 
             // Move to next row and reset x position
-            transform::translate(-3 * x_spacing, y_spacing);
+            translate(-3 * x_spacing, y_spacing);
 
             // Row 2
-            if (_shape_vis == 4) { shapes::torus(25.0f, 10.0f, _interpolation, _interpolation); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 5) { shapes::cone(25.0f, 50.0f, _interpolation, true); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 6) { shapes::tetrahedron(25.0f, 25.0f); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 7) { shapes::octahedron(25.0f, 25.0f); }
+            if (_shape_vis == 4) { torus(25.0f, 10.0f, _interpolation, _interpolation); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 5) { cone(25.0f, 50.0f, _interpolation, true); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 6) { tetrahedron(25.0f, 25.0f); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 7) { octahedron(25.0f, 25.0f); }
 
-            transform::pop();
+            pop();
         }
     }
 
 
     void draw()
     {
-        color::background(200);
+        background(200);
 
-        camera::orbit_scene_camera_options options;
+        orbit_control_options options;
 
         options.zoom_sensitivity = 200.0f;
         options.panning_sensitivity = 0.5f;
@@ -234,12 +234,12 @@ namespace ppp
         options.min_zoom = 1.0f;
         options.max_zoom = 600.0f;
 
-        camera::orbit_control(options);
+        orbit_control(options);
 
-        color::fill({ 255,0,0,255 });
+        fill({ 255,0,0,255 });
 
         draw_shapes_grid();
 
-        color::fill({0,0,0,255});
+        fill({0,0,0,255});
     }
 }

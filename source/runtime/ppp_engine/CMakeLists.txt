@@ -114,6 +114,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_bounding_box.h
     # geometry-3d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.cpp   
@@ -193,12 +194,13 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/image.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/lights.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/io.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/input_output.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/time_date.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/entrypoint.cpp)
 
 target_sources(processing_engine PUBLIC 
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/camera.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/matrix.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/shapes.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/random.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/transform.h
@@ -220,7 +222,7 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/lights.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/vector.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/time_date.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/io.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/input_output.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/entrypoint.h)
 
 # Create the project filters

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "vector.h"
 
 namespace ppp
 {
@@ -13,12 +13,12 @@ namespace ppp
 
             void show() const;
 
-            const glm::vec2& start() const { return m_start; }
-            const glm::vec2& end() const { return m_end; }
+            const vec2& start() const { return m_start; }
+            const vec2& end() const { return m_end; }
 
         private:
-            glm::vec2 m_start;
-            glm::vec2 m_end;
+            vec2 m_start;
+            vec2 m_end;
         };
     }
 }

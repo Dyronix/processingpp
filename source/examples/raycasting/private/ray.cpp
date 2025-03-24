@@ -14,7 +14,7 @@ namespace ppp
 
         Ray::Ray(float posx, float posy, float angle)
         {
-            m_position = glm::vec2(posx, posy);
+            m_position = vec2(posx, posy);
             m_direction.x = std::cos(angle);
             m_direction.y = std::sin(angle);
 
@@ -26,7 +26,7 @@ namespace ppp
             m_direction.x = x - m_position.x;
             m_direction.y = y - m_position.y;
 
-            m_direction = glm::normalize(m_direction);
+            m_direction = m_direction.normalize();
         }
 
         void Ray::set_direction(float x, float y)
@@ -43,8 +43,8 @@ namespace ppp
 
         void Ray::show() const
         {
-            color::fill(255);
-            shapes::line(m_position.x, m_position.y, m_position.x + (m_direction.x * m_length), m_position.y + (m_direction.y * m_length));
+            fill(255);
+            line(m_position.x, m_position.y, m_position.x + (m_direction.x * m_length), m_position.y + (m_direction.y * m_length));
         }
 
         RaycastHit Ray::cast(float x1, float y1, float x2, float y2) const

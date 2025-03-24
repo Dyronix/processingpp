@@ -7,10 +7,7 @@
 
 namespace ppp
 {
-    namespace camera
-    {
-        struct camera_context;
-    }
+    struct camera_context;
 
     namespace render
     {
@@ -34,7 +31,7 @@ namespace ppp
                     && instance_renderers != nullptr;
             }
 
-            const camera::camera_context*   camera_context = nullptr; 
+            const camera_context*           camera_context = nullptr; 
 
             const render_scissor*           scissor = nullptr;
 

@@ -29,9 +29,9 @@ namespace ppp
             if (_toggle)
             {
                 // Vertical line
-                float size_percentage = random::random_value(_min_division, _max_division) / 100.0f;
+                float size_percentage = random(_min_division, _max_division) / 100.0f;
 
-                environment::print("Vertical Line: ", size_percentage);
+                print("Vertical Line: ", size_percentage);
 
                 // left rect
                 draw_rect(x, y, w * size_percentage, h, depth - 1);
@@ -41,9 +41,9 @@ namespace ppp
             else
             {
                 // Horizontal line
-                float size_percentage = random::random_value(_min_division, _max_division) / 100.0f;
+                float size_percentage = random(_min_division, _max_division) / 100.0f;
 
-                environment::print("Horizontal Line: ", size_percentage);
+                print("Horizontal Line: ", size_percentage);
 
                 // top rect
                 draw_rect(x, y, w, h * size_percentage, depth - 1);
@@ -57,22 +57,22 @@ namespace ppp
         {
             // Base case: depth = 0
             // draw a rectangle with white fill or random color
-            color::fill(255);
-            std::vector<color::Color> colors =
+            fill(255);
+            std::vector<color> colors =
             {
                 {235, 0, 0, 255},   // red
                 {0, 0, 235, 255},   // blue
                 {235, 235, 0, 255}  // yellow
             };
 
-            float color_probability = random::random_value(0, 100) / 100.0f;
+            float color_probability = random(0, 100) / 100.0f;
             if (color_probability < 0.3)
             {
-                const color::Color& c = random::random(colors);
-                color::fill(c);
+                const color& c = random(colors);
+                fill(c);
             }
 
-            shapes::rect(x - 2.5f, y - 2.5f, w - 2.5f, h - 2.5f);
+            rect(x - 2.5f, y - 2.5f, w - 2.5f, h - 2.5f);
         }
     }
 
@@ -88,29 +88,29 @@ namespace ppp
 
     void setup()
     {
-        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
+        set_quit_application_keycode(key_code::KEY_ESCAPE);
 
-        mouse::add_mouse_pressed_callback(
-            [](mouse::mouse_code code)
+        add_mouse_pressed_callback(
+            [](mouse_code code)
         {
-            if (code == mouse::mouse_code::BUTTON_LEFT)
+            if (code == mouse_code::BUTTON_LEFT)
             {
-                structure::redraw();
+                redraw();
             }
         });
 
-        color::inner_stroke(0);
-        color::inner_stroke_weight(5.0f);
+        inner_stroke(0);
+        inner_stroke_weight(5.0f);
 
-        shapes::rect_mode(shapes::shape_mode_type::CORNER);
+        rect_mode(shape_mode_type::CORNER);
     }
 
     void draw()
     {   
-        color::background(0);
+        background(0);
 
         draw_rect(40, 40, _window_width - 80, _window_height - 80, 3);
 
-        structure::no_loop();
+        no_loop();
     }
 }

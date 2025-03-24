@@ -52,16 +52,16 @@ namespace ppp
             return -1;
         }
 
-#if PPP_OPENGL
+        #if PPP_OPENGL
         if (!render::initialize(app_params.window_width, app_params.window_height, glfwGetProcAddress))
         {
             log::error("Failed to initialize render");
             return -1;
         }
-#endif
+        #endif
         if (!camera_manager::initialize((f32)app_params.window_width, (f32)app_params.window_height))
         {
-            log::error("Failed to initialize camera manager"); 
+            log::error("Failed to initialize camera manager");
             return -1;
         }
 
@@ -71,19 +71,19 @@ namespace ppp
             return -1;
         }
 
-        if (!texture_pool::initialize())    { log::error("Failed to initialize texture pool");   return -1; }
-        if (!font_pool::initialize())       { log::error("Failed to initialize font pool");      return -1; }
-        if (!shader_pool::initialize())     { log::error("Failed to initialize shader pool");    return -1; }
-        if (!material_pool::initialize())   { log::error("Failed to initialize material pool");  return -1; }
-        if (!geometry_pool::initialize())   { log::error("Failed to initialize geometry pool");  return -1; }      
+        if (!texture_pool::initialize()) { log::error("Failed to initialize texture pool");   return -1; }
+        if (!font_pool::initialize()) { log::error("Failed to initialize font pool");      return -1; }
+        if (!shader_pool::initialize()) { log::error("Failed to initialize shader pool");    return -1; }
+        if (!material_pool::initialize()) { log::error("Failed to initialize material pool");  return -1; }
+        if (!geometry_pool::initialize()) { log::error("Failed to initialize geometry pool");  return -1; }
 
         auto unlit_texture = shader_pool::tags::unlit::texture();
 
-        material::shader(string::restore_sid(unlit_texture));
+        shader(string::restore_sid(unlit_texture));
 
         vfs::add_wildcard(string::store_sid("local:"), internal::get_working_directory(executable_path));
 
-        color::background(1.0f, 1.0f, 1.0f, 1.0f);
+        background(1.0f, 1.0f, 1.0f, 1.0f);
 
         setup();
 
@@ -92,7 +92,7 @@ namespace ppp
     //-------------------------------------------------------------------------
     s32 run(const app_params& app_params)
     {
-        camera::camera_context context;
+        camera_context context;
 
         while (!device::should_close())
         {
@@ -170,9 +170,9 @@ namespace ppp
     //-------------------------------------------------------------------------
     int find_argument(int argc, char** argv, const char* target)
     {
-        for (int i = 1; i < argc; i++) 
+        for (int i = 1; i < argc; i++)
         {
-            if (strcmp(argv[i], target) == 0) 
+            if (strcmp(argv[i], target) == 0)
             {
                 return i;
             }
@@ -184,15 +184,15 @@ namespace ppp
     //-------------------------------------------------------------------------
     int find_argument_with_value(int argc, char** argv, const char* target, const char** value)
     {
-        for (int i = 1; i < argc; i++) 
+        for (int i = 1; i < argc; i++)
         {
-            if (strcmp(argv[i], target) == 0 && (i + 1) < argc) 
+            if (strcmp(argv[i], target) == 0 && (i + 1) < argc)
             {
                 *value = argv[i + 1];
                 return i;
             }
         }
-        
+
         return -1;
     }
 }
