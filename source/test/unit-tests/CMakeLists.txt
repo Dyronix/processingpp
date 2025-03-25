@@ -36,7 +36,7 @@ target_include_directories(unit-tests-data PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY
 MESSAGE(STATUS "Adding unit-tests-color")
 add_executable(unit-tests-color unit-tests-color.cpp)
 set_target_properties(unit-tests-color PROPERTIES FOLDER "test/unit")
-target_link_libraries(unit-tests-color PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(unit-tests-color PRIVATE Catch2::Catch2)
 target_link_libraries(unit-tests-color PRIVATE processing_engine)
 target_include_directories(unit-tests-color PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glm)
 

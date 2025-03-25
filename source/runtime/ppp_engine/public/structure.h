@@ -12,7 +12,9 @@ namespace ppp
     void loop();
     void no_loop();
 
+    bool is_headless();
     bool is_looping();
 
+    void headless();
     void quit();
 }

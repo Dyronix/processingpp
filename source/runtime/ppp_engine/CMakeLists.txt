@@ -249,16 +249,8 @@ target_link_libraries(processing_engine PRIVATE freetype)
 target_include_directories(processing_engine PRIVATE ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private)
 target_include_directories(processing_engine PUBLIC ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public)
 
-# Compile definitions
-if(PPP_HEADLESS)
-    target_compile_definitions(processing_engine PUBLIC -DPPP_HEADLESS)
-endif()
-
 target_compile_definitions(processing_engine PUBLIC -DPPP_OPENGL)
-
-if(${CMAKE_HOST_WIN32})
-    target_compile_definitions(processing_engine PUBLIC -DPPP_WINDOWS)
-endif()
+target_compile_definitions(processing_engine PUBLIC $<$<BOOL:${CMAKE_HOST_WIN32}>:PPP_WINDOWS>)
 
 # Target properties
 set_target_properties(processing_engine PROPERTIES

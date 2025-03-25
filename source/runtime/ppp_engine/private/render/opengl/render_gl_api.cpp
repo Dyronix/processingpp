@@ -1,5 +1,5 @@
 #include "render/opengl/render_gl_api.h"
-
+#include "device/device.h"
 namespace ppp
 {
     namespace render
@@ -9,12 +9,13 @@ namespace ppp
             //-------------------------------------------------------------------------
             ifunction_library& api::instance()
             {
-#if PPP_HEADLESS
-                static mock_function_library library;
-#else
-                static function_library library;
-#endif
+                if (device::is_headless())
+                {
+                    static mock_function_library library;
+                    return library;
+                }
 
+                static function_library library;
                 return library;
             }
         }

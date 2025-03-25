@@ -19,6 +19,7 @@ namespace ppp
         {
             GLFWwindow* window = nullptr;
 
+            bool is_headless = false;
             bool is_looping = true;
 
             u64 current_frame_idx = 0;
@@ -503,6 +504,11 @@ namespace ppp
             glfwGetWindowSize(ctx().window, &width, h);
         }
 
+        void headless()
+        {
+            ctx().is_headless = true;
+        }
+
         void loop()
         {
             ctx().is_looping = true;
@@ -551,6 +557,11 @@ namespace ppp
         void target_frame_rate(u32 rate)
         {
             ctx().target_frame_rate = rate;
+        }
+
+        bool is_headless()
+        {
+            return ctx().is_headless;
         }
 
         bool is_looping()

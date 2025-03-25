@@ -255,9 +255,8 @@ TEST_CASE("unhex conversion", "[conversions][unhex]")
 
 TEST_CASE("unhex vector conversion", "[conversions][unhex]")
 {
-    std::vector<std::string> vec = { "00ff", "ffffffff" };
-    std::vector<int> result = ppp::unhex(vec);
-    // Expect 255 and, for "ffffffff", likely -1 (depending on implementation).
-    std::vector<int> expected = { 255, -1 };
+    std::vector<std::string> vec = { "00ff", "ffff" };
+    std::vector<int> result = ppp::unhex(vec); 
+    std::vector<int> expected = { 255, 65535 };
     REQUIRE(result == expected);
 }

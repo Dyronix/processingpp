@@ -65,6 +65,7 @@ namespace ppp
         void window_width(s32* w);
         void window_height(s32* h);
 
+        void headless();
         void loop();
         void no_loop();
         void redraw();
@@ -73,6 +74,7 @@ namespace ppp
         void request_quit();
         void target_frame_rate(u32 rate);
 
+        bool is_headless();
         bool is_looping();
         bool can_draw();
         bool should_close();

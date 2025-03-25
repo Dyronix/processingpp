@@ -72,6 +72,12 @@ namespace ppp
         }
     }
 
+    // Converts a string to an int using the specified radix.
+    inline int to_int(const char* n, int radix = 10)
+    {
+        return to_int(std::string(n), radix);
+    }
+
     // Converts a float to an int (truncates decimals).
     inline int to_int(float n, int radix = 10)
     {
@@ -193,6 +199,11 @@ namespace ppp
         return (lower == "true");
     }
 
+    inline bool to_boolean(const char* n)
+    {
+        return to_boolean(std::string(n));
+    }
+
     // Converts an int to a boolean.
     inline bool to_boolean(int n)
     {
@@ -232,6 +243,13 @@ namespace ppp
     inline int to_byte(const std::string& n)
     {
         int nn = to_int(n, 10);
+        return ((nn + 128) % 256) - 128;
+    }
+
+    // Converts a string to its byte value.
+    inline int to_byte(const char* n)
+    {
+        int nn = to_int(n);
         return ((nn + 128) % 256) - 128;
     }
 

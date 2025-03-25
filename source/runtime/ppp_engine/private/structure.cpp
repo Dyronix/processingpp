@@ -19,6 +19,11 @@ namespace ppp
         device::redraw();
     }
 
+    void headless()
+    {
+        device::headless();
+    }
+
     void loop()
     {
         device::loop();
@@ -27,6 +32,11 @@ namespace ppp
     void no_loop()
     {
         device::no_loop();
+    }
+
+    bool is_headless()
+    {
+        return device::is_headless();
     }
 
     bool is_looping()

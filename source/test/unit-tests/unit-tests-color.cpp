@@ -1,10 +1,18 @@
 ﻿#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
-#define CATCH_CONFIG_MAIN
+#include <catch2/catch_session.hpp>
+#include "structure.h"
 #include "color.h"
 #include "mathematics.h"
 #include <glm/glm.hpp>
 #include <algorithm>
+
+int main(int argc, char* argv[]) 
+{
+    ppp::headless();
+
+    return Catch::Session().run(argc, argv);
+}
 
 // Declare externs for internal state in the brush API.
 namespace ppp
@@ -65,7 +73,7 @@ TEST_CASE("Color component accessors", "[color]")
 TEST_CASE("lerp_color function", "[color]")
 {
     ppp::color c1, c2;
-    c1.set_red(0); c1.set_green(0); c1.set_blue(0); c1.set_alpha(255);
+    c1.set_red(0); c1.set_green(0); c1.set_blue(0); c1.set_alpha(0);
     c2.set_red(255); c2.set_green(255); c2.set_blue(255); c2.set_alpha(255);
 
     // At t = 0, result equals c1.
@@ -73,7 +81,7 @@ TEST_CASE("lerp_color function", "[color]")
     REQUIRE(result.red == 0);
     REQUIRE(result.green == 0);
     REQUIRE(result.blue == 0);
-    REQUIRE(result.alpha == 255);
+    REQUIRE(result.alpha == 0);
 
     // At t = 1, result equals c2.
     result = ppp::lerp_color(c1, c2, 1.0f);
@@ -84,11 +92,11 @@ TEST_CASE("lerp_color function", "[color]")
 
     // At t = 0.5, expect approximately half.
     result = ppp::lerp_color(c1, c2, 0.5f);
-    int expectedChannel = static_cast<int>(ppp::math::lerp(0.0f, 255.0f, 0.5f));
-    REQUIRE(result.red == expectedChannel);
-    REQUIRE(result.green == expectedChannel);
-    REQUIRE(result.blue == expectedChannel);
-    REQUIRE(result.alpha == expectedChannel);
+    int expected_channel = static_cast<int>(ppp::math::lerp(0.0f, 255.0f, 0.5f));
+    REQUIRE(result.red == expected_channel);
+    REQUIRE(result.green == expected_channel);
+    REQUIRE(result.blue == expected_channel);
+    REQUIRE(result.alpha == expected_channel);
 }
 
 // --------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 
 namespace ppp
 {
+    // keyboard
     enum class key_code
     {
         /* The unknown key */
@@ -145,6 +146,7 @@ namespace ppp
 
     void set_quit_application_keycode(key_code code);
 
+    // mouse
     enum class mouse_code
     {
         BUTTON_LEFT,

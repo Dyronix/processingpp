@@ -12,11 +12,11 @@ namespace ppp
     // void calculate_normals(std::size_t geometry_id);
 
     // // An array with the geometry's vertices.
-    // std::vector<vector3> vertex_positions();
+    // std::vector<vector3> vertex_positions(std::size_t geometry_id);
     // // An array that lists the texture coordinates for each of the geometry's vertices.
-    // std::vector<vector2> vertex_uvs();
+    // std::vector<vector2> vertex_uvs(std::size_t geometry_id);
     // // An array with the vectors that are normal to the geometry's vertices.
-    // std::vector<vector3> vertex_normals();
+    // std::vector<vector3> vertex_normals(std::size_t geometry_id);
 
     // Attributes
     // The drawing mode on how a particular shape is drawn
