@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vector.h"
+#include "matrix.h"
 
 namespace ppp
 {
@@ -8,6 +9,8 @@ namespace ppp
     void push();
     // Pop a matrix from the stack
     void pop();
+    // Retrieve the active transform matrix
+    mat4 active_transform();
 
     // Rotates the coordinate system.
     void rotate(float angle);

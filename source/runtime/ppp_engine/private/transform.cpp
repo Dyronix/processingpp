@@ -5,6 +5,19 @@
 
 namespace ppp
 {
+    mat4 convert_glm_to_ppp(const glm::mat4& m)
+    {
+        mat4 result;
+
+        // glm::mat4 is column-major, so each m[i] represents a column (of type glm::vec4)
+        result.cols[0] = base_vec4<float>(m[0].x, m[0].y, m[0].z, m[0].w);
+        result.cols[1] = base_vec4<float>(m[1].x, m[1].y, m[1].z, m[1].w);
+        result.cols[2] = base_vec4<float>(m[2].x, m[2].y, m[2].z, m[2].w);
+        result.cols[3] = base_vec4<float>(m[3].x, m[3].y, m[3].z, m[3].w);
+        
+        return result;
+    }
+
     void push()
     {
         transform_stack::push();
@@ -13,6 +26,11 @@ namespace ppp
     void pop()
     {
         transform_stack::pop();
+    }
+
+    mat4 active_transform()
+    {
+        return convert_glm_to_ppp(transform_stack::active_world());
     }
 
     void rotate(float angle)

@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <stdexcept>
 
-TEST_CASE("append function", "[data]") {
+TEST_CASE("append function", "[data]")
+{
     std::vector<int> vec;
     REQUIRE(vec.empty());
 
@@ -18,7 +19,8 @@ TEST_CASE("append function", "[data]") {
     REQUIRE(vec[1] == 100);
 }
 
-TEST_CASE("array_copy (5-parameter version)", "[data]") {
+TEST_CASE("array_copy (5-parameter version)", "[data]")
+{
     std::vector<int> src = { 10, 20, 30, 40, 50 };
     std::vector<int> dst = { 1, 2, 3, 4, 5, 6 };
 
@@ -43,14 +45,16 @@ TEST_CASE("array_copy (5-parameter version)", "[data]") {
     REQUIRE_THROWS_AS(ppp::array_copy(src, 0, dst, dst.size() + 1, 2), std::out_of_range);
 }
 
-TEST_CASE("array_copy (2-parameter version)", "[data]") {
+TEST_CASE("array_copy (2-parameter version)", "[data]")
+{
     std::vector<int> src = { 5, 6, 7, 8 };
     std::vector<int> dst = { 1, 2, 3 };
     ppp::array_copy(src, dst);
     REQUIRE(dst == src);
 }
 
-TEST_CASE("concat function", "[data]") {
+TEST_CASE("concat function", "[data]")
+{
     std::vector<int> list0 = { 1, 2, 3 };
     std::vector<int> list1 = { 4, 5 };
     std::vector<int> result = ppp::concat(list0, list1);
@@ -58,7 +62,8 @@ TEST_CASE("concat function", "[data]") {
     REQUIRE(result == expected);
 }
 
-TEST_CASE("reverse function", "[data]") {
+TEST_CASE("reverse function", "[data]")
+{
     std::vector<int> vec = { 1, 2, 3, 4, 5 };
     ppp::reverse(vec);
     std::vector<int> expected = { 5, 4, 3, 2, 1 };
@@ -70,7 +75,8 @@ TEST_CASE("reverse function", "[data]") {
     REQUIRE(empty.empty());
 }
 
-TEST_CASE("shorten function", "[data]") {
+TEST_CASE("shorten function", "[data]")
+{
     std::vector<int> vec = { 10, 20, 30 };
     ppp::shorten(vec);
     std::vector<int> expected = { 10, 20 };
@@ -82,7 +88,8 @@ TEST_CASE("shorten function", "[data]") {
     REQUIRE(empty.empty());
 }
 
-TEST_CASE("shuffle function", "[data]") {
+TEST_CASE("shuffle function", "[data]")
+{
     // Test shuffle with modify == false.
     std::vector<int> original = { 1,2,3,4,5,6,7,8,9,10 };
     std::vector<int> vec = original;
@@ -103,7 +110,8 @@ TEST_CASE("shuffle function", "[data]") {
     REQUIRE(sorted_inplace == original);
 }
 
-TEST_CASE("sort_vector function", "[data]") {
+TEST_CASE("sort_vector function", "[data]")
+{
     std::vector<int> unsorted = { 5, 2, 8, 3, 7, 1, 4 };
 
     // Sort entire vector.
@@ -118,7 +126,8 @@ TEST_CASE("sort_vector function", "[data]") {
     REQUIRE(partially_sorted == expected_partial);
 }
 
-TEST_CASE("splice function (vector overload)", "[data]") {
+TEST_CASE("splice function (vector overload)", "[data]")
+{
     std::vector<int> vec = { 1,2,3,4 };
     std::vector<int> values = { 8,9 };
     // Insert values at index 2: expected result {1,2,8,9,3,4}
@@ -131,7 +140,8 @@ TEST_CASE("splice function (vector overload)", "[data]") {
     REQUIRE_THROWS_AS(ppp::splice(vec, values, vec.size() + 1), std::out_of_range);
 }
 
-TEST_CASE("splice function (single value overload)", "[data]") {
+TEST_CASE("splice function (single value overload)", "[data]")
+{
     std::vector<int> vec = { 1,2,3,4 };
     // Insert single value 99 at index 1: expected result {1,99,2,3,4}
     ppp::splice(vec, 99, 1);
@@ -143,7 +153,8 @@ TEST_CASE("splice function (single value overload)", "[data]") {
     REQUIRE_THROWS_AS(ppp::splice(vec, 100, vec.size() + 1), std::out_of_range);
 }
 
-TEST_CASE("subset function", "[data]") {
+TEST_CASE("subset function", "[data]")
+{
     std::vector<int> vec = { 10,20,30,40,50 };
 
     // Subset starting at index 1 with count 3: expected {20,30,40}

@@ -5,7 +5,8 @@
 #include "vector.h"
 
 // Tests for base_mat4 (4x4 matrices)
-TEST_CASE("base_mat4 identity matrix", "[matrix][mat4]") {
+TEST_CASE("base_mat4 identity matrix", "[matrix][mat4]")
+{
     using ppp::base_mat4;
     using ppp::base_vec4;
     base_mat4<float> m;
@@ -35,7 +36,8 @@ TEST_CASE("base_mat4 identity matrix", "[matrix][mat4]") {
     REQUIRE(m.cols[3].w == Catch::Approx(1.0f));
 }
 
-TEST_CASE("base_mat4 custom construction", "[matrix][mat4]") {
+TEST_CASE("base_mat4 custom construction", "[matrix][mat4]")
+{
     using ppp::base_mat4;
     using ppp::base_vec4;
     base_vec4<float> col0(1.0f, 2.0f, 3.0f, 4.0f);

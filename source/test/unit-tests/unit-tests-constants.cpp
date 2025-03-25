@@ -4,7 +4,8 @@
 #include "constants.h"
 #include <cmath>
 
-TEST_CASE("Constants functions return correct values", "[constants]") {
+TEST_CASE("Constants functions return correct values", "[constants]")
+{
     // Expected values (approximated to eight decimal places)
     const float expected_pi = 3.14159265f;
     const float expected_half_pi = 1.57079633f;
@@ -12,22 +13,28 @@ TEST_CASE("Constants functions return correct values", "[constants]") {
     const float expected_two_pi = 6.28318531f;
     const float expected_tau = 6.28318531f; // Typically, tau is defined as 2*pi
 
-    SECTION("pi() returns pi") {
+    SECTION("pi() returns pi")
+    {
         REQUIRE(ppp::pi() == Catch::Approx(expected_pi).epsilon(0.0001));
     }
-    SECTION("half_pi() returns half of pi") {
+    SECTION("half_pi() returns half of pi")
+    {
         REQUIRE(ppp::half_pi() == Catch::Approx(expected_half_pi).epsilon(0.0001));
     }
-    SECTION("quarter_pi() returns a quarter of pi") {
+    SECTION("quarter_pi() returns a quarter of pi")
+    {
         REQUIRE(ppp::quarter_pi() == Catch::Approx(expected_quarter_pi).epsilon(0.0001));
     }
-    SECTION("two_pi() returns two times pi") {
+    SECTION("two_pi() returns two times pi")
+    {
         REQUIRE(ppp::two_pi() == Catch::Approx(expected_two_pi).epsilon(0.0001));
     }
-    SECTION("tau() returns tau (2*pi)") {
+    SECTION("tau() returns tau (2*pi)")
+    {
         REQUIRE(ppp::tau() == Catch::Approx(expected_tau).epsilon(0.0001));
     }
-    SECTION("Mathematical relationships hold") {
+    SECTION("Mathematical relationships hold")
+    {
         REQUIRE(ppp::half_pi() * 2 == Catch::Approx(ppp::pi()).epsilon(0.0001));
         REQUIRE(ppp::quarter_pi() * 4 == Catch::Approx(ppp::pi()).epsilon(0.0001));
         REQUIRE(ppp::two_pi() == Catch::Approx(ppp::pi() * 2).epsilon(0.0001));

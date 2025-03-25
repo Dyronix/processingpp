@@ -71,9 +71,9 @@ namespace ppp
         {
             _initial_dir_x, _initial_dir_y, _initial_dir_z,    // direction
 
-            0.05f, 0.05f, 0.05f,    // ambient          
-            0.8f, 0.8f, 0.8f,       // diffuse
-            1.0f, 1.0f, 1.0f,       // specular          
+            static_cast<int>(0.05f * 255), static_cast<int>(0.05f * 255), static_cast<int>(0.05f * 255),    // ambient          
+            static_cast<int>(0.8f  * 255), static_cast<int>(0.8f  * 255), static_cast<int>(0.8f  * 255),       // diffuse
+            static_cast<int>(1.0f  * 255), static_cast<int>(1.0f  * 255), static_cast<int>(1.0f  * 255),       // specular          
             false,                  // specular enabled
             true,                   // cast shadows
         };

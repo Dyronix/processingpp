@@ -5,7 +5,8 @@
 #include "vector.h"  // Needed because matrix types use base_vec types
 
 // Tests for base_mat3 (3x3 matrices)
-TEST_CASE("base_mat3 identity matrix", "[matrix][mat3]") {
+TEST_CASE("base_mat3 identity matrix", "[matrix][mat3]")
+{
     using ppp::base_mat3;
     using ppp::base_vec3;
     base_mat3<float> m;
@@ -23,7 +24,8 @@ TEST_CASE("base_mat3 identity matrix", "[matrix][mat3]") {
     REQUIRE(m.cols[2].z == Catch::Approx(1.0f));
 }
 
-TEST_CASE("base_mat3 custom construction", "[matrix][mat3]") {
+TEST_CASE("base_mat3 custom construction", "[matrix][mat3]")
+{
     using ppp::base_mat3;
     using ppp::base_vec3;
     base_vec3<float> col0(1.0f, 2.0f, 3.0f);

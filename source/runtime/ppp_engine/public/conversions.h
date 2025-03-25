@@ -89,6 +89,23 @@ namespace ppp
         return static_cast<int>(n);
     }
 
+    // Converts a float to an int (truncates decimals).
+    inline int to_int(double n, int radix = 10)
+    {
+        if (std::isinf(n))
+        {
+            if (n > 0)
+            {
+                return std::numeric_limits<int>::max();
+            }
+            else
+            {
+                return std::numeric_limits<int>::min();
+            }
+        }
+        return static_cast<int>(n);
+    }
+
     // Converts a bool to an int.
     inline int to_int(bool n, int radix = 10)
     {

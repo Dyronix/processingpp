@@ -5,7 +5,8 @@
 #include "vector.h"  // Needed because matrix types use base_vec types
 
 // Tests for base_mat2 (2x2 matrices)
-TEST_CASE("base_mat2 identity matrix", "[matrix][mat2]") {
+TEST_CASE("base_mat2 identity matrix", "[matrix][mat2]")
+{
     using ppp::base_mat2;
     using ppp::base_vec2;
     base_mat2<float> m;
@@ -16,7 +17,8 @@ TEST_CASE("base_mat2 identity matrix", "[matrix][mat2]") {
     REQUIRE(m.cols[1].y == Catch::Approx(1.0f));
 }
 
-TEST_CASE("base_mat2 custom construction", "[matrix][mat2]") {
+TEST_CASE("base_mat2 custom construction", "[matrix][mat2]")
+{
     using ppp::base_mat2;
     using ppp::base_vec2;
     base_vec2<float> col0(2.0f, 3.0f);

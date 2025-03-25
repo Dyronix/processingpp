@@ -5,7 +5,7 @@
 #include <cmath>
 
 // Test the angle_mode setter and getter.
-TEST_CASE("Angle mode getter and setter", "[trigonometry]") 
+TEST_CASE("Angle mode getter and setter", "[trigonometry]")
 {
     using ppp::angle_mode;
     using ppp::angle_mode_type;
@@ -23,7 +23,7 @@ TEST_CASE("Angle mode getter and setter", "[trigonometry]")
 }
 
 // Test the conversion functions for degrees and radians.
-TEST_CASE("Degrees and Radians conversion", "[trigonometry]") 
+TEST_CASE("Degrees and Radians conversion", "[trigonometry]")
 {
     using ppp::degrees;
     using ppp::radians;
@@ -37,7 +37,7 @@ TEST_CASE("Degrees and Radians conversion", "[trigonometry]")
 }
 
 // Test the heading function for base_vec2.
-TEST_CASE("Heading of a vector", "[trigonometry]") 
+TEST_CASE("Heading of a vector", "[trigonometry]")
 {
     using ppp::heading;
     using ppp::base_vec2;
@@ -53,7 +53,7 @@ TEST_CASE("Heading of a vector", "[trigonometry]")
 }
 
 // Test the from_angle function.
-TEST_CASE("Vector from angle", "[trigonometry]") 
+TEST_CASE("Vector from angle", "[trigonometry]")
 {
     using ppp::from_angle;
     using ppp::base_vec2;
@@ -74,7 +74,7 @@ TEST_CASE("Vector from angle", "[trigonometry]")
 }
 
 // Test the trigonometric wrapper functions.
-TEST_CASE("Trigonometric wrapper functions", "[trigonometry]") 
+TEST_CASE("Trigonometric wrapper functions", "[trigonometry]")
 {
     using ppp::acos;
     using ppp::asin;

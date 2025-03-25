@@ -7,12 +7,12 @@
 #include <sstream>
 
 // Tests for base_vec2
-TEST_CASE("base_vec2 operations", "[vec2]") 
+TEST_CASE("base_vec2 operations", "[vec2]")
 {
     using ppp::base_vec2;
     base_vec2<double> v(3.0, 4.0);
 
-    SECTION("to_string") 
+    SECTION("to_string")
     {
         std::string str = v.to_string();
         // Check that the string representation contains the component values.
@@ -20,7 +20,7 @@ TEST_CASE("base_vec2 operations", "[vec2]")
         REQUIRE(str.find("4") != std::string::npos);
     }
 
-    SECTION("copy and set") 
+    SECTION("copy and set")
     {
         auto v_copy = v.copy();
         REQUIRE(v_copy.x == 3.0);
@@ -30,7 +30,7 @@ TEST_CASE("base_vec2 operations", "[vec2]")
         REQUIRE(v_copy.y == 6.0);
     }
 
-    SECTION("addition and subtraction") 
+    SECTION("addition and subtraction")
     {
         base_vec2<double> v1(1.0, 2.0);
         base_vec2<double> v2(3.0, 4.0);
@@ -53,7 +53,7 @@ TEST_CASE("base_vec2 operations", "[vec2]")
         REQUIRE(v_minus.y == 2.0);
     }
 
-    SECTION("multiplication and division by scalar") 
+    SECTION("multiplication and division by scalar")
     {
         base_vec2<double> v1(2.0, 3.0);
         v1.mult(2.0);
@@ -64,7 +64,7 @@ TEST_CASE("base_vec2 operations", "[vec2]")
         REQUIRE(v1.y == 3.0);
     }
 
-    SECTION("remainder operations") 
+    SECTION("remainder operations")
     {
         base_vec2<double> v1(5.5, 7.2);
         v1.rem(3.0);
@@ -78,7 +78,7 @@ TEST_CASE("base_vec2 operations", "[vec2]")
         REQUIRE(v2.y == Catch::Approx(std::fmod(7.2, 3.0)));
     }
 
-    SECTION("magnitude and normalization") 
+    SECTION("magnitude and normalization")
     {
         base_vec2<double> v1(3.0, 4.0);
         double m = v1.mag();
@@ -87,7 +87,7 @@ TEST_CASE("base_vec2 operations", "[vec2]")
         REQUIRE(v1.mag() == Catch::Approx(1.0));
     }
 
-    SECTION("dot product") 
+    SECTION("dot product")
     {
         base_vec2<double> v1(1.0, 2.0);
         base_vec2<double> v2(3.0, 4.0);
@@ -95,7 +95,7 @@ TEST_CASE("base_vec2 operations", "[vec2]")
         REQUIRE(d == Catch::Approx(11.0));
     }
 
-    SECTION("limit and set magnitude") 
+    SECTION("limit and set magnitude")
     {
         base_vec2<double> v1(3.0, 4.0); // magnitude 5.0
         v1.limit(3.0);
@@ -106,7 +106,7 @@ TEST_CASE("base_vec2 operations", "[vec2]")
         REQUIRE(v2.mag() == Catch::Approx(10.0));
     }
 
-    SECTION("heading and set_heading") 
+    SECTION("heading and set_heading")
     {
         base_vec2<double> v1(1.0, 0.0);
         double h = v1.heading();

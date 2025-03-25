@@ -230,8 +230,7 @@ GROUPSOURCES(${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private private)
 GROUPSOURCES(${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public public)
 
 # Private includes
-target_include_directories(processing_engine PUBLIC ${SOURCE_THIRDPARTY_DIRECTORY}/glm)
-
+target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glm)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/noise/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/stb/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/fmt/include)

@@ -2,6 +2,7 @@
 
 #include "vector.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace ppp
@@ -65,9 +66,9 @@ namespace ppp
         }
         // Calculates the fractional part of a number.
         template<typename T>
-        T fract(T v)
+        T fract(T v, T* iptr)
         {
-            return std::fract(v);
+            return std::modf(v, iptr);
         }
         // Calculates a number between two numbers at a specific increment.
         template<typename T>
@@ -103,13 +104,13 @@ namespace ppp
         template<typename T>
         T max(T v, T other)
         {
-            return std:max(v, other);
+            return (std::max)(v, other);
         }
         // Returns the smallest value in a sequence of numbers.
         template<typename T>
         T min(T v, T other)
         {
-            return std:min(v, other);
+            return (std::min)(v, other);
         }
         // Maps a number from one range to a value between 0 and 1.
         template<typename T>

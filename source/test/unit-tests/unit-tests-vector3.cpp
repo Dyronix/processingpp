@@ -6,12 +6,12 @@
 #include <sstream>
 
 // Tests for base_vec3
-TEST_CASE("base_vec3 operations", "[vec3]") 
+TEST_CASE("base_vec3 operations", "[vec3]")
 {
     using ppp::base_vec3;
     base_vec3<double> v(1.0, 2.0, 3.0);
 
-    SECTION("to_string") 
+    SECTION("to_string")
     {
         std::string str = v.to_string();
         REQUIRE(str.find("1") != std::string::npos);
@@ -19,7 +19,7 @@ TEST_CASE("base_vec3 operations", "[vec3]")
         REQUIRE(str.find("3") != std::string::npos);
     }
 
-    SECTION("copy and set") 
+    SECTION("copy and set")
     {
         auto v_copy = v.copy();
         REQUIRE(v_copy.x == 1.0);
@@ -31,7 +31,7 @@ TEST_CASE("base_vec3 operations", "[vec3]")
         REQUIRE(v_copy.z == 6.0);
     }
 
-    SECTION("addition and subtraction") 
+    SECTION("addition and subtraction")
     {
         base_vec3<double> v1(1.0, 2.0, 3.0);
         base_vec3<double> v2(4.0, 5.0, 6.0);
@@ -48,7 +48,7 @@ TEST_CASE("base_vec3 operations", "[vec3]")
         REQUIRE(v_sub.z == 3.0);
     }
 
-    SECTION("multiplication and division by scalar") 
+    SECTION("multiplication and division by scalar")
     {
         base_vec3<double> v1(2.0, 3.0, 4.0);
         v1.mult(2.0);
@@ -61,7 +61,7 @@ TEST_CASE("base_vec3 operations", "[vec3]")
         REQUIRE(v1.z == 4.0);
     }
 
-    SECTION("remainder operations") 
+    SECTION("remainder operations")
     {
         base_vec3<double> v1(5.5, 7.2, 9.3);
         v1.rem(3.0);
@@ -77,7 +77,7 @@ TEST_CASE("base_vec3 operations", "[vec3]")
         REQUIRE(v2.z == Catch::Approx(std::fmod(9.3, 3.0)));
     }
 
-    SECTION("magnitude and normalization") 
+    SECTION("magnitude and normalization")
     {
         base_vec3<double> v1(2.0, 3.0, 6.0);
         double expected = std::sqrt(4 + 9 + 36);
@@ -86,7 +86,7 @@ TEST_CASE("base_vec3 operations", "[vec3]")
         REQUIRE(v1.mag() == Catch::Approx(1.0));
     }
 
-    SECTION("dot and cross products") 
+    SECTION("dot and cross products")
     {
         base_vec3<double> v1(1.0, 0.0, 0.0);
         base_vec3<double> v2(0.0, 1.0, 0.0);
@@ -99,7 +99,7 @@ TEST_CASE("base_vec3 operations", "[vec3]")
         REQUIRE(cross.z == Catch::Approx(1.0));
     }
 
-    SECTION("limit and set magnitude") 
+    SECTION("limit and set magnitude")
     {
         base_vec3<double> v1(3.0, 4.0, 0.0); // magnitude 5.0
         v1.limit(3.0);

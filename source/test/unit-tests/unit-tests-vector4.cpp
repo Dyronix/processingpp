@@ -6,12 +6,12 @@
 #include <sstream>
 
 // Tests for base_vec4
-TEST_CASE("base_vec4 operations", "[vec4]") 
+TEST_CASE("base_vec4 operations", "[vec4]")
 {
     using ppp::base_vec4;
     base_vec4<double> v(1.0, 2.0, 3.0, 4.0);
 
-    SECTION("to_string") 
+    SECTION("to_string")
     {
         std::string str = v.to_string();
         REQUIRE(str.find("1") != std::string::npos);
@@ -20,7 +20,7 @@ TEST_CASE("base_vec4 operations", "[vec4]")
         REQUIRE(str.find("4") != std::string::npos);
     }
 
-    SECTION("copy and set") 
+    SECTION("copy and set")
     {
         auto v_copy = v.copy();
         REQUIRE(v_copy.x == 1.0);
@@ -34,7 +34,7 @@ TEST_CASE("base_vec4 operations", "[vec4]")
         REQUIRE(v_copy.w == 8.0);
     }
 
-    SECTION("addition and subtraction") 
+    SECTION("addition and subtraction")
     {
         base_vec4<double> v1(1.0, 2.0, 3.0, 4.0);
         base_vec4<double> v2(4.0, 3.0, 2.0, 1.0);
@@ -53,7 +53,7 @@ TEST_CASE("base_vec4 operations", "[vec4]")
         REQUIRE(v_sub.w == 3.0);
     }
 
-    SECTION("multiplication and division by scalar") 
+    SECTION("multiplication and division by scalar")
     {
         base_vec4<double> v1(2.0, 3.0, 4.0, 5.0);
         v1.mult(2.0);
@@ -68,7 +68,7 @@ TEST_CASE("base_vec4 operations", "[vec4]")
         REQUIRE(v1.w == 5.0);
     }
 
-    SECTION("remainder operations") 
+    SECTION("remainder operations")
     {
         base_vec4<double> v1(5.5, 7.2, 9.3, 11.4);
         v1.rem(3.0);
@@ -86,7 +86,7 @@ TEST_CASE("base_vec4 operations", "[vec4]")
         REQUIRE(v2.w == Catch::Approx(std::fmod(11.4, 3.0)));
     }
 
-    SECTION("magnitude and normalization") 
+    SECTION("magnitude and normalization")
     {
         base_vec4<double> v1(2.0, 3.0, 6.0, 2.0);
         double expected = std::sqrt(4 + 9 + 36 + 4);
@@ -95,7 +95,7 @@ TEST_CASE("base_vec4 operations", "[vec4]")
         REQUIRE(v1.mag() == Catch::Approx(1.0));
     }
 
-    SECTION("dot product") 
+    SECTION("dot product")
     {
         base_vec4<double> v1(1.0, 2.0, 3.0, 4.0);
         base_vec4<double> v2(4.0, 3.0, 2.0, 1.0);
@@ -103,7 +103,7 @@ TEST_CASE("base_vec4 operations", "[vec4]")
         REQUIRE(d == Catch::Approx(1 * 4 + 2 * 3 + 3 * 2 + 4 * 1));
     }
 
-    SECTION("limit and set magnitude") 
+    SECTION("limit and set magnitude")
     {
         base_vec4<double> v1(1.0, 2.0, 2.0, 1.0); // magnitude = sqrt(1+4+4+1) = sqrt(10)
         v1.limit(2.0);
