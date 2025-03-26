@@ -2,8 +2,6 @@
 
 #include "util/types.h"
 
-
-
 #include "string/string_id.h"
 
 #include <glm/glm.hpp>

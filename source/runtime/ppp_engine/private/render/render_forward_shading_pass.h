@@ -11,6 +11,7 @@ namespace ppp
         class forward_shading_pass : public render_pass
         {
         public:
+            forward_shading_pass(const string::string_id shader_tag);
             ~forward_shading_pass() override;
 
             void begin_frame(const render_context& context) override;

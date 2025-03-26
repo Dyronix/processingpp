@@ -6,8 +6,6 @@
 
 #include "util/types.h"
 
-
-
 #include "string/string_id.h"
 
 #include <string>
@@ -32,16 +30,15 @@ namespace ppp
 
         public:
             virtual void                begin() = 0;
-            virtual void                render(const glm::vec3& camera_position, const glm::vec3& camera_target, const glm::mat4& lightvp, const glm::mat4& vp) = 0;
+            virtual void                render() = 0;
             virtual void                end() = 0;
             virtual void                terminate() = 0;
+
+            virtual bool                has_texture_support() const = 0;
 
         public:
             void                        enable_solid_rendering(bool enable);
             void                        enable_wireframe_rendering(bool enable);
-
-            void                        user_shader_program(string::string_id tag);
-            void                        reset_user_shader_program();
 
         public:
             bool                        solid_rendering_supported() const;
@@ -59,7 +56,7 @@ namespace ppp
 
         private:
             class impl;
-            std::unique_ptr<impl>     m_pimpl;
+            std::unique_ptr<impl>       m_pimpl;
         };
     }
 }

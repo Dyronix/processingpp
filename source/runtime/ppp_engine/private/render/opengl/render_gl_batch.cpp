@@ -512,15 +512,13 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void draw(topology_type topology, u32 shader_program) const
+            void draw(topology_type topology) const
             {
                 GLenum gl_topology = internal::topology(topology);
 
 #ifndef NDEBUG
                 internal::check_drawing_type(m_buffer_manager->active_index_count(), gl_topology);
 #endif
-                shaders::apply_uniforms(shader_program);
-
                 if (m_buffer_manager->active_index_count() != 0)
                 {
                     opengl::api::instance().draw_elements(gl_topology, m_buffer_manager->active_index_count(), internal::index_type(), nullptr);
@@ -565,9 +563,9 @@ namespace ppp
             m_pimpl->submit();
         }
         //-------------------------------------------------------------------------
-        void batch::draw(topology_type topology, u32 shader_program) const
+        void batch::draw(topology_type topology) const
         {
-            m_pimpl->draw(topology, shader_program);
+            m_pimpl->draw(topology);
         }
 
         //-------------------------------------------------------------------------

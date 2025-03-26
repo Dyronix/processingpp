@@ -21,7 +21,7 @@ namespace ppp
 
         public:
             void begin() override;
-            void render(const glm::vec3& camera_position, const glm::vec3& camera_target, const glm::mat4& lightvp, const glm::mat4& vp) override;
+            void render() override;
             void end() override;
             void terminate() override;
 
@@ -55,6 +55,8 @@ namespace ppp
             ~primitive_instance_renderer() override;
 
             void on_render(topology_type topology, instance_drawing_data& drawing_data) override;
+
+            bool has_texture_support() const { return false; }
         };
 
         class texture_instance_renderer : public instance_renderer
@@ -64,6 +66,8 @@ namespace ppp
             ~texture_instance_renderer() override;
 
             void on_render(topology_type topology, instance_drawing_data& drawing_data) override;
+
+            bool has_texture_support() const { return true; }
         };
     }
 }

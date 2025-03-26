@@ -63,9 +63,9 @@ namespace ppp
     light_id directional_light(const directional_light_desc& desc)
     {
         glm::vec3 dir(desc.direction.x, desc.direction.y, desc.direction.z);
-        glm::vec3 ambient(desc.ambient.red, desc.ambient.green, desc.ambient.blue);
-        glm::vec3 diffuse(desc.diffuse.red, desc.diffuse.green, desc.diffuse.blue);
-        glm::vec3 specular(desc.specular.red, desc.specular.green, desc.specular.blue);
+        glm::vec3 ambient(desc.ambient.red / 255.0f, desc.ambient.green / 255.0f, desc.ambient.blue / 255.0f);
+        glm::vec3 diffuse(desc.diffuse.red / 255.0f, desc.diffuse.green / 255.0f, desc.diffuse.blue / 255.0f);
+        glm::vec3 specular(desc.specular.red / 255.0f, desc.specular.green / 255.0f, desc.specular.blue / 255.0f);
         bool specular_enabled = desc.specular_enabled;
         bool cast_shadows = desc.cast_shadows;
         return lights_pool::add_directional_light(dir, ambient, diffuse, specular, specular_enabled, cast_shadows);
@@ -74,9 +74,9 @@ namespace ppp
     light_id point_light(const point_light_desc& desc)
     {
         glm::vec3 pos(desc.position.x, desc.position.y, desc.position.z);
-        glm::vec3 ambient(desc.ambient.red, desc.ambient.green, desc.ambient.blue);
-        glm::vec3 diffuse(desc.diffuse.red, desc.diffuse.green, desc.diffuse.blue);
-        glm::vec3 specular(desc.specular.red, desc.specular.green, desc.specular.blue);
+        glm::vec3 ambient(desc.ambient.red / 255.0f, desc.ambient.green / 255.0f, desc.ambient.blue / 255.0f);
+        glm::vec3 diffuse(desc.diffuse.red / 255.0f, desc.diffuse.green / 255.0f, desc.diffuse.blue / 255.0f);
+        glm::vec3 specular(desc.specular.red / 255.0f, desc.specular.green / 255.0f, desc.specular.blue / 255.0f);
         bool specular_enabled = desc.specular_enabled;
         bool cast_shadows = desc.cast_shadows;
         attenuation_coefficients coeff = calculate_attenuation_coefficients(desc.max_range, desc.falloff_start);

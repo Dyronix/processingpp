@@ -1,6 +1,7 @@
 #include "engine.h"
 
 #include <sstream>
+#include <fstream>
 
 namespace ppp
 {
@@ -69,11 +70,11 @@ namespace ppp
     {
         directional_light_desc directional_desc =
         {
-            _initial_dir_x, _initial_dir_y, _initial_dir_z,    // direction
+            {_initial_dir_x, _initial_dir_y, _initial_dir_z},                                               // direction
 
-            static_cast<int>(0.05f * 255), static_cast<int>(0.05f * 255), static_cast<int>(0.05f * 255),    // ambient          
-            static_cast<int>(0.8f  * 255), static_cast<int>(0.8f  * 255), static_cast<int>(0.8f  * 255),       // diffuse
-            static_cast<int>(1.0f  * 255), static_cast<int>(1.0f  * 255), static_cast<int>(1.0f  * 255),       // specular          
+            {static_cast<int>(0.05f * 255), static_cast<int>(0.05f * 255), static_cast<int>(0.05f * 255)},  // ambient          
+            {static_cast<int>(0.8f  * 255), static_cast<int>(0.8f  * 255), static_cast<int>(0.8f  * 255)},  // diffuse
+            {static_cast<int>(1.0f  * 255), static_cast<int>(1.0f  * 255), static_cast<int>(1.0f  * 255)},  // specular          
             false,                  // specular enabled
             true,                   // cast shadows
         };

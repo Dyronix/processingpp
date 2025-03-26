@@ -92,6 +92,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_blit_pass.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pipeline.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_ui_pass.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass.cpp
     ## render-helpers
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.cpp
@@ -196,6 +197,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/lights.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/input_output.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/time_date.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/json.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/entrypoint.cpp)
 
 target_sources(processing_engine PUBLIC 
@@ -223,11 +225,15 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/vector.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/time_date.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/input_output.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/json.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/entrypoint.h)
 
 # Create the project filters
 GROUPSOURCES(${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private private)
 GROUPSOURCES(${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public public)
+
+# Public includes
+target_include_directories(processing_engine PUBLIC ${SOURCE_THIRDPARTY_DIRECTORY}/nlohmann/include)
 
 # Private includes
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glm)

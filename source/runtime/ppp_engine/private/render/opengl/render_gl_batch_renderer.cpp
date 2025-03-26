@@ -77,71 +77,6 @@ namespace ppp
                 log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
                 return GL_UNSIGNED_INT;
             }
-
-            //-------------------------------------------------------------------------
-            static void push_all_light_dependent_uniforms(u32 shader_program, const glm::vec3& camera_position, const glm::vec3& camera_target)
-            {
-                if (lights_pool::point_lights().empty() == false
-                 || lights_pool::directional_lights().empty() == false)
-                {
-                    shaders::push_uniform(shader_program, string::store_sid("u_view_position"), camera_position);
-                    //shaders::push_uniform(shader_program, string::store_sid("u_view_target"), camera_target);
-                }
-            }
-
-            //-------------------------------------------------------------------------
-            static void push_all_shadow_dependent_uniforms(u32 shader_program, const glm::mat4& lightvp)
-            {
-                if (lights_pool::directional_lights().empty() == false)
-                {
-                    if (lights_pool::has_directional_lights_with_shadow())
-                    {
-                        shaders::push_uniform(shader_program, string::store_sid("u_light_vp"), lightvp);
-                    }
-                }
-            }
-
-            //-------------------------------------------------------------------------
-            static void push_all_light_uniforms(u32 shader_program)
-            {
-                if (lights_pool::point_lights().empty() == false)
-                {
-                    constexpr u64 max_nr_point_lights = 8;
-
-                    u64 nr_active_point_lights = std::min(lights_pool::point_lights().size(), max_nr_point_lights);
-
-                    shaders::push_uniform(shader_program, string::store_sid("u_num_point_lights"), static_cast<s32>(nr_active_point_lights));
-
-                    for (s32 i = 0; i < nr_active_point_lights; ++i)
-                    {
-                        auto& point_light = lights_pool::point_lights()[i];
-
-                        std::string base_name = std::string("u_point_lights[") + string::to_string<std::string>(i) + std::string("]");
-
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".position"), point_light.position);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".ambient"), point_light.ambient);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".diffuse"), point_light.diffuse);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".specular"), point_light.specular);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".specular_enabled"), point_light.specular_enabled);
-
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".constant"), point_light.constant);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".linear"), point_light.linear);
-                        shaders::push_uniform(shader_program, string::store_sid(base_name + ".quadratic"), point_light.quadratic);
-                    }
-                }
-
-                if (lights_pool::directional_lights().empty() == false)
-                {
-                    for (auto& dir_light : lights_pool::directional_lights())
-                    {
-                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.direction"), dir_light.direction);
-                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.ambient"), dir_light.ambient);
-                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.diffuse"), dir_light.diffuse);
-                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.specular"), dir_light.specular);
-                        shaders::push_uniform(shader_program, string::store_sid("u_directional_light.specular_enabled"), dir_light.specular_enabled);
-                    }
-                }
-            }
         }
 
         // Batch Renderer
@@ -190,25 +125,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void batch_renderer::render(const glm::vec3& camera_position, const glm::vec3& camera_target, const glm::mat4& lightvp, const glm::mat4& vp)
+        void batch_renderer::render()
         {
             if (!has_drawing_data())
             {
                 // No drawing data, early out
                 return;
             }
-
-            const auto& program = shader_program();
-
-            opengl::api::instance().use_program(program->id());
-
-            if (program->shading_model() == shading_model_type::LIT)
-            {
-                internal::push_all_light_dependent_uniforms(program->id(), camera_position, camera_target);
-                internal::push_all_shadow_dependent_uniforms(program->id(), lightvp);
-            }
-
-            shaders::push_uniform(program->id(), string::store_sid("u_view_proj"), vp);
 
             for (auto& pair : m_drawing_data_map)
             {
@@ -223,8 +146,6 @@ namespace ppp
                     render_fn(pair.first, pair.second);
                 }
             }
-
-            opengl::api::instance().use_program(0);
         }
 
         //-------------------------------------------------------------------------
@@ -305,33 +226,11 @@ namespace ppp
             auto batch = drawing_data.first_batch();
             if (batch != nullptr)
             {
-                const auto& program = shader_program();
-
                 while (batch != nullptr)
                 {
                     batch->bind();
-
-                    if (program->shading_model() == shading_model_type::LIT)
-                    {
-                        internal::push_all_light_uniforms(program->id());
-
-                        if (lights_pool::directional_lights().empty() == false)
-                        {
-                            if (lights_pool::has_directional_lights_with_shadow())
-                            {
-                                const framebuffer* shadow_framebuffer = static_cast<const framebuffer*>(framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
-
-                                shaders::push_uniform(program->id(), string::store_sid("u_shadows_enabled"), 1);
-                                shaders::push_uniform(program->id(), string::store_sid("u_shadow_map"), 0);
-
-                                opengl::api::instance().activate_texture(GL_TEXTURE0);
-                                opengl::api::instance().bind_texture(GL_TEXTURE_2D, shadow_framebuffer->depth_attachment());
-                            }
-                        }
-                    }
-
                     batch->submit();
-                    batch->draw(topology, program->id());
+                    batch->draw(topology);
                     batch->unbind();
 
                     batch = drawing_data.next_batch();
@@ -356,44 +255,11 @@ namespace ppp
             auto batch = drawing_data.first_batch();
             if (batch != nullptr)
             {
-                const auto& samplers = material()->samplers();
-                const auto& textures = material()->textures();
-
-                const auto& program = shader_program();
-
                 while (batch != nullptr)
                 {
                     batch->bind();
-                 
-                    internal::push_all_light_uniforms(program->id());
-
-                    if (program->shading_model() == shading_model_type::LIT)
-                    {
-                        shaders::push_uniform_array(program->id(), string::store_sid("s_images"), samplers.size(), samplers.data());
-                    }
-
-                    s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                    for (s32 i = 0; i < textures.size(); ++i)
-                    {
-                        opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * i));
-                        opengl::api::instance().bind_texture(GL_TEXTURE_2D, textures[i]);
-                    }
-
-                    if (lights_pool::directional_lights().empty() == false)
-                    {
-                        if (lights_pool::has_directional_lights_with_shadow())
-                        {
-                            const framebuffer* shadow_framebuffer = static_cast<const framebuffer*>(framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
-
-                            shaders::push_uniform(program->id(), string::store_sid("u_shadow_map"), (s32)samplers.size());
-
-                            opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * textures.size()));
-                            opengl::api::instance().bind_texture(GL_TEXTURE_2D, shadow_framebuffer->depth_attachment());
-                        }
-                    }
-
                     batch->submit();
-                    batch->draw(topology, program->id());
+                    batch->draw(topology);
                     batch->unbind();
 
                     batch = drawing_data.next_batch();

@@ -287,9 +287,9 @@ namespace ppp
 
             g_ctx.font_renderer = std::make_unique<texture_batch_renderer>(shader_pool::tags::unlit::font());
 
-            g_ctx.render_pipeline.add_pass(std::make_unique<shadow_pass>());
-            g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>());
-            g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>());
+            g_ctx.render_pipeline.add_pass(std::make_unique<shadow_pass>(shader_pool::tags::unlit::shadow()));
+            g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>("lit"_sid));
+            //g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>(shader_pool::tags::unlit::font()));
             g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
 
             return true;

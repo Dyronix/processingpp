@@ -123,19 +123,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void instance_renderer::render(const glm::vec3& camera_position, const glm::vec3& camera_target, const glm::mat4& lightvp, const glm::mat4& vp)
+        void instance_renderer::render()
         {
             if (!has_drawing_data())
             {
                 // No drawing data, early out
                 return;
             }
-
-            const auto& program = shader_program();
-
-            opengl::api::instance().use_program(program->id());
-
-            shaders::push_uniform(program->id(), string::store_sid("u_view_proj"), vp);
 
             for (auto& pair : m_instance_data_map)
             {
@@ -150,8 +144,6 @@ namespace ppp
                     render_fn(pair.first, pair.second);
                 }
             }
-
-            opengl::api::instance().use_program(0);
         }
 
         //-------------------------------------------------------------------------
@@ -229,13 +221,11 @@ namespace ppp
             auto inst = drawing_data.first_instance();
             if (inst != nullptr)
             {
-                const auto& program = shader_program();
-
                 while (inst != nullptr)
                 {
                     inst->bind();
                     inst->submit();
-                    inst->draw(topology, program->id());
+                    inst->draw(topology);
                     inst->unbind();
 
                     inst = drawing_data.next_instance();
@@ -260,27 +250,11 @@ namespace ppp
             auto inst = drawing_data.first_instance();
             if (inst != nullptr)
             {
-                const auto& samplers = material()->samplers();
-                const auto& textures = material()->textures();
-
-                const auto& program = shader_program();
-
                 while (inst != nullptr)
                 {
                     inst->bind();
-
-                    shaders::push_uniform_array(program->id(), string::store_sid("s_images"), samplers.size(), samplers.data());
-
-                    s32 i = 0;
-                    s32 offset = GL_TEXTURE1 - GL_TEXTURE0;
-                    for (int i = 0; i < textures.size(); ++i)
-                    {
-                        opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * i));
-                        opengl::api::instance().bind_texture(GL_TEXTURE_2D, textures[i]);
-                    }
-
                     inst->submit();
-                    inst->draw(topology, program->id());
+                    inst->draw(topology);
                     inst->unbind();
 
                     inst = drawing_data.next_instance();

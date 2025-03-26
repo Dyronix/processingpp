@@ -21,6 +21,10 @@ namespace ppp
     namespace render
     {
         //-------------------------------------------------------------------------
+        ui_pass::ui_pass(const string::string_id shader_tag)
+            :render_pass(shader_tag)
+        {}
+        //-------------------------------------------------------------------------
         ui_pass::~ui_pass() = default;
 
         //-------------------------------------------------------------------------
@@ -29,6 +33,7 @@ namespace ppp
             context.font_renderer->begin();
 
             auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::ui(), framebuffer_flags::COLOR);
+
             framebuffer->bind();
 
             // Set viewport and clear the framebuffer.
@@ -63,22 +68,22 @@ namespace ppp
         //-------------------------------------------------------------------------
         void ui_pass::render(const render_context& context)
         {
-            auto& cam_pos_font = context.camera_context->camera_position_font;
-            auto& cam_tar_font = context.camera_context->camera_lookat_font;
+            //auto& cam_pos_font = context.camera_context->camera_position_font;
+            //auto& cam_tar_font = context.camera_context->camera_lookat_font;
 
-            opengl::api::instance().disable(GL_BLEND);
-            opengl::api::instance().enable(GL_CULL_FACE);
-            opengl::api::instance().enable(GL_DEPTH_TEST);
+            //opengl::api::instance().disable(GL_BLEND);
+            //opengl::api::instance().enable(GL_CULL_FACE);
+            //opengl::api::instance().enable(GL_DEPTH_TEST);
 
-            opengl::api::instance().blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            opengl::api::instance().cull_face(GL_BACK);
-            opengl::api::instance().depth_func(GL_LESS);
+            //opengl::api::instance().blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            //opengl::api::instance().cull_face(GL_BACK);
+            //opengl::api::instance().depth_func(GL_LESS);
 
-            const glm::mat4& cam_font_p = context.camera_context->mat_proj_font;
-            const glm::mat4& cam_font_v = context.camera_context->mat_view_font;
-            glm::mat4 cam_font_vp = cam_font_p * cam_font_v;
+            //const glm::mat4& cam_font_p = context.camera_context->mat_proj_font;
+            //const glm::mat4& cam_font_v = context.camera_context->mat_view_font;
+            //glm::mat4 cam_font_vp = cam_font_p * cam_font_v;
 
-            context.font_renderer->render(cam_pos_font, cam_tar_font, glm::mat4(1.0f), cam_font_vp);
+            //context.font_renderer->render(cam_pos_font, cam_tar_font, glm::mat4(1.0f), cam_font_vp);
         }
 
         //-------------------------------------------------------------------------

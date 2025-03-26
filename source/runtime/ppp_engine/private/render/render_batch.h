@@ -31,7 +31,7 @@ namespace ppp
             void bind() const;
             void unbind() const;
             void submit() const;
-            void draw(topology_type topology, u32 shader_program) const;
+            void draw(topology_type topology) const;
 
         public:
             void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world);

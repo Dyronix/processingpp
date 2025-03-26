@@ -9,6 +9,7 @@
 #include "environment.h"
 #include "events.h"
 #include "image.h"
+#include "json.h"
 #include "material.h"
 #include "mathematics.h"
 #include "model.h"

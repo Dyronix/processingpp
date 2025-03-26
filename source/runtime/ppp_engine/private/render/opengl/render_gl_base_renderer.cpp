@@ -105,21 +105,6 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void base_renderer::user_shader_program(string::string_id tag)
-        {
-            if (shader_pool::has_shader(tag))
-            {
-                m_pimpl->user_shader_tag = tag;
-            }
-        }
-
-        //-------------------------------------------------------------------------
-        void base_renderer::reset_user_shader_program()
-        {
-            m_pimpl->user_shader_tag = {};
-        }
-
-        //-------------------------------------------------------------------------
         bool base_renderer::solid_rendering_supported() const
         {
             return m_pimpl->rasterization_mode & internal::_solid;
