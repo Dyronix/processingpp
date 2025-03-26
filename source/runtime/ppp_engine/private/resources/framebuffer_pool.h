@@ -19,6 +19,9 @@ namespace ppp
     {
         namespace tags
         {
+            string::string_id predepth();
+            string::string_id wireframe();
+            string::string_id unlit();
             string::string_id shadow_map();
             string::string_id forward_shading();
             string::string_id ui();

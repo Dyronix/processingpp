@@ -63,6 +63,8 @@ namespace ppp
             opengl::api::instance().clear_depth(1.0);
             opengl::api::instance().clear(GL_DEPTH_BUFFER_BIT);
 
+            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
+
             // Bind the pass shader
             opengl::api::instance().use_program(shader_program()->id());
 

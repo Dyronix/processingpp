@@ -581,6 +581,30 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            void function_library::depth_mask(bool flag)
+            {
+                GL_LOG("glDepthMask");
+                #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tflag: {0}", flag);
+                #endif
+
+                GL_CALL(glDepthMask(flag));
+            }
+            //-------------------------------------------------------------------------
+            void function_library::color_mask(bool red, bool green, bool blue, bool alpha)
+            {
+                GL_LOG("glColorMask");
+                #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tred: {0}", red);
+                GL_LOG("\tgreen: {0}", green);
+                GL_LOG("\tblue: {0}", blue);
+                GL_LOG("\talpha: {0}", alpha);
+                #endif
+
+                GL_CALL(glColorMask(red, green, blue, alpha));
+            }
+
+            //-------------------------------------------------------------------------
             void function_library::blend_func(u32 sfactor, u32 dfactor)
             {
                 GL_LOG("glBlendFunc");
@@ -1701,6 +1725,26 @@ namespace ppp
 #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
                 GL_LOG("\tvalue: {0}", disable_to_string(value));
 #endif
+            }
+
+            //-------------------------------------------------------------------------
+            void mock_function_library::depth_mask(bool flag)
+            {
+                GL_LOG("glDepthMask");
+                #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tflag: {0}", flag);
+                #endif
+            }
+            //-------------------------------------------------------------------------
+            void mock_function_library::color_mask(bool red, bool green, bool blue, bool alpha)
+            {
+                GL_LOG("glColorMask");
+                #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tred: {0}", red);
+                GL_LOG("\tgreen: {0}", green);
+                GL_LOG("\tblue: {0}", blue);
+                GL_LOG("\talpha: {0}", alpha);
+                #endif
             }
 
             //-------------------------------------------------------------------------

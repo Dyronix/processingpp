@@ -64,6 +64,9 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_scissor.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pipeline.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_ui_pass.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_unlit_pass.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_unlit_wireframe_pass.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_predepth_pass.h
     ## render-opengl
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_storage_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_vertex_buffer.cpp
@@ -92,7 +95,10 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_blit_pass.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pipeline.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_ui_pass.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_unlit_pass.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_unlit_wireframe_pass.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_predepth_pass.cpp
     ## render-helpers
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.cpp

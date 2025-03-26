@@ -118,13 +118,16 @@ namespace ppp
             opengl::api::instance().cull_face(GL_BACK);
 
             opengl::api::instance().enable(GL_DEPTH_TEST);
-            opengl::api::instance().depth_func(GL_LESS);
+            opengl::api::instance().depth_func(GL_LEQUAL); // Optional: Use GL_LEQUAL for matching precision
+            opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
 
             opengl::api::instance().viewport(0, 0, forward_framebuffer->width(), forward_framebuffer->height());
 
             opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
             opengl::api::instance().clear_depth(1.0);
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
+
+            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
 
             // Set the background clear color from the brush.
             glm::vec4 bg_color = brush::background();
@@ -148,7 +151,7 @@ namespace ppp
             }
 
             // Clear buffers after scissor state is set.
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
 
             // Bind the pass shader
             opengl::api::instance().use_program(shader_program()->id());
@@ -262,7 +265,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         void forward_shading_pass::end_frame(const render_context& context)
         {
-            // Unbind pass shader 
+            // Reset state
+            opengl::api::instance().depth_mask(GL_TRUE);
             opengl::api::instance().use_program(0);
 
             // Unbind pass framebuffer

@@ -1,5 +1,6 @@
-#include "render/render_ui_pass.h"
+#include "render/render_unlit_pass.h"
 #include "render/render_batch_renderer.h"
+#include "render/render_instance_renderer.h"
 #include "render/render_context.h"
 #include "render/render_scissor.h"
 #include "render/render_shader_uniform_manager.h"
@@ -13,7 +14,6 @@
 
 #include "util/log.h"
 #include "util/brush.h"
-#include "util/color_ops.h"
 
 #include <algorithm>
 #include <glad/glad.h>
@@ -29,27 +29,27 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        ui_pass::ui_pass(const string::string_id shader_tag)
+        unlit_pass::unlit_pass(const string::string_id shader_tag)
             :render_pass(shader_tag)
         {}
         //-------------------------------------------------------------------------
-        ui_pass::~ui_pass() = default;
+        unlit_pass::~unlit_pass() = default;
 
         //-------------------------------------------------------------------------
-        void ui_pass::begin_frame(const render_context& context)
+        void unlit_pass::begin_frame(const render_context& context)
         {
-            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::ui(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
+            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::unlit(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
 
             framebuffer->bind();
 
             // Configure OpenGL state.
-            opengl::api::instance().enable(GL_BLEND);
-            opengl::api::instance().blend_func(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            opengl::api::instance().disable(GL_BLEND);
 
             opengl::api::instance().enable(GL_CULL_FACE);
             opengl::api::instance().cull_face(GL_BACK);
 
-            opengl::api::instance().disable(GL_DEPTH_TEST);
+            opengl::api::instance().enable(GL_DEPTH_TEST);
+            opengl::api::instance().depth_func(GL_LEQUAL); // Optional: Use GL_LEQUAL for matching precision
             opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
 
             opengl::api::instance().viewport(0, 0, framebuffer->width(), framebuffer->height());
@@ -58,7 +58,7 @@ namespace ppp
             opengl::api::instance().clear_depth(1.0);
             opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
 
-            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_LINE);
+            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
 
             // Set the background clear color from the brush.
             glm::vec4 bg_color = brush::background();
@@ -100,7 +100,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void ui_pass::render(const render_context& context)
+        void unlit_pass::render(const render_context& context)
         {
             shaders::apply_uniforms(shader_program()->id());
 
@@ -108,18 +108,22 @@ namespace ppp
             {
                 pair.second->render();
             }
+
+            for (auto& pair : *context.instance_renderers)
+            {
+                pair.second->render();
+            }
         }
 
         //-------------------------------------------------------------------------
-        void ui_pass::end_frame(const render_context& context)
+        void unlit_pass::end_frame(const render_context& context)
         {
             // Reset state
-            opengl::api::instance().disable(GL_BLEND);
             opengl::api::instance().depth_mask(GL_TRUE);
             opengl::api::instance().use_program(0);
 
             // Unbind pass framebuffer
-            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::ui(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
+            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::unlit(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
 
             framebuffer->unbind();
         }

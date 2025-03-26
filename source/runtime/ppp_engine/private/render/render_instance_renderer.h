@@ -15,6 +15,9 @@ namespace ppp
             static void set_wireframe_linewidth(f32 width);
             static void set_wireframe_linecolor(s32 color);
 
+            static f32 wireframe_linewidth();
+            static s32 wireframe_linecolor();
+
         public:
             instance_renderer(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag);
             ~instance_renderer() override;

@@ -17,6 +17,9 @@ namespace ppp
             static void set_wireframe_linewidth(f32 width);
             static void set_wireframe_linecolor(s32 color);
 
+            static f32 wireframe_linewidth();
+            static s32 wireframe_linecolor();
+
         public:
             batch_renderer(string::string_id shader_tag);
             ~batch_renderer() override;
@@ -36,15 +39,9 @@ namespace ppp
             virtual void on_render(topology_type type, batch_drawing_data& drawing_data) = 0;
 
         private:
-            void solid_render(topology_type topology, batch_drawing_data& drawing_data);
-            void wireframe_render(topology_type topology, batch_drawing_data& drawing_data);
-
-        private:
             using drawing_data_map = std::unordered_map<topology_type, batch_drawing_data>;
 
             drawing_data_map m_drawing_data_map;
-
-            std::vector<std::function<void(topology_type, batch_drawing_data&)>> m_render_fns;
         };
 
         class primitive_batch_renderer : public batch_renderer

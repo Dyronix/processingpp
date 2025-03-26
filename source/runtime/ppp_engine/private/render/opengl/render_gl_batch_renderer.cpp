@@ -81,14 +81,25 @@ namespace ppp
 
         // Batch Renderer
         //-------------------------------------------------------------------------
-        void batch_renderer::set_wireframe_linewidth(f32 width) 
+        void batch_renderer::set_wireframe_linewidth(f32 width)
         {
-            internal::_wireframe_linewidth = width; 
+            internal::_wireframe_linewidth = width;
         }
         //-------------------------------------------------------------------------
-        void batch_renderer::set_wireframe_linecolor(s32 color) 
+        void batch_renderer::set_wireframe_linecolor(s32 color)
         {
             internal::_wireframe_linecolor = color;
+        }
+
+        //-------------------------------------------------------------------------
+        f32 batch_renderer::wireframe_linewidth()
+        {
+            return internal::_wireframe_linewidth;
+        }
+        //-------------------------------------------------------------------------
+        s32 batch_renderer::wireframe_linecolor()
+        {
+            return internal::_wireframe_linecolor;
         }
 
         //-------------------------------------------------------------------------
@@ -96,20 +107,6 @@ namespace ppp
             : base_renderer(shader_tag)
             , m_drawing_data_map()
         {
-            m_render_fns.clear();
-
-            if (solid_rendering_supported())
-            {
-                m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
-                    solid_render(topology, drawing_data);
-                });
-            }
-            if (wireframe_rendering_supported())
-            {
-                m_render_fns.push_back([&](topology_type topology, batch_drawing_data& drawing_data) {
-                    wireframe_render(topology, drawing_data);
-                });
-            }
         }
 
         //-------------------------------------------------------------------------
@@ -141,10 +138,7 @@ namespace ppp
                     return;
                 }
 
-                for (auto& render_fn : m_render_fns)
-                {
-                    render_fn(pair.first, pair.second);
-                }
+                on_render(pair.first, pair.second);
             }
         }
 
@@ -185,28 +179,6 @@ namespace ppp
             {
                 return pair.second.has_drawing_data();
             });
-        }
-
-        //-------------------------------------------------------------------------
-        void batch_renderer::solid_render(topology_type topology, batch_drawing_data& drawing_data)
-        {
-            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
-
-            shaders::push_uniform(shader_program()->id(), string::store_sid("u_wireframe"), GL_FALSE);
-
-            on_render(topology, drawing_data);
-        }
-
-        //-------------------------------------------------------------------------
-        void batch_renderer::wireframe_render(topology_type topology, batch_drawing_data& drawing_data)
-        {
-            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_LINE);
-            opengl::api::instance().line_width(internal::_wireframe_linewidth);
-
-            shaders::push_uniform(shader_program()->id(), string::store_sid("u_wireframe"), GL_TRUE);
-            shaders::push_uniform(shader_program()->id(), string::store_sid("u_wireframe_color"), color::convert_color(internal::_wireframe_linecolor));
-
-            on_render(topology, drawing_data);
         }
 
         // Primitive Batch Renderer

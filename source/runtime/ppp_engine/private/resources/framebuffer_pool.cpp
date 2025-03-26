@@ -2,10 +2,6 @@
 
 #include "util/log.h"
 
-
-
-
-
 #include <unordered_map>
 
 namespace ppp
@@ -14,6 +10,24 @@ namespace ppp
     {
         namespace tags
         {
+            //-------------------------------------------------------------------------
+            string::string_id predepth()
+            {
+                static const string::string_id s_predepth_fb = string::store_sid("predepth_framebuffer");
+                return s_predepth_fb;
+            }
+            //-------------------------------------------------------------------------
+            string::string_id wireframe()
+            {
+                static const string::string_id s_wireframe_fb = string::store_sid("wireframe_framebuffer");
+                return s_wireframe_fb;
+            }
+            //-------------------------------------------------------------------------
+            string::string_id unlit()
+            {
+                static const string::string_id s_unlit_fb = string::store_sid("unlit_framebuffer");
+                return s_unlit_fb;
+            }
             //-------------------------------------------------------------------------
             string::string_id shadow_map()
             {
@@ -162,22 +176,22 @@ namespace ppp
                     continue;
                 }
 
-                bool meetsCriteria = true;
+                bool meets_criteria = true;
                 if (flags & framebuffer_flags::DEPTH)
                 {
-                    meetsCriteria &= fb->has_depth();
+                    meets_criteria &= fb->has_depth();
                 }
                 if (flags & framebuffer_flags::SAMPLED_DEPTH)
                 {
                     // SAMPLED_DEPTH implies both depth and a depth texture.
-                    meetsCriteria &= (fb->has_depth() && fb->has_depth_texture());
+                    meets_criteria &= (fb->has_depth() && fb->has_depth_texture());
                 }
                 if (flags & framebuffer_flags::COLOR)
                 {
-                    meetsCriteria &= fb->has_color_attachment();
+                    meets_criteria &= fb->has_color_attachment();
                 }
 
-                if (meetsCriteria)
+                if (meets_criteria)
                 {
                     g_ctx.framebuffers_in_use[tag] = fb.get();
                     return fb.get();
