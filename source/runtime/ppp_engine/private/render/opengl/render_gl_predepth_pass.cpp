@@ -28,8 +28,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        predepth_pass::predepth_pass(string::string_id shader_tag)
-            : render_pass(shader_tag)
+        predepth_pass::predepth_pass(string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
+            :render_pass(shader_tag, framebuffer_tag, framebuffer_flags)
         {}
 
         //-------------------------------------------------------------------------
@@ -40,8 +40,7 @@ namespace ppp
         {
             assert(context && "Invalid render context");
 
-            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::predepth(), framebuffer_flags::DEPTH);
-            framebuffer->bind();
+            framebuffer()->bind();
 
             // Configure OpenGL state
             opengl::api::instance().disable(GL_BLEND);
@@ -55,7 +54,7 @@ namespace ppp
 
             opengl::api::instance().color_mask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Disable color writes
 
-            opengl::api::instance().viewport(0, 0, framebuffer->width(), framebuffer->height());
+            opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
             opengl::api::instance().clear_depth(1.0f);
             opengl::api::instance().clear(GL_DEPTH_BUFFER_BIT);
 
@@ -100,9 +99,7 @@ namespace ppp
             opengl::api::instance().use_program(0);
 
             // Unbind pass framebuffer
-            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::predepth(), framebuffer_flags::DEPTH);
-
-            framebuffer->unbind();
+            framebuffer()->unbind();
         }
     }
 }

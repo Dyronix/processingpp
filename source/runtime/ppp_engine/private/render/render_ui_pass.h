@@ -11,7 +11,7 @@ namespace ppp
         class ui_pass : public render_pass
         {
         public:
-            ui_pass(const string::string_id shader_tag);
+            ui_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
             ~ui_pass() override;
 
             void begin_frame(const render_context& context) override;

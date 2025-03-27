@@ -55,6 +55,13 @@ namespace ppp
 
                     return s_shadow;
                 }
+                //-------------------------------------------------------------------------
+                string::string_id predepth()
+                {
+                    static const string::string_id s_predepth = string::store_sid("unlit_predepth");
+
+                    return s_predepth;
+                }
 
                 //-------------------------------------------------------------------------
                 // instanced
@@ -85,6 +92,13 @@ namespace ppp
 
                     return s_instance_shadow;
                 }
+                //-------------------------------------------------------------------------
+                string::string_id instance_predepth()
+                {
+                    static const string::string_id s_instance_predepth = string::store_sid("instance_unlit_predepth");
+
+                    return s_instance_predepth;
+                }
             }
 
             namespace lit
@@ -102,6 +116,12 @@ namespace ppp
                     static const string::string_id s_specular = string::store_sid("lit_specular");
 
                     return s_specular;
+                }
+                string::string_id lit()
+                {
+                    static const string::string_id s_lit = string::store_sid("lit");
+
+                    return s_lit;
                 }
 
                 //-------------------------------------------------------------------------
@@ -150,6 +170,7 @@ namespace ppp
             g_ctx.add_shader_program(tags::unlit::font(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_TEXCOORD_COLOR, render::shaders::unlit::font_vertex_shader_code(), render::shaders::unlit::font_pixel_shader_code());
             g_ctx.add_shader_program(tags::unlit::normal(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_NORMAL_COLOR, render::shaders::unlit::normal_vertex_shader_code(), render::shaders::unlit::normal_pixel_shader_code());
             g_ctx.add_shader_program(tags::unlit::shadow(), render::shading_model_type::UNLIT, render::vertex_type::POSITION, render::shaders::unlit::shadow_depth_vertex_shader_code(), render::shaders::unlit::shadow_depth_fragment_shader_code());
+            g_ctx.add_shader_program(tags::unlit::predepth(), render::shading_model_type::UNLIT, render::vertex_type::POSITION, render::shaders::unlit::predepth_vertex_shader_code(), render::shaders::unlit::predepth_fragment_shader_code());
             // lit
             g_ctx.add_shader_program(tags::lit::color(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL_COLOR, render::shaders::lit::color_vertex_shader_code(), render::shaders::lit::color_pixel_shader_code());
             g_ctx.add_shader_program(tags::lit::specular(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL_COLOR, render::shaders::lit::specular_vertex_shader_code(), render::shaders::lit::specular_pixel_shader_code());
@@ -160,6 +181,7 @@ namespace ppp
             g_ctx.add_shader_program(tags::unlit::instance_texture(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_TEXCOORD, render::shaders::unlit::instance_texture_vertex_shader_code(), render::shaders::unlit::texture_pixel_shader_code());
             g_ctx.add_shader_program(tags::unlit::instance_normal(), render::shading_model_type::UNLIT, render::vertex_type::POSITION_NORMAL, render::shaders::unlit::instance_normal_vertex_shader_code(), render::shaders::unlit::normal_pixel_shader_code());
             g_ctx.add_shader_program(tags::unlit::instance_shadow(), render::shading_model_type::UNLIT, render::vertex_type::POSITION, render::shaders::unlit::instance_shadow_depth_vertex_shader_code(), render::shaders::unlit::shadow_depth_fragment_shader_code());
+            g_ctx.add_shader_program(tags::unlit::instance_predepth(), render::shading_model_type::UNLIT, render::vertex_type::POSITION, render::shaders::unlit::instance_predepth_vertex_shader_code(), render::shaders::unlit::predepth_fragment_shader_code());
             // lit
             //g_ctx.add_shader_program(tags::lit::instance_color(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL, render::shaders::lit::instance_color_vertex_shader_code(), render::shaders::lit::color_pixel_shader_code());
             g_ctx.add_shader_program(tags::lit::instance_specular(), render::shading_model_type::LIT, render::vertex_type::POSITION_NORMAL, render::shaders::lit::instance_specular_vertex_shader_code(), render::shaders::lit::specular_pixel_shader_code());

@@ -11,7 +11,7 @@ namespace ppp
         class unlit_pass : public render_pass
         {
         public:
-            unlit_pass(const string::string_id shader_tag);
+            unlit_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
             ~unlit_pass() override;
 
             void begin_frame(const render_context& context) override;

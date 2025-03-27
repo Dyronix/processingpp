@@ -8,10 +8,13 @@
 #include "render/render_scissor.h"
 #include "render/render_pipeline.h"
 
+#include "render/render_predepth_pass.h"
 #include "render/render_shadow_pass.h"
 #include "render/render_forward_shading_pass.h"
-#include "render/render_blit_pass.h"
 #include "render/render_ui_pass.h"
+#include "render/render_unlit_pass.h"
+#include "render/render_unlit_wireframe_pass.h"
+#include "render/render_blit_pass.h"
 
 #include "render/helpers/render_vertex_layouts.h"
 #include "render/helpers/render_instance_layouts.h"
@@ -287,10 +290,10 @@ namespace ppp
 
             g_ctx.font_renderer = std::make_unique<texture_batch_renderer>(shader_pool::tags::unlit::font());
 
-            g_ctx.render_pipeline.add_pass(std::make_unique<shadow_pass>(shader_pool::tags::unlit::shadow()));
-            g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>("lit"_sid));
-            //g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>(shader_pool::tags::unlit::font()));
-            g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
+            g_ctx.render_pipeline.add_pass(std::make_unique<predepth_pass>(shader_pool::tags::unlit::predepth(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(std::make_unique<shadow_pass>(shader_pool::tags::unlit::shadow(), framebuffer_pool::tags::shadow_map()));
+            g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>(shader_pool::tags::lit::lit(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::composite(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
 
             return true;
         }

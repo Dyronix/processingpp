@@ -21,12 +21,14 @@ namespace ppp
                 string::string_id font();
                 string::string_id normal();
                 string::string_id shadow();
+                string::string_id predepth();
 
                 // instanced
                 string::string_id instance_color();
                 string::string_id instance_texture();
                 string::string_id instance_normal();
                 string::string_id instance_shadow();
+                string::string_id instance_predepth();
             }
 
             namespace lit
@@ -34,6 +36,7 @@ namespace ppp
                 // batched
                 string::string_id color();
                 string::string_id specular();
+                string::string_id lit();
 
                 // instanced
                 string::string_id instance_color();

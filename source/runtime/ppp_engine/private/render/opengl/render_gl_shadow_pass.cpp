@@ -33,8 +33,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        shadow_pass::shadow_pass(string::string_id shader_tag)
-            :render_pass(shader_tag)
+        shadow_pass::shadow_pass(string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
+            :render_pass(shader_tag, framebuffer_tag, framebuffer_flags)
         {}
         //-------------------------------------------------------------------------
         shadow_pass::~shadow_pass() = default;
@@ -45,9 +45,7 @@ namespace ppp
             assert(context && "Invalid render context");
 
             // Bind pass framebuffer
-            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH);
-
-            framebuffer->bind();
+            framebuffer()->bind();
 
             // Configure OpenGL state.
             opengl::api::instance().disable(GL_BLEND);      
@@ -58,7 +56,7 @@ namespace ppp
             opengl::api::instance().enable(GL_DEPTH_TEST);
             opengl::api::instance().depth_func(GL_LESS);
 
-            opengl::api::instance().viewport(0, 0, framebuffer->width(), framebuffer->height());
+            opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
 
             opengl::api::instance().clear_depth(1.0);
             opengl::api::instance().clear(GL_DEPTH_BUFFER_BIT);
@@ -80,7 +78,7 @@ namespace ppp
             const f32 near_plane = 0.01f;
             const f32 far_plane = 1000.0f;
 
-            const glm::mat4 light_active_p = glm::ortho(-framebuffer->width() / 2.0f, framebuffer->width() / 2.0f, -framebuffer->height() / 2.0f, framebuffer->height() / 2.0f, near_plane, far_plane);;
+            const glm::mat4 light_active_p = glm::ortho(-framebuffer()->width() / 2.0f, framebuffer()->width() / 2.0f, -framebuffer()->height() / 2.0f, framebuffer()->height() / 2.0f, near_plane, far_plane);;
             const glm::mat4 light_active_v = glm::lookAt(light_pos_active, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
             const glm::mat4 light_active_vp = light_active_p * light_active_v;
 
@@ -110,9 +108,7 @@ namespace ppp
             opengl::api::instance().use_program(0);
 
             // Unbind pass framebuffer
-            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH);
-
-            framebuffer->unbind();
+            framebuffer()->unbind();
         }
 
         //-------------------------------------------------------------------------

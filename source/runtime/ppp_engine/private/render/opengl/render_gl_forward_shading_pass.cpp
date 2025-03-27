@@ -4,6 +4,7 @@
 #include "render/render_context.h"
 #include "render/render_scissor.h"
 #include "render/render_shader_uniform_manager.h"
+#include "render/render_framebuffer.h"
 
 #include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
@@ -95,8 +96,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        forward_shading_pass::forward_shading_pass(const string::string_id shader_tag)
-            :render_pass(shader_tag)
+        forward_shading_pass::forward_shading_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
+            :render_pass(shader_tag, framebuffer_tag, framebuffer_flags)
         {}
         //-------------------------------------------------------------------------
         forward_shading_pass::~forward_shading_pass() = default;
@@ -107,9 +108,7 @@ namespace ppp
             assert(context && "Invalid render context");
 
             // Bind pass framebuffer
-            auto forward_framebuffer = framebuffer_pool::get(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
-
-            forward_framebuffer->bind();
+            framebuffer()->bind();
 
             // Configure OpenGL state.
             opengl::api::instance().disable(GL_BLEND);
@@ -121,7 +120,7 @@ namespace ppp
             opengl::api::instance().depth_func(GL_LEQUAL); // Optional: Use GL_LEQUAL for matching precision
             opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
 
-            opengl::api::instance().viewport(0, 0, forward_framebuffer->width(), forward_framebuffer->height());
+            opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
 
             opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
             opengl::api::instance().clear_depth(1.0);
@@ -139,10 +138,10 @@ namespace ppp
             {
                 opengl::api::instance().enable(GL_SCISSOR_TEST);
                 opengl::api::instance().scissor(
-                    std::clamp(context.scissor->x, 0, forward_framebuffer->width()),
-                    std::clamp(context.scissor->y, 0, forward_framebuffer->height()),
-                    std::clamp(context.scissor->width, framebuffer::min_framebuffer_width(), forward_framebuffer->width()),
-                    std::clamp(context.scissor->height, framebuffer::min_framebuffer_height(), forward_framebuffer->height())
+                    std::clamp(context.scissor->x, 0, framebuffer()->width()),
+                    std::clamp(context.scissor->y, 0, framebuffer()->height()),
+                    std::clamp(context.scissor->width, framebuffer::min_framebuffer_width(), framebuffer()->width()),
+                    std::clamp(context.scissor->height, framebuffer::min_framebuffer_height(), framebuffer()->height())
                 );
             }
             else
@@ -219,7 +218,7 @@ namespace ppp
                 {
                     if (lights_pool::has_directional_lights_with_shadow())
                     {
-                        const framebuffer* shadow_framebuffer = static_cast<const framebuffer*>(framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
+                        const render::framebuffer* shadow_framebuffer = static_cast<const render::framebuffer*>(framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
 
                         shaders::push_uniform(shader_program()->id(), string::store_sid("u_shadows_enabled"), 1);
                         shaders::push_uniform(shader_program()->id(), string::store_sid("u_shadow_map"), (s32)sampler_size);

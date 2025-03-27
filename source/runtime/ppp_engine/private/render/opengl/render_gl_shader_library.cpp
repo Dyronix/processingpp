@@ -470,6 +470,48 @@ namespace ppp
                         gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
                     )").build();
                 }
+
+                //-------------------------------------------------------------------------
+                std::string predepth_vertex_shader_code()
+                {
+                    shader_builder builder;
+
+                    return builder
+                        .set_version(460)
+                        .add_attribute("vec3", "a_position", 0)
+                        .add_uniform("mat4", "u_view_proj")
+
+                        .set_main_function_body(R"(
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);
+                    )").build();
+                }
+
+                //-------------------------------------------------------------------------
+                std::string predepth_fragment_shader_code()
+                {
+                    shader_builder builder;
+
+                    return builder
+                        .set_version(460)
+                        .set_main_function_body(R"(
+                        // gl_FragDepth = gl_FragCoord.z;
+                    )").build();
+                }
+
+                //-------------------------------------------------------------------------
+                std::string instance_predepth_vertex_shader_code()
+                {
+                    shader_builder builder;
+
+                    return builder
+                        .set_version(460)
+                        .add_attribute("vec3", "a_position", 0)
+                        .add_attribute("mat4", "a_inst_mat_model", 1)
+                        .add_uniform("mat4", "u_view_proj")
+                        .set_main_function_body(R"(
+                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
+                    )").build();
+                }
             }
 
             namespace lit

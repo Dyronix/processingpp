@@ -3,6 +3,8 @@
 #include "string/string_id.h"
 
 #include "render/render_shader.h"
+#include "render/render_framebuffer.h"
+#include "render/render_framebuffer_flags.h"
 
 namespace ppp
 {
@@ -11,6 +13,7 @@ namespace ppp
         class imaterial;
 
         using shader_program = std::shared_ptr<render::shaders::shader_program>;
+        using iframebuffer = render::iframebuffer;
     }
 
     namespace render
@@ -20,7 +23,7 @@ namespace ppp
         class render_pass
         {
         public:
-            render_pass(const string::string_id shader_tag);
+            render_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags);
 
             virtual ~render_pass() = default;
 
@@ -32,11 +35,14 @@ namespace ppp
             virtual bool                should_render() const { return true; }
 
         protected:
-            resources::shader_program   shader_program() const;
-            resources::imaterial*       material() const;
+            const resources::iframebuffer*    framebuffer() const;
+            const resources::shader_program   shader_program() const;
+            const resources::imaterial*       material() const;
 
         private:
             const string::string_id     m_shader_tag;
+            const string::string_id     m_framebuffer_tag;
+            const s32                   m_framebuffer_flags;
         };
     }
 }

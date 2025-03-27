@@ -29,8 +29,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        unlit_pass::unlit_pass(const string::string_id shader_tag)
-            :render_pass(shader_tag)
+        unlit_pass::unlit_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
+            :render_pass(shader_tag, framebuffer_tag, framebuffer_flags)
         {}
         //-------------------------------------------------------------------------
         unlit_pass::~unlit_pass() = default;
@@ -38,9 +38,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void unlit_pass::begin_frame(const render_context& context)
         {
-            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::unlit(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
-
-            framebuffer->bind();
+            framebuffer()->bind();
 
             // Configure OpenGL state.
             opengl::api::instance().disable(GL_BLEND);
@@ -52,7 +50,7 @@ namespace ppp
             opengl::api::instance().depth_func(GL_LEQUAL); // Optional: Use GL_LEQUAL for matching precision
             opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
 
-            opengl::api::instance().viewport(0, 0, framebuffer->width(), framebuffer->height());
+            opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
 
             opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
             opengl::api::instance().clear_depth(1.0);
@@ -70,10 +68,10 @@ namespace ppp
             {
                 opengl::api::instance().enable(GL_SCISSOR_TEST);
                 opengl::api::instance().scissor(
-                    std::clamp(context.scissor->x, 0, framebuffer->width()),
-                    std::clamp(context.scissor->y, 0, framebuffer->height()),
-                    std::clamp(context.scissor->width, framebuffer::min_framebuffer_width(), framebuffer->width()),
-                    std::clamp(context.scissor->height, framebuffer::min_framebuffer_height(), framebuffer->height())
+                    std::clamp(context.scissor->x, 0, framebuffer()->width()),
+                    std::clamp(context.scissor->y, 0, framebuffer()->height()),
+                    std::clamp(context.scissor->width, framebuffer::min_framebuffer_width(), framebuffer()->width()),
+                    std::clamp(context.scissor->height, framebuffer::min_framebuffer_height(), framebuffer()->height())
                 );
             }
             else
@@ -123,9 +121,7 @@ namespace ppp
             opengl::api::instance().use_program(0);
 
             // Unbind pass framebuffer
-            auto framebuffer = framebuffer_pool::get(framebuffer_pool::tags::unlit(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
-
-            framebuffer->unbind();
+            framebuffer()->unbind();
         }
     }
 }

@@ -11,6 +11,12 @@ namespace ppp
         namespace tags
         {
             //-------------------------------------------------------------------------
+            string::string_id composite()
+            {
+                static const string::string_id s_composite_fb = string::store_sid("composite_framebuffer");
+                return s_composite_fb;
+            }
+            //-------------------------------------------------------------------------
             string::string_id predepth()
             {
                 static const string::string_id s_predepth_fb = string::store_sid("predepth_framebuffer");
@@ -170,25 +176,47 @@ namespace ppp
             for (auto& fb : g_ctx.framebuffers)
             {
                 // Skip if this framebuffer is already in use.
-                if (std::any_of(g_ctx.framebuffers_in_use.begin(), g_ctx.framebuffers_in_use.end(),
-                    [fb_ptr = fb.get()](const auto& pair) { return pair.second == fb_ptr; }))
+                bool in_use = std::any_of(g_ctx.framebuffers_in_use.begin(), g_ctx.framebuffers_in_use.end(),
+                    [fb_ptr = fb.get()](const auto& pair)
+                    {
+                        return pair.second == fb_ptr;
+                    });
+                
+                if (in_use)
                 {
                     continue;
                 }
 
                 bool meets_criteria = true;
-                if (flags & framebuffer_flags::DEPTH)
+
+                // Check DEPTH: if either DEPTH or SAMPLED_DEPTH is requested, require depth.
+                if (flags & (framebuffer_flags::DEPTH | framebuffer_flags::SAMPLED_DEPTH))
                 {
                     meets_criteria &= fb->has_depth();
                 }
+                else
+                {
+                    meets_criteria &= !fb->has_depth();
+                }
+
+                // Check SAMPLED_DEPTH: if requested, require depth texture.
                 if (flags & framebuffer_flags::SAMPLED_DEPTH)
                 {
-                    // SAMPLED_DEPTH implies both depth and a depth texture.
-                    meets_criteria &= (fb->has_depth() && fb->has_depth_texture());
+                    meets_criteria &= fb->has_depth_texture();
                 }
+                else
+                {
+                    meets_criteria &= !fb->has_depth_texture();
+                }
+
+                // Check COLOR: only allow if requested.
                 if (flags & framebuffer_flags::COLOR)
                 {
                     meets_criteria &= fb->has_color_attachment();
+                }
+                else
+                {
+                    meets_criteria &= !fb->has_color_attachment();
                 }
 
                 if (meets_criteria)

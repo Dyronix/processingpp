@@ -2,10 +2,7 @@
 #include "camera/camera_manager.h"
 #include "events.h"
 #include "environment.h"
-#include "camera/camera_manager.h"
 #include "device/device.h"
-
-#include "util/types.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 

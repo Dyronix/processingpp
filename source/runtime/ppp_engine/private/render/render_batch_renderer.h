@@ -3,8 +3,6 @@
 #include "render/render_base_renderer.h"
 #include "render/render_batch.h"
 
-
-
 namespace ppp
 {
     namespace render

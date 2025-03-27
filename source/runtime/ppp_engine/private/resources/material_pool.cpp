@@ -77,7 +77,9 @@ namespace ppp
             add_new_material(resources::material(shader_pool::tags::unlit::font())); 
             add_new_material(resources::material(shader_pool::tags::unlit::normal()));         
             add_new_material(resources::material(shader_pool::tags::unlit::shadow()));         
+            add_new_material(resources::material(shader_pool::tags::unlit::predepth()));         
             // lit
+            add_new_material(resources::material(shader_pool::tags::lit::lit()));
             add_new_material(resources::material(shader_pool::tags::lit::color()));
             add_new_material(resources::material(shader_pool::tags::lit::specular()));
             // instanced
@@ -86,6 +88,7 @@ namespace ppp
             add_new_material(resources::material(shader_pool::tags::unlit::instance_color()));
             add_new_material(resources::material(shader_pool::tags::unlit::instance_texture()));
             add_new_material(resources::material(shader_pool::tags::unlit::instance_shadow()));
+            add_new_material(resources::material(shader_pool::tags::unlit::instance_predepth()));
             // lit
             add_new_material(resources::material(shader_pool::tags::lit::instance_color()));
             add_new_material(resources::material(shader_pool::tags::lit::instance_specular()));

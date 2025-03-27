@@ -33,6 +33,10 @@ namespace ppp
                 std::string shadow_depth_vertex_shader_code();
                 std::string shadow_depth_fragment_shader_code();
                 std::string instance_shadow_depth_vertex_shader_code();
+
+                std::string predepth_vertex_shader_code();
+                std::string predepth_fragment_shader_code();
+                std::string instance_predepth_vertex_shader_code();
             }
 
             namespace lit

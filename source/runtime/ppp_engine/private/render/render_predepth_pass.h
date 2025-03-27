@@ -11,7 +11,7 @@ namespace ppp
         class predepth_pass : public render_pass
         {
         public:
-            predepth_pass(const string::string_id shader_tag);
+            predepth_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
             ~predepth_pass() override;
 
             void begin_frame(const render_context& context) override;
