@@ -34,13 +34,15 @@ namespace ppp
             virtual void                end() = 0;
             virtual void                terminate() = 0;
 
-            virtual bool                has_texture_support() const = 0;
+            
 
         public:
             void                        enable_solid_rendering(bool enable);
             void                        enable_wireframe_rendering(bool enable);
 
         public:
+            bool                        has_texture_support() const;
+
             bool                        solid_rendering_supported() const;
             bool                        wireframe_rendering_supported() const;
 

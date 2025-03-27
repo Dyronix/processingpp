@@ -90,15 +90,18 @@ namespace ppp
         {
             shaders::apply_uniforms(shader_program()->id());
 
-            for (auto& pair : *context.batch_renderers)
-            {
-                pair.second->render();
-            }
+            batch_renderer::render(draw_strategy(), context.batch_data);
+            instance_renderer::render(draw_strategy(), context.instance_data);
 
-            for (auto& pair : *context.instance_renderers)
-            {
-                pair.second->render();
-            }
+            //for (auto& pair : *context.batch_renderers)
+            //{
+            //    pair.second->render();
+            //}
+
+            //for (auto& pair : *context.instance_renderers)
+            //{
+            //    pair.second->render();
+            //}
         }
 
         //-------------------------------------------------------------------------

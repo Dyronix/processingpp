@@ -64,9 +64,6 @@ namespace ppp
             opengl::api::instance().use_program(shader_program()->id());
 
             // Apply shape uniforms
-            const glm::vec3& cam_pos_active = context.camera_context->camera_position_active;
-            const glm::vec3& cam_tar_active = context.camera_context->camera_lookat_active;
-
             const glm::mat4& cam_active_p = context.camera_context->mat_proj_active;
             const glm::mat4& cam_active_v = context.camera_context->mat_view_active;
 
@@ -80,15 +77,18 @@ namespace ppp
         {
             shaders::apply_uniforms(shader_program()->id());
 
-            for (auto& pair : *context.batch_renderers)
-            {
-                pair.second->render();
-            }
+            batch_renderer::render(draw_strategy(), context.batch_data);
+            instance_renderer::render(draw_strategy(), context.instance_data);
 
-            for (auto& pair : *context.instance_renderers)
-            {
-                pair.second->render();
-            }
+            //for (auto& pair : *context.batch_renderers)
+            //{
+            //    pair.second->render();
+            //}
+
+            //for (auto& pair : *context.instance_renderers)
+            //{
+            //    pair.second->render();
+            //}
         }
 
         //-------------------------------------------------------------------------

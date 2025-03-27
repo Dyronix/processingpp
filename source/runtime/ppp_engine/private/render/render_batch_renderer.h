@@ -49,8 +49,6 @@ namespace ppp
             ~primitive_batch_renderer() override;
 
             void on_render(topology_type topology, batch_drawing_data& drawing_data) override;
-
-            bool has_texture_support() const override { return false; }
         };
 
         class texture_batch_renderer : public batch_renderer
@@ -60,8 +58,6 @@ namespace ppp
             ~texture_batch_renderer() override;
 
             void on_render(topology_type topology, batch_drawing_data& drawing_data) override;
-
-            bool has_texture_support() const override { return true; }
         };
     }
 }

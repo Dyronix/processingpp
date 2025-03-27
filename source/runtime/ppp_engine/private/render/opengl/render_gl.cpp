@@ -2,6 +2,7 @@
 #include "render/render_batch.h"
 #include "render/render_instance.h"
 #include "render/render_batch_renderer.h"
+#include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
 #include "render/render_shader.h"
 #include "render/render_context.h"
@@ -149,7 +150,7 @@ namespace ppp
 
             // renderers
             instance_renderers_hash_map instance_renderers = {};
-            batch_renderers_hash_map    batch_renderers = {};
+            batch_data_hash_map    batch_data = {};
 
             font_renderer               font_renderer = nullptr;
 
@@ -164,7 +165,7 @@ namespace ppp
             render_context render_context;
             render_context.camera_context = camera_context;
             render_context.font_renderer = g_ctx.font_renderer.get();
-            render_context.batch_renderers = &g_ctx.batch_renderers;
+            render_context.batch_data = &g_ctx.batch_data;
             render_context.instance_renderers = &g_ctx.instance_renderers;
             render_context.scissor = &g_ctx.scissor;
 
@@ -185,27 +186,27 @@ namespace ppp
 
             if (g_ctx.draw_mode == render_draw_mode::BATCHED)
             {
-                auto& batch_ren = g_ctx.batch_renderers;
+                auto& batch_ren = g_ctx.batch_data;
 
-                if (g_ctx.batch_renderers.find(shader_tag) == std::cend(g_ctx.batch_renderers))
+                if (g_ctx.batch_data.find(shader_tag) == std::cend(g_ctx.batch_data))
                 {
-                    std::unique_ptr<batch_renderer> renderer = nullptr;
+                    std::unique_ptr<batch_data_table> renderer = nullptr;
 
                     if (item->has_textures() == false)
                     {
                         assert(g_ctx.fill_user_shader.is_none() == false);
 
-                        renderer = std::make_unique<primitive_batch_renderer>(shader_tag);
+                        renderer = std::make_unique<batch_data_table>(shader_tag);
                     }
                     else
                     {
-                        renderer = std::make_unique<texture_batch_renderer>(shader_tag);
+                        renderer = std::make_unique<batch_data_table>(shader_tag);
                     }
 
-                    g_ctx.batch_renderers.emplace(shader_tag, std::move(renderer));
+                    g_ctx.batch_data.emplace(shader_tag, std::move(renderer));
                 }
 
-                g_ctx.batch_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
+                g_ctx.batch_data.at(shader_tag)->append(topology, item, color, transform_stack::active_world());
             }
             else
             {
@@ -305,11 +306,11 @@ namespace ppp
             g_ctx.font_renderer->terminate();
 
             // Custom
-            for (auto& pair : g_ctx.batch_renderers)
+            for (auto& pair : g_ctx.batch_data)
             {
-                pair.second->terminate();
+                pair.second->clear();
             }
-            g_ctx.batch_renderers.clear();
+            g_ctx.batch_data.clear();
 
             for (auto& pair : g_ctx.instance_renderers)
             {
@@ -325,9 +326,9 @@ namespace ppp
             g_ctx.font_renderer->begin();
 
             // Custom
-            for (auto& pair : g_ctx.batch_renderers)
+            for (auto& pair : g_ctx.batch_data)
             {
-                pair.second->begin();
+                pair.second->reset();
             }
             for (auto& pair : g_ctx.instance_renderers)
             {
@@ -392,10 +393,10 @@ namespace ppp
             g_ctx.font_renderer->enable_solid_rendering(enable);
 
             // Custom
-            for (auto& pair : g_ctx.batch_renderers)
-            {
-                pair.second->enable_solid_rendering(enable);
-            }
+            //for (auto& pair : g_ctx.batch_data)
+            //{
+            //    pair.second->enable_solid_rendering(enable);
+            //}
             for (auto& pair : g_ctx.instance_renderers)
             {
                 pair.second->enable_solid_rendering(enable);
@@ -409,11 +410,10 @@ namespace ppp
             g_ctx.font_renderer->enable_wireframe_rendering(enable);
 
             // Custom
-            for (auto& pair : g_ctx.batch_renderers)
-            {
-                pair.second->enable_wireframe_rendering(enable);
-            }
-
+            //for (auto& pair : g_ctx.batch_data)
+            //{
+            //    pair.second->enable_wireframe_rendering(enable);
+            //}
             for (auto& pair : g_ctx.instance_renderers)
             {
                 pair.second->enable_wireframe_rendering(enable);

@@ -37,5 +37,17 @@ namespace ppp
         {
             return material_pool::material_at_shader_tag(m_shader_tag);
         }
+
+        //-------------------------------------------------------------------------
+        ibatch_render_strategy* render_pass::draw_strategy()
+        {
+            if (m_draw_strategy == nullptr)
+            {
+                m_draw_strategy = make_draw_strategy();
+            }
+
+            return m_draw_strategy.get();
+        }
+
     }
 }

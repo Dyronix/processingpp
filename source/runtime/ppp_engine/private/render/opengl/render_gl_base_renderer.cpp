@@ -105,6 +105,20 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        bool base_renderer::has_texture_support() const
+        {
+            for (u64 i = 0; i < layout_count(); ++i)
+            {
+                if (layouts()[i].type == attribute_type::TEXCOORD)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        //-------------------------------------------------------------------------
         bool base_renderer::solid_rendering_supported() const
         {
             return m_pimpl->rasterization_mode & internal::_solid;
