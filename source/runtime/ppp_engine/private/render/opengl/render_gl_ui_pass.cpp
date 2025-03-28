@@ -1,5 +1,6 @@
 #include "render/render_ui_pass.h"
 #include "render/render_batch_renderer.h"
+#include "render/render_batch_data_table.h"
 #include "render/render_context.h"
 #include "render/render_scissor.h"
 #include "render/render_shader_uniform_manager.h"
@@ -8,6 +9,7 @@
 #include "render/opengl/render_gl_api.h"
 
 #include "resources/framebuffer_pool.h"
+#include "resources/shader_pool.h"
 
 #include "camera/camera_context.h"
 
@@ -86,9 +88,6 @@ namespace ppp
             opengl::api::instance().use_program(shader_program()->id());
 
             // Apply shape uniforms
-            const glm::vec3& cam_pos_active = context.camera_context->camera_position_active;
-            const glm::vec3& cam_tar_active = context.camera_context->camera_lookat_active;
-
             const glm::mat4& cam_active_p = context.camera_context->mat_proj_active;
             const glm::mat4& cam_active_v = context.camera_context->mat_view_active;
 
@@ -102,10 +101,7 @@ namespace ppp
         {
             shaders::apply_uniforms(shader_program()->id());
 
-            for (auto& pair : *context.batch_renderers)
-            {
-                pair.second->render();
-            }
+            batch_renderer::render(batch_render_strategy(), context.font_batch_data);
         }
 
         //-------------------------------------------------------------------------

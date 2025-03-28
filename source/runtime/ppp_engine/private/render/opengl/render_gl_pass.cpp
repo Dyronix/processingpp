@@ -39,15 +39,24 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        ibatch_render_strategy* render_pass::draw_strategy()
+        ibatch_render_strategy* render_pass::batch_render_strategy()
         {
-            if (m_draw_strategy == nullptr)
+            if (m_batch_draw_strategy == nullptr)
             {
-                m_draw_strategy = make_draw_strategy();
+                m_batch_draw_strategy = make_batch_render_strategy();
             }
 
-            return m_draw_strategy.get();
+            return m_batch_draw_strategy.get();
         }
+        //-------------------------------------------------------------------------
+        iinstance_render_strategy* render_pass::instance_render_strategy()
+        {
+            if (m_inst_draw_strategy == nullptr)
+            {
+                m_inst_draw_strategy = make_inst_render_strategy();
+            }
 
+            return m_inst_draw_strategy.get();
+        }
     }
 }

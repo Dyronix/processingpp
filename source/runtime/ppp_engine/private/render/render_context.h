@@ -8,11 +8,10 @@ namespace ppp
 
     namespace render
     {
-        class texture_batch_renderer;
-        class instance_renderer;
         class batch_data_table;
+        class instance_data_table;
 
-        using instance_renderers_hash_map = std::unordered_map<string::string_id, std::unique_ptr<instance_renderer>>;
+        using instance_data_hash_map = std::unordered_map<string::string_id, std::unique_ptr<instance_data_table>>;
         using batch_data_hash_map = std::unordered_map<string::string_id, std::unique_ptr<batch_data_table>>;
 
         struct render_scissor;
@@ -23,18 +22,18 @@ namespace ppp
             {
                 return camera_context != nullptr
                     && scissor != nullptr
-                    && font_renderer != nullptr
+                    && font_batch_data != nullptr
                     && batch_data != nullptr
-                    && instance_renderers != nullptr;
+                    && instance_data != nullptr;
             }
 
-            const camera_context*           camera_context = nullptr; 
+            const camera_context*       camera_context = nullptr; 
+            const render_scissor*       scissor = nullptr;
 
-            const render_scissor*           scissor = nullptr;
+            batch_data_table*           font_batch_data = nullptr;
 
-            texture_batch_renderer*         font_renderer = nullptr;
-            batch_data_hash_map*            batch_data = nullptr;
-            instance_renderers_hash_map*    instance_renderers = nullptr;
+            batch_data_hash_map*        batch_data = nullptr;
+            instance_data_hash_map*     instance_data = nullptr;
         };
     }
 }

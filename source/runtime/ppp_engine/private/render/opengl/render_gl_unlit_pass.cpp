@@ -1,6 +1,8 @@
 #include "render/render_unlit_pass.h"
 #include "render/render_batch_renderer.h"
+#include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
+#include "render/render_instance_data_table.h"
 #include "render/render_context.h"
 #include "render/render_scissor.h"
 #include "render/render_shader_uniform_manager.h"
@@ -9,6 +11,7 @@
 #include "render/opengl/render_gl_api.h"
 
 #include "resources/framebuffer_pool.h"
+#include "resources/shader_pool.h"
 
 #include "camera/camera_context.h"
 
@@ -102,14 +105,23 @@ namespace ppp
         {
             shaders::apply_uniforms(shader_program()->id());
 
-            for (auto& pair : *context.batch_renderers)
+            for (auto& pair : *context.batch_data)
             {
-                pair.second->render();
-            }
+                if (shader_pool::shading_model_for_shader(shader_tag()) != shader_pool::shading_model_for_shader(pair.first))
+                {
+                    continue;
+                }
 
-            for (auto& pair : *context.instance_renderers)
+                batch_renderer::render(batch_render_strategy(), pair.second.get());
+            }
+            for (auto& pair : *context.instance_data)
             {
-                pair.second->render();
+                if (shader_pool::shading_model_for_shader(shader_tag()) != shader_pool::shading_model_for_shader(pair.first))
+                {
+                    continue;
+                }
+
+                instance_renderer::render(instance_render_strategy(), pair.second.get());
             }
         }
 

@@ -44,6 +44,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "render/render_instance_data_table.h"
+
 #define LOG_GL_NOTIFICATIONS 0
 #define LOG_GL_LOW 0
 #define LOG_GL_MEDIUM 1
@@ -127,7 +129,7 @@ namespace ppp
             }
         }
 
-        using font_renderer = std::unique_ptr<texture_batch_renderer>;
+        using font_batch_data = std::unique_ptr<batch_data_table>;
 
         //-------------------------------------------------------------------------
         struct context
@@ -149,10 +151,10 @@ namespace ppp
             render_pipeline             render_pipeline;
 
             // renderers
-            instance_renderers_hash_map instance_renderers = {};
-            batch_data_hash_map    batch_data = {};
+            instance_data_hash_map      instance_data = {};
+            batch_data_hash_map         batch_data = {};
 
-            font_renderer               font_renderer = nullptr;
+            font_batch_data             font_batch_data = nullptr;
 
             // opengl version       
             s32                         major = 0;
@@ -164,9 +166,9 @@ namespace ppp
         {
             render_context render_context;
             render_context.camera_context = camera_context;
-            render_context.font_renderer = g_ctx.font_renderer.get();
+            render_context.font_batch_data = g_ctx.font_batch_data.get();
             render_context.batch_data = &g_ctx.batch_data;
-            render_context.instance_renderers = &g_ctx.instance_renderers;
+            render_context.instance_data = &g_ctx.instance_data;
             render_context.scissor = &g_ctx.scissor;
 
             return render_context;
@@ -182,56 +184,34 @@ namespace ppp
                 return;
             }
 
+            assert(g_ctx.fill_user_shader.is_none() == false);
+
             string::string_id shader_tag = g_ctx.fill_user_shader;
 
             if (g_ctx.draw_mode == render_draw_mode::BATCHED)
             {
-                auto& batch_ren = g_ctx.batch_data;
-
                 if (g_ctx.batch_data.find(shader_tag) == std::cend(g_ctx.batch_data))
                 {
-                    std::unique_ptr<batch_data_table> renderer = nullptr;
+                    std::unique_ptr<batch_data_table> data_table = std::make_unique<batch_data_table>(shader_tag);;
 
-                    if (item->has_textures() == false)
-                    {
-                        assert(g_ctx.fill_user_shader.is_none() == false);
-
-                        renderer = std::make_unique<batch_data_table>(shader_tag);
-                    }
-                    else
-                    {
-                        renderer = std::make_unique<batch_data_table>(shader_tag);
-                    }
-
-                    g_ctx.batch_data.emplace(shader_tag, std::move(renderer));
+                    g_ctx.batch_data.emplace(shader_tag, std::move(data_table));
                 }
 
                 g_ctx.batch_data.at(shader_tag)->append(topology, item, color, transform_stack::active_world());
             }
             else
             {
-                if (g_ctx.instance_renderers.find(shader_tag) == std::cend(g_ctx.instance_renderers))
+                if (g_ctx.instance_data.find(shader_tag) == std::cend(g_ctx.instance_data))
                 {
-                    std::unique_ptr<instance_renderer> renderer = nullptr;
-                    if (item->has_textures() == false)
-                    {
-                        renderer = std::make_unique<primitive_instance_renderer>(
-                            color_world_layout().data(),
-                            color_world_layout().size(),
-                            shader_tag);
-                    }
-                    else
-                    {
-                        renderer = std::make_unique<texture_instance_renderer>(
-                            color_world_matid_layout().data(),
-                            color_world_matid_layout().size(),
-                            shader_tag);
-                    }
+                    std::unique_ptr<instance_data_table> data_table = std::make_unique<instance_data_table>(
+                        color_world_layout().data(),
+                        color_world_layout().size(),
+                        shader_tag);
 
-                    g_ctx.instance_renderers.emplace(shader_tag, std::move(renderer));
+                    g_ctx.instance_data.emplace(shader_tag, std::move(data_table));
                 }
 
-                g_ctx.instance_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
+                g_ctx.instance_data.at(shader_tag)->append(topology, item, color, transform_stack::active_world());
             }
         }
 
@@ -289,7 +269,7 @@ namespace ppp
             g_ctx.scissor.height = h;
             g_ctx.scissor.enable = false;
 
-            g_ctx.font_renderer = std::make_unique<texture_batch_renderer>(shader_pool::tags::unlit::font());
+            g_ctx.font_batch_data = std::make_unique<batch_data_table>(shader_pool::tags::unlit::font());
 
             g_ctx.render_pipeline.add_pass(std::make_unique<predepth_pass>(shader_pool::tags::unlit::predepth(), framebuffer_pool::tags::composite()));
             g_ctx.render_pipeline.add_pass(std::make_unique<shadow_pass>(shader_pool::tags::unlit::shadow(), framebuffer_pool::tags::shadow_map()));
@@ -303,7 +283,7 @@ namespace ppp
         void terminate()
         {
             // Font
-            g_ctx.font_renderer->terminate();
+            g_ctx.font_batch_data->clear();
 
             // Custom
             for (auto& pair : g_ctx.batch_data)
@@ -312,27 +292,27 @@ namespace ppp
             }
             g_ctx.batch_data.clear();
 
-            for (auto& pair : g_ctx.instance_renderers)
+            for (auto& pair : g_ctx.instance_data)
             {
-                pair.second->terminate();
+                pair.second->clear();
             }
-            g_ctx.instance_renderers.clear();
+            g_ctx.instance_data.clear();
         }
 
         //-------------------------------------------------------------------------
         void begin(const camera_context* context)
         {
             // Font
-            g_ctx.font_renderer->begin();
+            g_ctx.font_batch_data->begin();
 
             // Custom
             for (auto& pair : g_ctx.batch_data)
             {
                 pair.second->reset();
             }
-            for (auto& pair : g_ctx.instance_renderers)
+            for (auto& pair : g_ctx.instance_data)
             {
-                pair.second->begin();
+                pair.second->reset();
             }
 
             broadcast_on_draw_begin();
@@ -389,35 +369,35 @@ namespace ppp
         //-------------------------------------------------------------------------
         void push_solid_rendering(bool enable)
         {
-            // Font
-            g_ctx.font_renderer->enable_solid_rendering(enable);
-
-            // Custom
+            //// Font
+            //g_ctx.font_batch_data->enable_solid_rendering(enable);
+            //
+            //// Custom
             //for (auto& pair : g_ctx.batch_data)
             //{
             //    pair.second->enable_solid_rendering(enable);
             //}
-            for (auto& pair : g_ctx.instance_renderers)
-            {
-                pair.second->enable_solid_rendering(enable);
-            }
+            //for (auto& pair : g_ctx.instance_data)
+            //{
+            //    pair.second->enable_solid_rendering(enable);
+            //}
         }
 
         //-------------------------------------------------------------------------
         void push_wireframe_rendering(bool enable)
         {
-            // Font
-            g_ctx.font_renderer->enable_wireframe_rendering(enable);
-
+            //// Font
+            //g_ctx.font_batch_data->enable_wireframe_rendering(enable);
+            //
             // Custom
             //for (auto& pair : g_ctx.batch_data)
             //{
             //    pair.second->enable_wireframe_rendering(enable);
             //}
-            for (auto& pair : g_ctx.instance_renderers)
-            {
-                pair.second->enable_wireframe_rendering(enable);
-            }
+            //for (auto& pair : g_ctx.instance_data)
+            //{
+            //    pair.second->enable_wireframe_rendering(enable);
+            //}
         }
 
         //-------------------------------------------------------------------------
@@ -608,7 +588,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void submit_font_item(const irender_item* item)
         {
-            g_ctx.font_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
+            g_ctx.font_batch_data->append(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
         }
 
         //-------------------------------------------------------------------------

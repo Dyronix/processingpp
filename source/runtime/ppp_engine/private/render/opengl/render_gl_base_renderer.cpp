@@ -30,14 +30,14 @@ namespace ppp
             static constexpr s32 _wireframe = 1 << 0;
 
             //-------------------------------------------------------------------------
-            const attribute_layout* get_attribute_layout(string::string_id shader_tag)
+            static const attribute_layout* get_attribute_layout(string::string_id shader_tag)
             {
                 auto shader_program = shader_pool::get_shader_program(shader_tag);
 
                 return fill_user_layout(shader_program->vertex_format());
             }
             //-------------------------------------------------------------------------
-            u64 get_attribute_layout_count(string::string_id shader_tag)
+            static u64 get_attribute_layout_count(string::string_id shader_tag)
             {
                 auto shader_program = shader_pool::get_shader_program(shader_tag);
 

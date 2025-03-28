@@ -69,7 +69,9 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_unlit_wireframe_pass.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_predepth_pass.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch_data_table.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_data_table.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch_render_strategy.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_render_strategy.h
     ## render-opengl
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_storage_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_vertex_buffer.cpp
@@ -103,7 +105,9 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_predepth_pass.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch_data_table.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance_data_table.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch_render_strategy.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance_render_strategy.cpp
     ## render-helpers
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.cpp

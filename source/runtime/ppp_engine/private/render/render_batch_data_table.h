@@ -20,6 +20,12 @@ namespace ppp
         public:
             batch_data_table(string::string_id shader_tag);
 
+            // Standard begin/end to allow range-based for loops.
+            iterator            begin() { return m_batches.begin(); }
+            iterator            end() { return m_batches.end(); }
+            const_iterator      begin() const { return m_batches.begin(); }
+            const_iterator      end() const { return m_batches.end(); }
+
         public:
             const table_type&   data() const { return m_batches; }
 
@@ -31,8 +37,11 @@ namespace ppp
             u64                 size() const;
             bool                empty() const;
 
+            bool                has_texture_support() const;
+
         private:
             string::string_id   m_shader_tag;
+
             table_type          m_batches;
         };
     }

@@ -1,4 +1,5 @@
 #include "render/render_batch_data_table.h"
+#include "render/render_instance_data_table.h"
 #include "render/render_features.h"
 #include "render/helpers/render_vertex_layouts.h"
 
@@ -38,53 +39,48 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        batch_data_table::batch_data_table(string::string_id shader_tag)
+        instance_data_table::instance_data_table(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
             :m_shader_tag(shader_tag)
-        {
-
-        }
+            , m_instance_layouts(instance_layouts)
+            , m_instance_layout_count(instance_layout_count)
+        {}
 
         //-------------------------------------------------------------------------
-        void batch_data_table::reset()
+        void instance_data_table::reset()
         {
-            for (auto& pair : m_batches)
+            for (auto& pair : m_instances)
             {
                 pair.second.reset();
             }
         }
         //-------------------------------------------------------------------------
-        void batch_data_table::clear()
+        void instance_data_table::clear()
         {
-            for (auto& pair : m_batches)
+            for (auto& pair : m_instances)
             {
                 pair.second.release();
             }
-            m_batches.clear();
         }
         //-------------------------------------------------------------------------
-        void batch_data_table::append(topology_type topology, const irender_item* item, const glm::vec4& color, const glm::mat4& world)
+        void instance_data_table::append(topology_type topology, const irender_item* item, const glm::vec4& color, const glm::mat4& world)
         {
-            auto it = m_batches.find(topology);
-            if (it == m_batches.end())
+            if (m_instances.find(topology) == std::cend(m_instances))
             {
-                // Create a new batch_drawing_data if it doesn't exist.
-                s32 max_ver = max_vertices(topology);
-                s32 max_idx = max_indices(topology);
-                auto emplaceResult = m_batches.emplace(topology, batch_drawing_data(max_ver, max_idx, internal::layouts(m_shader_tag), internal::layout_count(m_shader_tag)));
-                it = emplaceResult.first;
+                m_instances.emplace(topology, instance_drawing_data(internal::layouts(m_shader_tag), internal::layout_count(m_shader_tag), m_instance_layouts, m_instance_layout_count));
             }
-            it->second.append(item, color, world);
+
+            m_instances.at(topology).append(item, color, world);
         }
 
         //-------------------------------------------------------------------------
-        u64 batch_data_table::size() const
+        u64 instance_data_table::size() const
         {
-            return m_batches.size();
+            return m_instances.size();
         }
         //-------------------------------------------------------------------------
-        bool batch_data_table::empty() const
+        bool instance_data_table::empty() const
         {
-            return m_batches.empty() || std::none_of(std::cbegin(m_batches), std::cend(m_batches),
+            return m_instances.empty() || std::none_of(std::cbegin(m_instances), std::cend(m_instances),
                 [](const auto& pair)
             {
                 return pair.second.has_drawing_data();
@@ -92,13 +88,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool batch_data_table::has_texture_support() const
+        bool instance_data_table::has_texture_support() const
         {
             for (u64 i = 0; i < internal::layout_count(m_shader_tag); ++i)
             {
                 if (internal::layouts(m_shader_tag)[i].type == attribute_type::TEXCOORD)
                 {
-                    return true;    
+                    return true;
                 }
             }
 

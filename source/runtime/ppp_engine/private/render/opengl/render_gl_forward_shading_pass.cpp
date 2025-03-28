@@ -1,6 +1,8 @@
 #include "render/render_forward_shading_pass.h"
 #include "render/render_batch_renderer.h"
+#include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
+#include "render/render_instance_data_table.h"
 #include "render/render_context.h"
 #include "render/render_scissor.h"
 #include "render/render_shader_uniform_manager.h"
@@ -196,8 +198,13 @@ namespace ppp
 
             u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
 
-            for (auto& pair : *context.batch_renderers)
+            for (auto& pair : *context.batch_data)
             {
+                if (shader_pool::shading_model_for_shader(shader_tag()) != shader_pool::shading_model_for_shader(pair.first))
+                {
+                    continue;
+                }
+
                 bool has_texture_support = pair.second->has_texture_support();
 
                 u64 sampler_size = has_texture_support ? samplers.size() : 0;
@@ -236,11 +243,16 @@ namespace ppp
                     shaders::push_uniform(shader_program()->id(), string::store_sid("u_shadows_enabled"), 0);
                 }
 
-                pair.second->render();
+                batch_renderer::render(batch_render_strategy(), pair.second.get());
             }
 
-            for (auto& pair : *context.instance_renderers)
+            for (auto& pair : *context.instance_data)
             {
+                if (shader_pool::shading_model_for_shader(shader_tag()) != shader_pool::shading_model_for_shader(pair.first))
+                {
+                    continue;
+                }
+
                 bool has_texture_support = pair.second->has_texture_support();
 
                 u64 sampler_size = has_texture_support ? samplers.size() : 0;
@@ -257,7 +269,7 @@ namespace ppp
                     }
                 }
 
-                pair.second->render();
+                instance_renderer::render(instance_render_strategy(), pair.second.get());
             }
         }
 

@@ -1,6 +1,8 @@
 #include "render/render_shadow_pass.h"
 #include "render/render_batch_renderer.h"
+#include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
+#include "render/render_instance_data_table.h"
 #include "render/render_context.h"
 #include "render/render_shader_uniform_manager.h"
 
@@ -90,18 +92,24 @@ namespace ppp
         {
             shaders::apply_uniforms(shader_program()->id());
 
-            batch_renderer::render(draw_strategy(), context.batch_data);
-            instance_renderer::render(draw_strategy(), context.instance_data);
+            for (auto& pair : *context.batch_data)
+            {
+                if (shader_pool::shading_model_for_shader(shader_tag()) != shader_pool::shading_model_for_shader(pair.first))
+                {
+                    continue;
+                }
 
-            //for (auto& pair : *context.batch_renderers)
-            //{
-            //    pair.second->render();
-            //}
+                batch_renderer::render(batch_render_strategy(), pair.second.get());
+            }
+            for (auto& pair : *context.instance_data)
+            {
+                if (shader_pool::shading_model_for_shader(shader_tag()) != shader_pool::shading_model_for_shader(pair.first))
+                {
+                    continue;
+                }
 
-            //for (auto& pair : *context.instance_renderers)
-            //{
-            //    pair.second->render();
-            //}
+                instance_renderer::render(instance_render_strategy(), pair.second.get());
+            }
         }
 
         //-------------------------------------------------------------------------

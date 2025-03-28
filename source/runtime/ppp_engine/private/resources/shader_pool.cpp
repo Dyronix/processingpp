@@ -252,5 +252,18 @@ namespace ppp
             log::error("Unable to find shader with tag: {}", string::restore_sid(tag));
             return nullptr;
         }
+
+        //-------------------------------------------------------------------------
+        render::shading_model_type shading_model_for_shader(string::string_id tag)
+        {
+            auto it = g_ctx.shaders_hash_map.find(tag);
+            if (it != std::cend(g_ctx.shaders_hash_map))
+            {
+                return it->second->shading_model();
+            }
+
+            log::error("Unable to find shader with tag: {}", string::restore_sid(tag));
+            return render::shading_model_type::UNLIT;
+        }
     }
 }
