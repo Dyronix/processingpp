@@ -44,9 +44,10 @@ namespace ppp
     class model : public render::irender_item
     {
     public:
-        model(const geometry::geometry* geom, const resources::imaterial* material)
+        model(const geometry::geometry* geom, const resources::imaterial* material, bool cast_shadows)
             : m_geometry(geom)
             , m_material(material)
+            , m_cast_shadows(cast_shadows)
         {}
 
         bool has_smooth_normals() const override
@@ -56,6 +57,10 @@ namespace ppp
         bool has_textures() const override
         {
             return m_material->has_textures();
+        }
+        bool cast_shadows() const override
+        {
+            return m_cast_shadows;
         }
 
         u64 vertex_count() const override
@@ -102,12 +107,14 @@ namespace ppp
     private:
         const geometry::geometry* m_geometry;
         const resources::imaterial* m_material;
+
+        bool m_cast_shadows;
     };
 
     //-------------------------------------------------------------------------
     model create_model(const geometry::geometry* geom)
     {
-        return model(geom, material_pool::get_or_create_material_instance(render::active_shader()));
+        return model(geom, material_pool::get_or_create_material_instance(render::active_shader()), render::shadows_enabled());
     }
 
     //-------------------------------------------------------------------------

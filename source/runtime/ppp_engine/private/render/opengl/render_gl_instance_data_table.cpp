@@ -39,10 +39,11 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        instance_data_table::instance_data_table(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
+        instance_data_table::instance_data_table(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag, bool cast_shadows)
             :m_shader_tag(shader_tag)
-            , m_instance_layouts(instance_layouts)
-            , m_instance_layout_count(instance_layout_count)
+            ,m_instance_layouts(instance_layouts)
+            ,m_instance_layout_count(instance_layout_count)
+            ,m_cast_shadows(cast_shadows)
         {}
 
         //-------------------------------------------------------------------------
@@ -99,6 +100,26 @@ namespace ppp
             }
 
             return false;
+        }
+
+        //-------------------------------------------------------------------------
+        bool instance_data_table::has_normal_support() const
+        {
+            for (u64 i = 0; i < internal::layout_count(m_shader_tag); ++i)
+            {
+                if (internal::layouts(m_shader_tag)[i].type == attribute_type::NORMAL)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        //-------------------------------------------------------------------------
+        bool instance_data_table::has_shadow_support() const
+        {
+            return m_cast_shadows;
         }
     }
 }

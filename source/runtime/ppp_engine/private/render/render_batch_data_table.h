@@ -18,7 +18,7 @@ namespace ppp
             using const_iterator = table_type::const_iterator;
 
         public:
-            batch_data_table(string::string_id shader_tag);
+            batch_data_table(string::string_id shader_tag, bool cast_shadows);
 
             // Standard begin/end to allow range-based for loops.
             iterator            begin() { return m_batches.begin(); }
@@ -38,11 +38,15 @@ namespace ppp
             bool                empty() const;
 
             bool                has_texture_support() const;
+            bool                has_normal_support() const;
+            bool                has_shadow_support() const;
 
         private:
             string::string_id   m_shader_tag;
 
             table_type          m_batches;
+
+            bool                m_cast_shadows;
         };
     }
 }

@@ -50,10 +50,13 @@ namespace ppp
     class shape : public render::irender_item
     {
     public:
-        shape(const geometry::geometry* geom, const resources::imaterial* material)
+        shape(const geometry::geometry* geom, const resources::imaterial* material, bool cast_shadows)
             : m_geometry(geom)
             , m_material(material)
+            , m_cast_shadows(cast_shadows)
         {}
+
+        ~shape() override = default;
 
         bool has_smooth_normals() const override
         {
@@ -62,6 +65,10 @@ namespace ppp
         bool has_textures() const override
         {
             return m_material->textures().size() > 0;
+        }
+        bool cast_shadows() const override
+        {
+            return m_cast_shadows;
         }
 
         u64 vertex_count() const override
@@ -106,14 +113,35 @@ namespace ppp
         }
 
     private:
-        const geometry::geometry* m_geometry;
-        const resources::imaterial* m_material;
+        const geometry::geometry*       m_geometry;
+        const resources::imaterial*     m_material;
+
+        bool                            m_cast_shadows;
     };
 
     //-------------------------------------------------------------------------
-    shape create_shape(const geometry::geometry* geom)
+    shape create_shape(const geometry::geometry* geom, bool cast_shadows)
     {
-        return shape(geom, material_pool::get_or_create_material_instance(render::active_shader()));
+        return shape(geom, material_pool::get_or_create_material_instance(render::active_shader()), cast_shadows);
+    }
+
+    //-------------------------------------------------------------------------
+    shape create_shape_2d(const geometry::geometry* geom)
+    {
+        constexpr bool cast_shadows = false;
+
+        return create_shape(geom, cast_shadows);
+    }
+
+    //-------------------------------------------------------------------------
+    void enable_shadows()
+    {
+        render::enable_shadows();
+    }
+    //-------------------------------------------------------------------------
+    void disable_shadows()
+    {
+        render::disable_shadows();
     }
 
     //-------------------------------------------------------------------------
@@ -163,7 +191,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_ellipse(detail);
 
-        shape s = create_shape(geom);
+        shape s = create_shape_2d(geom);
 
         push();
         translate(x, y);
@@ -189,7 +217,7 @@ namespace ppp
 
             auto stroke_item = geometry::extrude_ellipse(world, geom, render::brush::stroke_width());
 
-            shape stroke_shape = create_shape(stroke_item);
+            shape stroke_shape = create_shape_2d(stroke_item);
 
             render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
         }
@@ -200,7 +228,7 @@ namespace ppp
 
             auto stroke_item = geometry::extrude_ellipse(world, geom, -render::brush::inner_stroke_width());
 
-            shape stroke_shape = create_shape(stroke_item);
+            shape stroke_shape = create_shape_2d(stroke_item);
 
             render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
         }
@@ -213,7 +241,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_line(x1, y1, x2, y2);
 
-        shape s = create_shape(geom);
+        shape s = create_shape_2d(geom);
 
         render::submit_render_item(render::topology_type::LINES, &s);
 
@@ -223,7 +251,7 @@ namespace ppp
 
             auto stroke_item = geometry::extrude_line(geom->vertex_positions().data(), geom->vertex_count(), render::brush::stroke_width());
 
-            shape stroke_shape = create_shape(stroke_item);
+            shape stroke_shape = create_shape_2d(stroke_item);
 
             render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
         }
@@ -236,7 +264,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_2d_point();
 
-        shape s = create_shape(geom);
+        shape s = create_shape_2d(geom);
 
         push();
         translate(x, y);
@@ -251,7 +279,7 @@ namespace ppp
 
             auto stroke_item = geometry::extrude_point(geom->vertex_positions().data(), geom->vertex_count(), render::brush::stroke_width());
 
-            shape stroke_shape = create_shape(stroke_item);
+            shape stroke_shape = create_shape_2d(stroke_item);
 
             push();
             translate(x, y);
@@ -270,7 +298,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_rectangle();
 
-        shape s = create_shape(geom);
+        shape s = create_shape_2d(geom);
 
         push();
         translate(x, y);
@@ -296,7 +324,7 @@ namespace ppp
 
             auto stroke_item = geometry::extrude_polygon(world, geom, render::brush::stroke_width());
 
-            shape stroke_shape = create_shape(stroke_item);
+            shape stroke_shape = create_shape_2d(stroke_item);
 
             render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
         }
@@ -307,7 +335,7 @@ namespace ppp
 
             auto stroke_item = geometry::extrude_polygon(world, geom, -render::brush::inner_stroke_width());
 
-            shape stroke_shape = create_shape(stroke_item);
+            shape stroke_shape = create_shape_2d(stroke_item);
 
             render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
         }
@@ -326,7 +354,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_triangle(x1, y1, x2, y2, x3, y3);
 
-        shape s = create_shape(geom);
+        shape s = create_shape_2d(geom);
 
         push();
 
@@ -349,7 +377,7 @@ namespace ppp
 
             auto stroke_item = geometry::extrude_triangle(world, geom, render::brush::stroke_width());
 
-            shape stroke_shape = create_shape(stroke_item);
+            shape stroke_shape = create_shape_2d(stroke_item);
 
             render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
         }
@@ -360,7 +388,7 @@ namespace ppp
 
             auto stroke_item = geometry::extrude_triangle(world, geom, -render::brush::inner_stroke_width());
 
-            shape stroke_shape = create_shape(stroke_item);
+            shape stroke_shape = create_shape_2d(stroke_item);
 
             render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
         }
@@ -373,7 +401,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_polygon(x1, y1, x2, y2, x3, y3, x4, y4);
 
-        shape s = create_shape(geom);
+        shape s = create_shape_2d(geom);
 
         push();
 
@@ -396,7 +424,7 @@ namespace ppp
 
             auto stroke_item = geometry::extrude_polygon(world, geom, render::brush::stroke_width());
 
-            shape stroke_shape = create_shape(stroke_item);
+            shape stroke_shape = create_shape_2d(stroke_item);
 
             render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
         }
@@ -407,7 +435,7 @@ namespace ppp
 
             auto stroke_item = geometry::extrude_polygon(world, geom, -render::brush::inner_stroke_width());
 
-            shape stroke_shape = create_shape(stroke_item);
+            shape stroke_shape = create_shape_2d(stroke_item);
 
             render::submit_stroke_render_item(render::topology_type::TRIANGLES, &stroke_shape, outer_stroke);
         }
@@ -420,7 +448,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_box(internal::_normal_mode == normal_mode_type::SMOOTH);
 
-        shape s = create_shape(geom);
+        shape s = create_shape(geom, render::shadows_enabled());
 
         push();
         scale(width, height, depth);
@@ -435,7 +463,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_cone(internal::_normal_mode == normal_mode_type::SMOOTH, cap, detail);
 
-        shape s = create_shape(geom);
+        shape s = create_shape(geom, render::shadows_enabled());
 
         push();
         scale(radius, height, radius);
@@ -450,7 +478,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_cylinder(internal::_normal_mode == normal_mode_type::SMOOTH, top_cap, bottom_cap, detail);
 
-        shape s = create_shape(geom);
+        shape s = create_shape(geom, render::shadows_enabled());
 
         push();
         scale(radius, height, radius);
@@ -465,7 +493,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_plane(internal::_normal_mode == normal_mode_type::SMOOTH);
 
-        shape s = create_shape(geom);
+        shape s = create_shape(geom, render::shadows_enabled());
 
         push();
         scale(width, height, 1.0f);
@@ -480,7 +508,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_sphere(internal::_normal_mode == normal_mode_type::SMOOTH, detail, detail);
 
-        shape s = create_shape(geom);
+        shape s = create_shape(geom, render::shadows_enabled());
 
         push();
         scale(radius, radius, radius);
@@ -495,7 +523,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_torus(internal::_normal_mode == normal_mode_type::SMOOTH, radius, tube_radius, detailx, detaily);
 
-        shape s = create_shape(geom);
+        shape s = create_shape(geom, render::shadows_enabled());
 
         push();
         scale(radius, radius, radius);
@@ -510,7 +538,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_3d_point();
 
-        shape s = create_shape(geom);
+        shape s = create_shape(geom, render::shadows_enabled());
 
         push();
         translate(x, y, z);
@@ -525,7 +553,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_tetrahedron(internal::_normal_mode == normal_mode_type::SMOOTH);
 
-        shape s = create_shape(geom);
+        shape s = create_shape(geom, render::shadows_enabled());
 
         push();
         scale(width, height, width);
@@ -540,7 +568,7 @@ namespace ppp
     {
         geometry::geometry* geom = geometry::make_octahedron(internal::_normal_mode == normal_mode_type::SMOOTH);
 
-        shape s = create_shape(geom);
+        shape s = create_shape(geom, render::shadows_enabled());
 
         push();
         scale(width, height, width);

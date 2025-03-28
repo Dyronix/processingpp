@@ -107,21 +107,17 @@ namespace ppp
 
             for (auto& pair : *context.batch_data)
             {
-                if (shader_pool::shading_model_for_shader(shader_tag()) != shader_pool::shading_model_for_shader(pair.first))
+                if (shader_pool::shading_model_for_shader(pair.first.shader_tag) == shading_model_type::UNLIT)
                 {
-                    continue;
+                    batch_renderer::render(batch_render_strategy(), pair.second.get());
                 }
-
-                batch_renderer::render(batch_render_strategy(), pair.second.get());
             }
             for (auto& pair : *context.instance_data)
             {
-                if (shader_pool::shading_model_for_shader(shader_tag()) != shader_pool::shading_model_for_shader(pair.first))
+                if (shader_pool::shading_model_for_shader(pair.first.shader_tag) == shading_model_type::UNLIT)
                 {
-                    continue;
+                    instance_renderer::render(instance_render_strategy(), pair.second.get());
                 }
-
-                instance_renderer::render(instance_render_strategy(), pair.second.get());
             }
         }
 

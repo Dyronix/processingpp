@@ -37,6 +37,8 @@ namespace ppp
                 , m_material(material)
             {}
 
+            ~font_character_item() override = default;
+
             bool has_smooth_normals() const override
             {
                 return m_geometry->has_smooth_normals();
@@ -44,6 +46,10 @@ namespace ppp
             bool has_textures() const override
             {
                 return m_material->has_textures();
+            }
+            bool cast_shadows() const override
+            {
+                return false;
             }
 
             u64 vertex_count() const override

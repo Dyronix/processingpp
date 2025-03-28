@@ -32,6 +32,11 @@ namespace ppp
         SMOOTH
     };
 
+    // Enable shadows for the upcoming drawn shapes
+    void enable_shadows();
+    // Disable shadows for the upcoming drawn shapes
+    void disable_shadows();
+
     // Changes where ellipses and circles are drawn
     void ellipse_mode(shape_mode_type mode);
     // Changes where rectangles and squares are drawn

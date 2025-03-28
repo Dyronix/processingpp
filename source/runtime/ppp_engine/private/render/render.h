@@ -52,6 +52,12 @@ namespace ppp
         render_draw_mode draw_mode();
         render_rendering_mode rendering_mode();
 
+        // Shadows
+        void enable_shadows();
+        void disable_shadows();
+
+        bool shadows_enabled();
+
         // Shader
         void push_active_shader(string::string_id tag);
 

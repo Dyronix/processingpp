@@ -101,8 +101,11 @@ namespace ppp
         class irender_item
         {
         public:
+            virtual ~irender_item() = default;
+
             virtual bool has_smooth_normals() const = 0;
             virtual bool has_textures() const = 0;
+            virtual bool cast_shadows() const = 0;
 
             virtual u64 vertex_count() const = 0;
             virtual u64 index_count() const = 0;

@@ -34,11 +34,75 @@ namespace ppp
     namespace render
     {
         //-------------------------------------------------------------------------
+        static void push_batch_uniforms(const batch_data_table* data_table, const resources::shader_program& shader_program, const resources::sampler_ids& samplers, const resources::texture_ids& textures)
+        {
+            const u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
+
+            const bool has_texture_support = data_table->has_texture_support();
+
+            const u64 sampler_size = has_texture_support ? samplers.size() : 0;
+            const u64 texture_size = has_texture_support ? textures.size() : 0;
+
+            if (has_texture_support && !textures.empty())
+            {
+                shaders::push_uniform_array(shader_program->id(), string::store_sid("u_image_samplers"), sampler_size, samplers.data());
+
+                for (u64 i = 0; i < texture_size; ++i)
+                {
+                    opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * i));
+                    opengl::api::instance().bind_texture(GL_TEXTURE_2D, textures[i]);
+                }
+            }
+
+            if (lights_pool::directional_lights().empty() == false)
+            {
+                if (lights_pool::has_directional_lights_with_shadow())
+                {
+                    auto shadow_framebuffer = static_cast<const framebuffer*>(framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
+
+                    shaders::push_uniform(shader_program->id(), string::store_sid("u_shadows_enabled"), 1);
+                    shaders::push_uniform(shader_program->id(), string::store_sid("u_shadow_map"), static_cast<s32>(sampler_size));
+
+                    opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * texture_size));
+                    opengl::api::instance().bind_texture(GL_TEXTURE_2D, shadow_framebuffer->depth_attachment());
+                }
+                else
+                {
+                    shaders::push_uniform(shader_program->id(), string::store_sid("u_shadows_enabled"), 0);
+                }
+            }
+            else
+            {
+                shaders::push_uniform(shader_program->id(), string::store_sid("u_shadows_enabled"), 0);
+            }
+        }
+        //-------------------------------------------------------------------------
+        static void push_instance_uniforms(const instance_data_table* data_table, const resources::shader_program& shader_program, const resources::sampler_ids& samplers, const resources::texture_ids& textures)
+        {
+            const u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
+
+            const bool has_texture_support = data_table->has_texture_support();
+
+            const u64 sampler_size = has_texture_support ? samplers.size() : 0;
+            const u64 texture_size = has_texture_support ? textures.size() : 0;
+
+            if (has_texture_support && !textures.empty())
+            {
+                shaders::push_uniform_array(shader_program->id(), string::store_sid("u_image_samplers"), sampler_size, samplers.data());
+
+                for (u64 i = 0; i < texture_size; ++i)
+                {
+                    opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * i));
+                    opengl::api::instance().bind_texture(GL_TEXTURE_2D, textures[i]);
+                }
+            }
+        }
+
+        //-------------------------------------------------------------------------
         static void push_all_shape_dependent_uniforms(resources::shader_program shader_program, const glm::mat4& vp)
         {
             shaders::push_uniform(shader_program->id(), string::store_sid("u_view_proj"), vp);
         }
-
         //-------------------------------------------------------------------------
         static void push_all_light_dependent_uniforms(resources::shader_program shader_program, const glm::vec3& camera_position)
         {
@@ -191,85 +255,54 @@ namespace ppp
         //-------------------------------------------------------------------------
         void forward_shading_pass::render(const render_context& context)
         {
-            shaders::apply_uniforms(shader_program()->id());
+            bool instanced_shading = false;
 
             const auto& samplers = material()->samplers();
             const auto& textures = material()->textures();
 
             u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
 
-            for (auto& pair : *context.batch_data)
+            if (instanced_shading)
             {
-                if (shader_pool::shading_model_for_shader(shader_tag()) != shader_pool::shading_model_for_shader(pair.first))
+                batch_data_key forward_shading_without_shadows_key = { shader_tag(), shading_model_type::LIT, false };
+                batch_data_key forward_shading_with_shadows_key = { shader_tag(), shading_model_type::LIT, true };
+
+                if (context.batch_data->find(forward_shading_without_shadows_key) != std::cend(*context.batch_data))
                 {
-                    continue;
+                    auto batch_data_table_without_shadows = context.batch_data->at(forward_shading_without_shadows_key).get();
+                    push_batch_uniforms(batch_data_table_without_shadows, shader_program(), samplers, textures);
+                    shaders::apply_uniforms(shader_program()->id());
+                    batch_renderer::render(batch_render_strategy(), batch_data_table_without_shadows);
                 }
 
-                bool has_texture_support = pair.second->has_texture_support();
-
-                u64 sampler_size = has_texture_support ? samplers.size() : 0;
-                u64 texture_size = has_texture_support ? textures.size() : 0;
-
-                if (has_texture_support)
+                if (context.batch_data->find(forward_shading_with_shadows_key) != std::cend(*context.batch_data))
                 {
-                    shaders::push_uniform_array(shader_program()->id(), string::store_sid("u_image_samplers"), sampler_size, samplers.data());
-
-                    for (s32 i = 0; i < texture_size; ++i)
-                    {
-                        opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * i));
-                        opengl::api::instance().bind_texture(GL_TEXTURE_2D, textures[i]);
-                    }
+                    auto batch_data_table_with_shadows = context.batch_data->at(forward_shading_with_shadows_key).get();
+                    push_batch_uniforms(batch_data_table_with_shadows, shader_program(), samplers, textures);
+                    shaders::apply_uniforms(shader_program()->id());
+                    batch_renderer::render(batch_render_strategy(), batch_data_table_with_shadows);
                 }
-
-                if (lights_pool::directional_lights().empty() == false)
-                {
-                    if (lights_pool::has_directional_lights_with_shadow())
-                    {
-                        const render::framebuffer* shadow_framebuffer = static_cast<const render::framebuffer*>(framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
-
-                        shaders::push_uniform(shader_program()->id(), string::store_sid("u_shadows_enabled"), 1);
-                        shaders::push_uniform(shader_program()->id(), string::store_sid("u_shadow_map"), (s32)sampler_size);
-
-                        opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * texture_size));
-                        opengl::api::instance().bind_texture(GL_TEXTURE_2D, shadow_framebuffer->depth_attachment());
-                    }
-                    else
-                    {
-                        shaders::push_uniform(shader_program()->id(), string::store_sid("u_shadows_enabled"), 0);
-                    }
-                }
-                else
-                {
-                    shaders::push_uniform(shader_program()->id(), string::store_sid("u_shadows_enabled"), 0);
-                }
-
-                batch_renderer::render(batch_render_strategy(), pair.second.get());
             }
-
-            for (auto& pair : *context.instance_data)
+            else
             {
-                if (shader_pool::shading_model_for_shader(shader_tag()) != shader_pool::shading_model_for_shader(pair.first))
+                instance_data_key forward_shading_without_shadows_key = { shader_tag(), shading_model_type::LIT, false };
+                instance_data_key forward_shading_with_shadows_key = { shader_tag(), shading_model_type::LIT, true };
+
+                if (context.instance_data->find(forward_shading_without_shadows_key) != std::cend(*context.batch_data))
                 {
-                    continue;
+                    auto instance_data_table_without_shadows = context.instance_data->at(forward_shading_without_shadows_key).get();
+                    push_instance_uniforms(instance_data_table_without_shadows, shader_program(), samplers, textures);
+                    shaders::apply_uniforms(shader_program()->id());
+                    instance_renderer::render(instance_render_strategy(), instance_data_table_without_shadows);
                 }
 
-                bool has_texture_support = pair.second->has_texture_support();
-
-                u64 sampler_size = has_texture_support ? samplers.size() : 0;
-                u64 texture_size = has_texture_support ? textures.size() : 0;
-
-                if (has_texture_support)
+                if (context.instance_data->find(forward_shading_with_shadows_key) != std::cend(*context.batch_data))
                 {
-                    shaders::push_uniform_array(shader_program()->id(), string::store_sid("u_image_samplers"), sampler_size, samplers.data());
-
-                    for (s32 i = 0; i < texture_size; ++i)
-                    {
-                        opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * i));
-                        opengl::api::instance().bind_texture(GL_TEXTURE_2D, textures[i]);
-                    }
+                    auto instance_data_table_with_shadows = context.instance_data->at(forward_shading_with_shadows_key).get();
+                    push_instance_uniforms(instance_data_table_with_shadows, shader_program(), samplers, textures);
+                    shaders::apply_uniforms(shader_program()->id());
+                    instance_renderer::render(instance_render_strategy(), instance_data_table_with_shadows);
                 }
-
-                instance_renderer::render(instance_render_strategy(), pair.second.get());
             }
         }
 

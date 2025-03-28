@@ -38,8 +38,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        batch_data_table::batch_data_table(string::string_id shader_tag)
+        batch_data_table::batch_data_table(string::string_id shader_tag, bool cast_shadows)
             :m_shader_tag(shader_tag)
+            ,m_cast_shadows(cast_shadows)
         {
 
         }
@@ -104,5 +105,26 @@ namespace ppp
 
             return false;
         }
+
+        //-------------------------------------------------------------------------
+        bool batch_data_table::has_normal_support() const
+        {
+            for (u64 i = 0; i < internal::layout_count(m_shader_tag); ++i)
+            {
+                if (internal::layouts(m_shader_tag)[i].type == attribute_type::NORMAL)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        //-------------------------------------------------------------------------
+        bool batch_data_table::has_shadow_support() const
+        {
+            return m_cast_shadows;
+        }
+
     }
 }

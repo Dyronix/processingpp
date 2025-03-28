@@ -1,10 +1,6 @@
 #include "render/render.h"
-#include "render/render_batch.h"
-#include "render/render_instance.h"
-#include "render/render_batch_renderer.h"
 #include "render/render_batch_data_table.h"
-#include "render/render_instance_renderer.h"
-#include "render/render_shader.h"
+#include "render/render_instance_data_table.h"
 #include "render/render_context.h"
 #include "render/render_scissor.h"
 #include "render/render_pipeline.h"
@@ -12,16 +8,12 @@
 #include "render/render_predepth_pass.h"
 #include "render/render_shadow_pass.h"
 #include "render/render_forward_shading_pass.h"
-#include "render/render_ui_pass.h"
-#include "render/render_unlit_pass.h"
-#include "render/render_unlit_wireframe_pass.h"
 #include "render/render_blit_pass.h"
 
 #include "render/helpers/render_vertex_layouts.h"
 #include "render/helpers/render_instance_layouts.h"
 #include "render/helpers/render_event_dispatcher.h"
 
-#include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
 #include "resources/shader_pool.h"
@@ -134,6 +126,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         struct context
         {
+            // shadows
+            bool                        shadows = true;
+
             // drawing
             render_draw_mode            draw_mode = render_draw_mode::BATCHED;
             render_rendering_mode       rendering_mode = render_rendering_mode::FORWARD;
@@ -190,40 +185,47 @@ namespace ppp
 
             if (g_ctx.draw_mode == render_draw_mode::BATCHED)
             {
-                if (g_ctx.batch_data.find(shader_tag) == std::cend(g_ctx.batch_data))
-                {
-                    std::unique_ptr<batch_data_table> data_table = std::make_unique<batch_data_table>(shader_tag);;
+                shading_model_type shading_model = shader_pool::shading_model_for_shader(shader_tag);
+                batch_data_key data_key = { shader_tag, shading_model, g_ctx.shadows };
 
-                    g_ctx.batch_data.emplace(shader_tag, std::move(data_table));
+                if (g_ctx.batch_data.find(data_key) == std::cend(g_ctx.batch_data))
+                {
+                    std::unique_ptr<batch_data_table> data_table = std::make_unique<batch_data_table>(shader_tag, g_ctx.shadows);
+
+                    g_ctx.batch_data.emplace(data_key, std::move(data_table));
                 }
 
-                g_ctx.batch_data.at(shader_tag)->append(topology, item, color, transform_stack::active_world());
+                g_ctx.batch_data.at(data_key)->append(topology, item, color, transform_stack::active_world());
             }
             else
             {
-                if (g_ctx.instance_data.find(shader_tag) == std::cend(g_ctx.instance_data))
+                shading_model_type shading_model = shader_pool::shading_model_for_shader(shader_tag);
+                instance_data_key data_key = { shader_tag, shading_model, g_ctx.shadows };
+
+                if (g_ctx.instance_data.find(data_key) == std::cend(g_ctx.instance_data))
                 {
                     std::unique_ptr<instance_data_table> data_table = std::make_unique<instance_data_table>(
                         color_world_layout().data(),
                         color_world_layout().size(),
-                        shader_tag);
+                        shader_tag,
+                        g_ctx.shadows);
 
-                    g_ctx.instance_data.emplace(shader_tag, std::move(data_table));
+                    g_ctx.instance_data.emplace(data_key, std::move(data_table));
                 }
 
-                g_ctx.instance_data.at(shader_tag)->append(topology, item, color, transform_stack::active_world());
+                g_ctx.instance_data.at(data_key)->append(topology, item, color, transform_stack::active_world());
             }
         }
 
         //-------------------------------------------------------------------------
-        void parse_gl_version(const char* version_string)
+        static void parse_gl_version(const char* version_string)
         {
             std::stringstream ss(version_string);
             char dot;
             ss >> g_ctx.major >> dot >> g_ctx.minor;
         }
         //-------------------------------------------------------------------------
-        void print_gl_version(const char* version_string)
+        static void print_gl_version(const char* version_string)
         {
             log::info("OpenGL version format: <major_version>.<minor_version>.<release_number> <vendor-specific information>");
             log::info("OpenGL version: {}", version_string);
@@ -269,7 +271,7 @@ namespace ppp
             g_ctx.scissor.height = h;
             g_ctx.scissor.enable = false;
 
-            g_ctx.font_batch_data = std::make_unique<batch_data_table>(shader_pool::tags::unlit::font());
+            g_ctx.font_batch_data = std::make_unique<batch_data_table>(shader_pool::tags::unlit::font(), false);
 
             g_ctx.render_pipeline.add_pass(std::make_unique<predepth_pass>(shader_pool::tags::unlit::predepth(), framebuffer_pool::tags::composite()));
             g_ctx.render_pipeline.add_pass(std::make_unique<shadow_pass>(shader_pool::tags::unlit::shadow(), framebuffer_pool::tags::shadow_map()));
@@ -303,7 +305,7 @@ namespace ppp
         void begin(const camera_context* context)
         {
             // Font
-            g_ctx.font_batch_data->begin();
+            g_ctx.font_batch_data->reset();
 
             // Custom
             for (auto& pair : g_ctx.batch_data)
@@ -340,6 +342,23 @@ namespace ppp
         void rendering_mode(render_rendering_mode mode)
         {
             g_ctx.rendering_mode = mode;
+        }
+
+        //-------------------------------------------------------------------------
+        void enable_shadows()
+        {
+            g_ctx.shadows = true;
+        }
+        //-------------------------------------------------------------------------
+        void disable_shadows()
+        {
+            g_ctx.shadows = false;
+        }
+
+        //-------------------------------------------------------------------------
+        bool shadows_enabled()
+        {
+            return g_ctx.shadows;
         }
 
         //-------------------------------------------------------------------------

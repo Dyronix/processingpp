@@ -165,6 +165,7 @@ namespace ppp
         {
             push();
 
+            enable_shadows();
             // Row 1
             translate(start_x, start_y);
             box(50.0f, 50.0f, 50.0f);
@@ -178,6 +179,7 @@ namespace ppp
             // Move to next row and reset x position
             translate(-3 * x_spacing, y_spacing);
 
+            disable_shadows();
             // Row 2
             torus(25.0f, 10.0f, _interpolation, _interpolation);
             translate(x_spacing, 0.0f);
