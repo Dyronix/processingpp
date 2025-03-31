@@ -15,7 +15,7 @@ namespace ppp
             using const_iterator = table_type::const_iterator;
 
         public:
-            instance_data_table(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag, bool cast_shadows);
+            instance_data_table(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag);
 
             // Standard begin/end to allow range-based for loops.
             iterator                    begin()                         { return m_instances.begin(); }
@@ -39,7 +39,6 @@ namespace ppp
 
             bool                        has_texture_support() const;
             bool                        has_normal_support() const;
-            bool                        has_shadow_support() const;
 
         private:
             string::string_id           m_shader_tag;
@@ -47,9 +46,6 @@ namespace ppp
             table_type                  m_instances;
             const attribute_layout*     m_instance_layouts;
             u64                         m_instance_layout_count;
-
-            bool                        m_cast_shadows;
-
         };
     }
 }

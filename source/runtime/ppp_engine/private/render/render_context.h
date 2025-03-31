@@ -24,7 +24,9 @@ namespace ppp
         struct batch_data_key
         {
             string::string_id shader_tag;
+
             shading_model_type shader_model_type;
+            shading_blending_type shader_blending_type;
 
             bool cast_shadows;
 
@@ -38,7 +40,9 @@ namespace ppp
         struct instance_data_key
         {
             string::string_id shader_tag;
+
             shading_model_type shader_model_type;
+            shading_blending_type shader_blending_type;
 
             bool cast_shadows;
 

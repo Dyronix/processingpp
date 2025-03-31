@@ -41,16 +41,14 @@ namespace ppp
         bool initialize(s32 w, s32 h, void* user_data);
         void terminate();
 
-        void begin(const camera_context* context);
+        void begin();
         void render(const camera_context* context);
-        void end(const camera_context* context);
+        void end();
         
         // Drawing mode (BATCHED | INSTANCING)
         void draw_mode(render_draw_mode mode);
-        void rendering_mode(render_rendering_mode mode);
 
         render_draw_mode draw_mode();
-        render_rendering_mode rendering_mode();
 
         // Shadows
         void enable_shadows();

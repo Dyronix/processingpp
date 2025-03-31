@@ -32,7 +32,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         ui_pass::ui_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :render_pass(shader_tag, framebuffer_tag, framebuffer_flags)
+            :render_pass("ui"_sid, shader_tag, framebuffer_tag, framebuffer_flags)
         {}
         //-------------------------------------------------------------------------
         ui_pass::~ui_pass() = default;
@@ -53,36 +53,7 @@ namespace ppp
             opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
 
             opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
-
-            opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
-            opengl::api::instance().clear_depth(1.0);
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
-
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_LINE);
-
-            // Set the background clear color from the brush.
-            glm::vec4 bg_color = brush::background();
-
-            opengl::api::instance().clear_color(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-
-            // Configure scissor test if enabled.
-            if (context.scissor->enable)
-            {
-                opengl::api::instance().enable(GL_SCISSOR_TEST);
-                opengl::api::instance().scissor(
-                    std::clamp(context.scissor->x, 0, framebuffer()->width()),
-                    std::clamp(context.scissor->y, 0, framebuffer()->height()),
-                    std::clamp(context.scissor->width, framebuffer::min_framebuffer_width(), framebuffer()->width()),
-                    std::clamp(context.scissor->height, framebuffer::min_framebuffer_height(), framebuffer()->height())
-                );
-            }
-            else
-            {
-                opengl::api::instance().disable(GL_SCISSOR_TEST);
-            }
-
-            // Clear buffers after scissor state is set.
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
 
             // Bind the pass shader
             opengl::api::instance().use_program(shader_program()->id());

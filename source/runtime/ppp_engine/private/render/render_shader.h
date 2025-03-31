@@ -16,17 +16,18 @@ namespace ppp
             class shader_program
             {
             public:
-                shader_program(shading_model_type smtype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source);
-                shader_program(shading_model_type smtype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source);
+                shader_program(shading_model_type smtype, shading_blending_type btype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source);
+                shader_program(shading_model_type smtype, shading_blending_type btype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source);
                 ~shader_program();
 
-                void                bind() const;
-                void                unbind() const;
+                void                    bind() const;
+                void                    unbind() const;
 
-                u32                 id() const;
+                u32                     id() const;
                 
-                shading_model_type  shading_model() const;
-                vertex_type         vertex_format() const;
+                shading_model_type      shading_model() const;
+                shading_blending_type   shading_blending() const;
+                vertex_type             vertex_format() const;
 
             private:
                 class impl;

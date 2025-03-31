@@ -60,6 +60,14 @@ namespace ppp
 
                 return string::restore_sid(sid);
             }
+            std::string_view lit_texture()
+            {
+                auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
+                    ? shader_pool::tags::lit::texture()
+                    : shader_pool::tags::lit::instance_texture();
+
+                return string::restore_sid(sid);
+            }
             //-------------------------------------------------------------------------
             std::string_view lit_specular()
             {
@@ -83,6 +91,18 @@ namespace ppp
             }
 
             log::error("Unknown shading model!");
+            exit(EXIT_FAILURE);
+        }
+
+        render::shading_blending_type to_shading_blending_type(shading_blending shading_blending)
+        {
+            switch (shading_blending)
+            {
+            case shading_blending::OPAQUE: return render::shading_blending_type::OPAQUE;
+            case shading_blending::TRANSPARENT: return render::shading_blending_type::TRANSPARENT;
+            }
+
+            log::error("Unknown shading blending!");
             exit(EXIT_FAILURE);
         }
     }
@@ -208,7 +228,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, shading_model shading_model)
+    shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, shading_model shading_model, shading_blending shading_blend)
     {
         auto sid_tag = string::store_sid(tag);
         auto vertex_format = shading_model == shading_model::LIT
@@ -220,7 +240,7 @@ namespace ppp
             return { shader_pool::get_shader_program(sid_tag)->id() };
         }
 
-        u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), vertex_format, vertex_source, fragment_source);
+        u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), conversions::to_shading_blending_type(shading_blend), vertex_format, vertex_source, fragment_source);
 
         material_pool::add_new_material(resources::material(sid_tag));
 
@@ -228,7 +248,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, std::string_view geometry_source, shading_model shading_model)
+    shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, std::string_view geometry_source, shading_model shading_model, shading_blending shading_blend)
     {
         auto sid_tag = string::store_sid(tag);
         auto vertex_format = shading_model == shading_model::LIT
@@ -240,7 +260,7 @@ namespace ppp
             return { shader_pool::get_shader_program(sid_tag)->id() };
         }
 
-        u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), vertex_format, vertex_source, fragment_source, geometry_source);
+        u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), conversions::to_shading_blending_type(shading_blend), vertex_format, vertex_source, fragment_source, geometry_source);
 
         material_pool::add_new_material(resources::material(sid_tag));
 
@@ -248,7 +268,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, shading_model shading_model)
+    shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, shading_model shading_model, shading_blending shading_blend)
     {
         auto sid_tag = string::store_sid(tag);
         auto vertex_format = shading_model == shading_model::LIT
@@ -263,7 +283,7 @@ namespace ppp
         auto vs_buffer = fileio::read_text_file(vertex_path);
         auto fs_buffer = fileio::read_text_file(fragment_path);
 
-        u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), vertex_format, vs_buffer.c_str(), fs_buffer.c_str());
+        u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), conversions::to_shading_blending_type(shading_blend), vertex_format, vs_buffer.c_str(), fs_buffer.c_str());
 
         material_pool::add_new_material(resources::material(sid_tag));
 
@@ -271,7 +291,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, std::string_view geometry_path, shading_model shading_model)
+    shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, std::string_view geometry_path, shading_model shading_model, shading_blending shading_blend)
     {
         auto sid_tag = string::store_sid(tag);
         auto vertex_format = shading_model == shading_model::LIT
@@ -287,7 +307,7 @@ namespace ppp
         auto gs_buffer = fileio::read_text_file(geometry_path);
         auto fs_buffer = fileio::read_text_file(fragment_path);
 
-        u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), vertex_format, vs_buffer.c_str(), fs_buffer.c_str(), gs_buffer.c_str());
+        u32 shader_program_id = shader_pool::add_shader_program(sid_tag, conversions::to_shading_model_type(shading_model), conversions::to_shading_blending_type(shading_blend), vertex_format, vs_buffer.c_str(), fs_buffer.c_str(), gs_buffer.c_str());
 
         material_pool::add_new_material(resources::material(sid_tag));
 

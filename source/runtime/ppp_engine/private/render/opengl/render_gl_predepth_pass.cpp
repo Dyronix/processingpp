@@ -31,7 +31,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         predepth_pass::predepth_pass(string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :render_pass(shader_tag, framebuffer_tag, framebuffer_flags)
+            :render_pass("predepth"_sid, shader_tag, framebuffer_tag, framebuffer_flags)
         {}
 
         //-------------------------------------------------------------------------
@@ -55,11 +55,7 @@ namespace ppp
             opengl::api::instance().depth_func(GL_LESS);
 
             opengl::api::instance().color_mask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Disable color writes
-
             opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
-            opengl::api::instance().clear_depth(1.0f);
-            opengl::api::instance().clear(GL_DEPTH_BUFFER_BIT);
-
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
 
             // Bind shader
@@ -77,15 +73,31 @@ namespace ppp
         //-------------------------------------------------------------------------
         void predepth_pass::render(const render_context& context)
         {
-            shaders::apply_uniforms(shader_program()->id());
+            bool batched_shading = true;
 
-            for (auto& pair : *context.batch_data)
+            if (batched_shading)
             {
-                batch_renderer::render(batch_render_strategy(), pair.second.get());
+                shaders::apply_uniforms(shader_program()->id());
+
+                for(auto& [key, batch] : *context.batch_data)
+                {
+                    if (key.shader_blending_type == shading_blending_type::OPAQUE)
+                    {
+                        batch_renderer::render(batch_render_strategy(), batch.get());
+                    }
+                }
             }
-            for (auto& pair : *context.instance_data)
+            else
             {
-                instance_renderer::render(instance_render_strategy(), pair.second.get());
+                shaders::apply_uniforms(shader_program()->id());
+
+                for (auto& [key, instance] : *context.instance_data)
+                {
+                    if (key.shader_blending_type == shading_blending_type::OPAQUE)
+                    {
+                        instance_renderer::render(instance_render_strategy(), instance.get());
+                    }
+                }
             }
         }
 

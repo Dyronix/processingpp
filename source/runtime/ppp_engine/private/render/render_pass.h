@@ -30,7 +30,7 @@ namespace ppp
         class render_pass
         {
         public:
-            render_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags);
+            render_pass(const string::string_id pass_tag, const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags);
 
             virtual ~render_pass() = default;
 
@@ -44,9 +44,11 @@ namespace ppp
             virtual batch_draw_strategy       make_batch_render_strategy() const { return std::make_unique<default_batch_render_strategy>(); }
             virtual inst_draw_strategy        make_inst_render_strategy() const { return std::make_unique<default_instance_render_strategy>(); }
 
-        protected:
+        public:
+            string::string_id                 pass_tag() const { return m_pass_tag.is_none() ? m_shader_tag : m_pass_tag; }
             string::string_id                 shader_tag() const { return m_shader_tag; }
 
+        protected:
             const resources::iframebuffer*    framebuffer() const;
             const resources::shader_program   shader_program() const;
             const resources::imaterial*       material() const;
@@ -55,6 +57,7 @@ namespace ppp
             iinstance_render_strategy*        instance_render_strategy();
 
         private:
+            const string::string_id           m_pass_tag;
             const string::string_id           m_shader_tag;
             const string::string_id           m_framebuffer_tag;
             const s32                         m_framebuffer_flags;

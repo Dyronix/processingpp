@@ -79,7 +79,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         static void push_instance_uniforms(const instance_data_table* data_table, const resources::shader_program& shader_program, const resources::sampler_ids& samplers, const resources::texture_ids& textures)
         {
-            const u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
+            constexpr u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
 
             const bool has_texture_support = data_table->has_texture_support();
 
@@ -99,12 +99,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        static void push_all_shape_dependent_uniforms(resources::shader_program shader_program, const glm::mat4& vp)
+        static void push_all_shape_dependent_uniforms(const resources::shader_program& shader_program, const glm::mat4& vp)
         {
             shaders::push_uniform(shader_program->id(), string::store_sid("u_view_proj"), vp);
         }
         //-------------------------------------------------------------------------
-        static void push_all_light_dependent_uniforms(resources::shader_program shader_program, const glm::vec3& camera_position)
+        static void push_all_light_dependent_uniforms(const resources::shader_program& shader_program, const glm::vec3& camera_position)
         {
             if (lights_pool::point_lights().empty() == false || lights_pool::directional_lights().empty() == false)
             {
@@ -113,11 +113,11 @@ namespace ppp
 
             if (lights_pool::point_lights().empty() == false)
             {
-                constexpr u64 max_nr_point_lights = 8;
+                constexpr s32 max_nr_point_lights = 8;
 
-                u64 nr_active_point_lights = std::min(lights_pool::point_lights().size(), max_nr_point_lights);
+                s32 nr_active_point_lights = std::min(static_cast<s32>(lights_pool::point_lights().size()), max_nr_point_lights);
 
-                shaders::push_uniform(shader_program->id(), string::store_sid("u_num_point_lights"), static_cast<s32>(nr_active_point_lights));
+                shaders::push_uniform(shader_program->id(), string::store_sid("u_num_point_lights"), nr_active_point_lights);
 
                 for (s32 i = 0; i < nr_active_point_lights; ++i)
                 {
@@ -150,7 +150,7 @@ namespace ppp
             }
         }
         //-------------------------------------------------------------------------
-        static void push_all_shadow_dependent_uniforms(resources::shader_program shader_program, const glm::mat4& lightvp)
+        static void push_all_shadow_dependent_uniforms(const resources::shader_program& shader_program, const glm::mat4& lightvp)
         {
             if (lights_pool::directional_lights().empty() == false)
             {
@@ -163,7 +163,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         forward_shading_pass::forward_shading_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :render_pass(shader_tag, framebuffer_tag, framebuffer_flags)
+            :render_pass("forward"_sid, shader_tag, framebuffer_tag, framebuffer_flags)
         {}
         //-------------------------------------------------------------------------
         forward_shading_pass::~forward_shading_pass() = default;
@@ -187,60 +187,40 @@ namespace ppp
             opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
 
             opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
-
-            opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
-            opengl::api::instance().clear_depth(1.0);
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
-
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
-
-            // Set the background clear color from the brush.
-            glm::vec4 bg_color = brush::background();
-
-            opengl::api::instance().clear_color(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-
-            // Configure scissor test if enabled.
-            if (context.scissor->enable)
-            {
-                opengl::api::instance().enable(GL_SCISSOR_TEST);
-                opengl::api::instance().scissor(
-                    std::clamp(context.scissor->x, 0, framebuffer()->width()),
-                    std::clamp(context.scissor->y, 0, framebuffer()->height()),
-                    std::clamp(context.scissor->width, framebuffer::min_framebuffer_width(), framebuffer()->width()),
-                    std::clamp(context.scissor->height, framebuffer::min_framebuffer_height(), framebuffer()->height())
-                );
-            }
-            else
-            {
-                opengl::api::instance().disable(GL_SCISSOR_TEST);
-            }
-
-            // Clear buffers after scissor state is set.
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
 
             // Bind the pass shader
             opengl::api::instance().use_program(shader_program()->id());
 
             // Apply shape uniforms
             // For now we only support 1 light
-            assert(lights_pool::directional_lights().size() == 1);
+            if (lights_pool::directional_lights().empty() == false)
+            {
+                assert(lights_pool::directional_lights().size() == 1);
 
-            auto& dir_light = lights_pool::directional_lights()[0];
+                auto& dir_light = lights_pool::directional_lights()[0];
 
-            const glm::vec3 light_pos_active = -dir_light.direction * 500.0f;
-            const glm::vec3 light_tar_active = glm::vec3(0.0f);
+                const glm::vec3 light_pos_active = -dir_light.direction * 500.0f;
 
-            const auto shadow_framebuffer = framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH);
+                const auto shadow_framebuffer = framebuffer_pool::get(framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH);
 
-            const f32 near_plane = 0.01f;
-            const f32 far_plane = 1000.0f;
+                constexpr f32 near_plane = 0.01f;
+                constexpr f32 far_plane = 1000.0f;
 
-            const glm::mat4 light_active_p = glm::ortho(-shadow_framebuffer->width() / 2.0f, shadow_framebuffer->width() / 2.0f, -shadow_framebuffer->height() / 2.0f, shadow_framebuffer->height() / 2.0f, near_plane, far_plane);;
-            const glm::mat4 light_active_v = glm::lookAt(light_pos_active, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-            const glm::mat4 light_active_vp = light_active_p * light_active_v;
+                const glm::mat4 light_active_p = glm::ortho(
+                    static_cast<f32>(-shadow_framebuffer->width()) / 2.0f,
+                    static_cast<f32>(shadow_framebuffer->width()) / 2.0f,
+                    static_cast<f32>(-shadow_framebuffer->height()) / 2.0f,
+                    static_cast<f32>(shadow_framebuffer->height()) / 2.0f,
+                    near_plane,
+                    far_plane);
+                const glm::mat4 light_active_v = glm::lookAt(light_pos_active, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+                const glm::mat4 light_active_vp = light_active_p * light_active_v;
+
+                push_all_shadow_dependent_uniforms(shader_program(), light_active_vp);
+            }
 
             const glm::vec3& cam_pos_active = context.camera_context->camera_position_active;
-            const glm::vec3& cam_tar_active = context.camera_context->camera_lookat_active;
 
             const glm::mat4& cam_active_p = context.camera_context->mat_proj_active;
             const glm::mat4& cam_active_v = context.camera_context->mat_view_active;
@@ -249,59 +229,77 @@ namespace ppp
 
             push_all_shape_dependent_uniforms(shader_program(), cam_active_vp);
             push_all_light_dependent_uniforms(shader_program(), cam_pos_active);
-            push_all_shadow_dependent_uniforms(shader_program(), light_active_vp);
+
+            bool batched_shading = true;
+
+            const auto& samplers = material()->samplers();
+            const auto& textures = material()->textures();
+
+            if (batched_shading)
+            {
+                for (auto& [key, batch] : *context.batch_data)
+                {
+                    if (key.shader_model_type == shading_model_type::LIT)
+                    {
+                        push_batch_uniforms(batch.get(), shader_program(), samplers, textures);
+                    }
+                }
+            }
+            else
+            {
+                for (auto& [key, instance] : *context.instance_data)
+                {
+                    if (key.shader_model_type == shading_model_type::LIT)
+                    {
+                        push_instance_uniforms(instance.get(), shader_program(), samplers, textures);
+                    }
+                }
+            }
         }
 
         //-------------------------------------------------------------------------
         void forward_shading_pass::render(const render_context& context)
         {
-            bool instanced_shading = false;
+            bool batched_shading = true;
 
-            const auto& samplers = material()->samplers();
-            const auto& textures = material()->textures();
+            shaders::apply_uniforms(shader_program()->id());
 
-            u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
-
-            if (instanced_shading)
+            if (batched_shading)
             {
-                batch_data_key forward_shading_without_shadows_key = { shader_tag(), shading_model_type::LIT, false };
-                batch_data_key forward_shading_with_shadows_key = { shader_tag(), shading_model_type::LIT, true };
-
-                if (context.batch_data->find(forward_shading_without_shadows_key) != std::cend(*context.batch_data))
+                for (auto& [key, batch] : *context.batch_data)
                 {
-                    auto batch_data_table_without_shadows = context.batch_data->at(forward_shading_without_shadows_key).get();
-                    push_batch_uniforms(batch_data_table_without_shadows, shader_program(), samplers, textures);
-                    shaders::apply_uniforms(shader_program()->id());
-                    batch_renderer::render(batch_render_strategy(), batch_data_table_without_shadows);
+                    if (key.shader_model_type == shading_model_type::LIT &&
+                        key.cast_shadows == false)
+                    {
+                        batch_renderer::render(batch_render_strategy(), batch.get());
+                    }
                 }
-
-                if (context.batch_data->find(forward_shading_with_shadows_key) != std::cend(*context.batch_data))
+                for (auto& [key, batch] : *context.batch_data)
                 {
-                    auto batch_data_table_with_shadows = context.batch_data->at(forward_shading_with_shadows_key).get();
-                    push_batch_uniforms(batch_data_table_with_shadows, shader_program(), samplers, textures);
-                    shaders::apply_uniforms(shader_program()->id());
-                    batch_renderer::render(batch_render_strategy(), batch_data_table_with_shadows);
+                    if (key.shader_model_type == shading_model_type::LIT &&
+                        key.cast_shadows == true)
+                    {
+                        batch_renderer::render(batch_render_strategy(), batch.get());
+                    }
                 }
             }
             else
             {
-                instance_data_key forward_shading_without_shadows_key = { shader_tag(), shading_model_type::LIT, false };
-                instance_data_key forward_shading_with_shadows_key = { shader_tag(), shading_model_type::LIT, true };
-
-                if (context.instance_data->find(forward_shading_without_shadows_key) != std::cend(*context.batch_data))
+                for (auto& [key, instance] : *context.instance_data)
                 {
-                    auto instance_data_table_without_shadows = context.instance_data->at(forward_shading_without_shadows_key).get();
-                    push_instance_uniforms(instance_data_table_without_shadows, shader_program(), samplers, textures);
-                    shaders::apply_uniforms(shader_program()->id());
-                    instance_renderer::render(instance_render_strategy(), instance_data_table_without_shadows);
+                    if (key.shader_model_type == shading_model_type::LIT &&
+                        key.cast_shadows == false)
+                    {
+                        instance_renderer::render(instance_render_strategy(), instance.get());
+                    }
                 }
-
-                if (context.instance_data->find(forward_shading_with_shadows_key) != std::cend(*context.batch_data))
+                for (auto& [key, instance] : *context.instance_data)
                 {
-                    auto instance_data_table_with_shadows = context.instance_data->at(forward_shading_with_shadows_key).get();
-                    push_instance_uniforms(instance_data_table_with_shadows, shader_program(), samplers, textures);
-                    shaders::apply_uniforms(shader_program()->id());
-                    instance_renderer::render(instance_render_strategy(), instance_data_table_with_shadows);
+                    if (key.shader_model_type == shading_model_type::LIT &&
+                        key.cast_shadows == true)
+                    {
+                        instance_renderer::render(instance_render_strategy(), instance.get());
+                    }
                 }
             }
         }

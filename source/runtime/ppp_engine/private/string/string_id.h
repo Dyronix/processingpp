@@ -172,7 +172,7 @@ namespace ppp
 // User-defined literal operator to create a string_id from a string literal.
 inline ppp::string::string_id operator""_sid(const char* string, size_t size)
 {
-    return ppp::string::string_id(std::string_view(string, static_cast<u32>(size))); // NOLINT(cppcoreguidelines-narrowing-conversions)
+    return ppp::string::store_sid(std::string_view(string, static_cast<u32>(size))); // NOLINT(cppcoreguidelines-narrowing-conversions)
 }
 
 //-------------------------------------------------------------------------

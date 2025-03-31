@@ -9,8 +9,9 @@ namespace ppp
     namespace render
     {
         //-------------------------------------------------------------------------
-        render_pass::render_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :m_shader_tag(shader_tag)
+        render_pass::render_pass(const string::string_id pass_tag, const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
+            :m_pass_tag(pass_tag)
+            ,m_shader_tag(shader_tag)
             ,m_framebuffer_tag(framebuffer_tag)
             ,m_framebuffer_flags(framebuffer_flags)
         {}

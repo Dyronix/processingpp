@@ -5,9 +5,11 @@
 #include "render/render_scissor.h"
 #include "render/render_pipeline.h"
 
+#include "render/render_clear_pass.h"
 #include "render/render_predepth_pass.h"
 #include "render/render_shadow_pass.h"
 #include "render/render_forward_shading_pass.h"
+#include "render/render_unlit_pass.h"
 #include "render/render_blit_pass.h"
 
 #include "render/helpers/render_vertex_layouts.h"
@@ -36,6 +38,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "render/render_features.h"
 #include "render/render_instance_data_table.h"
 
 #define LOG_GL_NOTIFICATIONS 0
@@ -131,7 +134,6 @@ namespace ppp
 
             // drawing
             render_draw_mode            draw_mode = render_draw_mode::BATCHED;
-            render_rendering_mode       rendering_mode = render_rendering_mode::FORWARD;
             render_scissor              scissor = {};
 
             // shaders
@@ -150,10 +152,6 @@ namespace ppp
             batch_data_hash_map         batch_data = {};
 
             font_batch_data             font_batch_data = nullptr;
-
-            // opengl version       
-            s32                         major = 0;
-            s32                         minor = 0;
         } g_ctx;
 
         //-------------------------------------------------------------------------
@@ -186,11 +184,13 @@ namespace ppp
             if (g_ctx.draw_mode == render_draw_mode::BATCHED)
             {
                 shading_model_type shading_model = shader_pool::shading_model_for_shader(shader_tag);
-                batch_data_key data_key = { shader_tag, shading_model, g_ctx.shadows };
+                shading_blending_type shading_blend = shader_pool::shading_blending_for_shader(shader_tag);
+
+                batch_data_key data_key = { shader_tag, shading_model,shading_blend, g_ctx.shadows };
 
                 if (g_ctx.batch_data.find(data_key) == std::cend(g_ctx.batch_data))
                 {
-                    std::unique_ptr<batch_data_table> data_table = std::make_unique<batch_data_table>(shader_tag, g_ctx.shadows);
+                    std::unique_ptr<batch_data_table> data_table = std::make_unique<batch_data_table>(shader_tag);
 
                     g_ctx.batch_data.emplace(data_key, std::move(data_table));
                 }
@@ -200,15 +200,16 @@ namespace ppp
             else
             {
                 shading_model_type shading_model = shader_pool::shading_model_for_shader(shader_tag);
-                instance_data_key data_key = { shader_tag, shading_model, g_ctx.shadows };
+                shading_blending_type shading_blend = shader_pool::shading_blending_for_shader(shader_tag);
+
+                instance_data_key data_key = { shader_tag, shading_model,shading_blend, g_ctx.shadows };
 
                 if (g_ctx.instance_data.find(data_key) == std::cend(g_ctx.instance_data))
                 {
                     std::unique_ptr<instance_data_table> data_table = std::make_unique<instance_data_table>(
                         color_world_layout().data(),
                         color_world_layout().size(),
-                        shader_tag,
-                        g_ctx.shadows);
+                        shader_tag);
 
                     g_ctx.instance_data.emplace(data_key, std::move(data_table));
                 }
@@ -218,17 +219,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        static void parse_gl_version(const char* version_string)
+        static void print_gl_version()
         {
-            std::stringstream ss(version_string);
-            char dot;
-            ss >> g_ctx.major >> dot >> g_ctx.minor;
-        }
-        //-------------------------------------------------------------------------
-        static void print_gl_version(const char* version_string)
-        {
+            auto opengl_version = reinterpret_cast<const char*>(opengl::api::instance().get_string_value(GL_VERSION));
+
             log::info("OpenGL version format: <major_version>.<minor_version>.<release_number> <vendor-specific information>");
-            log::info("OpenGL version: {}", version_string);
+            log::info("OpenGL version: {}", opengl_version);
         }
 
         //-------------------------------------------------------------------------
@@ -242,14 +238,11 @@ namespace ppp
                 return false;
             }
 
-            auto opengl_version = reinterpret_cast<const char*>(opengl::api::instance().get_string_value(GL_VERSION));
-
-            parse_gl_version(opengl_version);
-            print_gl_version(opengl_version);
+            print_gl_version();
 
 #if _DEBUG
             // glDebugMessageCallback is only available on OpenGL 4.3 or higher
-            if (g_ctx.major >= 4 && g_ctx.minor >= 3)
+            if (has_debugging_capabilities())
             {
                 s32 flags = 0; 
                 opengl::api::instance().get_integer_value(GL_CONTEXT_FLAGS, &flags);
@@ -271,11 +264,21 @@ namespace ppp
             g_ctx.scissor.height = h;
             g_ctx.scissor.enable = false;
 
-            g_ctx.font_batch_data = std::make_unique<batch_data_table>(shader_pool::tags::unlit::font(), false);
+            g_ctx.font_batch_data = std::make_unique<batch_data_table>(shader_pool::tags::unlit::font());
 
+            // Clear depth only and do a predepth pass
+            g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_depth_clear_state(), framebuffer_pool::tags::composite()));
             g_ctx.render_pipeline.add_pass(std::make_unique<predepth_pass>(shader_pool::tags::unlit::predepth(), framebuffer_pool::tags::composite()));
+
+            // Calculate things that are in shadow
             g_ctx.render_pipeline.add_pass(std::make_unique<shadow_pass>(shader_pool::tags::unlit::shadow(), framebuffer_pool::tags::shadow_map()));
-            g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>(shader_pool::tags::lit::lit(), framebuffer_pool::tags::composite()));
+
+            // Clear color only and do a geometry pass
+            g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_rtv_clear_state(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(std::make_unique<unlit_pass>(shader_pool::tags::unlit::color(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>(shader_pool::tags::lit::color(), framebuffer_pool::tags::composite()));
+
+            // Blit to backbuffer
             g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::composite(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
 
             return true;
@@ -302,7 +305,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void begin(const camera_context* context)
+        void begin()
         {
             // Font
             g_ctx.font_batch_data->reset();
@@ -327,7 +330,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void end(const camera_context* context)
+        void end()
         {
             broadcast_on_draw_end();
         }
@@ -336,12 +339,6 @@ namespace ppp
         void draw_mode(render_draw_mode mode)
         {
             g_ctx.draw_mode = mode;
-        }
-
-        //-------------------------------------------------------------------------
-        void rendering_mode(render_rendering_mode mode)
-        {
-            g_ctx.rendering_mode = mode;
         }
 
         //-------------------------------------------------------------------------
@@ -365,12 +362,6 @@ namespace ppp
         render_draw_mode draw_mode()
         {
             return g_ctx.draw_mode;
-        }
-
-        //-------------------------------------------------------------------------
-        render_rendering_mode rendering_mode()
-        {
-            return g_ctx.rendering_mode;
         }
 
         //-------------------------------------------------------------------------

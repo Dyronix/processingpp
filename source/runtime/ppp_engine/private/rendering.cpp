@@ -59,16 +59,4 @@ namespace ppp
     {
         render::draw_mode(render::render_draw_mode::BATCHED);
     }
-
-    //-------------------------------------------------------------------------
-    void enable_forward_rendering()
-    {
-        render::rendering_mode(render::render_rendering_mode::FORWARD);
-    }
-
-    //-------------------------------------------------------------------------
-    void enable_deferred_rendering()
-    {
-        render::rendering_mode(render::render_rendering_mode::DEFERRED);
-    }
 }

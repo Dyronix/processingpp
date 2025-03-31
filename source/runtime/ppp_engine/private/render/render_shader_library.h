@@ -45,6 +45,10 @@ namespace ppp
                 std::string color_pixel_shader_code();
                 std::string instance_color_vertex_shader_code();
 
+                std::string texture_vertex_shader_code();
+                std::string texture_pixel_shader_code();
+                std::string instance_texture_vertex_shader_code();
+
                 std::string specular_vertex_shader_code();
                 std::string specular_pixel_shader_code();
                 std::string instance_specular_vertex_shader_code();

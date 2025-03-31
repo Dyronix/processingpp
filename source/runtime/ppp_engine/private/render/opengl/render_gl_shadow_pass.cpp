@@ -36,7 +36,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         shadow_pass::shadow_pass(string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :render_pass(shader_tag, framebuffer_tag, framebuffer_flags)
+            :render_pass("shadow"_sid, shader_tag, framebuffer_tag, framebuffer_flags)
         {}
         //-------------------------------------------------------------------------
         shadow_pass::~shadow_pass() = default;
@@ -90,20 +90,30 @@ namespace ppp
         //-------------------------------------------------------------------------
         void shadow_pass::render(const render_context& context)
         {
-            shaders::apply_uniforms(shader_program()->id());
+            bool batched_shading = true;
 
-            for (auto& pair : *context.batch_data)
+            if (batched_shading)
             {
-                if (pair.second->has_shadow_support())
+                shaders::apply_uniforms(shader_program()->id());
+
+                for (auto& [key, batch] : *context.batch_data)
                 {
-                    batch_renderer::render(batch_render_strategy(), pair.second.get());
+                    if (key.cast_shadows)
+                    {
+                        batch_renderer::render(batch_render_strategy(), batch.get());
+                    }
                 }
             }
-            for (auto& pair : *context.instance_data)
+            else
             {
-                if (pair.second->has_shadow_support())
+                shaders::apply_uniforms(shader_program()->id());
+
+                for (auto& [key, instance] : *context.instance_data)
                 {
-                    instance_renderer::render(instance_render_strategy(), pair.second.get());
+                    if (key.cast_shadows)
+                    {
+                        instance_renderer::render(instance_render_strategy(), instance.get());
+                    }
                 }
             }
         }

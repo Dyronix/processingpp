@@ -44,7 +44,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    s32 init(const app_params& app_params, std::string_view executable_path)
+    static s32 init(const app_params& app_params, std::string_view executable_path)
     {
         if (!device::initialize(app_params.window_width, app_params.window_height))
         {
@@ -90,7 +90,7 @@ namespace ppp
         return 0;
     }
     //-------------------------------------------------------------------------
-    s32 run(const app_params& app_params)
+    static s32 run(const app_params& app_params)
     {
         camera_context context;
 
@@ -110,13 +110,13 @@ namespace ppp
 
                 // render
                 // ------
-                render::begin(&context);
+                render::begin();
 
                 draw();
 
                 render::render(&context);
 
-                render::end(&context);
+                render::end();
 
                 // swap front/back buffers
                 // -----
@@ -208,7 +208,7 @@ int main(int argc, char** argv)
 
     s32 result = 0;
 
-    result = ppp::init(app_params, argv[0]);
+    result = init(app_params, argv[0]);
     if (result != 0)
     {
         ppp::log::error("Failed to initialize app");

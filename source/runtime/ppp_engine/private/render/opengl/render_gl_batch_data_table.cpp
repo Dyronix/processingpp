@@ -38,9 +38,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        batch_data_table::batch_data_table(string::string_id shader_tag, bool cast_shadows)
+        batch_data_table::batch_data_table(string::string_id shader_tag)
             :m_shader_tag(shader_tag)
-            ,m_cast_shadows(cast_shadows)
         {
 
         }
@@ -119,12 +118,5 @@ namespace ppp
 
             return false;
         }
-
-        //-------------------------------------------------------------------------
-        bool batch_data_table::has_shadow_support() const
-        {
-            return m_cast_shadows;
-        }
-
     }
 }

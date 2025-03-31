@@ -17,6 +17,7 @@ namespace ppp
             std::string_view unlit_normal();
 
             std::string_view lit_color();
+            std::string_view lit_texture();
             std::string_view lit_specular();
         }
     }
@@ -25,6 +26,12 @@ namespace ppp
     {
         LIT,
         UNLIT
+    };
+
+    enum class shading_blending
+    {
+        OPAQUE,
+        TRANSPARENT
     };
 
     using shader_program_id = unsigned int;
@@ -55,10 +62,10 @@ namespace ppp
     shader_program normal_material();
     shader_program specular_material();
 
-    shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, shading_model shading_model = shading_model::UNLIT);
-    shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, std::string_view geometry_source, shading_model shading_model = shading_model::UNLIT);
-    shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, shading_model shading_model = shading_model::UNLIT);
-    shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, std::string_view geometry_path, shading_model shading_model = shading_model::UNLIT);
+    shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, shading_model shading_model = shading_model::UNLIT, shading_blending shading_blend = shading_blending::OPAQUE);
+    shader_program create_shader(std::string_view tag, std::string_view vertex_source, std::string_view fragment_source, std::string_view geometry_source, shading_model shading_model = shading_model::UNLIT, shading_blending shading_blend = shading_blending::OPAQUE);
+    shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, shading_model shading_model = shading_model::UNLIT, shading_blending shading_blend = shading_blending::OPAQUE);
+    shader_program load_shader(std::string_view tag, std::string_view vertex_path, std::string_view fragment_path, std::string_view geometry_path, shading_model shading_model = shading_model::UNLIT, shading_blending shading_blend = shading_blending::OPAQUE);
 
     shader_program get_shader(std::string_view tag);
 }

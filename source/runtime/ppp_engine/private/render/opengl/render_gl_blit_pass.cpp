@@ -13,7 +13,7 @@ namespace ppp
     {
         //-------------------------------------------------------------------------
         blit_pass::blit_pass(string::string_id src, s32 flags, string::string_id dst)
-            :render_pass(string::string_id::create_invalid(), string::string_id::create_invalid(), -1)
+            :render_pass("blit"_sid, string::string_id::create_invalid(), string::string_id::create_invalid(), -1)
             ,m_src(src)
             ,m_dst(dst)
             ,m_flags(flags)

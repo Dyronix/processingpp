@@ -40,7 +40,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         unlit_wireframe_pass::unlit_wireframe_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :render_pass(shader_tag, framebuffer_tag, framebuffer_flags)
+            :render_pass("unlit_wireframe"_sid, shader_tag, framebuffer_tag, framebuffer_flags)
         {}
         //-------------------------------------------------------------------------
         unlit_wireframe_pass::~unlit_wireframe_pass() = default;
@@ -61,36 +61,7 @@ namespace ppp
             opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
 
             opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
-
-            opengl::api::instance().clear_color(0.0f, 0.0f, 0.0f, 1.0f);
-            opengl::api::instance().clear_depth(1.0);
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
-
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_LINE);
-
-            // Set the background clear color from the brush.
-            glm::vec4 bg_color = brush::background();
-
-            opengl::api::instance().clear_color(bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-
-            // Configure scissor test if enabled.
-            if (context.scissor->enable)
-            {
-                opengl::api::instance().enable(GL_SCISSOR_TEST);
-                opengl::api::instance().scissor(
-                    std::clamp(context.scissor->x, 0, framebuffer()->width()),
-                    std::clamp(context.scissor->y, 0, framebuffer()->height()),
-                    std::clamp(context.scissor->width, framebuffer::min_framebuffer_width(), framebuffer()->width()),
-                    std::clamp(context.scissor->height, framebuffer::min_framebuffer_height(), framebuffer()->height())
-                );
-            }
-            else
-            {
-                opengl::api::instance().disable(GL_SCISSOR_TEST);
-            }
-
-            // Clear buffers after scissor state is set.
-            opengl::api::instance().clear(GL_COLOR_BUFFER_BIT);
 
             // Bind the pass shader
             opengl::api::instance().use_program(shader_program()->id());
@@ -107,25 +78,26 @@ namespace ppp
         //-------------------------------------------------------------------------
         void unlit_wireframe_pass::render(const render_context& context)
         {
-            shaders::apply_uniforms(shader_program()->id());
+            bool batched_shading = true;
 
-            push_all_wireframe_dependent_uniforms(shader_program(), batch_renderer::wireframe_linecolor(), batch_renderer::wireframe_linewidth());
-
-            for (auto& pair : *context.batch_data)
+            if (batched_shading)
             {
-                if (shader_pool::shading_model_for_shader(pair.first.shader_tag) == shading_model_type::UNLIT)
+                push_all_wireframe_dependent_uniforms(shader_program(), batch_renderer::wireframe_linecolor(), batch_renderer::wireframe_linewidth());
+                shaders::apply_uniforms(shader_program()->id());
+
+                for (auto& [key, batch] : *context.batch_data)
                 {
-                    batch_renderer::render(batch_render_strategy(), pair.second.get());
+                    batch_renderer::render(batch_render_strategy(), batch.get());
                 }
             }
-
-            push_all_wireframe_dependent_uniforms(shader_program(), instance_renderer::wireframe_linecolor(), instance_renderer::wireframe_linewidth());
-
-            for (auto& pair : *context.instance_data)
+            else
             {
-                if (shader_pool::shading_model_for_shader(pair.first.shader_tag) == shading_model_type::UNLIT)
+                push_all_wireframe_dependent_uniforms(shader_program(), instance_renderer::wireframe_linecolor(), instance_renderer::wireframe_linewidth());
+                shaders::apply_uniforms(shader_program()->id());
+
+                for (auto& [key, instance] : *context.instance_data)
                 {
-                    instance_renderer::render(instance_render_strategy(), pair.second.get());
+                    instance_renderer::render(instance_render_strategy(), instance.get());
                 }
             }
         }
