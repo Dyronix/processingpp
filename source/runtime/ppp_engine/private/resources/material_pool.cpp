@@ -1,7 +1,7 @@
 #include "resources/material_pool.h"
+#include "resources/texture_pool.h"
 #include "resources/shader_pool.h"
 #include "util/log.h"
-
 
 #include "string/string_id.h"
 

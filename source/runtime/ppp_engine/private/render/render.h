@@ -76,8 +76,8 @@ namespace ppp
         scissor_rect scissor();
 
         // Image Item
-        u32 create_image_item(f32 width, f32 height, s32 channels, u8* data);
-        u32 create_image_item(f32 width, f32 height, s32 channels, u8* data, image_filter_type filter_type, image_wrap_type wrap_type);
+        u32 create_image_item(f32 width, f32 height, s32 channels, const u8* data);
+        u32 create_image_item(f32 width, f32 height, s32 channels, const u8* data, image_filter_type filter_type, image_wrap_type wrap_type);
 
         void update_image_item(u32 id, f32 x, f32 y, f32 width, f32 height, s32 channels, u8* data);
 

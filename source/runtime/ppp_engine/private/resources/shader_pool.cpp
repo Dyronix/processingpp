@@ -2,9 +2,6 @@
 #include "render/render_shader_compiler.h"
 #include "render/render_shader_library.h"
 
-
-
-
 #include "util/log.h"
 
 #include <glad/glad.h>

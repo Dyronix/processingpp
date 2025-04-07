@@ -12,6 +12,7 @@
 #include "resources/framebuffer_pool.h"
 #include "resources/lights_pool.h"
 #include "resources/shader_pool.h"
+#include "resources/texture_pool.h"
 #include "resources/material.h"
 
 #include "camera/camera_context.h"
@@ -31,12 +32,10 @@ namespace ppp
         {
             const u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
 
-            const bool has_texture_support = data_table->has_texture_support();
+            const u64 sampler_size = samplers.size();
+            const u64 texture_size = textures.size();
 
-            const u64 sampler_size = has_texture_support ? samplers.size() : 0;
-            const u64 texture_size = has_texture_support ? textures.size() : 0;
-
-            if (has_texture_support && !textures.empty())
+            if (!textures.empty())
             {
                 shaders::push_uniform_array(shader_program->id(), string::store_sid("u_image_samplers"), sampler_size, samplers.data());
 
@@ -52,12 +51,10 @@ namespace ppp
         {
             constexpr u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
 
-            const bool has_texture_support = data_table->has_texture_support();
+            const u64 sampler_size = samplers.size();
+            const u64 texture_size = textures.size();
 
-            const u64 sampler_size = has_texture_support ? samplers.size() : 0;
-            const u64 texture_size = has_texture_support ? textures.size() : 0;
-
-            if (has_texture_support && !textures.empty())
+            if (!textures.empty())
             {
                 shaders::push_uniform_array(shader_program->id(), string::store_sid("u_image_samplers"), sampler_size, samplers.data());
 
@@ -120,7 +117,7 @@ namespace ppp
             {
                 for (auto& [key, batch] : *context.batch_data)
                 {
-                    if (key.shader_model_type == shading_model_type::LIT)
+                    if (key.shader_tag == shader_tag())
                     {
                         push_batch_uniforms(batch.get(), shader_program(), samplers, textures);
                     }
@@ -130,7 +127,7 @@ namespace ppp
             {
                 for (auto& [key, instance] : *context.instance_data)
                 {
-                    if (key.shader_model_type == shading_model_type::LIT)
+                    if (key.shader_tag == shader_tag())
                     {
                         push_instance_uniforms(instance.get(), shader_program(), samplers, textures);
                     }
@@ -149,7 +146,7 @@ namespace ppp
 
                 for (auto& [key, batch] : *context.batch_data)
                 {
-                    if (key.shader_model_type == shading_model_type::UNLIT)
+                    if (key.shader_tag == shader_tag())
                     {
                         batch_renderer::render(batch_render_strategy(), batch.get());
                     }
@@ -161,7 +158,7 @@ namespace ppp
 
                 for (auto& [key, instance] : *context.instance_data)
                 {
-                    if (key.shader_model_type == shading_model_type::UNLIT)
+                    if (key.shader_tag == shader_tag())
                     {
                         instance_renderer::render(instance_render_strategy(), instance.get());
                     }

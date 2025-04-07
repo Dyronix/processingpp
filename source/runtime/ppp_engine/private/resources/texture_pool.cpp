@@ -14,11 +14,44 @@ namespace ppp
         {
             images_hash_map images_hash_map;
             u8*             active_pixels;
+
+            // default textures
+            image           image_solid_white;
+            image           image_solid_black;
         } g_ctx;
 
         //-------------------------------------------------------------------------
         bool initialize()
         {
+            image& image_solid_white = g_ctx.image_solid_white;
+            image& image_solid_black = g_ctx.image_solid_black;
+
+            constexpr u32 width = 1;
+            constexpr u32 height = 1;
+            constexpr u32 channels = 4;
+
+            constexpr u32 white_data = 0xFFFFFFFF;
+            constexpr u32 black_data = 0xFF000000;
+
+            image_solid_white.image_id = render::create_image_item(width, height, channels, reinterpret_cast<const u8*>(&white_data), render::image_filter_type::NEAREST, render::image_wrap_type::REPEAT);
+            image_solid_white.width = width;
+            image_solid_white.height = height;
+            image_solid_white.channels = channels;
+            image_solid_white.data = static_cast<u8*>(malloc(width * height * channels));
+            memset(image_solid_white.data, 0, width * height * channels);
+            memcpy(image_solid_white.data, &white_data, width * height * channels);
+            
+            image_solid_black.image_id = render::create_image_item(width, height, channels, reinterpret_cast<const u8*>(&black_data), render::image_filter_type::NEAREST, render::image_wrap_type::REPEAT);
+            image_solid_black.width = width;
+            image_solid_black.height = height;
+            image_solid_black.channels = channels;
+            image_solid_black.data = static_cast<u8*>(malloc(width * height * channels));
+            memset(image_solid_black.data, 0, width * height * channels);
+            memcpy(image_solid_black.data, &black_data, width * height * channels);
+
+            add_new_image(image_solid_white);
+            add_new_image(image_solid_black);
+
             return true;
         }
 
@@ -30,7 +63,7 @@ namespace ppp
                 free(g_ctx.active_pixels);
             }
 
-            for (auto& i : g_ctx.images_hash_map)
+            for (const auto& i : g_ctx.images_hash_map)
             {
                 free(i.second.data);
             }
@@ -80,6 +113,20 @@ namespace ppp
             }
 
             return nullptr;
+        }
+
+        //-------------------------------------------------------------------------
+        const image* image_solid_white()
+        {
+            assert(g_ctx.image_solid_white.image_id != -1);
+            return &g_ctx.image_solid_white;
+        }
+
+        //-------------------------------------------------------------------------
+        const image* image_solid_black()
+        {
+            assert(g_ctx.image_solid_black.image_id != -1);
+            return &g_ctx.image_solid_black;
         }
 
         //-------------------------------------------------------------------------

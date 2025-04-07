@@ -10,6 +10,7 @@
 #include "render/render_shadow_pass.h"
 #include "render/render_forward_shading_pass.h"
 #include "render/render_unlit_pass.h"
+#include "render/render_ui_pass.h"
 #include "render/render_blit_pass.h"
 
 #include "render/helpers/render_vertex_layouts.h"
@@ -275,8 +276,15 @@ namespace ppp
 
             // Clear color only and do a geometry pass
             g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_rtv_clear_state(), framebuffer_pool::tags::composite()));
+
             g_ctx.render_pipeline.add_pass(std::make_unique<unlit_pass>(shader_pool::tags::unlit::color(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(std::make_unique<unlit_pass>(shader_pool::tags::unlit::texture(), framebuffer_pool::tags::composite()));
+
             g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>(shader_pool::tags::lit::color(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>(shader_pool::tags::lit::texture(), framebuffer_pool::tags::composite()));
+
+            // Clear color only and do a ui pass
+            g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>(shader_pool::tags::unlit::font(), framebuffer_pool::tags::composite()));
 
             // Blit to backbuffer
             g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::composite(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
@@ -452,13 +460,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        u32 create_image_item(f32 width, f32 height, s32 channels, u8* data)
+        u32 create_image_item(f32 width, f32 height, s32 channels, const u8* data)
         {
             return create_image_item(width, height, channels, data, image_filter_type::NEAREST, image_wrap_type::REPEAT);
         }
 
         //-------------------------------------------------------------------------
-        u32 create_image_item(f32 width, f32 height, s32 channels, u8* data, image_filter_type filter_type, image_wrap_type wrap_type)
+        u32 create_image_item(f32 width, f32 height, s32 channels, const u8* data, image_filter_type filter_type, image_wrap_type wrap_type)
         {
             GLint format = GL_INVALID_VALUE;
             GLint usage = GL_INVALID_VALUE;

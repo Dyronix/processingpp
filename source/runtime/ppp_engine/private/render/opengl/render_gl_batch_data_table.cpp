@@ -70,8 +70,8 @@ namespace ppp
                 // Create a new batch_drawing_data if it doesn't exist.
                 s32 max_ver = max_vertices(topology);
                 s32 max_idx = max_indices(topology);
-                auto emplaceResult = m_batches.emplace(topology, batch_drawing_data(max_ver, max_idx, internal::layouts(m_shader_tag), internal::layout_count(m_shader_tag)));
-                it = emplaceResult.first;
+                auto emplace_result = m_batches.emplace(topology, batch_drawing_data(max_ver, max_idx, internal::layouts(m_shader_tag), internal::layout_count(m_shader_tag)));
+                it = emplace_result.first;
             }
             it->second.append(item, color, world);
         }
