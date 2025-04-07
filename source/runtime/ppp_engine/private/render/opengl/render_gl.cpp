@@ -5,13 +5,11 @@
 #include "render/render_scissor.h"
 #include "render/render_pipeline.h"
 
-#include "render/render_clear_pass.h"
-#include "render/render_predepth_pass.h"
-#include "render/render_shadow_pass.h"
-#include "render/render_forward_shading_pass.h"
-#include "render/render_unlit_pass.h"
-#include "render/render_ui_pass.h"
-#include "render/render_blit_pass.h"
+#include "render/render_pass_ui.h"
+#include "render/render_pass_blit.h"
+#include "render/render_pass_clear.h"
+#include "render/render_pass_composite_factory.h"
+#include "render/render_shader_tags.h"
 
 #include "render/helpers/render_vertex_layouts.h"
 #include "render/helpers/render_instance_layouts.h"
@@ -265,26 +263,30 @@ namespace ppp
             g_ctx.scissor.height = h;
             g_ctx.scissor.enable = false;
 
-            g_ctx.font_batch_data = std::make_unique<batch_data_table>(shader_pool::tags::unlit::font());
+            g_ctx.font_batch_data = std::make_unique<batch_data_table>(unlit::tags::font::batched());
 
             // Clear depth only and do a predepth pass
             g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_depth_clear_state(), framebuffer_pool::tags::composite()));
-            g_ctx.render_pipeline.add_pass(std::make_unique<predepth_pass>(shader_pool::tags::unlit::predepth(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(create_predepth_composite_pass(unlit::tags::predepth{}, framebuffer_pool::tags::composite()));
 
             // Calculate things that are in shadow
-            g_ctx.render_pipeline.add_pass(std::make_unique<shadow_pass>(shader_pool::tags::unlit::shadow(), framebuffer_pool::tags::shadow_map()));
+            g_ctx.render_pipeline.add_pass(create_shadow_composite_pass(unlit::tags::shadow{}, framebuffer_pool::tags::shadow_map()));
 
             // Clear color only and do a geometry pass
             g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_rtv_clear_state(), framebuffer_pool::tags::composite()));
 
-            g_ctx.render_pipeline.add_pass(std::make_unique<unlit_pass>(shader_pool::tags::unlit::color(), framebuffer_pool::tags::composite()));
-            g_ctx.render_pipeline.add_pass(std::make_unique<unlit_pass>(shader_pool::tags::unlit::texture(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_OPAQUE);
 
-            g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>(shader_pool::tags::lit::color(), framebuffer_pool::tags::composite()));
-            g_ctx.render_pipeline.add_pass(std::make_unique<forward_shading_pass>(shader_pool::tags::lit::texture(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::color{}, framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::texture{}, framebuffer_pool::tags::composite()));
+
+            g_ctx.render_pipeline.add_pass(create_forward_shading_composite_pass(lit::tags::color{}, framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(create_forward_shading_composite_pass(lit::tags::texture{}, framebuffer_pool::tags::composite()));
+
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_OPAQUE);
 
             // Clear color only and do a ui pass
-            g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>(shader_pool::tags::unlit::font(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>(unlit::tags::font{}, framebuffer_pool::tags::composite()));
 
             // Blit to backbuffer
             g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::composite(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
@@ -448,13 +450,13 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool scissor_enabled()
+        bool scissor_rect_enabled()
         {
             return g_ctx.scissor.enable;
         }
 
         //-------------------------------------------------------------------------
-        scissor_rect scissor()
+        render_scissor scissor_rect()
         {
             return { g_ctx.scissor.x, g_ctx.scissor.y, g_ctx.scissor.width, g_ctx.scissor.height };
         }

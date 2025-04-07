@@ -8,11 +8,11 @@ namespace ppp
     {
         class iframebuffer;
 
-        class unlit_pass : public render_pass
+        class predepth_pass : public geometry_render_pass
         {
         public:
-            unlit_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
-            ~unlit_pass() override;
+            predepth_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH, draw_mode draw_mode = draw_mode::AUTO);
+            ~predepth_pass() override;
 
             void begin_frame(const render_context& context) override;
             void render(const render_context& context) override;

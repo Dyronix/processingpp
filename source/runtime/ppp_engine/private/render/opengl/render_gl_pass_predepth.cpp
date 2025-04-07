@@ -1,10 +1,9 @@
-#include "render/render_unlit_wireframe_pass.h"
+#include "render/render_pass_predepth.h"
 #include "render/render_batch_renderer.h"
 #include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
 #include "render/render_instance_data_table.h"
 #include "render/render_context.h"
-#include "render/render_scissor.h"
 #include "render/render_shader_uniform_manager.h"
 
 #include "render/opengl/render_gl_error.h"
@@ -12,58 +11,54 @@
 
 #include "resources/framebuffer_pool.h"
 #include "resources/shader_pool.h"
+#include "resources/material.h"
 
 #include "camera/camera_context.h"
 
-#include "util/log.h"
-#include "util/brush.h"
-#include "util/color_ops.h"
-
-#include <algorithm>
 #include <glad/glad.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace ppp
 {
     namespace render
     {
         //-------------------------------------------------------------------------
-        static void push_all_wireframe_dependent_uniforms(resources::shader_program shader_program, s32 line_color, f32 line_width)
-        {
-            shaders::push_uniform(shader_program->id(), string::store_sid("u_wireframe_color"), color::convert_color(line_color));
-            opengl::api::instance().line_width(line_width);
-        }
-        //-------------------------------------------------------------------------
-        static void push_all_shape_dependent_uniforms(resources::shader_program shader_program, const glm::mat4& vp)
+        static void push_shape_uniforms(resources::shader_program shader_program, const glm::mat4& vp)
         {
             shaders::push_uniform(shader_program->id(), string::store_sid("u_view_proj"), vp);
         }
 
         //-------------------------------------------------------------------------
-        unlit_wireframe_pass::unlit_wireframe_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :render_pass("unlit_wireframe"_sid, shader_tag, framebuffer_tag, framebuffer_flags)
+        predepth_pass::predepth_pass(string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+            :geometry_render_pass("predepth"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
         {}
-        //-------------------------------------------------------------------------
-        unlit_wireframe_pass::~unlit_wireframe_pass() = default;
 
         //-------------------------------------------------------------------------
-        void unlit_wireframe_pass::begin_frame(const render_context& context)
+        predepth_pass::~predepth_pass() = default;
+
+        //-------------------------------------------------------------------------
+        void predepth_pass::begin_frame(const render_context& context)
         {
+            assert(context && "Invalid render context");
+
             framebuffer()->bind();
 
-            // Configure OpenGL state.
+            // Configure OpenGL state
             opengl::api::instance().disable(GL_BLEND);
 
             opengl::api::instance().enable(GL_CULL_FACE);
             opengl::api::instance().cull_face(GL_BACK);
 
             opengl::api::instance().enable(GL_DEPTH_TEST);
-            opengl::api::instance().depth_func(GL_LEQUAL); // Optional: Use GL_LEQUAL for matching precision
-            opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
+            opengl::api::instance().depth_mask(GL_TRUE); // Allow depth write
+            opengl::api::instance().depth_func(GL_LESS);
 
+            opengl::api::instance().color_mask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Disable color writes
             opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
-            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_LINE);
+            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
 
-            // Bind the pass shader
+            // Bind shader
             opengl::api::instance().use_program(shader_program()->id());
 
             // Apply shape uniforms
@@ -72,41 +67,45 @@ namespace ppp
 
             const glm::mat4 cam_active_vp = cam_active_p * cam_active_v;
 
-            push_all_shape_dependent_uniforms(shader_program(), cam_active_vp);
+            push_shape_uniforms(shader_program(), cam_active_vp);
         }
 
         //-------------------------------------------------------------------------
-        void unlit_wireframe_pass::render(const render_context& context)
+        void predepth_pass::render(const render_context& context)
         {
-            bool batched_shading = true;
+            bool batched_shading = batch_rendering_enabled();
 
             if (batched_shading)
             {
-                push_all_wireframe_dependent_uniforms(shader_program(), batch_renderer::wireframe_linecolor(), batch_renderer::wireframe_linewidth());
                 shaders::apply_uniforms(shader_program()->id());
 
-                for (auto& [key, batch] : *context.batch_data)
+                for(auto& [key, batch] : *context.batch_data)
                 {
-                    batch_renderer::render(batch_render_strategy(), batch.get());
+                    if (key.shader_blending_type == shading_blending_type::OPAQUE)
+                    {
+                        batch_renderer::render(batch_render_strategy(), batch.get());
+                    }
                 }
             }
             else
             {
-                push_all_wireframe_dependent_uniforms(shader_program(), instance_renderer::wireframe_linecolor(), instance_renderer::wireframe_linewidth());
                 shaders::apply_uniforms(shader_program()->id());
 
                 for (auto& [key, instance] : *context.instance_data)
                 {
-                    instance_renderer::render(instance_render_strategy(), instance.get());
+                    if (key.shader_blending_type == shading_blending_type::OPAQUE)
+                    {
+                        instance_renderer::render(instance_render_strategy(), instance.get());
+                    }
                 }
             }
         }
 
         //-------------------------------------------------------------------------
-        void unlit_wireframe_pass::end_frame(const render_context& context)
+        void predepth_pass::end_frame(const render_context& context)
         {
             // Reset state
-            opengl::api::instance().depth_mask(GL_TRUE);
+            opengl::api::instance().color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Re-enable color writes
             opengl::api::instance().use_program(0);
 
             // Unbind pass framebuffer

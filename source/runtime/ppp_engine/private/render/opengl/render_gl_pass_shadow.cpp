@@ -1,4 +1,4 @@
-#include "render/render_shadow_pass.h"
+#include "render/render_pass_shadow.h"
 #include "render/render_batch_renderer.h"
 #include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
@@ -35,8 +35,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        shadow_pass::shadow_pass(string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :render_pass("shadow"_sid, shader_tag, framebuffer_tag, framebuffer_flags)
+        shadow_pass::shadow_pass(string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+            :geometry_render_pass("shadow"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
         {}
         //-------------------------------------------------------------------------
         shadow_pass::~shadow_pass() = default;
@@ -45,6 +45,12 @@ namespace ppp
         void shadow_pass::begin_frame(const render_context& context)
         {
             assert(context && "Invalid render context");
+
+            // When there are no lights we can early out
+            if (lights_pool::directional_lights().empty())
+            {
+                return;
+            }
 
             // Bind pass framebuffer
             framebuffer()->bind();
@@ -75,7 +81,6 @@ namespace ppp
             auto& dir_light = lights_pool::directional_lights()[0];
 
             const glm::vec3 light_pos_active = -dir_light.direction * 500.0f;
-            const glm::vec3 light_tar_active = glm::vec3(0.0f);
 
             const f32 near_plane = 0.01f;
             const f32 far_plane = 1000.0f;
@@ -90,7 +95,13 @@ namespace ppp
         //-------------------------------------------------------------------------
         void shadow_pass::render(const render_context& context)
         {
-            bool batched_shading = true;
+            // When there are no lights we can early out
+            if (lights_pool::directional_lights().empty())
+            {
+                return;
+            }
+
+            bool batched_shading = batch_rendering_enabled();
 
             if (batched_shading)
             {
@@ -121,6 +132,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         void shadow_pass::end_frame(const render_context& context)
         {
+            // When there are no lights we can early out
+            if (lights_pool::directional_lights().empty())
+            {
+                return;
+            }
+
             // Unbind pass shader 
             opengl::api::instance().use_program(0);
 
@@ -129,7 +146,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool shadow_pass::should_render() const
+        bool shadow_pass::should_render(const render_context& context) const
         {
             auto& dir_lights = lights_pool::directional_lights();
             auto num = std::count_if(std::cbegin(dir_lights), std::end(dir_lights),

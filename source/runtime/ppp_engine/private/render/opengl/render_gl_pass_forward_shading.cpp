@@ -1,4 +1,4 @@
-#include "render/render_forward_shading_pass.h"
+#include "render/render_pass_forward_shading.h"
 #include "render/render_batch_renderer.h"
 #include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
@@ -169,8 +169,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        forward_shading_pass::forward_shading_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :render_pass("forward"_sid, shader_tag, framebuffer_tag, framebuffer_flags)
+        forward_shading_pass::forward_shading_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+            :geometry_render_pass("forward"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
         {}
         //-------------------------------------------------------------------------
         forward_shading_pass::~forward_shading_pass() = default;
@@ -237,7 +237,7 @@ namespace ppp
             push_all_shape_dependent_uniforms(shader_program(), cam_active_vp);
             push_all_light_dependent_uniforms(shader_program(), cam_pos_active);
 
-            bool batched_shading = true;
+            bool batched_shading = batch_rendering_enabled();
 
             const auto& samplers = material()->samplers();
             const auto& textures = material()->textures();
@@ -267,7 +267,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void forward_shading_pass::render(const render_context& context)
         {
-            bool batched_shading = true;
+            bool batched_shading = batch_rendering_enabled();
 
             shaders::apply_uniforms(shader_program()->id());
 

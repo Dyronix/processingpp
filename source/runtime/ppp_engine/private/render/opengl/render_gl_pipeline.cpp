@@ -13,9 +13,30 @@ namespace ppp
         render_pipeline::~render_pipeline() = default;
 
         //-------------------------------------------------------------------------
-        void render_pipeline::add_pass(std::unique_ptr<render_pass> pass)
+        void render_pipeline::add_pass(std::unique_ptr<irender_pass> pass)
         {
             m_passes.push_back(std::move(pass));
+        }
+
+        //-------------------------------------------------------------------------
+        void render_pipeline::insert_pass(insertion_point point, std::unique_ptr<irender_pass> pass)
+        {
+            auto it = m_insertion_points.find(point);
+            if (it == std::cend(m_insertion_points))
+            {
+                return;
+            }
+
+            auto insertion_it = m_passes.begin();
+            std::advance(insertion_it, it->second);
+
+            m_passes.insert(insertion_it, std::move(pass));
+        }
+
+        //-------------------------------------------------------------------------
+        void render_pipeline::add_insertion_point(insertion_point point)
+        {
+            m_insertion_points[point] = m_passes.size();
         }
 
         //-------------------------------------------------------------------------
@@ -23,7 +44,7 @@ namespace ppp
         {
             for (auto& pass : m_passes)
             {
-                if (pass->should_render())
+                if (pass->should_render(context))
                 {
 #if _DEBUG
                     if (has_debugging_capabilities())

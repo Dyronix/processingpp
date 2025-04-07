@@ -50,7 +50,7 @@ namespace ppp
         enum class render_draw_mode
         {
             INSTANCED,
-            BATCHED
+            BATCHED,
         };
     }
 }

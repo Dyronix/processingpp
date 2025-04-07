@@ -1,5 +1,8 @@
 #pragma once
 
+#include "render/render_scissor.h"
+#include "render/render_types.h"
+
 #include "string/string_id.h"
 
 #include "util/hash.h"
@@ -13,7 +16,7 @@ namespace ppp
         struct instance_data_key;
         struct batch_data_key;
 
-        struct render_scissor;
+        struct scissor;
 
         class batch_data_table;
         class instance_data_table;

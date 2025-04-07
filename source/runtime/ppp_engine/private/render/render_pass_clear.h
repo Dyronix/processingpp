@@ -34,7 +34,7 @@ namespace ppp
         clear_state_desc make_rtv_clear_state(const glm::vec4& rgba = { 0.0f, 0.0f, 0.0f, 0.0f });
         clear_state_desc make_depth_clear_state(f32 depth = 1.0f);
 
-        class clear_pass : public render_pass
+        class clear_pass : public framebuffer_render_pass
         {
         public:
             clear_pass(const clear_state_desc& clear_state, const string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH);

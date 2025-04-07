@@ -30,6 +30,8 @@
 #include <assert.h>
 #include <sstream>
 
+#include "render/render_shader_tags.h"
+
 namespace ppp
 {
     namespace internal
@@ -281,7 +283,7 @@ namespace ppp
     void draw(image_id image_id, float x, float y, float width, float height)
     {
         auto prev_shader = render::active_shader();
-        auto curr_shader = shader_pool::tags::unlit::texture();
+        auto curr_shader = render::unlit::tags::texture::batched();
 
         shader(string::restore_sid(curr_shader));
 
@@ -307,11 +309,11 @@ namespace ppp
 
         render::submit_render_item(render::topology_type::TRIANGLES, &image_render_item);
 
-        glm::mat4& world = transform_stack::active_world();
+        glm::mat4 world = transform_stack::active_world();
 
         transform_stack::pop();
 
-        curr_shader = shader_pool::tags::unlit::color();
+        curr_shader = render::unlit::tags::color::batched();
 
         shader(string::restore_sid(curr_shader));
 

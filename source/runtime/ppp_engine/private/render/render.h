@@ -5,6 +5,7 @@
 
 #include "render/render_item.h"
 #include "render/render_types.h"
+#include "render/render_scissor.h"
 
 #include "string/string_id.h"
 
@@ -22,21 +23,6 @@ namespace ppp
         constexpr u32 DEPTH_BUFFER_BIT = 0x00000100;
         constexpr u32 STENCIL_BUFFER_BIT = 0x00000400;
         constexpr u32 COLOR_BUFFER_BIT = 0x00004000;
-
-        enum class camera_mode
-        {
-            CAMERA_PERSPECTIVE,
-            CAMERA_ORTHOGRAPHIC,
-            CAMERA_FONT
-        };
-       
-        struct scissor_rect
-        {
-            s32 x;
-            s32 y;
-            s32 w;
-            s32 h;
-        };
 
         bool initialize(s32 w, s32 h, void* user_data);
         void terminate();
@@ -71,11 +57,11 @@ namespace ppp
         void push_scissor(s32 x, s32 y, s32 width, s32 height);
         void push_scissor_enable(bool enable);
 
-        bool scissor_enabled();
+        bool scissor_rect_enabled();
 
-        scissor_rect scissor();
+        render_scissor scissor_rect();
 
-        // Image Item
+        // Texture
         u32 create_image_item(f32 width, f32 height, s32 channels, const u8* data);
         u32 create_image_item(f32 width, f32 height, s32 channels, const u8* data, image_filter_type filter_type, image_wrap_type wrap_type);
 
@@ -85,7 +71,6 @@ namespace ppp
 
         // Font Item
         void submit_font_item(const irender_item* item);
-
         void submit_render_item(topology_type topology, const irender_item* item);
         void submit_stroke_render_item(topology_type topology, const irender_item* item, bool outer);
 

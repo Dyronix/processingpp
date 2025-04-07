@@ -1,4 +1,4 @@
-#include "render/render_clear_pass.h"
+#include "render/render_pass_clear.h"
 #include "render/render_context.h"
 #include "render/render_scissor.h"
 #include "render/render_framebuffer.h"
@@ -37,7 +37,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         clear_pass::clear_pass(const clear_state_desc& clear_state, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :render_pass("clear"_sid, string::string_id::create_invalid(), framebuffer_tag, framebuffer_flags)
+            :framebuffer_render_pass("clear"_sid, framebuffer_tag, framebuffer_flags)
             ,m_clear_state(clear_state)
         {}
         //-------------------------------------------------------------------------

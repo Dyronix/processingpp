@@ -8,11 +8,11 @@ namespace ppp
     {
         class iframebuffer;
 
-        class forward_shading_pass : public render_pass
+        class unlit_pass : public geometry_render_pass
         {
         public:
-            forward_shading_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
-            ~forward_shading_pass() override;
+            unlit_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH, draw_mode draw_mode = draw_mode::AUTO);
+            ~unlit_pass() override;
 
             void begin_frame(const render_context& context) override;
             void render(const render_context& context) override;

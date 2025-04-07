@@ -74,9 +74,9 @@ namespace ppp
 
     float canvas_width()
     {
-        if (render::scissor_enabled())
+        if (render::scissor_rect_enabled())
         {
-            return render::scissor().w;
+            return render::scissor_rect().width;
         }
 
         return window_width();
@@ -84,9 +84,9 @@ namespace ppp
 
     float canvas_height()
     {
-        if (render::scissor_enabled())
+        if (render::scissor_rect_enabled())
         {
-            return render::scissor().h;
+            return render::scissor_rect().height;
         }
 
         return window_height();

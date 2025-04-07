@@ -5,7 +5,9 @@
 #include "events.h"
 
 #include "device/device.h"
+
 #include "render/render.h"
+#include "render/render_shader_tags.h"
 
 #include "camera/camera_context.h"
 #include "camera/camera_manager.h"
@@ -77,9 +79,14 @@ namespace ppp
         if (!material_pool::initialize()) { log::error("Failed to initialize material pool");  return -1; }
         if (!geometry_pool::initialize()) { log::error("Failed to initialize geometry pool");  return -1; }
 
-        auto unlit_texture = shader_pool::tags::unlit::texture();
-
-        shader(string::restore_sid(unlit_texture));
+        if (render::draw_mode() == render::render_draw_mode::BATCHED)
+        {
+            shader(string::restore_sid(render::unlit::tags::texture::batched()));
+        }
+        else
+        {
+            shader(string::restore_sid(render::unlit::tags::texture::instanced()));
+        }
 
         vfs::add_wildcard(string::store_sid("local:"), internal::get_working_directory(executable_path));
 

@@ -27,43 +27,86 @@ namespace ppp
 
         struct render_context;
 
-        class render_pass
+        class irender_pass
         {
         public:
-            render_pass(const string::string_id pass_tag, const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags);
+            irender_pass(const string::string_id pass_tag)
+                :m_pass_tag(pass_tag)
+            {}
 
-            virtual ~render_pass() = default;
-
-        public:
-            virtual void                      begin_frame(const render_context& context) = 0;
-            virtual void                      render(const render_context& context) = 0;
-            virtual void                      end_frame(const render_context& context) = 0;
-
-            virtual bool                      should_render() const { return true; }
-
-            virtual batch_draw_strategy       make_batch_render_strategy() const { return std::make_unique<default_batch_render_strategy>(); }
-            virtual inst_draw_strategy        make_inst_render_strategy() const { return std::make_unique<default_instance_render_strategy>(); }
+            virtual ~irender_pass() = default;
 
         public:
-            string::string_id                 pass_tag() const { return m_pass_tag.is_none() ? m_shader_tag : m_pass_tag; }
-            string::string_id                 shader_tag() const { return m_shader_tag; }
+            virtual bool                        should_render(const render_context& context) const { return true; }
 
-        protected:
-            const resources::iframebuffer*    framebuffer() const;
-            const resources::shader_program   shader_program() const;
-            const resources::imaterial*       material() const;
+            virtual void                        begin_frame(const render_context& context) = 0;
+            virtual void                        render(const render_context& context) = 0;
+            virtual void                        end_frame(const render_context& context) = 0;
 
-            ibatch_render_strategy*           batch_render_strategy();
-            iinstance_render_strategy*        instance_render_strategy();
+        public:
+            string::string_id                   pass_tag() const { return m_pass_tag; }
 
         private:
-            const string::string_id           m_pass_tag;
-            const string::string_id           m_shader_tag;
-            const string::string_id           m_framebuffer_tag;
-            const s32                         m_framebuffer_flags;
+            const string::string_id             m_pass_tag;
+        };
 
-            batch_draw_strategy               m_batch_draw_strategy;
-            inst_draw_strategy                m_inst_draw_strategy;
+        class framebuffer_render_pass : public irender_pass
+        {
+        public:
+            framebuffer_render_pass(const string::string_id pass_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags);
+            ~framebuffer_render_pass() override;
+
+        protected:
+            const resources::iframebuffer*      framebuffer() const;
+
+            string::string_id                   framebuffer_tag() const;
+            u32                                 framebuffer_flags() const;
+
+        private:
+            const string::string_id             m_framebuffer_tag;
+            const s32                           m_framebuffer_flags;
+        };
+
+        class geometry_render_pass : public framebuffer_render_pass
+        {
+        public:
+            enum class draw_mode
+            {
+                AUTO,
+                INSTANCED,
+                BATCHED
+            };
+
+            geometry_render_pass(const string::string_id pass_tag, const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode);
+            ~geometry_render_pass() override;
+
+        public:
+            bool should_render(const render_context& context) const override;
+
+        public:
+            virtual batch_draw_strategy         make_batch_render_strategy() const { return std::make_unique<default_batch_render_strategy>(); }
+            virtual inst_draw_strategy          make_inst_render_strategy() const { return std::make_unique<default_instance_render_strategy>(); }
+
+        public:
+            string::string_id                   shader_tag() const { return m_shader_tag; }
+
+        protected:
+            const resources::shader_program     shader_program() const;
+            const resources::imaterial*         material() const;
+
+            ibatch_render_strategy*             batch_render_strategy();
+            bool                                batch_rendering_enabled() const;
+
+            iinstance_render_strategy*          instance_render_strategy();
+            bool                                instance_rendering_enabled() const;
+
+        private:
+            const string::string_id             m_shader_tag;
+
+            batch_draw_strategy                 m_batch_draw_strategy;
+            inst_draw_strategy                  m_inst_draw_strategy;
+
+            draw_mode                           m_draw_mode;
         };
     }
 }

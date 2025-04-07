@@ -1,4 +1,5 @@
 #include "device/device_input.h"
+
 #include "render/render.h"
 
 #include <unordered_set>
@@ -116,10 +117,10 @@ namespace ppp
                 f64 xpos, ypos;
                 glfwGetCursorPos(window, &xpos, &ypos);
 
-                if (render::scissor_enabled())
+                if (render::scissor_rect_enabled())
                 {
-                    f64 canvas_x = (f64)render::scissor().x;
-                    f64 width = (f64)render::scissor().w;
+                    f64 canvas_x = (f64)render::scissor_rect().x;
+                    f64 width = (f64)render::scissor_rect().width;
 
                     xpos = xpos - canvas_x;
                 }
@@ -132,10 +133,10 @@ namespace ppp
                 f64 xpos, ypos;
                 glfwGetCursorPos(window, &xpos, &ypos);
 
-                if (render::scissor_enabled())
+                if (render::scissor_rect_enabled())
                 {
-                    f64 canvas_y = (f64)render::scissor().y;
-                    f64 height = (f64)render::scissor().h;
+                    f64 canvas_y = (f64)render::scissor_rect().y;
+                    f64 height = (f64)render::scissor_rect().height;
 
                     ypos = ((ypos - canvas_y) - height) * -1.0;
                 }

@@ -11,40 +11,6 @@ namespace ppp
 {
     namespace shader_pool
     {
-        namespace tags
-        {
-            namespace unlit
-            {
-                // batched
-                string::string_id color();
-                string::string_id texture();
-                string::string_id font();
-                string::string_id normal();
-                string::string_id shadow();
-                string::string_id predepth();
-
-                // instanced
-                string::string_id instance_color();
-                string::string_id instance_texture();
-                string::string_id instance_normal();
-                string::string_id instance_shadow();
-                string::string_id instance_predepth();
-            }
-
-            namespace lit
-            {
-                // batched
-                string::string_id color();
-                string::string_id texture();
-                string::string_id specular();
-
-                // instanced
-                string::string_id instance_color();
-                string::string_id instance_texture();
-                string::string_id instance_specular();
-            }
-        }
-
         bool initialize();
         void terminate();
 

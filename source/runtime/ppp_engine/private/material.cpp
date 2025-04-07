@@ -1,6 +1,7 @@
 #include "material.h"
 #include "fileio/fileio.h"
 #include "render/render_shader_uniform_manager.h"
+#include "render/render_shader_tags.h"
 #include "render/render.h"
 #include "resources/shader_pool.h"
 #include "resources/material_pool.h"
@@ -19,8 +20,8 @@ namespace ppp
             std::string_view unlit_color()
             {
                 auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::unlit::color()
-                    : shader_pool::tags::unlit::instance_color();
+                    ? render::unlit::tags::color::batched()
+                    : render::unlit::tags::color::instanced();
 
                 return string::restore_sid(sid);
             }
@@ -28,15 +29,15 @@ namespace ppp
             std::string_view unlit_texture()
             {
                 auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::unlit::texture()
-                    : shader_pool::tags::unlit::instance_texture();
+                    ? render::unlit::tags::texture::batched()
+                    : render::unlit::tags::texture::instanced();
 
                 return string::restore_sid(sid);
             }
             //-------------------------------------------------------------------------
             std::string_view unlit_font()
             {
-                auto sid = shader_pool::tags::unlit::font();
+                auto sid = render::unlit::tags::font::batched();
 
                 return string::restore_sid(sid);
             }
@@ -44,8 +45,8 @@ namespace ppp
             std::string_view unlit_normal()
             {
                 auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::unlit::normal()
-                    : shader_pool::tags::unlit::instance_normal();
+                    ? render::unlit::tags::normal::batched()
+                    : render::unlit::tags::normal::instanced();
 
                 return string::restore_sid(sid);
             }
@@ -55,16 +56,16 @@ namespace ppp
             std::string_view lit_color()
             {
                 auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::lit::color()
-                    : shader_pool::tags::lit::instance_color();
+                    ? render::lit::tags::color::batched()
+                    : render::lit::tags::color::instanced();
 
                 return string::restore_sid(sid);
             }
             std::string_view lit_texture()
             {
                 auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::lit::texture()
-                    : shader_pool::tags::lit::instance_texture();
+                    ? render::lit::tags::texture::batched()
+                    : render::lit::tags::texture::instanced();
 
                 return string::restore_sid(sid);
             }
@@ -72,8 +73,8 @@ namespace ppp
             std::string_view lit_specular()
             {
                 auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? shader_pool::tags::lit::specular()
-                    : shader_pool::tags::lit::instance_specular();
+                    ? render::lit::tags::specular::batched()
+                    : render::lit::tags::specular::instanced();
 
                 return string::restore_sid(sid);
             }
@@ -203,8 +204,8 @@ namespace ppp
     shader_program normal_material()
     {
         string::string_id tag = render::draw_mode() == render::render_draw_mode::BATCHED
-            ? shader_pool::tags::unlit::normal()
-            : shader_pool::tags::unlit::instance_normal();
+            ? render::unlit::tags::normal::batched()
+            : render::unlit::tags::normal::instanced();
 
         g_ctx.active_shader_tag = tag;
 
@@ -217,8 +218,8 @@ namespace ppp
     shader_program specular_material()
     {
         string::string_id tag = render::draw_mode() == render::render_draw_mode::BATCHED
-            ? shader_pool::tags::lit::specular()
-            : shader_pool::tags::lit::instance_specular();
+            ? render::lit::tags::specular::batched()
+            : render::lit::tags::specular::instanced();
 
         g_ctx.active_shader_tag = tag;
 

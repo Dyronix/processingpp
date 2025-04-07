@@ -157,7 +157,7 @@ namespace ppp
             u64 m_comparison_hash;
 
 #ifdef _DEBUG
-            std::string_view m_value;
+            std::string m_value;
 #endif
         };
 

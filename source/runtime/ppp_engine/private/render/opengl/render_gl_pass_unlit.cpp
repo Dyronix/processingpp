@@ -1,4 +1,4 @@
-#include "render/render_unlit_pass.h"
+#include "render/render_pass_unlit.h"
 #include "render/render_batch_renderer.h"
 #include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
@@ -73,8 +73,8 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        unlit_pass::unlit_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :render_pass("unlit"_sid, shader_tag, framebuffer_tag, framebuffer_flags)
+        unlit_pass::unlit_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+            :geometry_render_pass("unlit"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
         {}
         //-------------------------------------------------------------------------
         unlit_pass::~unlit_pass() = default;
@@ -108,7 +108,7 @@ namespace ppp
 
             push_all_shape_dependent_uniforms(shader_program(), cam_active_vp);
 
-            bool batched_shading = true;
+            bool batched_shading = batch_rendering_enabled();
 
             const auto& samplers = material()->samplers();
             const auto& textures = material()->textures();
@@ -138,7 +138,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void unlit_pass::render(const render_context& context)
         {
-            bool batched_shading = true;
+            bool batched_shading = batch_rendering_enabled();
 
             if (batched_shading)
             {
