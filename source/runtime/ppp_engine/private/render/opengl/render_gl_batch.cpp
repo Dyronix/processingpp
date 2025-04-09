@@ -2,20 +2,15 @@
 #include "render/render_vertex_buffer.h"
 #include "render/render_index_buffer.h"
 #include "render/render_storage_buffer.h"
-#include "render/render_shader_uniform_manager.h"
 #include "render/render_features.h"
 
-#include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
 #include "render/helpers/render_storage_buffer_ops.h"
-#include "render/helpers/render_texture_registry.h"
 
 #include "resources/material_pool.h"
-
-
 
 #include "util/types.h"
 #include "util/log.h"

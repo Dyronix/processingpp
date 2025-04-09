@@ -469,7 +469,7 @@ namespace ppp
 
                         .set_main_function_body(R"(
                         vec4 base_color = texture(u_image_samplers[materials[v_material_idx].sampler_indices[0]], v_texture);
-                        frag_color = base_color * v_tint_color;
+                        frag_color = base_color;
                     )").build();
                 }
 
@@ -483,6 +483,7 @@ namespace ppp
 
                         .add_attribute("vec3", "a_position", 0)
                         .add_attribute("vec2", "a_texture", 1)
+
                         .add_attribute("int", "a_inst_material_idx", 2)
                         .add_attribute("mat4", "a_inst_mat_model", 3)
                         .add_attribute("vec4", "a_inst_color", 7)
@@ -661,6 +662,7 @@ namespace ppp
                         .set_version(460)
                         .add_attribute("vec3", "a_position", 0)
                         .add_attribute("mat4", "a_inst_mat_model", 1)
+                        .add_attribute("vec4", "a_inst_color", 5)
                         .add_uniform("mat4", "u_view_proj")
                         .set_main_function_body(R"(
                         gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
@@ -703,6 +705,7 @@ namespace ppp
                         .set_version(460)
                         .add_attribute("vec3", "a_position", 0)
                         .add_attribute("mat4", "a_inst_mat_model", 1)
+                        .add_attribute("vec4", "a_inst_color", 5)
                         .add_uniform("mat4", "u_view_proj")
                         .set_main_function_body(R"(
                         gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);

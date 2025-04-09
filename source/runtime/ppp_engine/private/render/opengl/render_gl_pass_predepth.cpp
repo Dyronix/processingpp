@@ -6,7 +6,6 @@
 #include "render/render_context.h"
 #include "render/render_shader_uniform_manager.h"
 
-#include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
 #include "resources/framebuffer_pool.h"
@@ -16,7 +15,6 @@
 #include "camera/camera_context.h"
 
 #include <glad/glad.h>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 namespace ppp

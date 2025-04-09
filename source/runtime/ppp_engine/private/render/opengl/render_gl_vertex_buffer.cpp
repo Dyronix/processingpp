@@ -147,7 +147,7 @@ namespace ppp
             u64                             current_vertex_count;
             u64                             max_elements_to_set;
             
-            std::vector<u8>                buffer;
+            std::vector<u8>                 buffer;
 
             u32                             vbo;
         };
