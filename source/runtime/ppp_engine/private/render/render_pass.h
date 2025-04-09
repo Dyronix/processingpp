@@ -44,14 +44,18 @@ namespace ppp
         public:
             virtual bool                        should_render(const render_context& context) const { return true; }
 
-            virtual string::string_id           framebuffer_tag() const { return string::string_id::create_invalid(); }
-            virtual string::string_id           shader_tag() const { return string::string_id::create_invalid(); }
+            virtual bool                        has_framebuffer_tag(string::string_id shader_tag) const { return false; }
+            virtual bool                        has_shader(string::string_id shader_tag) const { return false; }
 
         public:
             string::string_id                   pass_tag() const { return m_pass_tag; }
 
+        protected:
+            virtual string::string_id           framebuffer_tag() const { return string::string_id::create_invalid(); }
+            virtual string::string_id           shader_tag() const { return string::string_id::create_invalid(); }
+
         private:
-            string::string_id             m_pass_tag;
+            string::string_id                   m_pass_tag;
         };
 
         class framebuffer_render_pass : public irender_pass
@@ -61,13 +65,16 @@ namespace ppp
             ~framebuffer_render_pass() override;
 
         public:
-            string::string_id                   framebuffer_tag() const override { return m_framebuffer_tag; }
+            bool                                has_framebuffer_tag(string::string_id framebuffer_tag) const override;
 
         protected:
+            string::string_id                   framebuffer_tag() const override { return m_framebuffer_tag; }
+            u32                                 framebuffer_flags() const { return m_framebuffer_flags; }
+
             const resources::iframebuffer*      framebuffer() const;
 
         private:
-            string::string_id             m_framebuffer_tag;
+            string::string_id                   m_framebuffer_tag;
             const s32                           m_framebuffer_flags;
         };
 
@@ -87,13 +94,14 @@ namespace ppp
         public:
             bool                                should_render(const render_context& context) const override;
 
-            string::string_id                   shader_tag() const override { return m_shader_tag; }
+            bool                                has_shader(string::string_id shader_tag) const override;
 
         public:
             virtual batch_draw_strategy         make_batch_render_strategy() const { return std::make_unique<default_batch_render_strategy>(); }
             virtual inst_draw_strategy          make_inst_render_strategy() const { return std::make_unique<default_instance_render_strategy>(); }
 
         protected:
+            string::string_id                   shader_tag() const override { return m_shader_tag; }
             const resources::shader_program     shader_program() const;
             const resources::imaterial*         material() const;
 
@@ -104,7 +112,7 @@ namespace ppp
             bool                                instance_rendering_enabled() const;
 
         private:
-            string::string_id             m_shader_tag;
+            string::string_id                   m_shader_tag;
 
             batch_draw_strategy                 m_batch_draw_strategy;
             inst_draw_strategy                  m_inst_draw_strategy;

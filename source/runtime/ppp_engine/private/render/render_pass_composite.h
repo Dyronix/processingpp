@@ -25,6 +25,34 @@ namespace ppp
 
         public:
             //-------------------------------------------------------------------------
+            bool has_framebuffer_tag(string::string_id framebuffer_tag) const override
+            {
+                for (auto& child : m_children)
+                {
+                    if (child->has_framebuffer_tag(framebuffer_tag))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            //-------------------------------------------------------------------------
+            bool has_shader(string::string_id shader_tag) const override
+            {
+                for (auto& child : m_children)
+                {
+                    if (child->has_shader(shader_tag))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            //-------------------------------------------------------------------------
             void add_child(std::unique_ptr<T> pass)
             {
                 m_children.push_back(std::move(pass));

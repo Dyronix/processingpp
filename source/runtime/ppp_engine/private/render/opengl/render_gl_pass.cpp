@@ -20,6 +20,17 @@ namespace ppp
         framebuffer_render_pass::~framebuffer_render_pass() = default;
 
         //-------------------------------------------------------------------------
+        bool framebuffer_render_pass::has_framebuffer_tag(string::string_id framebuffer_tag) const
+        {
+            if (m_framebuffer_tag.is_none())
+            {
+                return false;
+            }
+
+            return framebuffer_tag == m_framebuffer_tag;
+        }
+
+        //-------------------------------------------------------------------------
         const resources::iframebuffer* framebuffer_render_pass::framebuffer() const
         {
             auto framebuffer = framebuffer_pool::get(m_framebuffer_tag, m_framebuffer_flags);
@@ -53,6 +64,17 @@ namespace ppp
             }
 
             return can_draw;
+        }
+
+        //-------------------------------------------------------------------------
+        bool geometry_render_pass::has_shader(string::string_id shader_tag) const
+        {
+            if (m_shader_tag.is_none())
+            {
+                return false;
+            }
+
+            return shader_tag == m_shader_tag;
         }
 
         //-------------------------------------------------------------------------

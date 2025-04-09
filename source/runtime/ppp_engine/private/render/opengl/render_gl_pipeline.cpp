@@ -22,12 +22,7 @@ namespace ppp
             auto it = std::find_if(std::begin(m_passes), std::end(m_passes),
                 [framebuffer_tag](const std::unique_ptr<irender_pass>& pass)
                 {
-                    if (pass->framebuffer_tag().is_none())
-                    {
-                        return false;
-                    }
-
-                    return pass->framebuffer_tag() == framebuffer_tag;
+                    return pass->has_framebuffer_tag(framebuffer_tag);
                 });
 
             return it != std::cend(m_passes);
@@ -38,12 +33,7 @@ namespace ppp
             auto it = std::find_if(std::begin(m_passes), std::end(m_passes),
                 [shader_tag](const std::unique_ptr<irender_pass>& pass)
                 {
-                    if (pass->shader_tag().is_none())
-                    {
-                        return false;
-                    }
-
-                    return pass->shader_tag() == shader_tag;
+                    return pass->has_shader(shader_tag);
                 });
 
             return it != std::cend(m_passes);
@@ -87,20 +77,9 @@ namespace ppp
                     if (has_debugging_capabilities())
                     {
                         auto pass_tag_sid = pass->pass_tag();
-                        auto shader_tag_sid = pass->shader_tag();
-
                         auto pass_tag_sv = string::restore_sid(pass_tag_sid);
-                        auto shader_tag_sv = string::restore_sid(shader_tag_sid);
 
-                        std::stringstream ss;
-                        ss << pass_tag_sv;
-                        if (shader_tag_sid.is_none() == false)
-                        {
-                            ss << "_";
-                            ss << shader_tag_sv;
-                        }
-
-                        GL_CALL(glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, ss.str().c_str()));
+                        GL_CALL(glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, pass_tag_sv.data()));
                     }
 #endif
                     pass->begin_frame(context);

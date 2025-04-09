@@ -451,7 +451,6 @@ namespace ppp
             //    pair.second->enable_solid_rendering(enable);
             //}
         }
-
         //-------------------------------------------------------------------------
         void push_wireframe_rendering(bool enable)
         {
