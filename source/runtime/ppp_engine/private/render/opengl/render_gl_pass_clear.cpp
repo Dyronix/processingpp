@@ -36,7 +36,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        clear_pass::clear_pass(const clear_state_desc& clear_state, const string::string_id framebuffer_tag, s32 framebuffer_flags)
+        clear_pass::clear_pass(const clear_state_desc& clear_state, string::string_id framebuffer_tag, s32 framebuffer_flags)
             :framebuffer_render_pass("clear"_sid, framebuffer_tag, framebuffer_flags)
             ,m_clear_state(clear_state)
         {}

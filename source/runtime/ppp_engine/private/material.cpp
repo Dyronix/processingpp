@@ -202,7 +202,7 @@ namespace ppp
 
         g_ctx.active_shader_tag = sid_tag;
 
-        render::push_active_shader(sid_tag);
+        render::push_active_shader(sid_tag, shader_pool::shading_model_for_shader(sid_tag), shader_pool::shading_blending_for_shader(sid_tag));
     }
 
     //-------------------------------------------------------------------------
@@ -214,7 +214,7 @@ namespace ppp
 
         g_ctx.active_shader_tag = tag;
 
-        render::push_active_shader(tag);
+        render::push_active_shader(tag, render::shading_model_type::UNLIT, render::shading_blending_type::OPAQUE);
 
         return get_shader(string::restore_sid(tag));
     }
@@ -228,7 +228,7 @@ namespace ppp
 
         g_ctx.active_shader_tag = tag;
 
-        render::push_active_shader(tag);
+        render::push_active_shader(tag, render::shading_model_type::LIT, render::shading_blending_type::OPAQUE);
 
         return get_shader(string::restore_sid(tag));
     }

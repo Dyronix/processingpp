@@ -10,7 +10,7 @@ namespace ppp
     namespace render
     {
         //-------------------------------------------------------------------------
-        framebuffer_render_pass::framebuffer_render_pass(const string::string_id pass_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
+        framebuffer_render_pass::framebuffer_render_pass(string::string_id pass_tag, string::string_id framebuffer_tag, s32 framebuffer_flags)
             : irender_pass(pass_tag)
             , m_framebuffer_tag(framebuffer_tag)
             , m_framebuffer_flags(framebuffer_flags)
@@ -28,19 +28,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        string::string_id framebuffer_render_pass::framebuffer_tag() const
-        {
-            return m_framebuffer_tag;
-        }
-
-        //-------------------------------------------------------------------------
-        u32 framebuffer_render_pass::framebuffer_flags() const
-        {
-            return m_framebuffer_flags;
-        }
-
-        //-------------------------------------------------------------------------
-        geometry_render_pass::geometry_render_pass(const string::string_id pass_tag, const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+        geometry_render_pass::geometry_render_pass(string::string_id pass_tag, string::string_id shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
             : framebuffer_render_pass(pass_tag, framebuffer_tag, framebuffer_flags)
             , m_shader_tag(shader_tag)
             , m_draw_mode(draw_mode)
@@ -52,16 +40,16 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool geometry_render_pass::should_render(const render_context& context) const
         {
-            bool can_draw = true;
+            bool can_draw = false;
 
             if (m_draw_mode == draw_mode::BATCHED || m_draw_mode == draw_mode::AUTO)
             {
-                can_draw &= context.batch_data->empty() == false;
+                can_draw |= context.batch_data->empty() == false;
             }
 
             if (m_draw_mode == draw_mode::INSTANCED || m_draw_mode == draw_mode::AUTO)
             {
-                can_draw &= context.instance_data->empty() == false;
+                can_draw |= context.instance_data->empty() == false;
             }
 
             return can_draw;

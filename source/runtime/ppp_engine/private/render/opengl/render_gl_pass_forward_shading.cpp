@@ -169,7 +169,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        forward_shading_pass::forward_shading_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+        forward_shading_pass::forward_shading_pass(string::string_id shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
             :geometry_render_pass("forward"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
         {}
         //-------------------------------------------------------------------------

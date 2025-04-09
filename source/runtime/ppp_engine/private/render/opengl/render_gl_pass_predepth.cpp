@@ -30,7 +30,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        predepth_pass::predepth_pass(string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+        predepth_pass::predepth_pass(string::string_id shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
             :geometry_render_pass("predepth"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
         {}
 

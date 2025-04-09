@@ -1,8 +1,5 @@
 #pragma once
 
-
-
-
 #include "util/types.h"
 
 namespace ppp

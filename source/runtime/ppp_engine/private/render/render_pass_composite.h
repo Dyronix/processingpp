@@ -17,7 +17,7 @@ namespace ppp
 
         public:
             //-------------------------------------------------------------------------
-            composite_pass(const string::string_id pass_tag)
+            composite_pass(string::string_id pass_tag)
                 :irender_pass(pass_tag)
             {
                 

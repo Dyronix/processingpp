@@ -35,7 +35,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        shadow_pass::shadow_pass(string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+        shadow_pass::shadow_pass(string::string_id shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
             :geometry_render_pass("shadow"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
         {}
         //-------------------------------------------------------------------------

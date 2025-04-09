@@ -13,49 +13,49 @@ namespace ppp
             //-------------------------------------------------------------------------
             string::string_id composite()
             {
-                static const string::string_id s_composite_fb = string::store_sid("composite_framebuffer");
+                static string::string_id s_composite_fb = string::store_sid("composite_framebuffer");
                 return s_composite_fb;
             }
             //-------------------------------------------------------------------------
             string::string_id predepth()
             {
-                static const string::string_id s_predepth_fb = string::store_sid("predepth_framebuffer");
+                static string::string_id s_predepth_fb = string::store_sid("predepth_framebuffer");
                 return s_predepth_fb;
             }
             //-------------------------------------------------------------------------
             string::string_id wireframe()
             {
-                static const string::string_id s_wireframe_fb = string::store_sid("wireframe_framebuffer");
+                static string::string_id s_wireframe_fb = string::store_sid("wireframe_framebuffer");
                 return s_wireframe_fb;
             }
             //-------------------------------------------------------------------------
             string::string_id unlit()
             {
-                static const string::string_id s_unlit_fb = string::store_sid("unlit_framebuffer");
+                static string::string_id s_unlit_fb = string::store_sid("unlit_framebuffer");
                 return s_unlit_fb;
             }
             //-------------------------------------------------------------------------
             string::string_id shadow_map()
             {
-                static const string::string_id s_shadow_map_fb = string::store_sid("shadow_map_framebuffer");
+                static string::string_id s_shadow_map_fb = string::store_sid("shadow_map_framebuffer");
                 return s_shadow_map_fb;
             }
             //-------------------------------------------------------------------------
             string::string_id forward_shading()
             {
-                static const string::string_id s_forward_shading_fb = string::store_sid("forward_shading_framebuffer");
+                static string::string_id s_forward_shading_fb = string::store_sid("forward_shading_framebuffer");
                 return s_forward_shading_fb;
             }
             //-------------------------------------------------------------------------
             string::string_id ui()
             {
-                static const string::string_id s_ui_fb = string::store_sid("ui_framebuffer");
+                static string::string_id s_ui_fb = string::store_sid("ui_framebuffer");
                 return s_ui_fb;
             }
             //-------------------------------------------------------------------------
             string::string_id blit()
             {
-                static const string::string_id s_blit_fb = string::store_sid("blit_framebuffer");
+                static string::string_id s_blit_fb = string::store_sid("blit_framebuffer");
                 return s_blit_fb;
             }
         }

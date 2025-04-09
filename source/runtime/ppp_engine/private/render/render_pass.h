@@ -30,40 +30,44 @@ namespace ppp
         class irender_pass
         {
         public:
-            irender_pass(const string::string_id pass_tag)
+            irender_pass(string::string_id pass_tag)
                 :m_pass_tag(pass_tag)
             {}
 
             virtual ~irender_pass() = default;
 
         public:
-            virtual bool                        should_render(const render_context& context) const { return true; }
-
             virtual void                        begin_frame(const render_context& context) = 0;
             virtual void                        render(const render_context& context) = 0;
             virtual void                        end_frame(const render_context& context) = 0;
 
         public:
+            virtual bool                        should_render(const render_context& context) const { return true; }
+
+            virtual string::string_id           framebuffer_tag() const { return string::string_id::create_invalid(); }
+            virtual string::string_id           shader_tag() const { return string::string_id::create_invalid(); }
+
+        public:
             string::string_id                   pass_tag() const { return m_pass_tag; }
 
         private:
-            const string::string_id             m_pass_tag;
+            string::string_id             m_pass_tag;
         };
 
         class framebuffer_render_pass : public irender_pass
         {
         public:
-            framebuffer_render_pass(const string::string_id pass_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags);
+            framebuffer_render_pass(string::string_id pass_tag, string::string_id framebuffer_tag, s32 framebuffer_flags);
             ~framebuffer_render_pass() override;
+
+        public:
+            string::string_id                   framebuffer_tag() const override { return m_framebuffer_tag; }
 
         protected:
             const resources::iframebuffer*      framebuffer() const;
 
-            string::string_id                   framebuffer_tag() const;
-            u32                                 framebuffer_flags() const;
-
         private:
-            const string::string_id             m_framebuffer_tag;
+            string::string_id             m_framebuffer_tag;
             const s32                           m_framebuffer_flags;
         };
 
@@ -77,18 +81,17 @@ namespace ppp
                 BATCHED
             };
 
-            geometry_render_pass(const string::string_id pass_tag, const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode);
+            geometry_render_pass(string::string_id pass_tag, string::string_id shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode);
             ~geometry_render_pass() override;
 
         public:
-            bool should_render(const render_context& context) const override;
+            bool                                should_render(const render_context& context) const override;
+
+            string::string_id                   shader_tag() const override { return m_shader_tag; }
 
         public:
             virtual batch_draw_strategy         make_batch_render_strategy() const { return std::make_unique<default_batch_render_strategy>(); }
             virtual inst_draw_strategy          make_inst_render_strategy() const { return std::make_unique<default_instance_render_strategy>(); }
-
-        public:
-            string::string_id                   shader_tag() const { return m_shader_tag; }
 
         protected:
             const resources::shader_program     shader_program() const;
@@ -101,7 +104,7 @@ namespace ppp
             bool                                instance_rendering_enabled() const;
 
         private:
-            const string::string_id             m_shader_tag;
+            string::string_id             m_shader_tag;
 
             batch_draw_strategy                 m_batch_draw_strategy;
             inst_draw_strategy                  m_inst_draw_strategy;

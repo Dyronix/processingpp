@@ -2,8 +2,6 @@
 
 #include "util/types.h"
 
-#include <glm/glm.hpp>
-
 #include <string>
 
 namespace ppp

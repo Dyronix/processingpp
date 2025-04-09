@@ -3,8 +3,6 @@
 
 #include "render/opengl/render_gl_api.h"
 
-#include <glad/glad.h>
-
 namespace ppp
 {
     namespace render

@@ -263,8 +263,8 @@ target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTO
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/stb/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glad/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glfw/include)
-target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/freetype/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/gsl/include)
+target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/freetype/include)
 
 target_link_libraries(processing_engine PRIVATE stb)
 target_link_libraries(processing_engine PRIVATE glad)

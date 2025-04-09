@@ -31,14 +31,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <unordered_map>
-#include <vector>
 #include <array>
 #include <functional>
-#include <iostream>
-#include <sstream>
 
+#include "material.h"
 #include "render/render_features.h"
-#include "render/render_instance_data_table.h"
 
 #define LOG_GL_NOTIFICATIONS 0
 #define LOG_GL_LOW 0
@@ -137,11 +134,6 @@ namespace ppp
 
             // shaders
             string::string_id           fill_user_shader = string::string_id::create_invalid();
-            string::string_id           stroke_user_shader = string::string_id::create_invalid();
-
-            // frame buffer
-            string::string_id           main_framebuffer_tag = string::store_sid("main_framebuffer");
-            string::string_id           shadow_framebuffer_tag = string::store_sid("shadow_framebuffer");
 
             // rendering
             render_pipeline             render_pipeline;
@@ -275,15 +267,18 @@ namespace ppp
             // Clear color only and do a geometry pass
             g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_rtv_clear_state(), framebuffer_pool::tags::composite()));
 
-            g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_OPAQUE);
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_UNLIT_OPAQUE);
 
             g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::color{}, framebuffer_pool::tags::composite()));
             g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::texture{}, framebuffer_pool::tags::composite()));
 
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_UNLIT_OPAQUE);
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_LIT_OPAQUE);
+
             g_ctx.render_pipeline.add_pass(create_forward_shading_composite_pass(lit::tags::color{}, framebuffer_pool::tags::composite()));
             g_ctx.render_pipeline.add_pass(create_forward_shading_composite_pass(lit::tags::texture{}, framebuffer_pool::tags::composite()));
 
-            g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_OPAQUE);
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_LIT_OPAQUE);
 
             // Clear color only and do an ui pass
             g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>(unlit::tags::font{}, framebuffer_pool::tags::composite()));
@@ -375,9 +370,63 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void push_active_shader(string::string_id tag)
+        void push_active_shader(string::string_id shader_tag, shading_model_type shading_model, shading_blending_type shading_blending)
         {
-            g_ctx.fill_user_shader = tag;
+            g_ctx.fill_user_shader = shader_tag;
+
+            if (g_ctx.render_pipeline.has_pass_with_shader_tag(shader_tag) == false)
+            {
+                string::string_id               framebuffer_tag = framebuffer_pool::tags::composite();
+                u32                             framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH;
+                geometry_render_pass::draw_mode draw_mode = g_ctx.draw_mode == render_draw_mode::BATCHED
+                    ? geometry_render_pass::draw_mode::BATCHED
+                    : geometry_render_pass::draw_mode::INSTANCED;
+
+                insertion_point                 insertion = insertion_point::AFTER_LIT_OPAQUE;
+                std::unique_ptr<irender_pass>   render_pass = nullptr;
+
+                switch (shading_model)
+                {
+                    case shading_model::UNLIT:
+                    {
+                        switch (shading_blending)
+                        {
+                        case shading_blending::OPAQUE:
+                            insertion = insertion_point::AFTER_UNLIT_OPAQUE;
+                            render_pass = std::make_unique<unlit_pass>(
+                                shader_tag,
+                                framebuffer_tag,
+                                framebuffer_flags,
+                                draw_mode);
+                            break;
+                        case shading_blending::TRANSPARENT:
+                            assert(false && "Transparent objects are not supported right now.");
+                            break;
+                        }
+                        break;
+                    }
+                    case shading_model::LIT:
+                    {
+                        switch (shading_blending)
+                        {
+                        case shading_blending::OPAQUE:
+                            insertion = insertion_point::AFTER_LIT_OPAQUE;
+                            render_pass = std::make_unique<forward_shading_pass>(
+                                shader_tag,
+                                framebuffer_tag,
+                                framebuffer_flags,
+                                draw_mode);
+                            break;
+                        case shading_blending::TRANSPARENT:
+                            assert(false && "Transparent objects are not supported right now.");
+                            break;
+                        }
+                        break;
+                    }
+                }
+
+                g_ctx.render_pipeline.insert_pass(insertion, std::move(render_pass));
+            }
         }
 
         //-------------------------------------------------------------------------

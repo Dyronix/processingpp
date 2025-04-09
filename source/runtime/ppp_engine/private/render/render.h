@@ -16,6 +16,9 @@
 
 namespace ppp
 {
+    enum class shading_blending;
+    enum class shading_model;
+
     struct camera_context;
 
     namespace render
@@ -43,7 +46,7 @@ namespace ppp
         bool shadows_enabled();
 
         // Shader
-        void push_active_shader(string::string_id tag);
+        void push_active_shader(string::string_id tag, shading_model_type shading_model, shading_blending_type shading_blending);
 
         string::string_id active_shader();
 

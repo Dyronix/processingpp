@@ -127,6 +127,7 @@ namespace ppp
 
         orbit_control(options);
 
+        tint(255, 255, 255, 255);
 
         int grid_width = 5;
         int grid_height = 3;

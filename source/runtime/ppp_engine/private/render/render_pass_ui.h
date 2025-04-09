@@ -12,7 +12,7 @@ namespace ppp
         class ui_pass : public geometry_render_pass
         {
         public:
-            ui_pass(const tag<unlit::font> shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
+            ui_pass(const tag<unlit::font> shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH);
             ~ui_pass() override;
 
             void begin_frame(const render_context& context) override;

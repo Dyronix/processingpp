@@ -39,7 +39,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        unlit_wireframe_pass::unlit_wireframe_pass(const string::string_id shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+        unlit_wireframe_pass::unlit_wireframe_pass(string::string_id shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
             :geometry_render_pass("unlit_wireframe"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
         {}
         //-------------------------------------------------------------------------

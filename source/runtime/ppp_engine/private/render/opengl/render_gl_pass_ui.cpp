@@ -31,7 +31,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        ui_pass::ui_pass(const tag<unlit::font> shader_tag, const string::string_id framebuffer_tag, s32 framebuffer_flags)
+        ui_pass::ui_pass(const tag<unlit::font> shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags)
             :geometry_render_pass("ui"_sid, decltype(shader_tag)::batched(), framebuffer_tag, framebuffer_flags, draw_mode::BATCHED)
         {}
         //-------------------------------------------------------------------------
