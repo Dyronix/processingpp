@@ -11,14 +11,20 @@ namespace ppp
     {
         namespace tags
         {
-            std::string_view unlit_color();
-            std::string_view unlit_texture();
-            std::string_view unlit_font();
-            std::string_view unlit_normal();
+            namespace unlit
+            {
+                std::string_view color();
+                std::string_view texture();
+                std::string_view font();
+                std::string_view normal();
+            }
 
-            std::string_view lit_color();
-            std::string_view lit_texture();
-            std::string_view lit_specular();
+            namespace lit
+            {
+                std::string_view color();
+                std::string_view texture();
+                std::string_view specular();
+            }
         }
     }
 

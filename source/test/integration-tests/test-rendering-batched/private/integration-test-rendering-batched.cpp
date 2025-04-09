@@ -150,7 +150,7 @@ namespace ppp
 
         enable_batched_draw_mode();
 
-        shader(material::tags::unlit_color());
+        shader(material::tags::unlit::color());
     }
 
     void draw()

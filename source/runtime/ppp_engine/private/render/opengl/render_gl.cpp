@@ -285,7 +285,7 @@ namespace ppp
 
             g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_OPAQUE);
 
-            // Clear color only and do a ui pass
+            // Clear color only and do an ui pass
             g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>(unlit::tags::font{}, framebuffer_pool::tags::composite()));
 
             // Blit to backbuffer

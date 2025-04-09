@@ -146,7 +146,7 @@ namespace ppp
 
         on_draw_end(end_draw);
 
-        shader(material::tags::unlit_color());
+        shader(material::tags::unlit::color());
     }
 
     void draw_shapes_grid()

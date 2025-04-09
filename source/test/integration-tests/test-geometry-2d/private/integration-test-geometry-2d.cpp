@@ -128,7 +128,7 @@ namespace ppp
         inner_stroke({ 0, 255 , 0, 255 });
         inner_stroke_weight(5.0f);
 
-        shader(material::tags::unlit_color());
+        shader(material::tags::unlit::color());
 
         int shape_count = 8;
         int shape_size = 50;
@@ -167,7 +167,7 @@ namespace ppp
         
         triangle(x + shape_size, y - (shape_size * 0.5f), x + (shape_size * 0.5f), y + (shape_size * 0.5f), x, y - (shape_size * 0.5f));
         
-        shader(material::tags::unlit_texture());
+        shader(material::tags::unlit::texture());
 
         x = 96;
         for (int i = 0; i < 9; ++i)

@@ -398,7 +398,7 @@ namespace ppp
         draw_shapes_grid();
         draw_floor();
 
-        shader(material::tags::unlit_color());
+        shader(material::tags::unlit::color());
         fill({ 255, 255, 255, 255 });
         //draw_lights();
 

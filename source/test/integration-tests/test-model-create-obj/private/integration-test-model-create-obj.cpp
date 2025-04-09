@@ -116,7 +116,7 @@ namespace ppp
 
         on_draw_end(end_draw);
 
-        shader(material::tags::unlit_texture());
+        shader(material::tags::unlit::texture());
     }
 
     void draw()

@@ -15,68 +15,74 @@ namespace ppp
     {
         namespace tags
         {
-            //-------------------------------------------------------------------------
-            // unlit
-            std::string_view unlit_color()
+            namespace unlit
             {
-                auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? render::unlit::tags::color::batched()
-                    : render::unlit::tags::color::instanced();
+                //-------------------------------------------------------------------------
+                // unlit
+                std::string_view color()
+                {
+                    auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
+                        ? render::unlit::tags::color::batched()
+                        : render::unlit::tags::color::instanced();
 
-                return string::restore_sid(sid);
+                    return string::restore_sid(sid);
+                }
+                //-------------------------------------------------------------------------
+                std::string_view texture()
+                {
+                    auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
+                        ? render::unlit::tags::texture::batched()
+                        : render::unlit::tags::texture::instanced();
+
+                    return string::restore_sid(sid);
+                }
+                //-------------------------------------------------------------------------
+                std::string_view font()
+                {
+                    auto sid = render::unlit::tags::font::batched();
+
+                    return string::restore_sid(sid);
+                }
+                //-------------------------------------------------------------------------
+                std::string_view normal()
+                {
+                    auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
+                        ? render::unlit::tags::normal::batched()
+                        : render::unlit::tags::normal::instanced();
+
+                    return string::restore_sid(sid);
+                }
             }
-            //-------------------------------------------------------------------------
-            std::string_view unlit_texture()
+
+            namespace lit
             {
-                auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? render::unlit::tags::texture::batched()
-                    : render::unlit::tags::texture::instanced();
+                //-------------------------------------------------------------------------
+                // lit
+                std::string_view color()
+                {
+                    auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
+                        ? render::lit::tags::color::batched()
+                        : render::lit::tags::color::instanced();
 
-                return string::restore_sid(sid);
-            }
-            //-------------------------------------------------------------------------
-            std::string_view unlit_font()
-            {
-                auto sid = render::unlit::tags::font::batched();
+                    return string::restore_sid(sid);
+                }
+                std::string_view texture()
+                {
+                    auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
+                        ? render::lit::tags::texture::batched()
+                        : render::lit::tags::texture::instanced();
 
-                return string::restore_sid(sid);
-            }
-            //-------------------------------------------------------------------------
-            std::string_view unlit_normal()
-            {
-                auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? render::unlit::tags::normal::batched()
-                    : render::unlit::tags::normal::instanced();
+                    return string::restore_sid(sid);
+                }
+                //-------------------------------------------------------------------------
+                std::string_view specular()
+                {
+                    auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
+                        ? render::lit::tags::specular::batched()
+                        : render::lit::tags::specular::instanced();
 
-                return string::restore_sid(sid);
-            }
-
-            //-------------------------------------------------------------------------
-            // lit
-            std::string_view lit_color()
-            {
-                auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? render::lit::tags::color::batched()
-                    : render::lit::tags::color::instanced();
-
-                return string::restore_sid(sid);
-            }
-            std::string_view lit_texture()
-            {
-                auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? render::lit::tags::texture::batched()
-                    : render::lit::tags::texture::instanced();
-
-                return string::restore_sid(sid);
-            }
-            //-------------------------------------------------------------------------
-            std::string_view lit_specular()
-            {
-                auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
-                    ? render::lit::tags::specular::batched()
-                    : render::lit::tags::specular::instanced();
-
-                return string::restore_sid(sid);
+                    return string::restore_sid(sid);
+                }
             }
         }
     }
@@ -112,10 +118,9 @@ namespace ppp
     {
         context()
             : active_shader_tag(string::string_id::create_invalid())
-        {
-        }
+        {}
 
-        string::string_id                                           active_shader_tag;
+        string::string_id active_shader_tag;
     } g_ctx;
 
     //-------------------------------------------------------------------------

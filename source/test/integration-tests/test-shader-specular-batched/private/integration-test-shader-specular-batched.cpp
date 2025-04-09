@@ -280,7 +280,7 @@ namespace ppp
 
         orbit_control(options);
 
-        auto specular_program = get_shader(material::tags::lit_specular());
+        auto specular_program = get_shader(material::tags::lit::specular());
 
         specular_program.set_uniform("u_ambient_strength", 0.1f);
         specular_program.set_uniform("u_light_position", vec3{ 0.0f, 0.0f, 200.0f });

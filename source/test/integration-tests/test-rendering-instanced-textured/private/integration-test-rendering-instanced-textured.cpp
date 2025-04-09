@@ -110,7 +110,7 @@ namespace ppp
 
         enable_instance_draw_mode();
 
-        shader(material::tags::unlit_texture());
+        shader(material::tags::unlit::texture());
     }
 
     void draw()
