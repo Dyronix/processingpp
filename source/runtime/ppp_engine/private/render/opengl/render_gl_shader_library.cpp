@@ -397,8 +397,16 @@ namespace ppp
                         .set_version(460)
 
                         .add_attribute("vec3", "a_position", 0)
-                        .add_attribute("mat4", "a_inst_mat_model", 1)
-                        .add_attribute("vec4", "a_inst_color", 5)
+
+                        .add_struct(
+                            "instance_data",
+                            {
+                                {"int", "material_idx"},
+                                {"mat4", "mat_model"},
+                                {"vec4", "color"},
+                            })
+
+                        .add_ssbo("instance_buffer", "instance_data", "instances", 0, true)
 
                         .add_uniform("mat4", "u_view_proj")
                         .add_uniform("bool", "u_wireframe")
@@ -407,8 +415,9 @@ namespace ppp
                         .add_output("vec4", "v_color")
 
                         .set_main_function_body(R"(
-                        v_color = u_wireframe ? u_wireframe_color : a_inst_color;
-                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
+                        instance_data data = instances[gl_InstanceID];
+                        v_color = u_wireframe ? u_wireframe_color : data.color;
+                        gl_Position = u_view_proj * data.mat_model * vec4(a_position, 1.0);
                     )").build();
                 }
 
@@ -484,9 +493,15 @@ namespace ppp
                         .add_attribute("vec3", "a_position", 0)
                         .add_attribute("vec2", "a_texture", 1)
 
-                        .add_attribute("int", "a_inst_material_idx", 2)
-                        .add_attribute("mat4", "a_inst_mat_model", 3)
-                        .add_attribute("vec4", "a_inst_color", 7)
+                        .add_struct(
+                            "instance_data",
+                            {
+                                {"int", "material_idx"},
+                                {"mat4", "mat_model"},
+                                {"vec4", "color"},
+                            })
+
+                        .add_ssbo("instance_buffer", "instance_data", "instances", 0, true)
 
                         .add_uniform("mat4", "u_view_proj")
                         .add_uniform("bool", "u_wireframe")
@@ -497,10 +512,11 @@ namespace ppp
                         .add_output("int", "v_material_idx", true)
 
                         .set_main_function_body(R"(
-                        v_tint_color = u_wireframe ? u_wireframe_color : a_inst_color;
+                        instance_data data = instances[gl_InstanceID];
+                        v_tint_color = u_wireframe ? u_wireframe_color : data.color;
                         v_texture = a_texture;
-                        v_material_idx = a_inst_material_idx;
-                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
+                        v_material_idx = data.material_idx;
+                        gl_Position = u_view_proj * data.mat_model * vec4(a_position, 1.0);
                     )").build();
                 }
 
@@ -611,8 +627,16 @@ namespace ppp
 
                         .add_attribute("vec3", "a_position", 0)
                         .add_attribute("vec3", "a_normal", 1)
-                        .add_attribute("mat4", "a_inst_mat_model", 2)
-                        .add_attribute("vec4", "a_inst_color", 6)
+
+                        .add_struct(
+                            "instance_data",
+                            {
+                                {"int", "material_idx"},
+                                {"mat4", "mat_model"},
+                                {"vec4", "color"},
+                            })
+
+                        .add_ssbo("instance_buffer", "instance_data", "instances", 0, true)
 
                         .add_uniform("mat4", "u_view_proj")
 
@@ -620,9 +644,10 @@ namespace ppp
                         .add_output("vec3", "v_normal")
 
                         .set_main_function_body(R"(
-                        v_tint_color = a_inst_color;
+                        instance_data data = instances[gl_InstanceID];
+                        v_tint_color = data.color;
                         v_normal = a_normal;
-                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
+                        gl_Position = u_view_proj * data.mat_model * vec4(a_position, 1.0);
                     )").build();
                 }
 
@@ -661,11 +686,21 @@ namespace ppp
                     return builder
                         .set_version(460)
                         .add_attribute("vec3", "a_position", 0)
-                        .add_attribute("mat4", "a_inst_mat_model", 1)
-                        .add_attribute("vec4", "a_inst_color", 5)
+                        .add_struct(
+                            "instance_data",
+                            {
+                                {"int", "material_idx"},
+                                {"mat4", "mat_model"},
+                                {"vec4", "color"},
+                            })
+
+                        .add_ssbo("instance_buffer", "instance_data", "instances", 0, true)
+
                         .add_uniform("mat4", "u_view_proj")
+                    
                         .set_main_function_body(R"(
-                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
+                        instance_data data = instances[gl_InstanceID];
+                        gl_Position = u_view_proj * data.mat_model * vec4(a_position, 1.0);
                     )").build();
                 }
 
@@ -704,11 +739,20 @@ namespace ppp
                     return builder
                         .set_version(460)
                         .add_attribute("vec3", "a_position", 0)
-                        .add_attribute("mat4", "a_inst_mat_model", 1)
-                        .add_attribute("vec4", "a_inst_color", 5)
+                        .add_struct(
+                            "instance_data",
+                            {
+                                {"int", "material_idx"},
+                                {"mat4", "mat_model"},
+                                {"vec4", "color"},
+                            })
+
+                        .add_ssbo("instance_buffer", "instance_data", "instances", 0, true)
+
                         .add_uniform("mat4", "u_view_proj")
                         .set_main_function_body(R"(
-                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
+                        instance_data data = instances[gl_InstanceID];
+                        gl_Position = u_view_proj * data.mat_model * vec4(a_position, 1.0);
                     )").build();
                 }
             }
@@ -804,9 +848,16 @@ namespace ppp
 
                         .add_attribute("vec3", "a_position", 0)
                         .add_attribute("vec3", "a_normal", 1)
-                        .add_attribute("vec4", "a_color", 2)
-                        .add_attribute("mat4", "a_inst_mat_model", 3)
-                        .add_attribute("vec4", "a_inst_color", 7)
+
+                        .add_struct(
+                            "instance_data",
+                            {
+                                {"int", "material_idx"},
+                                {"mat4", "mat_model"},
+                                {"vec4", "color"},
+                            })
+
+                        .add_ssbo("instance_buffer", "instance_data", "instances", 0, true)
 
                         .add_uniform("mat4", "u_view_proj")
                         .add_uniform("bool", "u_wireframe")
@@ -819,11 +870,12 @@ namespace ppp
                         .add_output("vec4", "v_light_position")
 
                         .set_main_function_body(R"(
+                        instance_data data = instances[gl_InstanceID];
                         v_position = a_position;  
                         v_normal = a_normal;
-                        v_color = u_wireframe ? u_wireframe_color : a_color;
-                        v_light_position = u_light_vp * a_inst_mat_model * vec4(a_position, 1.0);
-                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
+                        v_color = u_wireframe ? u_wireframe_color : data.color;
+                        v_light_position = u_light_vp * data.mat_model * vec4(a_position, 1.0);
+                        gl_Position = u_view_proj * data.mat_model * vec4(a_position, 1.0);
                     )").build();
                 }
 
@@ -940,9 +992,15 @@ namespace ppp
                         .add_attribute("vec3", "a_position", 0)
                         .add_attribute("vec3", "a_normal", 1)
                         .add_attribute("vec2", "a_texture", 2)
-                        .add_attribute("int", "a_inst_material_idx", 3)
-                        .add_attribute("mat4", "a_inst_mat_model", 4)
-                        .add_attribute("vec4", "a_inst_color", 8)
+                        .add_struct(
+                            "instance_data",
+                            {
+                                {"int", "material_idx"},
+                                {"mat4", "mat_model"},
+                                {"vec4", "color"},
+                            })
+
+                        .add_ssbo("instance_buffer", "instance_data", "instances", 0, true)
 
                         .add_uniform("mat4", "u_view_proj")
                         .add_uniform("bool", "u_wireframe")
@@ -957,13 +1015,14 @@ namespace ppp
                         .add_output("vec4", "v_light_position")
 
                         .set_main_function_body(R"(
+                        instance_data data = instances[gl_InstanceID];
                         v_position = a_position;  
                         v_normal = a_normal;
-                        v_tint_color = u_wireframe ? u_wireframe_color : a_inst_color;
+                        v_tint_color = u_wireframe ? u_wireframe_color : data.color;
                         v_texture = a_texture;
-                        v_material_idx = a_inst_material_idx;
+                        v_material_idx = data.material_idx;
                         v_light_position = u_light_vp * vec4(a_position, 1.0);   
-                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
+                        gl_Position = u_view_proj * data.mat_model * vec4(a_position, 1.0);
                     )").build();
                 }
 
@@ -1057,8 +1116,15 @@ namespace ppp
 
                         .add_attribute("vec3", "a_position", 0)
                         .add_attribute("vec3", "a_normal", 1)
-                        .add_attribute("mat4", "a_inst_mat_model", 2)
-                        .add_attribute("vec4", "a_inst_color", 6)
+                        .add_struct(
+                            "instance_data",
+                            {
+                                {"int", "material_idx"},
+                                {"mat4", "mat_model"},
+                                {"vec4", "color"},
+                            })
+
+                        .add_ssbo("instance_buffer", "instance_data", "instances", 0, true)
 
                         .add_uniform("mat4", "u_view_proj")
 
@@ -1067,10 +1133,11 @@ namespace ppp
                         .add_output("vec3", "v_normal")
 
                         .set_main_function_body(R"(
-                        v_tint_color = a_inst_color;
+                        instance_data data = instances[gl_InstanceID];
+                        v_tint_color = data.color;
                         v_position = a_position;  
                         v_normal = a_normal;
-                        gl_Position = u_view_proj * a_inst_mat_model * vec4(a_position, 1.0);
+                        gl_Position = u_view_proj * data.mat_model * vec4(a_position, 1.0);
                     )").build();
                 }
             }
