@@ -12,6 +12,8 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_manager.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_placement_new.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_unique_ptr_util.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_config.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/memory_config.cpp
     # memory-heaps
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/memory/heaps/tagged_heap.cpp

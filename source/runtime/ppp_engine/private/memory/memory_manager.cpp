@@ -1,5 +1,6 @@
 #include "memory/memory_manager.h"
 #include "memory/memory_tracker.h"
+#include "memory/memory_config.h"
 
 #include "util/log.h"
 
@@ -57,22 +58,22 @@ namespace ppp
             bool was_tracking = disable_tracking();
 
             static memory_requirements persistant;
-            persistant.frame_heap_size = 1_mb;
-            persistant.tagged_heap_block_size = 500_kb;
-            persistant.tagged_heap_block_count = 15;
-            persistant.scratch_heap_size = 1_mb;
+            persistant.frame_heap_size = development_persistant_frame_heap_size();
+            persistant.tagged_heap_block_size = development_persistant_tagged_heap_block_size();
+            persistant.tagged_heap_block_count = development_persistant_tagged_heap_block_count();
+            persistant.scratch_heap_size = development_persistant_scratch_heap_size();
             
             static memory_requirements staging;
-            staging.frame_heap_size = 0_mb;
-            staging.tagged_heap_block_size = 0_kb;
-            staging.tagged_heap_block_count = 0;
-            staging.scratch_heap_size = 20_mb;
+            staging.frame_heap_size = development_staging_frame_heap_size();
+            staging.tagged_heap_block_size = development_staging_tagged_heap_block_size();
+            staging.tagged_heap_block_count = development_staging_tagged_heap_block_count();
+            staging.scratch_heap_size = development_staging_scratch_heap_size();
 
             static memory_requirements debug;
-            debug.frame_heap_size = 1_mb;
-            debug.tagged_heap_block_size = 500_kb;
-            debug.tagged_heap_block_count = 10;
-            debug.scratch_heap_size = 1_mb;
+            debug.frame_heap_size = development_debug_frame_heap_size();
+            debug.tagged_heap_block_size = development_debug_tagged_heap_block_size();
+            debug.tagged_heap_block_count = development_debug_tagged_heap_block_count();
+            debug.scratch_heap_size = development_debug_scratch_heap_size();
 
             static development_memory_manager s_instance(persistant, staging, debug);
 
@@ -99,22 +100,22 @@ namespace ppp
             bool was_tracking = disable_tracking();
 
             static memory_requirements persistant;
-            persistant.frame_heap_size = 1_mb;
-            persistant.tagged_heap_block_size = 500_kb;
-            persistant.tagged_heap_block_count = 15;
-            persistant.scratch_heap_size = 1_mb;
+            persistant.frame_heap_size = shipping_persistant_frame_heap_size();
+            persistant.tagged_heap_block_size = shipping_persistant_tagged_heap_block_size();
+            persistant.tagged_heap_block_count = shipping_persistant_tagged_heap_block_count();
+            persistant.scratch_heap_size = shipping_persistant_scratch_heap_size();
 
             static memory_requirements staging;
-            staging.frame_heap_size = 0_mb;
-            staging.tagged_heap_block_size = 0_kb;
-            staging.tagged_heap_block_count = 0;
-            staging.scratch_heap_size = 20_mb;
+            staging.frame_heap_size = shipping_staging_frame_heap_size();
+            staging.tagged_heap_block_size = shipping_staging_tagged_heap_block_size();
+            staging.tagged_heap_block_count = shipping_staging_tagged_heap_block_count();
+            staging.scratch_heap_size = shipping_staging_scratch_heap_size();
 
             static memory_requirements debug;
-            debug.frame_heap_size = 0_mb;
-            debug.tagged_heap_block_size = 0_kb;
-            debug.tagged_heap_block_count = 0;
-            debug.scratch_heap_size = 0_mb;
+            debug.frame_heap_size = shipping_debug_frame_heap_size();
+            debug.tagged_heap_block_size = shipping_debug_tagged_heap_block_size();
+            debug.tagged_heap_block_count = shipping_debug_tagged_heap_block_count();
+            debug.scratch_heap_size = shipping_debug_scratch_heap_size();
 
             static shipping_memory_manager s_instance(persistant, staging, debug);
 
@@ -137,11 +138,11 @@ namespace ppp
         // GLOBAL ACCESSORS
         imemory_manager& get_memory_manager()
         {
-#ifdef _DEBUG
+            #ifdef _DEBUG
             return development_memory_manager::instance();
-#else
+            #else
             return shipping_memory_manager::instance();
-#endif
+            #endif
         }
 
         //-------------------------------------------------------------------------
