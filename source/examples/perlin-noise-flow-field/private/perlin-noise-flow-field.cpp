@@ -17,8 +17,6 @@
 #include <vector>
 #include <algorithm>
 
-#include <glm/glm.hpp>
-
 namespace ppp
 {
     constexpr int _window_width = 1280;
@@ -48,7 +46,7 @@ namespace ppp
     bool _lines_enabled = false;
 
     std::vector<flow_field::Particle> _particles;
-    std::vector<glm::vec2> _flow_field;
+    std::vector<vec2> _flow_field;
 
     app_params entry(int argc, char** argv)
     {
@@ -62,36 +60,36 @@ namespace ppp
 
     void setup()
     {
-        trigonometry::angle_mode(trigonometry::angle_mode_type::RADIANS);
+        angle_mode(angle_mode_type::RADIANS);
 
-        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
+        set_quit_application_keycode(key_code::KEY_ESCAPE);
 
-        keyboard::add_key_pressed_callback(
-            [&](keyboard::key_code key)
+        add_key_pressed_callback(
+            [&](key_code key)
         {
             switch(key)
             {
-            case keyboard::key_code::KEY_UP:
+            case key_code::KEY_UP:
                 _chaos_multiplier = std::clamp(_chaos_multiplier + 0.1f, 1.0f, 10.0f);
-                environment::print("_chaos_multiplier: ", _chaos_multiplier);
+                print("_chaos_multiplier: ", _chaos_multiplier);
                 break;
-            case keyboard::key_code::KEY_DOWN:
+            case key_code::KEY_DOWN:
                 _chaos_multiplier = std::clamp(_chaos_multiplier - 0.1f, 1.0f, 10.0f);
-                environment::print("_chaos_multiplier: ", _chaos_multiplier);
+                print("_chaos_multiplier: ", _chaos_multiplier);
                 break;
-            case keyboard::key_code::KEY_SPACE:
+            case key_code::KEY_SPACE:
                 _z_off_enabled = !_z_off_enabled;
-                environment::print("_z_off_enabled: ", _z_off_enabled);
+                print("_z_off_enabled: ", _z_off_enabled);
                 break;
-            case keyboard::key_code::KEY_F1:
+            case key_code::KEY_F1:
                 _lines_enabled = !_lines_enabled;
-                environment::print("_lines_enabled: ", _lines_enabled);
+                print("_lines_enabled: ", _lines_enabled);
                 break;
             }
         });
 
-        rendering::create_canvas((_window_width / 2) - (_canvas_width / 2), (_window_height / 2) - (_canvas_height / 2), _canvas_width, _canvas_height);
-        color::background(0);
+        create_canvas((_window_width / 2) - (_canvas_width / 2), (_window_height / 2) - (_canvas_height / 2), _canvas_width, _canvas_height);
+        background(0);
 
         _cols = math::floor(_canvas_width / _scl);
         _rows = math::floor(_canvas_height / _scl);
@@ -110,7 +108,7 @@ namespace ppp
     {
         _flow_field.clear();
 
-        shapes::rect_mode(shapes::shape_mode_type::CORNER);
+        rect_mode(shape_mode_type::CORNER);
 
         float z_off = 0;
         float y_off = 0;
@@ -122,10 +120,10 @@ namespace ppp
             {
                 int index = x + (y * _cols);
                 
-                float angle = math::noise(x_off, y_off, _z_off) * constants::two_pi() * _chaos_multiplier;
+                float angle = math::noise(x_off, y_off, _z_off) * two_pi() * _chaos_multiplier;
 
-                glm::vec2 v = trigonometry::from_angle(angle);
-                glm::vec2 clamped_v = trigonometry::set_magnitude(v, 0.1f);
+                vec2 v = from_angle(angle);
+                vec2 clamped_v = v.set_mag(0.1f);
 
                 auto it = _flow_field.begin();
                 std::advance(it, index);
@@ -133,15 +131,15 @@ namespace ppp
 
                 if (_lines_enabled)
                 {
-                    transform::push();
+                    push();
                     {
-                        transform::translate(x * _scl, y * _scl);
-                        transform::rotate(trigonometry::heading(_flow_field[index]));
+                        translate(x * _scl, y * _scl);
+                        rotate(_flow_field[index].heading());
 
-                        color::fill(255, 255, 255, 50);
-                        shapes::line(0, 0, _scl, 0);
+                        fill(255, 255, 255, 50);
+                        line(0, 0, _scl, 0);
                     }
-                    transform::pop();
+                    pop();
                 }
 
                 x_off += _inc_x;

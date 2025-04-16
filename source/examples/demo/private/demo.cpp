@@ -1,6 +1,7 @@
 #include "engine.h"
 
 #include <sstream>
+#include <fstream>
 
 namespace ppp
 {
@@ -23,8 +24,8 @@ namespace ppp
 
     int _enable_normal = 0;
 
-    material::shader_program _material_lit;
-    lights::light_id _dir_light;
+    shader_program _material_lit;
+    light_id _dir_light;
 
     // Initial light direction values.
     const float _initial_dir_x = -0.2f;
@@ -54,7 +55,7 @@ namespace ppp
     void update_directional_light()
     {
         // Automatically update the yaw.
-        _current_yaw += _yaw_speed * environment::delta_time();
+        _current_yaw += _yaw_speed * delta_time();
 
         // Compute the new directional vector from spherical coordinates.
         float new_dir_x = std::cos(_current_pitch) * std::cos(_current_yaw);
@@ -62,25 +63,25 @@ namespace ppp
         float new_dir_z = std::cos(_current_pitch) * std::sin(_current_yaw);
 
         // Update the light's direction.
-        lights::light_direction(_dir_light, lights::light_type::DIRECTIONAL, new_dir_x, new_dir_y, new_dir_z);
+        light_direction(_dir_light, light_type::DIRECTIONAL, new_dir_x, new_dir_y, new_dir_z);
     }
 
     void append_lights()
     {
-        lights::directional_light_desc directional_desc =
+        directional_light_desc directional_desc =
         {
-            _initial_dir_x, _initial_dir_y, _initial_dir_z,    // direction
+            {_initial_dir_x, _initial_dir_y, _initial_dir_z},                                               // direction
 
-            0.05f, 0.05f, 0.05f,    // ambient          
-            0.8f, 0.8f, 0.8f,       // diffuse
-            1.0f, 1.0f, 1.0f,       // specular          
+            {static_cast<int>(0.05f * 255), static_cast<int>(0.05f * 255), static_cast<int>(0.05f * 255)},  // ambient          
+            {static_cast<int>(0.8f  * 255), static_cast<int>(0.8f  * 255), static_cast<int>(0.8f  * 255)},  // diffuse
+            {static_cast<int>(1.0f  * 255), static_cast<int>(1.0f  * 255), static_cast<int>(1.0f  * 255)},  // specular          
             false,                  // specular enabled
             true,                   // cast shadows
         };
 
-        _dir_light = lights::directional_light(directional_desc);
+        _dir_light = directional_light(directional_desc);
 
-        //lights::point_light_desc point_desc =
+        //point_light_desc point_desc =
         //{
         //    0.0f, 0.0f, 0.0f,       // position
         //    0.05f, 0.05f, 0.05f,    // ambient          
@@ -105,7 +106,7 @@ namespace ppp
         //        point_desc.y = 40.0f;
         //        point_desc.z = 100.0f;
 
-        //        lights::point_light(point_desc);
+        //        point_light(point_desc);
         //        break;
         //    //case 1:
         //    //    // lights
@@ -113,7 +114,7 @@ namespace ppp
         //    //    point_desc.y = 40.0f;
         //    //    point_desc.z = 100.0f;
 
-        //    //    lights::point_light(point_desc);
+        //    //    point_light(point_desc);
         //    //    break;
         //    //case 2:
         //    //    // lights
@@ -121,7 +122,7 @@ namespace ppp
         //    //    point_desc.y = 40.0f;
         //    //    point_desc.z = 100.0f;
 
-        //    //    lights::point_light(point_desc);
+        //    //    point_light(point_desc);
         //    //    break;
         //    case 3:
         //        // lights
@@ -129,7 +130,7 @@ namespace ppp
         //        point_desc.y = 40.0f;
         //        point_desc.z = 100.0f;
 
-        //        lights::point_light(point_desc);
+        //        point_light(point_desc);
         //        break;
         //    }
         //}
@@ -141,16 +142,16 @@ namespace ppp
         float start_y = 40.0f;    // Initial y position for the grid row
         float x_spacing = 80.0f; // Horizontal spacing between shapes
 
-        transform::push();
-        transform::translate(start_x, start_y, 100.0f);
+        push();
+        translate(start_x, start_y, 100.0f);
         for (int i = 0; i < 4; i++)
         {
             // shapes
-            shapes::box(5.0f, 5.0f, 5.0f);
-            transform::translate(x_spacing, 0.0f);
+            box(5.0f, 5.0f, 5.0f);
+            translate(x_spacing, 0.0f);
 
         }
-        transform::pop();
+        pop();
     }
 
     void draw_shapes_grid()
@@ -162,59 +163,61 @@ namespace ppp
 
         if (_show_all)
         {
-            transform::push();
+            push();
 
+            //enable_shadows();
             // Row 1
-            transform::translate(start_x, start_y);
-            shapes::box(50.0f, 50.0f, 50.0f);
-            transform::translate(x_spacing, 0.0f);
-            shapes::plane(50.0f, 50.0f);
-            transform::translate(x_spacing, 0.0f);
-            shapes::cylinder(25.0f, 50.0f, _interpolation);
-            transform::translate(x_spacing, 0.0f);
-            shapes::sphere(25.0f, _interpolation);
+            translate(start_x, start_y);
+            box(50.0f, 50.0f, 50.0f);
+            translate(x_spacing, 0.0f);
+            plane(50.0f, 50.0f);
+            translate(x_spacing, 0.0f);
+            cylinder(25.0f, 50.0f, _interpolation);
+            translate(x_spacing, 0.0f);
+            sphere(25.0f, _interpolation);
 
             // Move to next row and reset x position
-            transform::translate(-3 * x_spacing, y_spacing);
+            translate(-3 * x_spacing, y_spacing);
 
+            //disable_shadows();
             // Row 2
-            shapes::torus(25.0f, 10.0f, _interpolation, _interpolation);
-            transform::translate(x_spacing, 0.0f);
-            shapes::cone(25.0f, 50.0f, _interpolation, true);
-            transform::translate(x_spacing, 0.0f);
-            shapes::tetrahedron(25.0f, 25.0f);
-            transform::translate(x_spacing, 0.0f);
-            shapes::octahedron(25.0f, 25.0f);
+            torus(25.0f, 10.0f, _interpolation, _interpolation);
+            translate(x_spacing, 0.0f);
+            cone(25.0f, 50.0f, _interpolation, true);
+            translate(x_spacing, 0.0f);
+            tetrahedron(25.0f, 25.0f);
+            translate(x_spacing, 0.0f);
+            octahedron(25.0f, 25.0f);
 
-            transform::pop();
+            pop();
         }
         else
         {
-            transform::push();
+            push();
 
             // Row 1
-            transform::translate(start_x, start_y);
-            if (_shape_vis == 0) { shapes::box(50.0f, 50.0f, 50.0f); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 1) { shapes::plane(50.0f, 50.0f); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 2) { shapes::cylinder(25.0f, 50.0f, _interpolation); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 3) { shapes::sphere(25.0f, _interpolation); }
+            translate(start_x, start_y);
+            if (_shape_vis == 0) { box(50.0f, 50.0f, 50.0f); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 1) { plane(50.0f, 50.0f); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 2) { cylinder(25.0f, 50.0f, _interpolation); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 3) { sphere(25.0f, _interpolation); }
 
             // Move to next row and reset x positiond
-            transform::translate(-3 * x_spacing, y_spacing);
+            translate(-3 * x_spacing, y_spacing);
 
             // Row 2
-            if (_shape_vis == 4) { shapes::torus(25.0f, 10.0f, _interpolation, _interpolation); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 5) { shapes::cone(25.0f, 50.0f, _interpolation, true); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 6) { shapes::tetrahedron(25.0f, 25.0f); }
-            transform::translate(x_spacing, 0.0f);
-            if (_shape_vis == 7) { shapes::octahedron(25.0f, 25.0f); }
+            if (_shape_vis == 4) { torus(25.0f, 10.0f, _interpolation, _interpolation); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 5) { cone(25.0f, 50.0f, _interpolation, true); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 6) { tetrahedron(25.0f, 25.0f); }
+            translate(x_spacing, 0.0f);
+            if (_shape_vis == 7) { octahedron(25.0f, 25.0f); }
 
-            transform::pop();
+            pop();
         }
     }
 
@@ -227,72 +230,72 @@ namespace ppp
             float x_spacing = 80.0f; // Horizontal spacing between shapes
             float y_spacing = -80.0f; // Vertical spacing between rows
 
-            transform::push();
+            push();
 
-            transform::translate(start_x, start_y);
-            transform::translate(x_spacing * 2 - 40.0f, y_spacing - 40.0f);
+            translate(start_x, start_y);
+            translate(x_spacing * 2 - 40.0f, y_spacing - 40.0f);
 
-            transform::rotate(1.0f, 0.0f, 0.0f, -90.0f);
+            rotate(1.0f, 0.0f, 0.0f, -90.0f);
 
-            shapes::plane(400.0f, 400.0f);
+            plane(400.0f, 400.0f);
 
-            transform::pop();
+            pop();
         }
     }
 
     void setup_input_events()
     {
-        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
+        set_quit_application_keycode(key_code::KEY_ESCAPE);
 
-        keyboard::add_key_pressed_callback(
-            [](keyboard::key_code key)
+        add_key_pressed_callback(
+            [](key_code key)
         {
-            if (key == keyboard::key_code::KEY_SPACE)
+            if (key == key_code::KEY_SPACE)
             {
                 bool show_all_shapes = _show_all > 0;
                 show_all_shapes = !show_all_shapes;
                 _show_all = show_all_shapes ? 1 : 0;
             }
 
-            else if (key == keyboard::key_code::KEY_UP && _show_all == 0)
+            else if (key == key_code::KEY_UP && _show_all == 0)
             {
                 _shape_vis = (_shape_vis + 1) % _total_shape_count;
             }
-            else if (key == keyboard::key_code::KEY_DOWN && _show_all == 0)
+            else if (key == key_code::KEY_DOWN && _show_all == 0)
             {
                 _shape_vis = (_shape_vis - 1) < 0 ? _total_shape_count - 1 : _shape_vis - 1;
             }
 
-            else if (key == keyboard::key_code::KEY_1)
+            else if (key == key_code::KEY_1)
             {
                 _interpolation = 4;
             }
-            else if (key == keyboard::key_code::KEY_2)
+            else if (key == key_code::KEY_2)
             {
                 _interpolation = 8;
             }
-            else if (key == keyboard::key_code::KEY_3)
+            else if (key == key_code::KEY_3)
             {
                 _interpolation = 12;
             }
-            else if (key == keyboard::key_code::KEY_4)
+            else if (key == key_code::KEY_4)
             {
                 _interpolation = 24;
             }
 
-            else if (key == keyboard::key_code::KEY_F)
+            else if (key == key_code::KEY_F)
             {
                 _show_floor = _show_floor == 1 ? 0 : 1;
-                environment::print("show floor: %d", _show_floor);
+                print("show floor: %d", _show_floor);
             }
-            else if (key == keyboard::key_code::KEY_N)
+            else if (key == key_code::KEY_N)
             {
                 _enable_normal = _enable_normal == 1 ? 0 : 1;
-                environment::print("enable normal: %d", _enable_normal);
+                print("enable normal: %d", _enable_normal);
 
                 if (_enable_normal)
                 {
-                    lights::no_lights();
+                    no_lights();
                 }
                 else
                 {
@@ -302,22 +305,22 @@ namespace ppp
         });
 
         // Keyboard callback for adjusting pitch (vertical movement).
-        keyboard::add_key_down_callback([](keyboard::key_code key)
+        add_key_down_callback([](key_code key)
             {
-                if (key == keyboard::key_code::KEY_W)
+                if (key == key_code::KEY_W)
                 {
                     // Decrease pitch to move the light downward.
-                    _current_pitch -= _pitch_speed * environment::delta_time();
+                    _current_pitch -= _pitch_speed * delta_time();
                     // Clamp to a minimum (e.g., -89° in radians ~ -1.55334).
                     if (_current_pitch < -1.55334f)
                     {
                         _current_pitch = -1.55334f;
                     }
                 }
-                else if (key == keyboard::key_code::KEY_S)
+                else if (key == key_code::KEY_S)
                 {
                     // Increase pitch to move the light upward.
-                    _current_pitch += _pitch_speed * environment::delta_time();
+                    _current_pitch += _pitch_speed * delta_time();
                     // Clamp to a maximum (e.g., 89° in radians ~ 1.55334).
                     if (_current_pitch > 1.55334f)
                     {
@@ -329,7 +332,7 @@ namespace ppp
 
     app_params entry(int argc, char** argv)
     {
-        environment::print("Current working directory: %s", environment::cwd().data());
+        print("Current working directory: %s", cwd().data());
 
         app_params app_params;
 
@@ -348,31 +351,31 @@ namespace ppp
         std::string vs_path = "local:/content/shaders/lit.vs";
         std::string ps_path = "local:/content/shaders/lit.fs";
 
-        _material_lit = material::load_shader("lit", vs_path, ps_path, material::shading_model::LIT);
+        _material_lit = load_shader("lit", vs_path, ps_path, shading_model::LIT);
 
         setup_input_events();
 
-        rendering::enable_batched_draw_mode();
+        enable_batched_draw_mode();
 
-        shapes::enable_wireframe_mode(false);
-        shapes::enable_solid_mode(true);
-        shapes::normal_mode(shapes::normal_mode_type::FLAT);
+        enable_wireframe_mode(false);
+        enable_solid_mode(true);
+        normal_mode(normal_mode_type::FLAT);
 
-        camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
-        camera::set_scene_camera(20, -40, 400);
+        perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
+        set_scene_camera(20, -40, 400);
 
-        material::shader("lit");
+        shader("lit");
 
-        trigonometry::angle_mode(trigonometry::angle_mode_type::DEGREES);
+        angle_mode(angle_mode_type::DEGREES);
 
         append_lights();
     }
 
     void draw()
     {
-        color::background(200);
+        background(200);
 
-        camera::orbit_scene_camera_options options;
+        orbit_control_options options;
 
         options.zoom_sensitivity = 200.0f;
         options.panning_sensitivity = 0.5f;
@@ -380,26 +383,26 @@ namespace ppp
         options.min_zoom = 1.0f;
         options.max_zoom = 600.0f;
 
-        camera::orbit_control(options);
+        orbit_control(options);
 
         if (_enable_normal)
         {
-            material::normal_material();
+            normal_material();
         }
         else
         {
-            material::shader("lit");
+            shader("lit");
         }
 
-        color::fill({ 255,0,0,255 });
+        fill({ 255,0,0,255 });
         draw_shapes_grid();
         draw_floor();
 
-        material::shader(material::tags::unlit_color());
-        color::fill({ 255, 255, 255, 255 });
+        shader(material::tags::unlit::color());
+        fill({ 255, 255, 255, 255 });
         //draw_lights();
 
-        color::fill({ 0,0,0,255 });
+        fill({ 0,0,0,255 });
 
         update_directional_light();
     }

@@ -25,20 +25,20 @@ namespace ppp
         {
             int index = 0;
             std::for_each(std::rbegin(m_previous_positions), std::rend(m_previous_positions),
-                [&](const glm::vec2& p)
+                [&](const vec2& p)
             {
                 float t = index / static_cast<float>(m_previous_positions.size());
 
-                color::fill(255, 0, 0, static_cast<int>(math::lerp(0.0f, 255.0f, t)));
-                shapes::point(p.x, p.y);
+                fill(255, 0, 0, static_cast<int>(math::lerp(0.0f, 255.0f, t)));
+                point(p.x, p.y);
                 ++index;
             });
 
-            color::fill(255, 0, 0, 255);
-            shapes::point(m_position.x, m_position.y);
+            fill(255, 0, 0, 255);
+            point(m_position.x, m_position.y);
         }
 
-        void Particle::follow(const std::vector<glm::vec2>& flow_field, int flow_field_rows, int flow_field_cols, float scale)
+        void Particle::follow(const std::vector<vec2>& flow_field, int flow_field_rows, int flow_field_cols, float scale)
         {
             float x = std::floor(m_position.x / scale);
             float y = std::floor(m_position.y / scale);
@@ -58,23 +58,23 @@ namespace ppp
             m_previous_positions.push_front(m_position);
 
             m_velocity += m_acceleration;
-            m_velocity = trigonometry::limit(m_velocity, m_max_speed);
+            m_velocity.limit(m_max_speed);
             m_position += m_velocity;
 
-            m_acceleration *= 0.0f;
+            m_acceleration = m_acceleration * 0.0f;
         }
 
-        void Particle::apply_force(const glm::vec2& force)
+        void Particle::apply_force(const vec2& force)
         {
             m_acceleration += force;
         }
 
         void Particle::loop_around_edges()
         {
-            if (m_position.x >= environment::canvas_width()) m_position.x = 0;
-            if (m_position.x < 0) m_position.x = environment::canvas_width() - 1;
-            if (m_position.y >= environment::canvas_height()) m_position.y = 0;
-            if (m_position.y < 0) m_position.y = environment::canvas_height() - 1;
+            if (m_position.x >= canvas_width()) m_position.x = 0;
+            if (m_position.x < 0) m_position.x = canvas_width() - 1;
+            if (m_position.y >= canvas_height()) m_position.y = 0;
+            if (m_position.y < 0) m_position.y = canvas_height() - 1;
         }
     }
 }

@@ -2,8 +2,7 @@
 
 #include "ray.h"
 #include "boundary.h"
-
-#include <glm/glm.hpp>
+#include "vector.h"
 
 #include <vector>
 
@@ -24,7 +23,7 @@ namespace ppp
             void show();
 
         private:
-            glm::vec2 m_position;
+            vec2 m_position;
             
             std::vector<Ray> m_rays;
         };

@@ -20,7 +20,7 @@ namespace ppp
 
     raycasting::Particle _particle(200, 200);
 
-    typography::font_id _font;
+    font_id _font;
 
     app_params entry(int argc, char** argv)
     {
@@ -34,11 +34,11 @@ namespace ppp
 
     void setup()
     {
-        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
+        set_quit_application_keycode(key_code::KEY_ESCAPE);
 
-        rendering::create_canvas((1280 / 2) - 200, (720 / 2) - 200, 400.0f, 400.0f);
+        create_canvas((1280 / 2) - 200, (720 / 2) - 200, 400.0f, 400.0f);
 
-        color::background(5);
+        background(5);
 
         for (int i = 0; i < 5; ++i)
         {
@@ -57,7 +57,7 @@ namespace ppp
         _walls.push_back(raycasting::Boundary(400, 400, 0, 400));
         _walls.push_back(raycasting::Boundary(1, 400, 1, 0));
 
-        environment::frame_rate(60);
+        frame_rate(60);
 
         //_font = typography::load_font("local:/content/fonts/PokemonGb-RAeo.ttf", 16);
         //if (_font == -1)
@@ -77,13 +77,13 @@ namespace ppp
             b.show();
         }
 
-        _particle.set_position(mouse::mouse_x(), mouse::mouse_y());
+        _particle.set_position(mouse_x(), mouse_y());
         _particle.look(_walls);
         _particle.show();
 
-        //color::fill({255,0,0,255});
-        //std::string str_frame_rate = std::to_string(environment::frame_rate());
-        //std::string str_delta_time = std::to_string(environment::delta_time());
+        //fill({255,0,0,255});
+        //std::string str_frame_rate = std::to_string(frame_rate());
+        //std::string str_delta_time = std::to_string(delta_time());
         //
         //typography::text(str_frame_rate, 10, 10);
         //typography::text(str_delta_time, 70, 10);

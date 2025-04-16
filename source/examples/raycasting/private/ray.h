@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "vector.h"
 
 namespace ppp
 {
@@ -9,7 +9,7 @@ namespace ppp
         struct RaycastHit
         {
             float t;
-            glm::vec3 point;
+            vec3 point;
             bool hit;
 
             operator bool() const
@@ -33,8 +33,8 @@ namespace ppp
             RaycastHit cast(float x1, float y1, float x2, float y2) const;
 
         private:
-            glm::vec2 m_position;
-            glm::vec2 m_direction;
+            vec2 m_position;
+            vec2 m_direction;
 
             float m_length;
         };
