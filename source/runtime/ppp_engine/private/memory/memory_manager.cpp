@@ -59,7 +59,7 @@ namespace ppp
             static memory_requirements persistant;
             persistant.frame_heap_size = 1_mb;
             persistant.tagged_heap_block_size = 500_kb;
-            persistant.tagged_heap_block_count = 10;
+            persistant.tagged_heap_block_count = 15;
             persistant.scratch_heap_size = 1_mb;
             
             static memory_requirements staging;
@@ -101,7 +101,7 @@ namespace ppp
             static memory_requirements persistant;
             persistant.frame_heap_size = 1_mb;
             persistant.tagged_heap_block_size = 500_kb;
-            persistant.tagged_heap_block_count = 10;
+            persistant.tagged_heap_block_count = 15;
             persistant.scratch_heap_size = 1_mb;
 
             static memory_requirements staging;
