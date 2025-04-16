@@ -51,8 +51,15 @@ add_custom_target(copy-content ALL
     COMMENT "Copying \"${CMAKE_SOURCE_DIR}/content\" folder to \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/content\""
     VERBATIM
 )
+# Add a custom target that always builds and runs the copy command
+add_custom_target(copy-config ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/config" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config"
+    COMMENT "Copying \"${CMAKE_SOURCE_DIR}/config\" folder to \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config\""
+    VERBATIM
+)
 
 set_property(TARGET copy-content PROPERTY FOLDER "programs")
+set_property(TARGET copy-config PROPERTY FOLDER "programs")
 
 if(PPP_ENABLE_TESTING)
 
