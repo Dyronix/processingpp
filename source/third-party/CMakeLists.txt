@@ -7,6 +7,7 @@ add_subdirectory(noise)
 add_subdirectory(freetype)
 add_subdirectory(gsl)
 add_subdirectory(nlohmann)
+add_subdirectory(inih)
 
 if(PPP_ENABLE_TESTING)
     add_subdirectory(catch2)
