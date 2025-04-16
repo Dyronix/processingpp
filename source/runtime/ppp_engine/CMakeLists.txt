@@ -9,6 +9,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/vfs.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/file_info.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/file_info.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/system_paths.h
     # resources
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_atlas.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/resources/font_atlas.cpp
@@ -219,6 +220,12 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/time_date.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/json.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/entrypoint.cpp)
+
+ # fileio-win32
+if(WIN32)
+target_sources(processing_engine PRIVATE 
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/win32/win32_system_paths.cpp)
+endif()
 
 target_sources(processing_engine PUBLIC 
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/camera.h
