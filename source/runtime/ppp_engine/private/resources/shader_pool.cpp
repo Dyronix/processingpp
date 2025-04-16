@@ -103,10 +103,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         u32 add_shader_program(string::string_id tag, render::shading_model_type smtype, render::shading_blending_type btype, render::vertex_type vtype, std::string_view vs_source, std::string_view fs_source)
         {
+            memory::persistent_graphics_tagged_allocator<render::shaders::shader_program> graphics_allocator;
+
             auto it = g_ctx.shaders_hash_map.find(tag);
             if(it == std::cend(g_ctx.shaders_hash_map))
             {
-                auto shader_program = std::make_shared<render::shaders::shader_program>(smtype, btype, vtype, vs_source, fs_source);
+                auto shader_program = std::allocate_shared<render::shaders::shader_program>(graphics_allocator, smtype, btype, vtype, vs_source, fs_source);
                 auto shader_program_id = shader_program->id();
                 g_ctx.shaders_hash_map.emplace(tag, shader_program);
                 return shader_program_id;
@@ -122,10 +124,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         u32 add_shader_program(string::string_id tag, render::shading_model_type smtype, render::shading_blending_type btype, render::vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view gs_source)
         {
+            memory::persistent_graphics_tagged_allocator<render::shaders::shader_program> graphics_allocator;
+
             auto it = g_ctx.shaders_hash_map.find(tag);
             if (it == std::cend(g_ctx.shaders_hash_map))
             {
-                auto shader_program = std::make_shared<render::shaders::shader_program>(smtype, btype, vtype, vs_source, fs_source, gs_source);
+                auto shader_program = std::allocate_shared<render::shaders::shader_program>(graphics_allocator, smtype, btype, vtype, vs_source, fs_source, gs_source);
                 auto shader_program_id = shader_program->id();
                 g_ctx.shaders_hash_map.emplace(tag, shader_program);
                 return shader_program_id;

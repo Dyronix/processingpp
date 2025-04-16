@@ -101,7 +101,7 @@ namespace ppp
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_forward_declared_function(const temp_string& return_type, const temp_string& function_name, const std::vector<std::pair<temp_string, temp_string>>& params)
+                shader_builder& add_forward_declared_function(const temp_string& return_type, const temp_string& function_name, const temp_vector<std::pair<temp_string, temp_string>>& params)
                 {
                     m_shader_code << return_type << " " << function_name << "(";
                     for (u64 i = 0; i < params.size(); ++i)
@@ -119,7 +119,7 @@ namespace ppp
                     return *this;
                 }
                 //-------------------------------------------------------------------------
-                shader_builder& add_function(const temp_string& return_type, const temp_string& function_name, const std::vector<std::pair<temp_string, temp_string>>& params, const temp_string& body)
+                shader_builder& add_function(const temp_string& return_type, const temp_string& function_name, const temp_vector<std::pair<temp_string, temp_string>>& params, const temp_string& body)
                 {
                     m_shader_code << return_type << " " << function_name << "(";
                     for (u64 i = 0; i < params.size(); ++i)

@@ -116,12 +116,12 @@ namespace ppp
         //-------------------------------------------------------------------------
         geometry::geometry* make_image(u32 image_id)
         {
-            std::stringstream stream;
+            temp_stringstream stream;
 
             stream << "image|";
             stream << image_id;
 
-            const std::string gid = stream.str();
+            const temp_string gid = stream.str();
 
             if (!geometry_pool::has_geometry(gid))
             {

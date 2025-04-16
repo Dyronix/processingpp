@@ -10,7 +10,7 @@ namespace ppp
         class instance_data_table
         {
         public:
-            using table_type = std::unordered_map<topology_type, instance_drawing_data>;
+            using table_type = graphics_hash_map<topology_type, instance_drawing_data>;
             using iterator = table_type::iterator;
             using const_iterator = table_type::const_iterator;
 

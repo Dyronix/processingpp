@@ -132,13 +132,13 @@ namespace ppp
     {
         static int s_model_counter = 0;
 
-        std::stringstream stream;
+        temp_stringstream stream;
 
         stream << conversions::to_string(file_type);
         stream << "|";
-        stream << string::to_string<std::string>(s_model_counter++);
+        stream << string::to_string<temp_string>(s_model_counter++);
 
-        const std::string gid = stream.str();
+        const temp_string gid = stream.str();
 
         if (!geometry_pool::has_geometry(gid))
         {
