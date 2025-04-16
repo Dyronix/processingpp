@@ -8,8 +8,8 @@ namespace ppp
     bool _no_close_after_x_frames = false;
     bool _no_testing = false;
 
-    constexpr int _window_width = 1280;
-    constexpr int _window_height = 720;
+    constexpr int _window_width = 240;
+    constexpr int _window_height = 160;
 
     model_id _model_ambulance;
     model_id _model_police;
@@ -94,8 +94,8 @@ namespace ppp
 
         app_params app_params;
 
-        app_params.window_width = 1280;
-        app_params.window_height = 720;
+        app_params.window_width = _window_width;
+        app_params.window_height = _window_height;
 
         _generate_new_data = has_argument(argc, argv, "--generate-new-data");
         _no_close_after_x_frames = has_argument(argc, argv, "--no-close");

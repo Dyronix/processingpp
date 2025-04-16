@@ -1,8 +1,5 @@
 #include "string/string_pool.h"
-
 #include "string/string_id.h"
-
-
 
 #include <functional>
 #include <utility>

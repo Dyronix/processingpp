@@ -9,10 +9,8 @@ namespace ppp
     bool _animate_scene = false;
     bool _no_testing = false;
 
-    constexpr int _window_width = 1280;
-    constexpr int _window_height = 720;
-    constexpr int _canvas_width = 600;
-    constexpr int _canvas_height = 600;
+    constexpr int _window_width = 240;
+    constexpr int _window_height = 160;
 
     int _cols = 11; // number of columns in the grid (x-direction)
     int _rows = 9; // number of rows in the grid (z-direction)

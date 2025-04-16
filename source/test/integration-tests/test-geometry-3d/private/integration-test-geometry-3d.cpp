@@ -8,10 +8,8 @@ namespace ppp
     bool _no_close_after_x_frames = false;
     bool _no_testing = false;
 
-    constexpr int _window_width = 1280;
-    constexpr int _window_height = 720;
-    constexpr int _canvas_width = 600;
-    constexpr int _canvas_height = 600;
+    constexpr int _window_width = 240;
+    constexpr int _window_height = 160;
 
     constexpr int _total_shape_count = 8;
 

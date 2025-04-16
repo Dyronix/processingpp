@@ -8,10 +8,8 @@ namespace ppp
     bool _no_close_after_x_frames = false;
     bool _no_testing = false;
 
-    constexpr int _window_width = 1280;
-    constexpr int _window_height = 720;
-    constexpr int _canvas_width = 600;
-    constexpr int _canvas_height = 600;
+    constexpr int _window_width = 240;
+    constexpr int _window_height = 160;
 
     image _image_container;
     image _image_wall;
@@ -88,8 +86,8 @@ namespace ppp
 
         app_params app_params;
 
-        app_params.window_width = 1280;
-        app_params.window_height = 720;
+        app_params.window_width = _window_width;
+        app_params.window_height = _window_height;
 
         _generate_new_data = has_argument(argc, argv, "--generate-new-data");
         _no_close_after_x_frames = has_argument(argc, argv, "--no-close");
@@ -124,17 +122,17 @@ namespace ppp
         fill({ 255,0,0,255 });
 
         stroke({ 255, 255 , 255, 255 });
-        stroke_weight(5.0f);
+        stroke_weight(1.0f);
         inner_stroke({ 0, 255 , 0, 255 });
-        inner_stroke_weight(5.0f);
+        inner_stroke_weight(1.0f);
 
         shader(material::tags::unlit::color());
 
         int shape_count = 8;
-        int shape_size = 50;
+        int shape_size = 12;
 
         int x = _window_width * 0.5f - ((shape_count - 1) * shape_size);
-        int y = _window_height * 0.5f;
+        int y = _window_height * 0.5f + 20;
 
         ellipse(x, y, shape_size * 0.5f, shape_size * 0.5f);
         
@@ -169,18 +167,18 @@ namespace ppp
         
         shader(material::tags::unlit::texture());
 
-        x = 96;
+        x = 21;
         for (int i = 0; i < 9; ++i)
         {
             if (i % 2)
             {
-                draw(_image_container.id, x, 64.0f, 64, 64);
+                draw(_image_container.id, x, 64.0f, shape_size, shape_size);
             }
             else
             {
-                draw(_image_wall.id, x, 64.0f, 64, 64);
+                draw(_image_wall.id, x, 64.0f, shape_size, shape_size);
             }
-            x += 128;
+            x += 28.5f;
         }     
     }
 }
