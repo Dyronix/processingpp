@@ -29,9 +29,16 @@ namespace ppp
 		//-------------------------------------------------------------------------
 		temp_string resolve_path(std::string_view filename)
 		{
-			temp_string		resolved_path;
+			temp_string resolved_path;
 
-			file_info_view	file_info_view(filename);
+			// No wildcards available return empty string
+			if (g_ctx.wildcards.empty())
+			{
+				log::warn("No wildcards available to resolve path");
+				return resolved_path;
+			}
+
+			file_info_view file_info_view(filename);
 
 			for (const auto& p : g_ctx.wildcards)
 			{
