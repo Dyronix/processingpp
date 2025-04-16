@@ -12,17 +12,17 @@ namespace ppp
     constexpr int _window_width = 240;
     constexpr int _window_height = 160;
 
-    image::image _image_container;
-    image::image _image_wall;
+    image _image_container;
+    image _image_wall;
 
     void setup_input_events()
     {
-        keyboard::set_quit_application_keycode(keyboard::key_code::KEY_ESCAPE);
+        set_quit_application_keycode(key_code::KEY_ESCAPE);
     }
 
     void end_draw()
     {
-        if (environment::frame_count() == 5)
+        if (frame_count() == 5)
         {
             std::stringstream stream;
 
@@ -32,14 +32,14 @@ namespace ppp
 
             if (_generate_new_data)
             {
-                image::load_pixels(0, 0, _window_width, _window_height);
-                image::save_pixels(stream.str(), _window_width, _window_height);
+                load_pixels(0, 0, _window_width, _window_height);
+                save_pixels(stream.str(), _window_width, _window_height);
             }
 
             if (!_no_testing)
             {
-                auto test_frame = image::load(stream.str());
-                auto test_frame_pixels = image::load_pixels(test_frame.id);
+                auto test_frame = load(stream.str());
+                auto test_frame_pixels = load_pixels(test_frame.id);
 
                 size_t total_size = test_frame.width * test_frame.height * test_frame.channels;
 
@@ -50,7 +50,7 @@ namespace ppp
                     test_frame_pixels,
                     total_size);
 
-                auto frame_pixels = image::load_pixels(0, 0, _window_width, _window_height);
+                auto frame_pixels = load_pixels(0, 0, _window_width, _window_height);
 
                 std::vector<unsigned char> active_frame_pixels(total_size);
                 memcpy_s(
@@ -61,24 +61,24 @@ namespace ppp
 
                 if (memcmp(active_test_frame_pixels.data(), active_frame_pixels.data(), total_size) != 0)
                 {
-                    environment::print("[TEST FAILED][RBATCHTEX] image buffers are not identical!");
+                    print("[TEST FAILED][RINSTTEX] image buffers are not identical!");
                 }
                 else
                 {
-                    environment::print("[TEST SUCCESS][RBATCHTEX] image buffers are identical.");
+                    print("[TEST SUCCESS][RINSTTEX] image buffers are identical.");
                 }
             }
 
             if (!_no_close_after_x_frames)
             {
-                structure::quit();
+                quit();
             }
         }
     }
 
     app_params entry(int argc, char** argv)
     {
-        environment::print("Current working directory: %s", environment::cwd().data());
+        print("Current working directory: %s", cwd().data());
 
         app_params app_params;
 
@@ -97,27 +97,27 @@ namespace ppp
     {
         setup_input_events();
 
-        shapes::enable_wireframe_mode(false);
-        shapes::enable_solid_mode(true);
+        enable_wireframe_mode(false);
+        enable_solid_mode(true);
 
-        camera::perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
-        camera::set_scene_camera(20, -40, 400);
+        perspective(55.0f, _window_width / _window_height, 0.1f, 2000.0f);
+        set_scene_camera(20, -40, 400);
 
-        _image_container = image::load("local:content/t_container.jpg");
-        _image_wall = image::load("local:content/t_wall.jpg");
+        _image_container = load("local:content/t_container.jpg");
+        _image_wall = load("local:content/t_wall.jpg");
 
-        structure::on_draw_end(end_draw);
+        on_draw_end(end_draw);
 
-        rendering::enable_batched_draw_mode();
+        enable_instance_draw_mode();
 
-        material::shader(material::tags::unlit_texture());
+        shader(material::tags::unlit::texture());
     }
 
     void draw()
     {
-        color::background(200);
+        background(200);
 
-        camera::orbit_scene_camera_options options;
+        orbit_control_options options;
 
         options.zoom_sensitivity = 200.0f;
         options.panning_sensitivity = 0.5f;
@@ -125,7 +125,9 @@ namespace ppp
         options.min_zoom = 1.0f;
         options.max_zoom = 600.0f;
 
-        camera::orbit_control(options);
+        orbit_control(options);
+
+        tint(255, 255, 255, 255);
 
         int grid_width = 5;
         int grid_height = 3;
@@ -145,19 +147,19 @@ namespace ppp
             {
                 for (int col = 0; col < grid_width; ++col)
                 {
-                    transform::push();
+                    push();
 
-                    material::reset_textures();
-                    material::texture((layer + row + col) % 2 ? _image_wall.id : _image_container.id);
+                    reset_textures();
+                    texture((layer + row + col) % 2 ? _image_wall.id : _image_container.id);
 
-                    transform::translate(
+                    translate(
                         start_x + col * cube_x_offset,
                         start_y + row * cube_y_offset,
                         start_z + layer * cube_z_offset
                     );
 
-                    shapes::box(50.0f, 50.0f, 50.0f);
-                    transform::pop();
+                    box(50.0f, 50.0f, 50.0f);
+                    pop();
                 }
             }
         }
