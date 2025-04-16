@@ -24,7 +24,7 @@ namespace ppp
         {
             noise::perlin_noise(frequency, octaves);
         }
-        
+
         void noise_seed(int seed)
         {
             noise::perlin_noise(seed);

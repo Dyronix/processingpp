@@ -41,14 +41,14 @@ namespace ppp
             for (s32 i = 0; i <= detail_y; i++) 
             {
                 f32 v = static_cast<f32>(i) / detail_y;
-                f32 phi = constants::pi() * v - constants::pi() / 2;
+                f32 phi = pi() * v - pi() / 2;
                 f32 cos_phi = std::cos(phi);
                 f32 sin_phi = std::sin(phi);
 
                 for (s32 j = 0; j <= detail_x; j++) 
                 {
                     f32 u = static_cast<f32>(j) / detail_x;
-                    f32 theta = 2 * constants::pi() * u;
+                    f32 theta = 2 * pi() * u;
                     f32 cos_theta = std::cos(theta);
                     f32 sin_theta = std::sin(theta);
 
@@ -77,14 +77,14 @@ namespace ppp
             for (s32 i = 0; i <= detail_y; i++) 
             {
                 f32 v = static_cast<f32>(i) / detail_y;
-                f32 phi = constants::pi() * v - constants::pi() / 2;
+                f32 phi = pi() * v - pi() / 2;
                 f32 cos_phi = std::cos(phi);
                 f32 sin_phi = std::sin(phi);
 
                 for (s32 j = 0; j <= detail_x; j++) 
                 {
                     f32 u = static_cast<f32>(j) / detail_x;
-                    f32 theta = 2 * constants::pi() * u;
+                    f32 theta = 2 * pi() * u;
                     f32 cos_theta = std::cos(theta);
                     f32 sin_theta = std::sin(theta);
 

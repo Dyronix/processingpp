@@ -18,7 +18,7 @@ namespace ppp
         {
             string::string_id file_path = string::string_id::create_invalid();
             u32 size = -1;
-            typography::font_atlas atlas;
+            font_atlas atlas;
         };
 
         bool initialize();

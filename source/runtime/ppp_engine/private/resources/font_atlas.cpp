@@ -11,8 +11,6 @@
 
 namespace ppp
 {
-    namespace typography
-    {
         struct glyph_bitmap
         {
             u32 width;
@@ -211,5 +209,4 @@ namespace ppp
 
             return build_atlas(glyph_info);
         }
-    }
 }

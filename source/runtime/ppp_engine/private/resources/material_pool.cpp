@@ -1,8 +1,12 @@
 #include "resources/material_pool.h"
-#include "resources/shader_pool.h"
+#include "resources/texture_pool.h"
+
+#include "render/render_shader_tags.h"
+
 #include "util/log.h"
 #include "memory/memory_tracker.h"
 #include "memory/memory_placement_new.h"
+
 #include "string/string_id.h"
 
 namespace ppp
@@ -72,23 +76,27 @@ namespace ppp
             // 
             // batched
             // unlit
-            add_new_material(resources::material(shader_pool::tags::unlit::color()));
-            add_new_material(resources::material(shader_pool::tags::unlit::texture()));
-            add_new_material(resources::material(shader_pool::tags::unlit::font())); 
-            add_new_material(resources::material(shader_pool::tags::unlit::normal()));         
-            add_new_material(resources::material(shader_pool::tags::unlit::shadow()));         
+            add_new_material(resources::material(render::unlit::tags::color::batched()));
+            add_new_material(resources::material(render::unlit::tags::texture::batched()));
+            add_new_material(resources::material(render::unlit::tags::font::batched()));
+            add_new_material(resources::material(render::unlit::tags::normal::batched()));
+            add_new_material(resources::material(render::unlit::tags::shadow::batched()));
+            add_new_material(resources::material(render::unlit::tags::predepth::batched()));
             // lit
-            add_new_material(resources::material(shader_pool::tags::lit::color()));
-            add_new_material(resources::material(shader_pool::tags::lit::specular()));
+            add_new_material(resources::material(render::lit::tags::color::batched()));
+            add_new_material(resources::material(render::lit::tags::texture::batched()));
+            add_new_material(resources::material(render::lit::tags::specular::batched()));
             // instanced
             // unlit
-            add_new_material(resources::material(shader_pool::tags::unlit::instance_normal()));
-            add_new_material(resources::material(shader_pool::tags::unlit::instance_color()));
-            add_new_material(resources::material(shader_pool::tags::unlit::instance_texture()));
-            add_new_material(resources::material(shader_pool::tags::unlit::instance_shadow()));
+            add_new_material(resources::material(render::unlit::tags::normal::instanced()));
+            add_new_material(resources::material(render::unlit::tags::color::instanced()));
+            add_new_material(resources::material(render::unlit::tags::texture::instanced()));
+            add_new_material(resources::material(render::unlit::tags::shadow::instanced()));
+            add_new_material(resources::material(render::unlit::tags::predepth::instanced()));
             // lit
-            add_new_material(resources::material(shader_pool::tags::lit::instance_color()));
-            add_new_material(resources::material(shader_pool::tags::lit::instance_specular()));
+            add_new_material(resources::material(render::lit::tags::color::instanced()));
+            add_new_material(resources::material(render::lit::tags::texture::instanced()));
+            add_new_material(resources::material(render::lit::tags::specular::instanced()));
 
             return true;
         }

@@ -1,4 +1,4 @@
-#include "render/render_blit_pass.h"
+#include "render/render_pass_blit.h"
 #include "render/render_context.h"
 
 #include "render/opengl/render_gl_api.h"
@@ -13,7 +13,8 @@ namespace ppp
     {
         //-------------------------------------------------------------------------
         blit_pass::blit_pass(string::string_id src, s32 flags, string::string_id dst)
-            :m_src(src)
+            :irender_pass("blit"_sid)
+            ,m_src(src)
             ,m_dst(dst)
             ,m_flags(flags)
         {}

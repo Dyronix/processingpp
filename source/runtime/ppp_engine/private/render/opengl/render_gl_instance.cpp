@@ -3,17 +3,14 @@
 #include "render/render_index_buffer.h"
 #include "render/render_instance_buffer.h"
 #include "render/render_storage_buffer.h"
-#include "render/render_shader_uniform_manager.h"
 #include "render/render_features.h"
 
-#include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
 #include "render/helpers/render_instance_buffer_ops.h"
 #include "render/helpers/render_storage_buffer_ops.h"
-#include "render/helpers/render_texture_registry.h"
 
 #include "resources/material_pool.h"
 
@@ -35,21 +32,6 @@ namespace ppp
     {
         namespace internal
         {
-            //-------------------------------------------------------------------------
-            struct unlit_instance_data
-            {
-                glm::mat4   world;
-                glm::vec4   color;
-            };
-            //-------------------------------------------------------------------------
-            struct unlit_texture_instance_data
-            {
-                s32         mat_id;
-
-                glm::mat4   world;
-                glm::vec4   color;
-            };
-
             //-------------------------------------------------------------------------
             static void check_drawing_type(u32 index_count, GLenum type)
             {
@@ -105,6 +87,20 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         // Buffer Manager
+        namespace instance_storage
+        {
+            //-------------------------------------------------------------------------
+            // Unaligned size in bytes of the structure storage on the GPU
+            static u64 size_in_bytes()
+            {
+                constexpr u64 total_size_in_bytes = sizeof(s32)   // material index
+                    + sizeof(glm::mat4)                 // model matrix of the geometry
+                    + sizeof(glm::vec4);                // color of the geometry
+
+                return total_size_in_bytes;
+            }
+        };
+
         class instance_buffer_manager
         {
         public:
@@ -112,7 +108,7 @@ namespace ppp
             instance_buffer_manager(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
                 : m_vertex_buffer(instance->vertex_count(), layouts, layout_count)
                 , m_index_buffer(instance->index_count())
-                , m_instance_buffer(internal::s_instance_data_initial_capacity, instance_layouts, instance_layout_count, layout_count)
+                , m_instance_buffer(internal::s_instance_data_initial_capacity, instance_storage::size_in_bytes())
             {
 
             }
@@ -120,13 +116,13 @@ namespace ppp
             //-------------------------------------------------------------------------
             bool has_data() const
             {
-                return (m_vertex_buffer.active_vertex_count() > 0 || m_index_buffer.active_index_count() > 0) && m_instance_buffer.active_instance_count() > 0;
+                return (m_vertex_buffer.active_vertex_count() > 0 || m_index_buffer.active_index_count() > 0) && m_instance_buffer.active_element_count() > 0;
             }
 
             //-------------------------------------------------------------------------
-            void add_instance_data(const void* instance_data_ptr)
+            void add_instance_data(s32 material_id, const glm::vec4& color, const glm::mat4& world)
             {
-                copy_instance_data(instance_data_ptr);
+                copy_instance_data(material_id, color, world);
             }
             //-------------------------------------------------------------------------
             void add_vertices(const irender_item* item)
@@ -155,10 +151,21 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            void bind()
+            {
+                m_instance_buffer.bind(0);
+            }
+            //-------------------------------------------------------------------------
+            void unbind()
+            {
+                m_instance_buffer.unbind();
+            }
+
+            //-------------------------------------------------------------------------
             void submit()
             {
                 m_vertex_buffer.submit();
-                m_instance_buffer.submit();
+                m_instance_buffer.submit(0);
 
                 if (active_index_count() != 0)
                 {
@@ -246,11 +253,19 @@ namespace ppp
                 index_buffer_ops::set_index_data(ias, item->faces().data());
             }
             //-------------------------------------------------------------------------
-            void copy_instance_data(const void* data_ptr)
+            void copy_instance_data(s32 material_id, const glm::vec4& color, const glm::mat4& world)
             {
-                instance_buffer_ops::instance_addition_scope ias(m_instance_buffer, 1);
-                
-                instance_buffer_ops::set_instance_data(ias, data_ptr);
+                storage_buffer_ops::storage_data_addition_scope sdas(m_instance_buffer, 1);
+
+                scratch_vector<u8> instance_data(m_instance_buffer.element_size_in_bytes());
+
+                size_t offset = 0;
+
+                offset = copy_material_index(material_id, instance_data.data(), offset);
+                offset = copy_world_matrix(world, instance_data.data(), offset);
+                offset = copy_color(color, instance_data.data(), offset);
+
+                storage_buffer_ops::set_storage_data(sdas, instance_data.data());
             }
 
             //-------------------------------------------------------------------------
@@ -263,9 +278,50 @@ namespace ppp
                 });
             }
 
-            vertex_buffer m_vertex_buffer;
-            index_buffer m_index_buffer;
-            instance_buffer m_instance_buffer;
+        private:
+            //-------------------------------------------------------------------------
+            size_t copy_material_index(s32 material_index, u8* buffer, u64 offset)
+            {
+                // For more info on why alignment is 16 see:
+                // https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)
+                const s32 alignment = 4;
+
+                offset = memory::align_up(offset, alignment); // Align for `vec4`.
+                std::memcpy(buffer + offset, &material_index, sizeof(s32));
+                offset += sizeof(s32);
+
+                return offset;
+            }
+            //-------------------------------------------------------------------------
+            size_t copy_world_matrix(const glm::mat4& world, u8* buffer, u64 offset)
+            {
+                // For more info on why alignment is 16 see:
+                // https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)
+                const s32 alignment = 16;
+
+                offset = memory::align_up(offset, alignment); // Align for `mat4`.
+                std::memcpy(buffer + offset, &world, sizeof(glm::mat4));
+                offset += sizeof(glm::mat4);
+
+                return offset;
+            }
+            //-------------------------------------------------------------------------
+            size_t copy_color(const glm::vec4& color, u8* buffer, u64 offset)
+            {
+                // For more info on why alignment is 16 see:
+                // https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)
+                const s32 alignment = 16;
+
+                offset = memory::align_up(offset, alignment); // Align for `vec4`.
+                std::memcpy(buffer + offset, &color, sizeof(glm::vec4));
+                offset += sizeof(glm::vec4);
+
+                return offset;
+            }
+
+            vertex_buffer   m_vertex_buffer;
+            index_buffer    m_index_buffer;
+            storage_buffer  m_instance_buffer;
         };
 
         //-------------------------------------------------------------------------
@@ -388,7 +444,6 @@ namespace ppp
 
                 return offset;
             }
-
             //-------------------------------------------------------------------------
             u64 copy_material_properties(const resources::imaterial* material, u8* buffer, u64 offset)
             {
@@ -461,6 +516,7 @@ namespace ppp
             {
                 opengl::api::instance().bind_vertex_array(m_vao);
 
+                m_buffer_manager->bind();
                 m_material_manager->bind();
             }
 
@@ -468,6 +524,7 @@ namespace ppp
             void unbind() const
             {
                 m_material_manager->unbind();
+                m_buffer_manager->unbind();
 
                 opengl::api::instance().bind_vertex_array(0);
             }
@@ -488,15 +545,13 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void draw(topology_type topology, u32 shader_program) const
+            void draw(topology_type topology) const
             {
                 GLenum gl_topology = internal::topology(topology);
 
 #ifndef NDEBUG
                 internal::check_drawing_type(m_buffer_manager->active_index_count(), gl_topology);
 #endif
-
-                shaders::apply_uniforms(shader_program);
 
                 if (m_buffer_manager->active_index_count() != 0)
                 {
@@ -517,16 +572,7 @@ namespace ppp
 
                     if (material_id != -1)
                     {
-                        temp_vector<u8> intermediate_unlit_texture_buffer;
-
-                        intermediate_unlit_texture_buffer.reserve(sizeof(internal::unlit_texture_instance_data));
-                        intermediate_unlit_texture_buffer.resize(sizeof(internal::unlit_texture_instance_data));
-
-                        memcpy(intermediate_unlit_texture_buffer.data() + offsetof(internal::unlit_texture_instance_data, mat_id), &material_id, sizeof(s32));
-                        memcpy(intermediate_unlit_texture_buffer.data() + offsetof(internal::unlit_texture_instance_data, world), &world, sizeof(glm::mat4));
-                        memcpy(intermediate_unlit_texture_buffer.data() + offsetof(internal::unlit_texture_instance_data, color), &color, sizeof(glm::vec4));
-
-                        m_buffer_manager->add_instance_data(intermediate_unlit_texture_buffer.data());
+                        m_buffer_manager->add_instance_data(material_id, color, world);
                     }
                     else
                     {
@@ -536,15 +582,7 @@ namespace ppp
                 }
                 else
                 {
-                    temp_vector<u8> intermediate_unlit_buffer;
-
-                    intermediate_unlit_buffer.reserve(sizeof(internal::unlit_instance_data));
-                    intermediate_unlit_buffer.resize(sizeof(internal::unlit_instance_data));
-
-                    memcpy(intermediate_unlit_buffer.data() + offsetof(internal::unlit_instance_data, world), &world, sizeof(glm::mat4));
-                    memcpy(intermediate_unlit_buffer.data() + offsetof(internal::unlit_instance_data, color), &color, sizeof(glm::vec4));
-
-                    m_buffer_manager->add_instance_data(intermediate_unlit_buffer.data());
+                    m_buffer_manager->add_instance_data(-1, color, world);
                 }
             }
 
@@ -587,9 +625,9 @@ namespace ppp
             m_pimpl->submit();
         }
         //-------------------------------------------------------------------------
-        void instance::draw(topology_type topology, u32 shader_program) const
+        void instance::draw(topology_type topology) const
         {
-            m_pimpl->draw(topology, shader_program);
+            m_pimpl->draw(topology);
         }
 
         //-------------------------------------------------------------------------
@@ -650,9 +688,8 @@ namespace ppp
         // Instance Drawing Data Impl
         struct instance_drawing_data::impl
         {
-            impl(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
+            impl(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
                 : instances()
-                , buffer_policy(render_buffer_policy)
                 , layouts(layouts)
                 , layout_count(layout_count)
                 , instance_layouts(instance_layouts)
@@ -662,7 +699,6 @@ namespace ppp
             }
 
             instance_map                instances                 = {};
-            render_buffer_policy        buffer_policy             = render_buffer_policy::RETAINED;
 
             const attribute_layout*     layouts                   = nullptr;
             const u64                   layout_count              = 0;
@@ -674,8 +710,8 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         // Instance Drawing Data
-        instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count, render_buffer_policy render_buffer_policy)
-            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(layouts, layout_count, instance_layouts, instance_layout_count, render_buffer_policy))
+        instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(layouts, layout_count, instance_layouts, instance_layout_count))
         {
             assert(layouts != nullptr);
             assert(layout_count > 0);
@@ -720,17 +756,13 @@ namespace ppp
         //-------------------------------------------------------------------------
         void instance_drawing_data::reset()
         {
-            if (m_pimpl->buffer_policy == render_buffer_policy::IMMEDIATE)
+            for (instance& b : m_pimpl->instances)
             {
-                for (instance& b : m_pimpl->instances)
-                {
-                    b.reset();
-                }
+                b.reset();
             }
 
             m_pimpl->draw_instance = 0;
         }
-
 
         //-------------------------------------------------------------------------
         void instance_drawing_data::release()

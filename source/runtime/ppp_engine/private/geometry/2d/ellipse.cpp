@@ -47,7 +47,7 @@ namespace ppp
 
             for (s32 t = 1; t < total_nr_vertices; ++t)
             {
-                f32 angle = (t / static_cast<f32>(detail)) * constants::two_pi();
+                f32 angle = (t / static_cast<f32>(detail)) * two_pi();
 
                 f32 v_x = cos(angle) * r;
                 f32 v_y = sin(angle) * r;
@@ -60,7 +60,7 @@ namespace ppp
         static void make_uvs(geometry* geom, s32 detail)
         {
             f32 start = 0.0f;
-            f32 stop = constants::two_pi();
+            f32 stop = two_pi();
 
             s32 total_nr_vertices = detail + 1; // take center point into account
 

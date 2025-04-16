@@ -2,8 +2,4 @@
 
 namespace ppp
 {
-    namespace data
-    {
-        // Nothing to implement
-    }
 }

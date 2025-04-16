@@ -55,7 +55,7 @@ namespace ppp
 
         void translate(const glm::vec2& translate)
         {
-            model_matrices().back() = glm::translate(model_matrices().back(), glm::vec3(translate, 1.0f));
+            model_matrices().back() = glm::translate(model_matrices().back(), glm::vec3(translate, 0.0f));
         }
 
         void translate(const glm::vec3& translate)

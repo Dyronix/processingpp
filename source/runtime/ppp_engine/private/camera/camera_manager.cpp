@@ -17,19 +17,19 @@ namespace ppp
             //-------------------------------------------------------------------------
             string::string_id perspective()
             {
-                static const string::string_id s_perspective = string::store_sid("perspective");
+                static string::string_id s_perspective = string::store_sid("perspective");
                 return s_perspective;
             }
             //-------------------------------------------------------------------------
             string::string_id orthographic()
             {
-                static const string::string_id s_orthographic = string::store_sid("orthographic");
+                static string::string_id s_orthographic = string::store_sid("orthographic");
                 return s_orthographic;
             }
             //-------------------------------------------------------------------------
             string::string_id font()
             {
-                static const string::string_id s_font = string::store_sid("font");
+                static string::string_id s_font = string::store_sid("font");
                 return s_font;
             }
         }
@@ -267,6 +267,12 @@ namespace ppp
 
             log::error("Unable to find camera for tag: {}", string::restore_sid(camera_tag));
             return nullptr;
+        }
+
+        //-------------------------------------------------------------------------
+        camera* active_camera()
+        {
+            return g_ctx.active_camera;
         }
     }
 }

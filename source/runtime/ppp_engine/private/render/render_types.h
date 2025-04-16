@@ -29,6 +29,12 @@ namespace ppp
             UNLIT
         };
 
+        enum class shading_blending_type
+        {
+            OPAQUE,
+            TRANSPARENT
+        };
+
         enum class image_filter_type
         {
             NEAREST,
@@ -41,28 +47,10 @@ namespace ppp
             REPEAT,
         };
 
-        enum class render_buffer_policy
-        {
-            IMMEDIATE,
-            RETAINED
-        };
-
-        enum class render_draw_policy
-        {
-            BUILD_IN,
-            CUSTOM
-        };
-
         enum class render_draw_mode
         {
             INSTANCED,
-            BATCHED
-        };
-
-        enum class render_rendering_mode
-        {
-            FORWARD,
-            DEFERRED
+            BATCHED,
         };
     }
 }

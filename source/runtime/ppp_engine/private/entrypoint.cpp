@@ -4,14 +4,17 @@
 #include "material.h"
 #include "events.h"
 
+#include "memory/memory_tracker.h"
+#include "memory/heaps/heap.h"
+#include "memory/memory_manager.h"
+
 #include "device/device.h"
+
 #include "render/render.h"
+#include "render/render_shader_tags.h"
 
 #include "camera/camera_context.h"
 #include "camera/camera_manager.h"
-
-#include "memory/memory_tracker.h"
-#include "memory/heaps/heap.h"
 
 #include "resources/texture_pool.h"
 #include "resources/font_pool.h"
@@ -47,7 +50,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    s32 init(const app_params& app_params, std::string_view executable_path)
+    static s32 init(const app_params& app_params, std::string_view executable_path)
     {
         if (!device::initialize(app_params.window_width, app_params.window_height))
         {
@@ -55,16 +58,16 @@ namespace ppp
             return -1;
         }
 
-#if PPP_OPENGL
+        #if PPP_OPENGL
         if (!render::initialize(app_params.window_width, app_params.window_height, glfwGetProcAddress))
         {
             log::error("Failed to initialize render");
             return -1;
         }
-#endif
+        #endif
         if (!camera_manager::initialize((f32)app_params.window_width, (f32)app_params.window_height))
         {
-            log::error("Failed to initialize camera manager"); 
+            log::error("Failed to initialize camera manager");
             return -1;
         }
 
@@ -74,37 +77,42 @@ namespace ppp
             return -1;
         }
 
-        if (!texture_pool::initialize())    { log::error("Failed to initialize texture pool");   return -1; }
-        if (!font_pool::initialize())       { log::error("Failed to initialize font pool");      return -1; }
-        if (!shader_pool::initialize())     { log::error("Failed to initialize shader pool");    return -1; }
-        if (!material_pool::initialize())   { log::error("Failed to initialize material pool");  return -1; }
-        if (!geometry_pool::initialize())   { log::error("Failed to initialize geometry pool");  return -1; }      
+        if (!texture_pool::initialize()) { log::error("Failed to initialize texture pool");   return -1; }
+        if (!font_pool::initialize()) { log::error("Failed to initialize font pool");      return -1; }
+        if (!shader_pool::initialize()) { log::error("Failed to initialize shader pool");    return -1; }
+        if (!material_pool::initialize()) { log::error("Failed to initialize material pool");  return -1; }
+        if (!geometry_pool::initialize()) { log::error("Failed to initialize geometry pool");  return -1; }
 
-        auto unlit_texture = shader_pool::tags::unlit::texture();
-
-        material::shader(string::restore_sid(unlit_texture));
+        if (render::draw_mode() == render::render_draw_mode::BATCHED)
+        {
+            shader(string::restore_sid(render::unlit::tags::texture::batched()));
+        }
+        else
+        {
+            shader(string::restore_sid(render::unlit::tags::texture::instanced()));
+        }
 
         vfs::add_wildcard(string::store_sid("local:"), internal::get_working_directory(executable_path));
 
-        color::background(1.0f, 1.0f, 1.0f, 1.0f);
+        background(1.0f, 1.0f, 1.0f, 1.0f);
 
 #if _DEBUG
-        keyboard::add_key_pressed_callback(
-            [](keyboard::key_code key)
-            {
-                if (key == keyboard::key_code::KEY_F7)
-                {
-                    memory::peek();
-                }
-            });
-
-        keyboard::add_key_pressed_callback(
-            [](keyboard::key_code key)
+        add_key_pressed_callback(
+            [](key_code key)
         {
-            if (key == keyboard::key_code::KEY_F8)
+            if (key == key_code::KEY_F7)
             {
-                s32 frame_id = ppp::environment::frame_count();
-                
+                memory::peek();
+            }
+        });
+
+        add_key_pressed_callback(
+            [](key_code key)
+        {
+            if (key == key_code::KEY_F8)
+            {
+                s32 frame_id = frame_count();
+
                 ppp::log::info("--- Frame id: {}", frame_id);
 
                 ppp::memory::print_memory_manager(ppp::memory::get_memory_manager());
@@ -120,9 +128,9 @@ namespace ppp
         return 0;
     }
     //-------------------------------------------------------------------------
-    s32 run(const app_params& app_params)
+    static s32 run(const app_params& app_params)
     {
-        camera::camera_context context;
+        camera_context context;
 
         while (!device::should_close())
         {
@@ -142,13 +150,13 @@ namespace ppp
 
                 // render
                 // ------
-                render::begin(&context);
+                render::begin();
 
                 draw();
 
                 render::render(&context);
 
-                render::end(&context);
+                render::end();
 
                 // swap front/back buffers
                 // -----
@@ -205,9 +213,9 @@ namespace ppp
     //-------------------------------------------------------------------------
     int find_argument(int argc, char** argv, const char* target)
     {
-        for (int i = 1; i < argc; i++) 
+        for (int i = 1; i < argc; i++)
         {
-            if (strcmp(argv[i], target) == 0) 
+            if (strcmp(argv[i], target) == 0)
             {
                 return i;
             }
@@ -219,15 +227,15 @@ namespace ppp
     //-------------------------------------------------------------------------
     int find_argument_with_value(int argc, char** argv, const char* target, const char** value)
     {
-        for (int i = 1; i < argc; i++) 
+        for (int i = 1; i < argc; i++)
         {
-            if (strcmp(argv[i], target) == 0 && (i + 1) < argc) 
+            if (strcmp(argv[i], target) == 0 && (i + 1) < argc)
             {
                 *value = argv[i + 1];
                 return i;
             }
         }
-        
+
         return -1;
     }
 }
@@ -247,7 +255,7 @@ int main(int argc, char** argv)
 
     s32 result = 0;
 
-    result = ppp::init(app_params, argv[0]);
+    result = init(app_params, argv[0]);
     if (result != 0)
     {
         ppp::log::error("Failed to initialize app");

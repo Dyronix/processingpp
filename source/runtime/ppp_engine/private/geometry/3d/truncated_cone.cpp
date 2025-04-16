@@ -122,7 +122,7 @@ namespace ppp
 
                 for (ii = 0; ii < in_detail_x; ++ii) {
                     const f32 u = ii / (f32)(in_detail_x - 1);
-                    const f32 ur = constants::two_pi() * u;
+                    const f32 ur = two_pi() * u;
                     const f32 sur = std::sin(ur);
                     const f32 cur = std::cos(ur);
 
@@ -188,7 +188,7 @@ namespace ppp
                 for (ii = 0; ii < in_detail_x; ++ii) 
                 {
                     const f32 u = ii / (f32)(in_detail_x - 1);
-                    const f32 ur = constants::two_pi() * u;
+                    const f32 ur = two_pi() * u;
                     const f32 sur = std::sin(ur);
                     const f32 cur = std::cos(ur);
 

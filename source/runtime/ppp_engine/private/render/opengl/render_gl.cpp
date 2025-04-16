@@ -1,30 +1,24 @@
 #include "render/render.h"
-#include "render/render_batch.h"
-#include "render/render_instance.h"
-#include "render/render_batch_renderer.h"
-#include "render/render_instance_renderer.h"
-#include "render/render_shader.h"
+#include "render/render_batch_data_table.h"
+#include "render/render_instance_data_table.h"
 #include "render/render_context.h"
 #include "render/render_scissor.h"
 #include "render/render_pipeline.h"
 
-#include "render/render_shadow_pass.h"
-#include "render/render_forward_shading_pass.h"
-#include "render/render_blit_pass.h"
-#include "render/render_ui_pass.h"
+#include "render/render_pass_ui.h"
+#include "render/render_pass_blit.h"
+#include "render/render_pass_clear.h"
+#include "render/render_pass_composite_factory.h"
+#include "render/render_shader_tags.h"
 
 #include "render/helpers/render_vertex_layouts.h"
 #include "render/helpers/render_instance_layouts.h"
 #include "render/helpers/render_event_dispatcher.h"
 
-#include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
 #include "resources/shader_pool.h"
 #include "resources/framebuffer_pool.h"
-
-#include "memory/memory_placement_new.h"
-#include "memory/memory_unique_ptr_util.h"
 
 #include "util/log.h"
 #include "util/color_ops.h"
@@ -37,10 +31,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <unordered_map>
-#include <vector>
 #include <array>
 #include <functional>
-#include <iostream>
+
+#include "material.h"
+#include "render/render_features.h"
 
 #define LOG_GL_NOTIFICATIONS 0
 #define LOG_GL_LOW 0
@@ -125,79 +120,39 @@ namespace ppp
             }
         }
 
-        using font_renderer = graphics_unique_ptr<texture_batch_renderer>;
-
-        //-------------------------------------------------------------------------
-        class geometry_builder
-        {
-        public:
-            void activate(string::string_id tag)
-            {
-                m_is_active = true;
-                m_shader_tag = tag;
-            }
-
-            void deactivate()
-            {
-                m_is_active = false;
-                m_shader_tag = string::string_id::create_invalid();
-            }
-
-            bool is_active() const
-            {
-                return m_is_active;
-            }
-
-            string::string_id shader_tag() const
-            {
-                return m_shader_tag;
-            }
-
-        private:
-            bool m_is_active = false;
-            string::string_id m_shader_tag = string::string_id::create_invalid();
-        };
-
-        geometry_builder _geometry_builder;
+        using font_batch_data = graphics_unique_ptr<batch_data_table>;
 
         //-------------------------------------------------------------------------
         struct context
         {
+            // shadows
+            bool                        shadows = true;
+
             // drawing
             render_draw_mode            draw_mode = render_draw_mode::BATCHED;
-            render_rendering_mode       rendering_mode = render_rendering_mode::FORWARD;
             render_scissor              scissor = {};
 
             // shaders
             string::string_id           fill_user_shader = string::string_id::create_invalid();
-            string::string_id           stroke_user_shader = string::string_id::create_invalid();
-
-            // frame buffer
-            string::string_id           main_framebuffer_tag = string::store_sid("main_framebuffer");
-            string::string_id           shadow_framebuffer_tag = string::store_sid("shadow_framebuffer");
 
             // rendering
             render_pipeline             render_pipeline;
 
             // renderers
-            instance_renderers_hash_map instance_renderers = {};
-            batch_renderers_hash_map    batch_renderers = {};
+            instance_data_hash_map      instance_data = {};
+            batch_data_hash_map         batch_data = {};
 
-            font_renderer               font_renderer = nullptr;
-
-            // opengl version       
-            s32                         major = 0;
-            s32                         minor = 0;
+            font_batch_data             font_batch_data = nullptr;
         } g_ctx;
 
         //-------------------------------------------------------------------------
-        render_context make_render_context(const camera::camera_context* camera_context)
+        render_context make_render_context(const camera_context* camera_context)
         {
             render_context render_context;
             render_context.camera_context = camera_context;
-            render_context.font_renderer = g_ctx.font_renderer.get();
-            render_context.batch_renderers = &g_ctx.batch_renderers;
-            render_context.instance_renderers = &g_ctx.instance_renderers;
+            render_context.font_batch_data = g_ctx.font_batch_data.get();
+            render_context.batch_data = &g_ctx.batch_data;
+            render_context.instance_data = &g_ctx.instance_data;
             render_context.scissor = &g_ctx.scissor;
 
             return render_context;
@@ -213,83 +168,54 @@ namespace ppp
                 return;
             }
 
-            string::string_id shader_tag = g_ctx.fill_user_shader.is_none() ? _geometry_builder.shader_tag() : g_ctx.fill_user_shader;
+            assert(g_ctx.fill_user_shader.is_none() == false);
+
+            string::string_id shader_tag = g_ctx.fill_user_shader;
 
             if (g_ctx.draw_mode == render_draw_mode::BATCHED)
             {
-                auto& batch_ren = g_ctx.batch_renderers;
+                shading_model_type shading_model = shader_pool::shading_model_for_shader(shader_tag);
+                shading_blending_type shading_blend = shader_pool::shading_blending_for_shader(shader_tag);
 
-                if (g_ctx.batch_renderers.find(shader_tag) == std::cend(g_ctx.batch_renderers))
+                batch_data_key data_key = { shader_tag, shading_model,shading_blend, g_ctx.shadows };
+
+                if (g_ctx.batch_data.find(data_key) == std::cend(g_ctx.batch_data))
                 {
-                    graphics_unique_ptr<batch_renderer> renderer = nullptr;
+                    graphics_unique_ptr<batch_data_table> data_table = memory::make_unique<batch_data_table, memory::persistent_graphics_tagged_allocator<batch_data_table>>(shader_tag);
 
-                    if (item->has_textures() == false)
-                    {
-                        assert(g_ctx.fill_user_shader.is_none() == false);
-
-                        renderer = memory::make_unique<primitive_batch_renderer, memory::persistent_graphics_tagged_allocator<primitive_batch_renderer>>(shader_tag);
-                    }
-                    else
-                    {
-                        renderer = memory::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<texture_batch_renderer>>(shader_tag);
-                    }
-
-                    if (_geometry_builder.is_active())
-                    {
-                        renderer->buffer_policy(render_buffer_policy::RETAINED);
-                    }
-
-                    renderer->draw_policy(render_draw_policy::CUSTOM);
-                    g_ctx.batch_renderers.emplace(shader_tag, std::move(renderer));
+                    g_ctx.batch_data.emplace(data_key, std::move(data_table));
                 }
 
-                g_ctx.batch_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
+                g_ctx.batch_data.at(data_key)->append(topology, item, color, transform_stack::active_world());
             }
             else
             {
-                if (g_ctx.instance_renderers.find(shader_tag) == std::cend(g_ctx.instance_renderers))
+                shading_model_type shading_model = shader_pool::shading_model_for_shader(shader_tag);
+                shading_blending_type shading_blend = shader_pool::shading_blending_for_shader(shader_tag);
+
+                instance_data_key data_key = { shader_tag, shading_model,shading_blend, g_ctx.shadows };
+
+                if (g_ctx.instance_data.find(data_key) == std::cend(g_ctx.instance_data))
                 {
-                    graphics_unique_ptr<instance_renderer> renderer = nullptr;
-                    if (item->has_textures() == false)
-                    {
-                        renderer = memory::make_unique<primitive_instance_renderer, memory::persistent_graphics_tagged_allocator<primitive_instance_renderer>>(
-                            color_world_layout().data(),
-                            color_world_layout().size(),
-                            shader_tag);
-                    }
-                    else
-                    {
-                        renderer = memory::make_unique<texture_instance_renderer, memory::persistent_graphics_tagged_allocator<texture_instance_renderer>>(
-                            color_world_matid_layout().data(),
-                            color_world_matid_layout().size(),
-                            shader_tag);
-                    }
+                    graphics_unique_ptr<instance_data_table> data_table = memory::make_unique<instance_data_table, memory::persistent_graphics_tagged_allocator<instance_data_table>>(
+                        color_world_layout().data(),
+                        color_world_layout().size(),
+                        shader_tag);
 
-                    if (_geometry_builder.is_active())
-                    {
-                        renderer->buffer_policy(render_buffer_policy::RETAINED);
-                    }
-
-                    renderer->draw_policy(render_draw_policy::CUSTOM);
-                    g_ctx.instance_renderers.emplace(shader_tag, std::move(renderer));
+                    g_ctx.instance_data.emplace(data_key, std::move(data_table));
                 }
 
-                g_ctx.instance_renderers.at(shader_tag)->append_drawing_data(topology, item, color, transform_stack::active_world());
+                g_ctx.instance_data.at(data_key)->append(topology, item, color, transform_stack::active_world());
             }
         }
 
         //-------------------------------------------------------------------------
-        void parse_gl_version(const char* version_string)
+        static void print_gl_version()
         {
-            temp_stringstream ss(version_string);
-            char dot;
-            ss >> g_ctx.major >> dot >> g_ctx.minor;
-        }
-        //-------------------------------------------------------------------------
-        void print_gl_version(const char* version_string)
-        {
+            auto opengl_version = reinterpret_cast<const char*>(opengl::api::instance().get_string_value(GL_VERSION));
+
             log::info("OpenGL version format: <major_version>.<minor_version>.<release_number> <vendor-specific information>");
-            log::info("OpenGL version: {}", version_string);
+            log::info("OpenGL version: {}", opengl_version);
         }
 
         //-------------------------------------------------------------------------
@@ -303,14 +229,11 @@ namespace ppp
                 return false;
             }
 
-            auto opengl_version = reinterpret_cast<const char*>(opengl::api::instance().get_string_value(GL_VERSION));
-
-            parse_gl_version(opengl_version);
-            print_gl_version(opengl_version);
+            print_gl_version();
 
 #if _DEBUG
             // glDebugMessageCallback is only available on OpenGL 4.3 or higher
-            if (g_ctx.major >= 4 && g_ctx.minor >= 3)
+            if (has_debugging_capabilities())
             {
                 s32 flags = 0; 
                 opengl::api::instance().get_integer_value(GL_CONTEXT_FLAGS, &flags);
@@ -332,12 +255,36 @@ namespace ppp
             g_ctx.scissor.height = h;
             g_ctx.scissor.enable = false;
 
-            g_ctx.font_renderer = memory::make_unique<texture_batch_renderer, memory::persistent_graphics_tagged_allocator<texture_batch_renderer>>(shader_pool::tags::unlit::font());
+            g_ctx.font_batch_data = memory::make_unique<batch_data_table, memory::persistent_graphics_tagged_allocator<batch_data_table>>(unlit::tags::font::batched());
 
-            g_ctx.render_pipeline.add_pass(memory::make_unique<shadow_pass, memory::persistent_graphics_tagged_allocator<shadow_pass>>());
-            g_ctx.render_pipeline.add_pass(memory::make_unique<forward_shading_pass, memory::persistent_graphics_tagged_allocator<forward_shading_pass>>());
-            g_ctx.render_pipeline.add_pass(memory::make_unique<ui_pass, memory::persistent_graphics_tagged_allocator<ui_pass>>());
-            g_ctx.render_pipeline.add_pass(memory::make_unique<blit_pass, memory::persistent_graphics_tagged_allocator<blit_pass>>(framebuffer_pool::tags::forward_shading(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
+            // Clear depth only and do a predepth pass
+            g_ctx.render_pipeline.add_pass(memory::make_unique<clear_pass, memory::persistent_graphics_tagged_allocator<clear_pass>>(make_depth_clear_state(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(create_predepth_composite_pass(unlit::tags::predepth{}, framebuffer_pool::tags::composite()));
+
+            // Calculate things that are in shadow
+            g_ctx.render_pipeline.add_pass(create_shadow_composite_pass(unlit::tags::shadow{}, framebuffer_pool::tags::shadow_map()));
+
+            // Clear color only and do a geometry pass
+            g_ctx.render_pipeline.add_pass(memory::make_unique<clear_pass, memory::persistent_graphics_tagged_allocator<clear_pass>>(make_rtv_clear_state(), framebuffer_pool::tags::composite()));
+
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_UNLIT_OPAQUE);
+
+            g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::color{}, framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::texture{}, framebuffer_pool::tags::composite()));
+
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_UNLIT_OPAQUE);
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_LIT_OPAQUE);
+
+            g_ctx.render_pipeline.add_pass(create_forward_shading_composite_pass(lit::tags::color{}, framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(create_forward_shading_composite_pass(lit::tags::texture{}, framebuffer_pool::tags::composite()));
+
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_LIT_OPAQUE);
+
+            // Clear color only and do an ui pass
+            g_ctx.render_pipeline.add_pass(memory::make_unique<ui_pass, memory::persistent_graphics_tagged_allocator<ui_pass>>(unlit::tags::font{}, framebuffer_pool::tags::composite()));
+
+            // Blit to backbuffer
+            g_ctx.render_pipeline.add_pass(memory::make_unique<blit_pass, memory::persistent_graphics_tagged_allocator<blit_pass>>(framebuffer_pool::tags::composite(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
 
             return true;
         }
@@ -346,49 +293,49 @@ namespace ppp
         void terminate()
         {
             // Font
-            g_ctx.font_renderer->terminate();
+            g_ctx.font_batch_data->clear();
 
             // Custom
-            for (auto& pair : g_ctx.batch_renderers)
+            for (auto& pair : g_ctx.batch_data)
             {
-                pair.second->terminate();
+                pair.second->clear();
             }
-            g_ctx.batch_renderers.clear();
+            g_ctx.batch_data.clear();
 
-            for (auto& pair : g_ctx.instance_renderers)
+            for (auto& pair : g_ctx.instance_data)
             {
-                pair.second->terminate();
+                pair.second->clear();
             }
-            g_ctx.instance_renderers.clear();
+            g_ctx.instance_data.clear();
         }
 
         //-------------------------------------------------------------------------
-        void begin(const camera::camera_context* context)
+        void begin()
         {
             // Font
-            g_ctx.font_renderer->begin();
+            g_ctx.font_batch_data->reset();
 
             // Custom
-            for (auto& pair : g_ctx.batch_renderers)
+            for (auto& pair : g_ctx.batch_data)
             {
-                pair.second->begin();
+                pair.second->reset();
             }
-            for (auto& pair : g_ctx.instance_renderers)
+            for (auto& pair : g_ctx.instance_data)
             {
-                pair.second->begin();
+                pair.second->reset();
             }
 
             broadcast_on_draw_begin();
         }
 
         //-------------------------------------------------------------------------
-        void render(const camera::camera_context* context)
+        void render(const camera_context* context)
         {
             g_ctx.render_pipeline.execute(make_render_context(context));
         }
 
         //-------------------------------------------------------------------------
-        void end(const camera::camera_context* context)
+        void end()
         {
             broadcast_on_draw_end();
         }
@@ -400,9 +347,20 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void rendering_mode(render_rendering_mode mode)
+        void enable_shadows()
         {
-            g_ctx.rendering_mode = mode;
+            g_ctx.shadows = true;
+        }
+        //-------------------------------------------------------------------------
+        void disable_shadows()
+        {
+            g_ctx.shadows = false;
+        }
+
+        //-------------------------------------------------------------------------
+        bool shadows_enabled()
+        {
+            return g_ctx.shadows;
         }
 
         //-------------------------------------------------------------------------
@@ -412,15 +370,63 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        render_rendering_mode rendering_mode()
+        void push_active_shader(string::string_id shader_tag, shading_model_type shading_model, shading_blending_type shading_blending)
         {
-            return g_ctx.rendering_mode;
-        }
+            g_ctx.fill_user_shader = shader_tag;
 
-        //-------------------------------------------------------------------------
-        void push_active_shader(string::string_id tag)
-        {
-            g_ctx.fill_user_shader = tag;
+            if (g_ctx.render_pipeline.has_pass_with_shader_tag(shader_tag) == false)
+            {
+                string::string_id               framebuffer_tag = framebuffer_pool::tags::composite();
+                u32                             framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH;
+                geometry_render_pass::draw_mode draw_mode = g_ctx.draw_mode == render_draw_mode::BATCHED
+                    ? geometry_render_pass::draw_mode::BATCHED
+                    : geometry_render_pass::draw_mode::INSTANCED;
+
+                insertion_point                 insertion = insertion_point::AFTER_LIT_OPAQUE;
+                graphics_unique_ptr<irender_pass>   render_pass = nullptr;
+
+                switch (shading_model)
+                {
+                    case shading_model::UNLIT:
+                    {
+                        switch (shading_blending)
+                        {
+                        case shading_blending::OPAQUE:
+                            insertion = insertion_point::AFTER_UNLIT_OPAQUE;
+                            render_pass = memory::make_unique<unlit_pass, memory::persistent_graphics_tagged_allocator<unlit_pass>>(
+                                shader_tag,
+                                framebuffer_tag,
+                                framebuffer_flags,
+                                draw_mode);
+                            break;
+                        case shading_blending::TRANSPARENT:
+                            assert(false && "Transparent objects are not supported right now.");
+                            break;
+                        }
+                        break;
+                    }
+                    case shading_model::LIT:
+                    {
+                        switch (shading_blending)
+                        {
+                        case shading_blending::OPAQUE:
+                            insertion = insertion_point::AFTER_LIT_OPAQUE;
+                            render_pass = memory::make_unique<forward_shading_pass, memory::persistent_graphics_tagged_allocator<forward_shading_pass>>(
+                                shader_tag,
+                                framebuffer_tag,
+                                framebuffer_flags,
+                                draw_mode);
+                            break;
+                        case shading_blending::TRANSPARENT:
+                            assert(false && "Transparent objects are not supported right now.");
+                            break;
+                        }
+                        break;
+                    }
+                }
+
+                g_ctx.render_pipeline.insert_pass(insertion, std::move(render_pass));
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -430,66 +436,50 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void begin_geometry_builder(string::string_id tag)
-        {
-            assert(!_geometry_builder.is_active() && "Construction of previous shape has not been finished, call end_geometry_builder first");
-
-            _geometry_builder.activate(tag);
-        }
-
-        //-------------------------------------------------------------------------
-        void end_geometry_builder()
-        {
-            _geometry_builder.deactivate();
-        }
-
-        //-------------------------------------------------------------------------
         void push_solid_rendering(bool enable)
         {
-            // Font
-            g_ctx.font_renderer->enable_solid_rendering(enable);
-
-            // Custom
-            for (auto& pair : g_ctx.batch_renderers)
-            {
-                pair.second->enable_solid_rendering(enable);
-            }
-            for (auto& pair : g_ctx.instance_renderers)
-            {
-                pair.second->enable_solid_rendering(enable);
-            }
+            //// Font
+            //g_ctx.font_batch_data->enable_solid_rendering(enable);
+            //
+            //// Custom
+            //for (auto& pair : g_ctx.batch_data)
+            //{
+            //    pair.second->enable_solid_rendering(enable);
+            //}
+            //for (auto& pair : g_ctx.instance_data)
+            //{
+            //    pair.second->enable_solid_rendering(enable);
+            //}
         }
-
         //-------------------------------------------------------------------------
         void push_wireframe_rendering(bool enable)
         {
-            // Font
-            g_ctx.font_renderer->enable_wireframe_rendering(enable);
-
+            //// Font
+            //g_ctx.font_batch_data->enable_wireframe_rendering(enable);
+            //
             // Custom
-            for (auto& pair : g_ctx.batch_renderers)
-            {
-                pair.second->enable_wireframe_rendering(enable);
-            }
-
-            for (auto& pair : g_ctx.instance_renderers)
-            {
-                pair.second->enable_wireframe_rendering(enable);
-            }
+            //for (auto& pair : g_ctx.batch_data)
+            //{
+            //    pair.second->enable_wireframe_rendering(enable);
+            //}
+            //for (auto& pair : g_ctx.instance_data)
+            //{
+            //    pair.second->enable_wireframe_rendering(enable);
+            //}
         }
 
         //-------------------------------------------------------------------------
         void push_wireframe_linewidth(f32 line_width)
         {
-            batch_renderer::set_wireframe_linewidth(line_width);
-            instance_renderer::set_wireframe_linewidth(line_width);
+            //batch_renderer::set_wireframe_linewidth(line_width);
+            //instance_renderer::set_wireframe_linewidth(line_width);
         }
 
         //-------------------------------------------------------------------------
         void push_wireframe_color(const glm::vec4& color)
         {
-            batch_renderer::set_wireframe_linecolor(color::convert_color(color));
-            instance_renderer::set_wireframe_linewidth(color::convert_color(color));
+            //batch_renderer::set_wireframe_linecolor(color::convert_color(color));
+            //instance_renderer::set_wireframe_linewidth(color::convert_color(color));
         }
 
         //-------------------------------------------------------------------------
@@ -508,25 +498,25 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool scissor_enabled()
+        bool scissor_rect_enabled()
         {
             return g_ctx.scissor.enable;
         }
 
         //-------------------------------------------------------------------------
-        scissor_rect scissor()
+        render_scissor scissor_rect()
         {
             return { g_ctx.scissor.x, g_ctx.scissor.y, g_ctx.scissor.width, g_ctx.scissor.height };
         }
 
         //-------------------------------------------------------------------------
-        u32 create_image_item(f32 width, f32 height, s32 channels, u8* data)
+        u32 create_image_item(f32 width, f32 height, s32 channels, const u8* data)
         {
             return create_image_item(width, height, channels, data, image_filter_type::NEAREST, image_wrap_type::REPEAT);
         }
 
         //-------------------------------------------------------------------------
-        u32 create_image_item(f32 width, f32 height, s32 channels, u8* data, image_filter_type filter_type, image_wrap_type wrap_type)
+        u32 create_image_item(f32 width, f32 height, s32 channels, const u8* data, image_filter_type filter_type, image_wrap_type wrap_type)
         {
             GLint format = GL_INVALID_VALUE;
             GLint usage = GL_INVALID_VALUE;
@@ -651,12 +641,6 @@ namespace ppp
         //-------------------------------------------------------------------------
         void submit_stroke_render_item(topology_type topology, const irender_item* item, bool outer)
         {
-            if (_geometry_builder.is_active())
-            {
-                log::warn("Stroking custom geometry is currently not supported");
-                return;
-            }
-
             if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false)
             {
                 // When there is no "stroke" and there is no "fill" the object would be invisible.
@@ -672,7 +656,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         void submit_font_item(const irender_item* item)
         {
-            g_ctx.font_renderer->append_drawing_data(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
+            g_ctx.font_batch_data->append(topology_type::TRIANGLES, item, brush::fill(), transform_stack::active_world());
         }
 
         //-------------------------------------------------------------------------

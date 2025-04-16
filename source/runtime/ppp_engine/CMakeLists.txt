@@ -81,6 +81,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_types.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shader.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shader_tags.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shader_compiler.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shader_library.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shader_uniform_manager.h
@@ -91,14 +92,25 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_buffer.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_features.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_framebuffer.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_framebuffer_flags.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_context.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_shadow_pass.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_forward_shading_pass.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_blit_pass.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_scissor.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pipeline.h
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_ui_pass.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch_data_table.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_data_table.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_batch_render_strategy.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_instance_render_strategy.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_ui.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_unlit.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_unlit_wireframe.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_predepth.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_clear.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_shadow.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_forward_shading.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_blit.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_composite.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_composite_factory.h
     ## render-opengl
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_storage_buffer.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_vertex_buffer.cpp
@@ -122,11 +134,20 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_function_library.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_api.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_api.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_shadow_pass.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_forward_shading_pass.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_blit_pass.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pipeline.cpp
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_ui_pass.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch_data_table.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance_data_table.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_batch_render_strategy.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_instance_render_strategy.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_clear.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_shadow.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_forward_shading.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_blit.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_ui.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_unlit.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_unlit_wireframe.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_predepth.cpp
     ## render-helpers
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/helpers/render_index_buffer_ops.cpp
@@ -149,6 +170,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_helpers.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/geometry_bounding_box.h
     # geometry-3d
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/geometry/3d/box.cpp   
@@ -228,15 +250,20 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/image.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/model.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/lights.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/input_output.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/time_date.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/json.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/entrypoint.cpp)
 
 target_sources(processing_engine PUBLIC 
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/camera.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/matrix.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/shapes.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/random.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/transform.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/color.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/environment.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/conversions.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/structure.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/constants.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/rendering.h
@@ -250,23 +277,29 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/model.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/engine.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/lights.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/vector.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/time_date.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/input_output.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/json.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/entrypoint.h)
 
 # Create the project filters
 GROUPSOURCES(${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private private)
 GROUPSOURCES(${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public public)
 
-# Private includes
-target_include_directories(processing_engine PUBLIC ${SOURCE_THIRDPARTY_DIRECTORY}/glm)
+# Public includes
+target_include_directories(processing_engine PUBLIC ${SOURCE_THIRDPARTY_DIRECTORY}/nlohmann/include)
 
+# Private includes
+target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glm)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/noise/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/stb/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/fmt/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/stb/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glad/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glfw/include)
-target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/freetype/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/gsl/include)
+target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/freetype/include)
 
 target_link_libraries(processing_engine PRIVATE stb)
 target_link_libraries(processing_engine PRIVATE glad)
@@ -277,16 +310,8 @@ target_link_libraries(processing_engine PRIVATE freetype)
 target_include_directories(processing_engine PRIVATE ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private)
 target_include_directories(processing_engine PUBLIC ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public)
 
-# Compile definitions
-if(PPP_HEADLESS)
-    target_compile_definitions(processing_engine PUBLIC -DPPP_HEADLESS)
-endif()
-
 target_compile_definitions(processing_engine PUBLIC -DPPP_OPENGL)
-
-if(${CMAKE_HOST_WIN32})
-    target_compile_definitions(processing_engine PUBLIC -DPPP_WINDOWS)
-endif()
+target_compile_definitions(processing_engine PUBLIC $<$<BOOL:${CMAKE_HOST_WIN32}>:PPP_WINDOWS>)
 
 # Target properties
 set_target_properties(processing_engine PROPERTIES

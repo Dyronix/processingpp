@@ -2,22 +2,10 @@
 
 #include "render/helpers/render_vertex_layouts.h"
 
-#include "render/opengl/render_gl_error.h"
-
 #include "resources/shader_pool.h"
 #include "resources/material_pool.h"
 
-#include "util/log.h"
-#include "util/color_ops.h"
-
 #include "memory/memory_unique_ptr_util.h"
-
-#include <glad/glad.h>
-
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <algorithm>
 
 namespace ppp
 {
@@ -30,14 +18,14 @@ namespace ppp
             static constexpr s32 _wireframe = 1 << 0;
 
             //-------------------------------------------------------------------------
-            const attribute_layout* get_attribute_layout(string::string_id shader_tag)
+            static const attribute_layout* get_attribute_layout(string::string_id shader_tag)
             {
                 auto shader_program = shader_pool::get_shader_program(shader_tag);
 
                 return fill_user_layout(shader_program->vertex_format());
             }
             //-------------------------------------------------------------------------
-            u64 get_attribute_layout_count(string::string_id shader_tag)
+            static u64 get_attribute_layout_count(string::string_id shader_tag)
             {
                 auto shader_program = shader_pool::get_shader_program(shader_tag);
 
@@ -105,18 +93,17 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void base_renderer::user_shader_program(string::string_id tag)
+        bool base_renderer::has_texture_support() const
         {
-            if (shader_pool::has_shader(tag))
+            for (u64 i = 0; i < layout_count(); ++i)
             {
-                m_pimpl->user_shader_tag = tag;
+                if (layouts()[i].type == attribute_type::TEXCOORD)
+                {
+                    return true;
+                }
             }
-        }
 
-        //-------------------------------------------------------------------------
-        void base_renderer::reset_user_shader_program()
-        {
-            m_pimpl->user_shader_tag = {};
+            return false;
         }
 
         //-------------------------------------------------------------------------

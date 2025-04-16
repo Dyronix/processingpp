@@ -148,5 +148,50 @@ namespace ppp
                 }
             }
         }
+
+        //-------------------------------------------------------------------------
+        void geometry::compute_aabb()
+        {
+            glm::vec3 min_vertex(
+                std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max());
+            glm::vec3 max_vertex(
+                std::numeric_limits<float>::lowest(),
+                std::numeric_limits<float>::lowest(),
+                std::numeric_limits<float>::lowest());
+
+            for (const auto& vertex : m_vertex_positions)
+            {
+                min_vertex.x = std::min(min_vertex.x, vertex.x);
+                min_vertex.y = std::min(min_vertex.y, vertex.y);
+                min_vertex.z = std::min(min_vertex.z, vertex.z);
+
+                max_vertex.x = std::max(max_vertex.x, vertex.x);
+                max_vertex.y = std::max(max_vertex.y, vertex.y);
+                max_vertex.z = std::max(max_vertex.z, vertex.z);
+            }
+
+            glm::vec3 size(
+                max_vertex.x - min_vertex.x,
+                max_vertex.y - min_vertex.y,
+                max_vertex.z - min_vertex.z);
+            glm::vec3 offset(
+                (min_vertex.x + max_vertex.x) / 2.0f,
+                (min_vertex.y + max_vertex.y) / 2.0f,
+                (min_vertex.z + max_vertex.z) / 2.0f);
+
+            m_bounding_box = { min_vertex, max_vertex, size, offset };
+        }
+
+        const bounding_box& geometry::aabb()
+        { 
+            if (!m_bounding_box)
+            {
+                compute_aabb();
+            }
+            
+            return m_bounding_box;
+        }
     }
 }

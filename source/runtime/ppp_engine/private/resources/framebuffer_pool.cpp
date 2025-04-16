@@ -15,27 +15,51 @@ namespace ppp
         namespace tags
         {
             //-------------------------------------------------------------------------
+            string::string_id composite()
+            {
+                static string::string_id s_composite_fb = string::store_sid("composite_framebuffer");
+                return s_composite_fb;
+            }
+            //-------------------------------------------------------------------------
+            string::string_id predepth()
+            {
+                static string::string_id s_predepth_fb = string::store_sid("predepth_framebuffer");
+                return s_predepth_fb;
+            }
+            //-------------------------------------------------------------------------
+            string::string_id wireframe()
+            {
+                static string::string_id s_wireframe_fb = string::store_sid("wireframe_framebuffer");
+                return s_wireframe_fb;
+            }
+            //-------------------------------------------------------------------------
+            string::string_id unlit()
+            {
+                static string::string_id s_unlit_fb = string::store_sid("unlit_framebuffer");
+                return s_unlit_fb;
+            }
+            //-------------------------------------------------------------------------
             string::string_id shadow_map()
             {
-                static const string::string_id s_shadow_map_fb = string::store_sid("shadow_map_framebuffer");
+                static string::string_id s_shadow_map_fb = string::store_sid("shadow_map_framebuffer");
                 return s_shadow_map_fb;
             }
             //-------------------------------------------------------------------------
             string::string_id forward_shading()
             {
-                static const string::string_id s_forward_shading_fb = string::store_sid("forward_shading_framebuffer");
+                static string::string_id s_forward_shading_fb = string::store_sid("forward_shading_framebuffer");
                 return s_forward_shading_fb;
             }
             //-------------------------------------------------------------------------
             string::string_id ui()
             {
-                static const string::string_id s_ui_fb = string::store_sid("ui_framebuffer");
+                static string::string_id s_ui_fb = string::store_sid("ui_framebuffer");
                 return s_ui_fb;
             }
             //-------------------------------------------------------------------------
             string::string_id blit()
             {
-                static const string::string_id s_blit_fb = string::store_sid("blit_framebuffer");
+                static string::string_id s_blit_fb = string::store_sid("blit_framebuffer");
                 return s_blit_fb;
             }
         }
@@ -156,28 +180,50 @@ namespace ppp
             for (auto& fb : g_ctx.framebuffers)
             {
                 // Skip if this framebuffer is already in use.
-                if (std::any_of(g_ctx.framebuffers_in_use.begin(), g_ctx.framebuffers_in_use.end(),
-                    [fb_ptr = fb.get()](const auto& pair) { return pair.second == fb_ptr; }))
+                bool in_use = std::any_of(g_ctx.framebuffers_in_use.begin(), g_ctx.framebuffers_in_use.end(),
+                    [fb_ptr = fb.get()](const auto& pair)
+                    {
+                        return pair.second == fb_ptr;
+                    });
+                
+                if (in_use)
                 {
                     continue;
                 }
 
-                bool meetsCriteria = true;
-                if (flags & framebuffer_flags::DEPTH)
+                bool meets_criteria = true;
+
+                // Check DEPTH: if either DEPTH or SAMPLED_DEPTH is requested, require depth.
+                if (flags & (framebuffer_flags::DEPTH | framebuffer_flags::SAMPLED_DEPTH))
                 {
-                    meetsCriteria &= fb->has_depth();
+                    meets_criteria &= fb->has_depth();
                 }
-                if (flags & framebuffer_flags::SAMPLED_DEPTH)
+                else
                 {
-                    // SAMPLED_DEPTH implies both depth and a depth texture.
-                    meetsCriteria &= (fb->has_depth() && fb->has_depth_texture());
-                }
-                if (flags & framebuffer_flags::COLOR)
-                {
-                    meetsCriteria &= fb->has_color_attachment();
+                    meets_criteria &= !fb->has_depth();
                 }
 
-                if (meetsCriteria)
+                // Check SAMPLED_DEPTH: if requested, require depth texture.
+                if (flags & framebuffer_flags::SAMPLED_DEPTH)
+                {
+                    meets_criteria &= fb->has_depth_texture();
+                }
+                else
+                {
+                    meets_criteria &= !fb->has_depth_texture();
+                }
+
+                // Check COLOR: only allow if requested.
+                if (flags & framebuffer_flags::COLOR)
+                {
+                    meets_criteria &= fb->has_color_attachment();
+                }
+                else
+                {
+                    meets_criteria &= !fb->has_color_attachment();
+                }
+
+                if (meets_criteria)
                 {
                     g_ctx.framebuffers_in_use[tag] = fb.get();
                     return fb.get();

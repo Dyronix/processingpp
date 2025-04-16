@@ -3,6 +3,9 @@
 #include "util/types.h"
 
 #include "memory/memory_types.h"
+#include "render/render_framebuffer_flags.h"
+
+#include <memory>
 
 namespace ppp
 {

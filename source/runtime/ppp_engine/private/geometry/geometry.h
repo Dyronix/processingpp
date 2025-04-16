@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/types.h"
+#include "geometry/geometry_bounding_box.h"
 
 #include "memory/memory_types.h"
 
@@ -27,6 +28,7 @@ namespace ppp
             u64 index_count() const;
 
             void compute_normals(s32 round_to_precision = 3);
+            void compute_aabb();
 
             const graphics_vector<glm::vec3>& vertex_positions() const { return m_vertex_positions; }
             const graphics_vector<glm::vec3>& vertex_normals() const { return m_vertex_normals; }
@@ -42,6 +44,8 @@ namespace ppp
 
             graphics_vector<render::face>& faces() { return m_faces; }
 
+            const bounding_box& aabb();
+
         private:
             graphics_vector<glm::vec3> m_vertex_positions;
             graphics_vector<glm::vec3> m_vertex_normals;
@@ -49,6 +53,7 @@ namespace ppp
             graphics_vector<glm::vec4> m_vertex_colors;
             
             graphics_vector<render::face> m_faces;
+            bounding_box m_bounding_box;
 
         private:
             bool m_smooth_normals; 

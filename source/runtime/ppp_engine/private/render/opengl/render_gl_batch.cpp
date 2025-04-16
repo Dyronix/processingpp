@@ -2,29 +2,23 @@
 #include "render/render_vertex_buffer.h"
 #include "render/render_index_buffer.h"
 #include "render/render_storage_buffer.h"
-#include "render/render_shader_uniform_manager.h"
 #include "render/render_features.h"
 
-#include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
 #include "render/helpers/render_storage_buffer_ops.h"
-#include "render/helpers/render_texture_registry.h"
 
 #include "resources/material_pool.h"
 
 #include "memory/memory_unique_ptr_util.h"
-
 #include "util/types.h"
 #include "util/log.h"
 #include "util/pointer_math.h"
 
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
-
-#include <numeric>
 
 namespace ppp
 {
@@ -512,15 +506,13 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void draw(topology_type topology, u32 shader_program) const
+            void draw(topology_type topology) const
             {
                 GLenum gl_topology = internal::topology(topology);
 
 #ifndef NDEBUG
                 internal::check_drawing_type(m_buffer_manager->active_index_count(), gl_topology);
 #endif
-                shaders::apply_uniforms(shader_program);
-
                 if (m_buffer_manager->active_index_count() != 0)
                 {
                     opengl::api::instance().draw_elements(gl_topology, m_buffer_manager->active_index_count(), internal::index_type(), nullptr);
@@ -565,9 +557,9 @@ namespace ppp
             m_pimpl->submit();
         }
         //-------------------------------------------------------------------------
-        void batch::draw(topology_type topology, u32 shader_program) const
+        void batch::draw(topology_type topology) const
         {
-            m_pimpl->draw(topology, shader_program);
+            m_pimpl->draw(topology);
         }
 
         //-------------------------------------------------------------------------
@@ -633,10 +625,9 @@ namespace ppp
         struct batch_drawing_data::impl
         {
             //-------------------------------------------------------------------------
-            impl(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
+            impl(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
                 : layouts(layouts)
                 , layout_count(layout_count)
-                , buffer_policy(render_buffer_policy)
             {
                 assert(size_vertex_buffer > 0);
                 assert(size_index_buffer > 0);
@@ -652,15 +643,14 @@ namespace ppp
             s32                         push_batch      = 0;
 
             batch_arr                   batches         = {};
-            render_buffer_policy        buffer_policy   = render_buffer_policy::RETAINED;
 
             const attribute_layout*     layouts         = nullptr;
             const u64                   layout_count    = 0;
         };
 
         //-------------------------------------------------------------------------
-        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count, render_buffer_policy render_buffer_policy)
-            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(size_vertex_buffer, size_index_buffer, layouts, layout_count, render_buffer_policy))
+        batch_drawing_data::batch_drawing_data(s32 size_vertex_buffer, s32 size_index_buffer, const attribute_layout* layouts, u64 layout_count)
+            : m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(size_vertex_buffer, size_index_buffer, layouts, layout_count))
         {
         }
 
@@ -689,9 +679,6 @@ namespace ppp
                 m_pimpl->batches[m_pimpl->push_batch].bind();
                 m_pimpl->batches[m_pimpl->push_batch].submit();
 
-                // clear all the memory in the staging area
-                memory::get_memory_manager().get_persistent_region().get_tagged_heap()->free_blocks(memory::tags::stage);
-
                 if (m_pimpl->batches.size() <= m_pimpl->push_batch + 1)
                 {
                     u32 max_vertex_count = m_pimpl->batches[m_pimpl->push_batch].max_vertex_count();
@@ -709,16 +696,12 @@ namespace ppp
         void batch_drawing_data::reset()
         {
             // We clear everything if we are in immediate mode
-            if (m_pimpl->buffer_policy == render_buffer_policy::IMMEDIATE)
+            for (batch& b : m_pimpl->batches)
             {
-                for (batch& b : m_pimpl->batches)
-                {
-                    b.reset();
-                }
-
-                m_pimpl->push_batch = 0;
+                b.reset();
             }
 
+            m_pimpl->push_batch = 0;
             m_pimpl->draw_batch = 0;
         }        
         //-------------------------------------------------------------------------

@@ -2,9 +2,6 @@
 
 #include "util/types.h"
 
-#include "memory/memory_types.h"
-#include "memory/memory_manager.h"
-
 #include <functional>
 #include <ostream>
 #include <cstddef>
@@ -160,7 +157,7 @@ namespace ppp
             u64 m_comparison_hash;
 
 #ifdef _DEBUG
-            std::string_view m_value;
+            std::string m_value;
 #endif
         };
 
@@ -175,7 +172,7 @@ namespace ppp
 // User-defined literal operator to create a string_id from a string literal.
 inline ppp::string::string_id operator""_sid(const char* string, size_t size)
 {
-    return ppp::string::string_id(std::string_view(string, static_cast<u32>(size))); // NOLINT(cppcoreguidelines-narrowing-conversions)
+    return ppp::string::store_sid(std::string_view(string, static_cast<u32>(size))); // NOLINT(cppcoreguidelines-narrowing-conversions)
 }
 
 //-------------------------------------------------------------------------

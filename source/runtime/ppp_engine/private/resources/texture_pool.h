@@ -1,6 +1,6 @@
 #pragma once
 
-#include "memory/memory_types.h"
+
 #include "util/types.h"
 #include "string/string_id.h"
 
@@ -31,6 +31,8 @@ namespace ppp
 
         const image* image_at_path(string::string_id file_path);
         const image* image_at_id(s32 id);
+        const image* image_solid_white();
+        const image* image_solid_black();
 
         void add_new_image(const image& image);
 

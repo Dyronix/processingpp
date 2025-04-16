@@ -3,7 +3,7 @@
 
 #include "render/opengl/render_gl_api.h"
 
-#include <glad/glad.h>
+#include "memory/memory_unique_ptr_util.h"
 
 namespace ppp
 {
@@ -15,35 +15,38 @@ namespace ppp
             {
             public:
                 //-------------------------------------------------------------------------
-                impl(shading_model_type smtype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source)
+                impl(shading_model_type smtype, shading_blending_type btype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source)
                 {
                     program_id = create_shader_program(vs_source, fs_source);
                     shading_model_type = smtype;
+                    shading_blending_type = btype;
                     vertex_type = vtype;
                 }
 
                 //-------------------------------------------------------------------------
-                impl(shading_model_type smtype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source)
+                impl(shading_model_type smtype, shading_blending_type btype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source)
                 {
                     program_id = create_shader_program(vs_source, fs_source, geometry_source);
                     shading_model_type = smtype;
+                    shading_blending_type = btype;
                     vertex_type = vtype;
                 }
 
                 u32 program_id = 0;
                 shading_model_type shading_model_type = shading_model_type::UNLIT;
+                shading_blending_type shading_blending_type = shading_blending_type::OPAQUE;
                 vertex_type vertex_type = vertex_type::POSITION_COLOR;
             };
 
             //-------------------------------------------------------------------------
-            shader_program::shader_program(shading_model_type smtype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source)
-                :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(smtype, vtype, vs_source, fs_source))
+            shader_program::shader_program(shading_model_type smtype, shading_blending_type btype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source)
+                :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(smtype, btype, vtype, vs_source, fs_source))
             {
             }
 
             //-------------------------------------------------------------------------
-            shader_program::shader_program(shading_model_type smtype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source)
-                :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(smtype, vtype, vs_source, fs_source, geometry_source))
+            shader_program::shader_program(shading_model_type smtype, shading_blending_type btype, vertex_type vtype, std::string_view vs_source, std::string_view fs_source, std::string_view geometry_source)
+                :m_pimpl(memory::make_unique<impl, memory::persistent_global_tagged_allocator<impl>>(smtype, btype, vtype, vs_source, fs_source, geometry_source))
             {
             }
 
@@ -75,6 +78,12 @@ namespace ppp
             shading_model_type shader_program::shading_model() const
             {
                 return m_pimpl->shading_model_type;
+            }
+
+            //-------------------------------------------------------------------------
+            shading_blending_type shader_program::shading_blending() const
+            {
+                return m_pimpl->shading_blending_type;
             }
 
             //-------------------------------------------------------------------------

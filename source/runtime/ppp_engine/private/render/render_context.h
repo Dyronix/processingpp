@@ -1,27 +1,62 @@
 #pragma once
 
-#include "memory/memory_types.h"
-#include "memory/memory_unique_ptr_util.h"
+#include "render/render_scissor.h"
+#include "render/render_types.h"
 
 #include "string/string_id.h"
 
+#include "util/hash.h"
+
+#include "memory/memory_types.h"
+
 namespace ppp
 {
-    namespace camera
-    {
-        struct camera_context;
-    }
+    struct camera_context;
 
     namespace render
     {
-        class texture_batch_renderer;
-        class instance_renderer;
-        class batch_renderer;
+        struct instance_data_key;
+        struct batch_data_key;
 
-        using instance_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<instance_renderer>>;
-        using batch_renderers_hash_map = graphics_hash_map<string::string_id, graphics_unique_ptr<batch_renderer>>;
+        struct scissor;
 
-        struct render_scissor;
+        class batch_data_table;
+        class instance_data_table;
+
+        using instance_data_hash_map = graphics_hash_map<instance_data_key, graphics_unique_ptr<instance_data_table>>;
+        using batch_data_hash_map = graphics_hash_map<batch_data_key, graphics_unique_ptr<batch_data_table>>;
+
+        struct batch_data_key
+        {
+            string::string_id shader_tag;
+
+            shading_model_type shader_model_type;
+            shading_blending_type shader_blending_type;
+
+            bool cast_shadows;
+
+            // Equality operator for comparisons.
+            bool operator==(const batch_data_key& other) const
+            {
+                return shader_tag == other.shader_tag && cast_shadows == other.cast_shadows;
+            }
+        };
+
+        struct instance_data_key
+        {
+            string::string_id shader_tag;
+
+            shading_model_type shader_model_type;
+            shading_blending_type shader_blending_type;
+
+            bool cast_shadows;
+
+            // Equality operator for comparisons.
+            bool operator==(const instance_data_key& other) const
+            {
+                return shader_tag == other.shader_tag && cast_shadows == other.cast_shadows;
+            }
+        };
 
         struct render_context
         {
@@ -29,18 +64,47 @@ namespace ppp
             {
                 return camera_context != nullptr
                     && scissor != nullptr
-                    && font_renderer != nullptr
-                    && batch_renderers != nullptr
-                    && instance_renderers != nullptr;
+                    && font_batch_data != nullptr
+                    && batch_data != nullptr
+                    && instance_data != nullptr;
             }
 
-            const camera::camera_context*   camera_context = nullptr; 
+            const camera_context*       camera_context = nullptr; 
+            const render_scissor*       scissor = nullptr;
 
-            const render_scissor*           scissor = nullptr;
+            batch_data_table*           font_batch_data = nullptr;
 
-            texture_batch_renderer*         font_renderer = nullptr;
-            batch_renderers_hash_map*       batch_renderers = nullptr;
-            instance_renderers_hash_map*    instance_renderers = nullptr;
+            batch_data_hash_map*        batch_data = nullptr;
+            instance_data_hash_map*     instance_data = nullptr;
         };
     }
+}
+
+namespace std
+{
+    template<>
+    struct hash<ppp::render::batch_data_key>
+    {
+        std::size_t operator()(const ppp::render::batch_data_key& key) const noexcept
+        {
+            size_t seed = 0;
+            seed = ppp::utils::hash_combine(seed, key.shader_tag);
+            seed = ppp::utils::hash_combine(seed, key.shader_model_type);
+            seed = ppp::utils::hash_combine(seed, key.cast_shadows);
+            return seed;
+        }
+    };
+
+    template<>
+    struct hash<ppp::render::instance_data_key>
+    {
+        std::size_t operator()(const ppp::render::instance_data_key& key) const noexcept
+        {
+            size_t seed = 0;
+            seed = ppp::utils::hash_combine(seed, key.shader_tag);
+            seed = ppp::utils::hash_combine(seed, key.shader_model_type);
+            seed = ppp::utils::hash_combine(seed, key.cast_shadows);
+            return seed;
+        }
+    };
 }

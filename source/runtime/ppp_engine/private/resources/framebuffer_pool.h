@@ -1,6 +1,8 @@
 #pragma once
 
 #include "render/render_framebuffer.h"
+#include "render/render_framebuffer_flags.h"
+
 #include "util/types.h"
 #include "string/string_id.h"
 
@@ -8,17 +10,14 @@
 
 namespace ppp
 {
-    namespace framebuffer_flags
-    {
-        constexpr s32 DEPTH = BIT(0);
-        constexpr s32 SAMPLED_DEPTH = BIT(1);
-        constexpr s32 COLOR = BIT(2);
-    }
-
     namespace framebuffer_pool
     {
         namespace tags
         {
+            string::string_id composite();
+            string::string_id predepth();
+            string::string_id wireframe();
+            string::string_id unlit();
             string::string_id shadow_map();
             string::string_id forward_shading();
             string::string_id ui();
