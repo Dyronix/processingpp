@@ -11,11 +11,20 @@ namespace ppp
             : m_base_memory(nullptr)
             , m_free_list(nullptr)
             , m_total_memory_size(size)
+            , m_should_free(heap == nullptr)
         {
-            if (size.size_in_bytes() > 0);
+            if (size.size_in_bytes() > 0)
             {
-                // Allocate a large contiguous block of memory from the heap.
-                m_base_memory = static_cast<u8*>(heap->allocate(size));
+                if (heap)
+                {
+                    // Allocate a large contiguous block of memory from the heap.
+                    m_base_memory = static_cast<u8*>(heap->allocate(size));
+                }
+                else
+                {
+                    m_base_memory = static_cast<u8*>(std::malloc(size.size_in_bytes()));
+                    std::memset(m_base_memory, 0, size.size_in_bytes());
+                }
 
                 // Initialize the free list:
                 // The entire pool is initially one large free block.
@@ -28,7 +37,17 @@ namespace ppp
         //-------------------------------------------------------------------------
         free_list_heap::~free_list_heap()
         {
-            // No need to free m_base_memory here because its lifetime is managed by the heap.
+            if (m_should_free)
+            {
+                free();
+
+                if (m_base_memory != nullptr)
+                {
+                    std::free(m_base_memory);
+
+                    m_base_memory = nullptr;
+                }
+            }
         }
 
         //-------------------------------------------------------------------------

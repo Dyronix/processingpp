@@ -10,7 +10,7 @@ namespace ppp
             ,m_offset(0)
             ,m_total_size(size)
         {
-            if(size.size_in_bytes() > 0);
+            if(size.size_in_bytes() > 0)
             {
                 m_base_memory = static_cast<u8*>(std::malloc(size.size_in_bytes()));
 

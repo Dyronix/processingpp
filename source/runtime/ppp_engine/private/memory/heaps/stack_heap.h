@@ -11,6 +11,7 @@ namespace ppp
         {
         public:
             stack_heap(iheap* heap, memory_size size);
+            ~stack_heap() override;
 
         public:
             void*           allocate(memory_size size) noexcept override;
@@ -33,6 +34,7 @@ namespace ppp
             memory_size     m_total_memory;
             void*           m_base_memory;
             u64             m_offset;
+            bool            m_should_free;
         };
     }
 }

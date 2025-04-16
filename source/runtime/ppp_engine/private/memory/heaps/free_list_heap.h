@@ -12,7 +12,7 @@ namespace ppp
         {
         public:
             free_list_heap(iheap* heap, memory_size size);
-            ~free_list_heap();
+            ~free_list_heap() override;
 
             void*           allocate(memory_size size) noexcept override;
             void            deallocate(void* ptr) noexcept override;
@@ -35,6 +35,7 @@ namespace ppp
             u8*             m_base_memory;
             block_header*   m_free_list;
             memory_size     m_total_memory_size;
+            bool            m_should_free;
 
         private:
             void*           get_user_pointer(block_header* block) const noexcept;

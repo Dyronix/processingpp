@@ -10,6 +10,7 @@ namespace ppp
         {
         public:
             circular_heap(iheap* heap, memory_size size);
+            ~circular_heap() override;
 
         public:
             void*           allocate(memory_size size) noexcept override;
@@ -28,8 +29,8 @@ namespace ppp
 
         private:
             memory_size     m_total_size;
-
             void*           m_base_memory;
+            bool            m_should_free;
 
             // m_head:      the next allocation offset.
             // m_tail:      the oldest still–active allocation (for a more sophisticated free–list you would update tail when freeing oldest blocks).

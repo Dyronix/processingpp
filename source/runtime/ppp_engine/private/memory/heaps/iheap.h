@@ -9,6 +9,9 @@ namespace ppp
         class iheap
         {
         public:
+            virtual ~iheap() = default;
+
+        public:
             virtual void*           allocate(memory_size size) noexcept = 0;
             virtual void            deallocate(void* ptr) noexcept = 0;
 

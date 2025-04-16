@@ -11,12 +11,37 @@ namespace ppp
             : m_total_memory(size)
             , m_base_memory(nullptr)
             , m_offset(0)
+            , m_should_free(heap == nullptr)
         {
             if (size.size_in_bytes() > 0)
             {
-                m_base_memory = heap->allocate(size);
+                if (heap)
+                {
+                    m_base_memory = heap->allocate(size);
+                }
+                else
+                {
+                    m_base_memory = static_cast<u8*>(std::malloc(size.size_in_bytes()));
+                    std::memset(m_base_memory, 0, size.size_in_bytes());
+                }
             }
         }
+        //-------------------------------------------------------------------------
+        stack_heap::~stack_heap()
+        {
+            if (m_should_free)
+            {
+                free();
+
+                if (m_base_memory != nullptr)
+                {
+                    std::free(m_base_memory);
+
+                    m_base_memory = nullptr;
+                }
+            }
+        }
+
 
         //-------------------------------------------------------------------------
         void* stack_heap::allocate(memory_size size) noexcept
