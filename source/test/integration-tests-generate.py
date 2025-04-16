@@ -15,7 +15,7 @@ def generate_new_data(directory):
     files = os.listdir(directory)
 
     # Filter .exe files
-    exe_files = [f for f in files if f.endswith(".exe") and f.startswith("test-")]
+    exe_files = [f for f in files if f.endswith(".exe") and f.startswith("integration-test-")]
 
     for exe in exe_files:
         print(f"Generating data using {os.path.join(directory, exe)}")
