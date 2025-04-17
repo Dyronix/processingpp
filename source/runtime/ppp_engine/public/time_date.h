@@ -1,25 +1,23 @@
+/**
+ * @file time_date.h
+ * @brief Utilities for retrieving current system date/time.
+ */
 #pragma once
 
 namespace ppp
 {
-    // Returns the current day (1-31).
+    /** @brief Get current day of month (1-31). */
     int day();
-
-    // Returns the current hour (0-23).
+    /** @brief Get current hour of day (0-23). */
     int hour();
-
-    // Returns the current minute (0-59).
+    /** @brief Get current minute of hour (0-59). */
     int minute();
-
-    // Returns the current second (0-59).
+    /** @brief Get current second of minute (0-59). */
     int second();
-
-    // Returns the current month (1-12).
+    /** @brief Get current month (1-12). */
     int month();
-
-    // Returns the current year (e.g., 2025).
+    /** @brief Get current year (e.g., 2025). */
     int year();
-
-    // Returns the number of milliseconds since the program started.
+    /** @brief Get milliseconds elapsed since program start. */
     long long millis();
 }

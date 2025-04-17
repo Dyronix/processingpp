@@ -1,14 +1,22 @@
+/**
+ * @file data.h
+ * @brief Utility functions for vector manipulation.
+ */
 #pragma once
 
 #include <vector>
 #include <algorithm>
 #include <random>
 
-#include <assert.h>
-
 namespace ppp
 {
-    // Appends a value to the end of the vector.
+    /**
+     * @brief Append a value to the end of a vector.
+     * @tparam T Type of elements.
+     * @param array Vector to modify.
+     * @param value Value to append.
+     * @return Reference to the modified vector.
+     */
     template <typename T>
     std::vector<T>& append(std::vector<T>& array, const T& value)
     {
@@ -16,10 +24,16 @@ namespace ppp
         return array;
     }
 
-    // Copies a subrange from the source vector into the destination vector.
-    // This version takes five parameters: src, src_position, dst, dst_position, length.
-    // It removes 'length' elements from dst (starting at dst_position) and replaces them
-    // with the elements taken from src (starting at src_position).
+    /**
+     * @brief Copy a subrange from source vector into destination vector, replacing elements.
+     * @tparam T Element type.
+     * @param src Source vector.
+     * @param src_position Starting index in source.
+     * @param dst Destination vector (modified in place).
+     * @param dst_position Starting index in destination to replace.
+     * @param length Number of elements to copy.
+     * @throws std::out_of_range if positions are invalid.
+     */
     template <typename T>
     void array_copy(const std::vector<T>& src, int src_position, std::vector<T>& dst, int dst_position, int length)
     {
@@ -44,8 +58,12 @@ namespace ppp
         dst.insert(dst.begin() + dst_position, src.begin() + src_position, src.begin() + src_position + copy_length);
     }
 
-    // Simplified version: copies entire src into dst.
-    // Equivalent to array_copy(src, 0, dst, 0, src.size())
+    /**
+     * @brief Replace entire destination vector with source vector.
+     * @tparam T Element type.
+     * @param src Source vector.
+     * @param dst Destination vector to replace.
+     */
     template <typename T>
     void array_copy(const std::vector<T>& src, std::vector<T>& dst)
     {
@@ -53,7 +71,13 @@ namespace ppp
         dst.insert(dst.begin(), src.begin(), src.end());
     }
 
-    // Concatenates two vectors and returns the result.
+    /**
+     * @brief Concatenate two vectors into a new one.
+     * @tparam T Element type.
+     * @param list0 First vector.
+     * @param list1 Second vector.
+     * @return New vector containing elements of list0 followed by list1.
+     */
     template <typename T>
     std::vector<T> concat(const std::vector<T>& list0, const std::vector<T>& list1)
     {
@@ -62,7 +86,12 @@ namespace ppp
         return result;
     }
 
-    // Reverses the order of the vector in place and returns it.
+    /**
+     * @brief Reverse the order of elements in place.
+     * @tparam T Element type.
+     * @param list Vector to reverse.
+     * @return Reference to the reversed vector.
+     */
     template <typename T>
     std::vector<T>& reverse(std::vector<T>& list)
     {
@@ -70,7 +99,12 @@ namespace ppp
         return list;
     }
 
-    // Removes the last element of the vector (if any) and returns the vector.
+    /**
+     * @brief Remove the last element of the vector, if any.
+     * @tparam T Element type.
+     * @param list Vector to shorten.
+     * @return Reference to the modified vector.
+     */
     template <typename T>
     std::vector<T>& shorten(std::vector<T>& list)
     {
@@ -81,9 +115,13 @@ namespace ppp
         return list;
     }
 
-    // Shuffles the elements of the vector.
-    // If modify is false then a shuffled copy is returned (leaving the original unchanged);
-    // if modify is true then the original vector is shuffled in place and returned.
+    /**
+     * @brief Shuffle elements of a vector.
+     * @tparam T Element type.
+     * @param arr Vector to shuffle.
+     * @param modify If false, returns shuffled copy; if true, shuffles in place.
+     * @return Shuffled vector or reference to arr.
+     */
     template <typename T>
     std::vector<T> shuffle(std::vector<T>& arr, bool modify = false)
     {
@@ -104,10 +142,13 @@ namespace ppp
         }
     }
 
-    // Sorts the vector.
-    // If count is not provided (or negative) the entire vector is sorted;
-    // if count is provided, only the first 'count' elements are sorted and then
-    // concatenated with the rest of the original vector.
+    /**
+     * @brief Sort elements of a vector, optionally only first count elements.
+     * @tparam T Element type.
+     * @param list Input vector.
+     * @param count Number of initial elements to sort (negative for all).
+     * @return New vector with sorted elements.
+     */
     template <typename T>
     std::vector<T> sort_vector(const std::vector<T>& list, int count = -1)
     {
@@ -131,7 +172,15 @@ namespace ppp
         return result;
     }
 
-    // Inserts a vector of values into an existing vector at the given index.
+    /**
+     * @brief Insert values into a vector at a specific index.
+     * @tparam T Element type.
+     * @param list Vector to modify.
+     * @param values Values to insert.
+     * @param index Position at which to insert.
+     * @throws std::out_of_range if index is invalid.
+     * @return Reference to the modified vector.
+     */
     template <typename T>
     std::vector<T>& splice(std::vector<T>& list, const std::vector<T>& values, int index)
     {
@@ -143,7 +192,15 @@ namespace ppp
         return list;
     }
 
-    // Overload for inserting a single value into the vector.
+    /**
+     * @brief Insert a single value into a vector at a specific index.
+     * @tparam T Element type.
+     * @param list Vector to modify.
+     * @param value Value to insert.
+     * @param index Position at which to insert.
+     * @throws std::out_of_range if index is invalid.
+     * @return Reference to the modified vector.
+     */
     template <typename T>
     std::vector<T>& splice(std::vector<T>& list, const T& value, int index)
     {
@@ -155,9 +212,15 @@ namespace ppp
         return list;
     }
 
-    // Returns a subset of the vector, starting at 'start'.
-    // If count is provided (non-negative) then count elements are returned;
-    // otherwise, all elements from start to the end are returned.
+    /**
+     * @brief Get a subset of a vector.
+     * @tparam T Element type.
+     * @param list Input vector.
+     * @param start Starting index of subset.
+     * @param count Number of elements to include (negative for all to end).
+     * @return New vector containing the subset.
+     * @throws std::out_of_range if range is invalid.
+     */
     template <typename T>
     std::vector<T> subset(const std::vector<T>& list, int start, int count = -1)
     {

@@ -1,3 +1,7 @@
+/**
+ * @file conversions.h
+ * @brief String and numeric type conversion utilities.
+ */
 #pragma once
 
 #include <string>
@@ -10,11 +14,11 @@
 
 namespace ppp
 {
-    // ------------------------------------------------------------------------
-    // to_float
-    // ------------------------------------------------------------------------
-
-    // Converts a string to a float.
+    /**
+     * @brief Convert string to float.
+     * @param str Input string.
+     * @return Floating-point value or NaN on error.
+     */
     inline float to_float(const std::string& str)
     {
         try
@@ -27,7 +31,11 @@ namespace ppp
         }
     }
 
-    // Overload for a vector of strings.
+    /**
+     * @brief Convert vector of strings to floats.
+     * @param vec Vector of strings.
+     * @return Vector of floats.
+     */
     inline std::vector<float> to_float(const std::vector<std::string>& vec)
     {
         std::vector<float> result;
@@ -39,17 +47,18 @@ namespace ppp
         return result;
     }
 
-    // If already a float, return it.
+    /** @brief Identity: return float as is. */
     inline float to_float(float value)
     {
         return value;
     }
 
-    // ------------------------------------------------------------------------
-    // to_int
-    // ------------------------------------------------------------------------
-
-    // Converts a string to an int using the specified radix.
+    /**
+     * @brief Convert string to int with given radix.
+     * @param n Input numeric string.
+     * @param radix Numeric base (default 10).
+     * @return Integer value or throws on invalid.
+     */
     inline int to_int(const std::string& n, int radix = 10)
     {
         if (n == "Infinity")
@@ -72,13 +81,13 @@ namespace ppp
         }
     }
 
-    // Converts a string to an int using the specified radix.
+    /** @brief Convert C-string to int with given radix. */
     inline int to_int(const char* n, int radix = 10)
     {
         return to_int(std::string(n), radix);
     }
 
-    // Converts a float to an int (truncates decimals).
+    /** @brief Convert float to int by truncation. */
     inline int to_int(float n, int radix = 10)
     {
         if (std::isinf(n))
@@ -95,7 +104,7 @@ namespace ppp
         return static_cast<int>(n);
     }
 
-    // Converts a float to an int (truncates decimals).
+    /** @brief Convert double to int by truncation. */
     inline int to_int(double n, int radix = 10)
     {
         if (std::isinf(n))
@@ -112,7 +121,7 @@ namespace ppp
         return static_cast<int>(n);
     }
 
-    // Converts a bool to an int.
+    /** @brief Convert bool to int (true=1,false=0). */
     inline int to_int(bool n, int radix = 10)
     {
         if (n)
@@ -125,7 +134,13 @@ namespace ppp
         }
     }
 
-    // Overload for a vector.
+    /**
+     * @brief Convert vector of values to ints.
+     * @tparam T Element type convertible to int.
+     * @param vec Vector of values.
+     * @param radix Numeric base (default 10).
+     * @return Vector of ints.
+     */
     template <typename T>
     inline std::vector<int> to_int(const std::vector<T>& vec, int radix = 10)
     {
@@ -138,42 +153,21 @@ namespace ppp
         return result;
     }
 
-    // ------------------------------------------------------------------------
-    // to_str
-    // ------------------------------------------------------------------------
+    /** @brief Identity: return string as is. */
+    inline std::string to_str(const std::string& n) { return n; }
+    /** @brief Convert int to string. */
+    inline std::string to_str(int n) { return std::to_string(n); }
+    /** @brief Convert float to string. */
+    inline std::string to_str(float n) { return std::to_string(n); }
+    /** @brief Convert bool to string ("true"/"false"). */
+    inline std::string to_str(bool n) { return n ? "true" : "false"; }
 
-    // Converts a string to a string (identity).
-    inline std::string to_str(const std::string& n)
-    {
-        return n;
-    }
-
-    // Converts an int to a string.
-    inline std::string to_str(int n)
-    {
-        return std::to_string(n);
-    }
-
-    // Converts a float to a string.
-    inline std::string to_str(float n)
-    {
-        return std::to_string(n);
-    }
-
-    // Converts a bool to a string.
-    inline std::string to_str(bool n)
-    {
-        if (n)
-        {
-            return "true";
-        }
-        else
-        {
-            return "false";
-        }
-    }
-
-    // Overload for a vector.
+    /**
+     * @brief Convert vector of values to strings.
+     * @tparam T Element type convertible to string.
+     * @param vec Vector of values.
+     * @return Vector of strings.
+     */
     template <typename T>
     inline std::vector<std::string> to_str(const std::vector<T>& vec)
     {
@@ -186,11 +180,11 @@ namespace ppp
         return result;
     }
 
-    // ------------------------------------------------------------------------
-    // to_boolean
-    // ------------------------------------------------------------------------
-
-    // Converts a string to a boolean.
+    /**
+     * @brief Convert string to boolean.
+     * @param n Input string (case-insensitive "true").
+     * @return true if n == "true" ignoring case.
+     */
     inline bool to_boolean(const std::string& n)
     {
         std::string lower;
@@ -199,30 +193,19 @@ namespace ppp
         return (lower == "true");
     }
 
-    inline bool to_boolean(const char* n)
-    {
-        return to_boolean(std::string(n));
-    }
+    /** @brief Convert char to boolean. */
+    inline bool to_boolean(const char* n) { return to_boolean(std::string(n)); }
+    /** @brief Convert int to boolean. */
+    inline bool to_boolean(int n) { return n != 0; }
+    /** @brief Convert float to boolean. */
+    inline bool to_boolean(float n) { return n != 0.0f; }
 
-    // Converts an int to a boolean.
-    inline bool to_boolean(int n)
-    {
-        return (n != 0);
-    }
-
-    // Converts a float to a boolean.
-    inline bool to_boolean(float n)
-    {
-        return (n != 0.0f);
-    }
-
-    // Converts a bool to a boolean.
-    inline bool to_boolean(bool n)
-    {
-        return n;
-    }
-
-    // Overload for a vector.
+    /**
+     * @brief Convert vector of values to booleans.
+     * @tparam T Element type convertible to boolean.
+     * @param vec Vector of values.
+     * @return Vector of booleans.
+     */
     template <typename T>
     inline std::vector<bool> to_boolean(const std::vector<T>& vec)
     {
@@ -235,45 +218,50 @@ namespace ppp
         return result;
     }
 
-    // ------------------------------------------------------------------------
-    // to_byte
-    // ------------------------------------------------------------------------
-
-    // Converts a string to its byte value.
+    /**
+     * @brief Convert string to byte value (-128..127).
+     * @param n Input string.
+     * @return Byte value as int.
+     */
     inline int to_byte(const std::string& n)
     {
         int nn = to_int(n, 10);
         return ((nn + 128) % 256) - 128;
     }
 
-    // Converts a string to its byte value.
+    /** @brief Converts a string to its byte value. */
     inline int to_byte(const char* n)
     {
         int nn = to_int(n);
         return ((nn + 128) % 256) - 128;
     }
 
-    // Converts an int to its byte value.
+    /** @brief Converts an int to its byte value. */
     inline int to_byte(int n)
     {
         return ((n + 128) % 256) - 128;
     }
 
-    // Converts a float to its byte value.
+    /** @brief Converts a float to its byte value. */
     inline int to_byte(float n)
     {
         int nn = to_int(n, 10);
         return ((nn + 128) % 256) - 128;
     }
 
-    // Converts a bool to its byte value.
+    /** @brief Converts a bool to its byte value. */
     inline int to_byte(bool n)
     {
         int nn = to_int(n, 10);
         return ((nn + 128) % 256) - 128;
     }
 
-    // Overload for a vector.
+    /**
+     * @brief Convert vector of values to bytes.
+     * @tparam T Element type convertible to byte.
+     * @param vec Vector of values.
+     * @return Vector of bytes.
+     */
     template <typename T>
     inline std::vector<int> to_byte(const std::vector<T>& vec)
     {
@@ -286,31 +274,36 @@ namespace ppp
         return result;
     }
 
-    // ------------------------------------------------------------------------
-    // to_char
-    // ------------------------------------------------------------------------
-
-    // Converts an int to a single-character string.
+    /**
+     * @brief Convert int to single-character string.
+     * @param n Numeric code.
+     * @return String of length 1.
+     */
     inline std::string to_char(int n)
     {
         return std::string(1, static_cast<char>(n));
     }
 
-    // Converts a float to a single-character string.
+    /** @brief Converts a float to a single-character string. */
     inline std::string to_char(float n)
     {
         int int_val = to_int(n, 10);
         return to_char(int_val);
     }
 
-    // Converts a string to a single-character string by converting it to an int first.
+    /** @brief Converts a string to a single-character string by converting it to an int first. */
     inline std::string to_char(const std::string& n)
     {
         int int_val = to_int(n, 10);
         return to_char(int_val);
     }
 
-    // Overload for a vector.
+    /**
+    * @brief Convert vector of values to strings.
+    * @tparam T Element type convertible to string.
+    * @param vec Vector of values.
+    * @return Vector of strings.
+    */
     template <typename T>
     inline std::vector<std::string> to_char(const std::vector<T>& vec)
     {
@@ -323,11 +316,12 @@ namespace ppp
         return result;
     }
 
-    // ------------------------------------------------------------------------
-    // unchar
-    // ------------------------------------------------------------------------
-
-    // Converts a single-character string to its integer (char code) value.
+    /**
+     * @brief Convert single-character string to its integer code.
+     * @param n Input string of length 1.
+     * @return Integer code of character.
+     * @throws std::invalid_argument if length != 1.
+     */
     inline int unchar(const std::string& n)
     {
         if (n.size() == 1)
@@ -340,9 +334,14 @@ namespace ppp
         }
     }
 
-    // Overload for a vector.
+    /**
+    * @brief Convert vector of values to ints.
+    * @tparam T Element type convertible to int.
+    * @param vec Vector of values.
+    * @return Vector of ints.
+    */
     template <typename T>
-    inline std::vector<int> unchar(const std::vector<T>& vec)
+    std::vector<int> unchar(const std::vector<T>& vec)
     {
         std::vector<int> result;
         result.reserve(vec.size());
@@ -353,11 +352,12 @@ namespace ppp
         return result;
     }
 
-    // ------------------------------------------------------------------------
-    // hex_val
-    // ------------------------------------------------------------------------
-
-    // Converts an int to a hexadecimal string with the specified number of digits.
+    /**
+     * @brief Convert integer to hexadecimal string.
+     * @param n Integer value.
+     * @param digits Minimum number of hex digits.
+     * @return Uppercase hex string.
+     */
     inline std::string hex_val(int n, int digits = 8)
     {
         if (n < 0)
@@ -378,14 +378,24 @@ namespace ppp
         return hex;
     }
 
-    // Converts a float to a hexadecimal string.
+    /**
+     * @brief Convert integer to hexadecimal string.
+     * @param n Float value.
+     * @param digits Minimum number of hex digits.
+     * @return Uppercase hex string.
+     */
     inline std::string hex_val(float n, int digits = 8)
     {
         int int_val = to_int(n, 10);
         return hex_val(int_val, digits);
     }
 
-    // Overload for a vector.
+    /**
+    * @brief Convert vector of values to hexdecimal strings.
+    * @tparam T Element type convertible to hexdecimal string.
+    * @param vec Vector of values.
+    * @return Vector of hexdecimal strings.
+    */
     template <typename T>
     inline std::vector<std::string> hex_val(const std::vector<T>& vec, int digits = 8)
     {
@@ -398,8 +408,12 @@ namespace ppp
         return result;
     }
 
-    // Converts a double to a hexadecimal string.
-    // If the number is infinite, returns a string of repeated 'F' (or '0') digits.
+    /**
+     * @brief Convert double to hexadecimal string.
+     * @param n Double value.
+     * @param digits Minimum number of hex digits.
+     * @return Uppercase hex string.
+     */
     inline std::string hex_val(double n, int digits = 8)
     {
         if (std::isinf(n))
@@ -417,11 +431,12 @@ namespace ppp
         return hex_val(int_val, digits);
     }
 
-    // ------------------------------------------------------------------------
-    // unhex
-    // ------------------------------------------------------------------------
-
-    // Converts a hexadecimal string to an int.
+    /**
+     * @brief Convert hexadecimal string to integer.
+     * @param n Hex string (uppercase or lowercase).
+     * @return Integer value.
+     * @throws std::invalid_argument if invalid hex.
+     */
     inline int unhex(const std::string& n)
     {
         try
@@ -434,7 +449,12 @@ namespace ppp
         }
     }
 
-    // Overload for a vector.
+    /**
+     * @brief Convert vector of values to ints.
+     * @tparam T Element type convertible to int.
+     * @param vec Vector of values.
+     * @return Vector of ints.
+     */
     template <typename T>
     inline std::vector<int> unhex(const std::vector<T>& vec)
     {
