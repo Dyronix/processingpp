@@ -6,7 +6,7 @@ namespace ppp
 {
     using json = nlohmann::json;
     
-    enum class binary_json_type
+    enum class binary_json_type : std::uint8_t
     {
         MESSAGE_PACK,
         CBOR,
