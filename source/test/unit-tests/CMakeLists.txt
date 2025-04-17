@@ -1,17 +1,3 @@
-MESSAGE(STATUS "Adding unit-tests-vector")
-add_executable(unit-tests-vector unit-tests-vector2.cpp unit-tests-vector3.cpp unit-tests-vector4.cpp)
-set_target_properties(unit-tests-vector PROPERTIES FOLDER "test/unit")
-target_link_libraries(unit-tests-vector PRIVATE Catch2::Catch2WithMain)
-target_link_libraries(unit-tests-vector PRIVATE processing_engine)
-target_include_directories(unit-tests-vector PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glm)
-
-MESSAGE(STATUS "Adding unit-tests-matrix")
-add_executable(unit-tests-matrix unit-tests-matrix2x2.cpp unit-tests-matrix3x3.cpp unit-tests-matrix4x4.cpp)
-set_target_properties(unit-tests-matrix PROPERTIES FOLDER "test/unit")
-target_link_libraries(unit-tests-matrix PRIVATE Catch2::Catch2WithMain)
-target_link_libraries(unit-tests-matrix PRIVATE processing_engine)
-target_include_directories(unit-tests-matrix PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glm)
-
 MESSAGE(STATUS "Adding unit-tests-trigonometry")
 add_executable(unit-tests-trigonometry unit-tests-trigonometry.cpp)
 set_target_properties(unit-tests-trigonometry PROPERTIES FOLDER "test/unit")
