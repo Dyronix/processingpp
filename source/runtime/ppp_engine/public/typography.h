@@ -1,31 +1,57 @@
+/**
+ * @file typography.h
+ * @brief Load fonts and render text to the canvas.
+ */
+
 #pragma once
 
 #include <string>
 
 namespace ppp
 {
-    // A unique identifier to describe each font
-    using font_id = unsigned int;
+    using font_id = unsigned int; /**< Unique identifier for fonts. */
 
-    // Attributes
-    // The drawing mode on how a particular font character is drawn
-    enum class text_mode_type
+    /**
+     * @brief Text positioning modes.
+     */
+    enum class text_mode_type : std::uint8_t
     {
-        CENTER,
-        CORNER
+        CENTER, /**< Center text around (x,y). */
+        CORNER  /**< Place text origin at (x,y). */
     };
 
-    // Sets the font size when text() is called
+    /**
+     * @brief Set the font size for subsequent text operations.
+     * @param size Font size in pixels.
+     */
     void text_size(unsigned int size);
-    // Changes where font characters are drawn
+
+    /**
+     * @brief Set the text positioning mode (CENTER or CORNER).
+     * @param mode Text mode.
+     */
     void text_mode(text_mode_type mode);
 
-    // Load & Display
-    // Draws text to the canvas.
-    void text(std::string_view text, float x, float y);
-    // Sets the font used by the text() function.
+    /**
+     * @brief Render a string at the specified coordinates.
+     * @param str String to draw.
+     * @param x X-coordinate for text placement.
+     * @param y Y-coordinate for text placement.
+     */
+    void text(std::string_view str, float x, float y);
+
+    /**
+     * @brief Set the active font for text rendering.
+     * @param font Identifier of the loaded font.
+     */
     void text_font(const font_id& font);
 
-    // Loads a font and creates a Font object
-    font_id load_font(std::string_view path, unsigned int size = 16, unsigned int characters_to_load = 128);
+    /**
+     * @brief Load a font and generate its glyph atlas.
+     * @param path Filesystem path to font file.
+     * @param size Pixel size of glyphs (default: 16).
+     * @param count Number of characters to include (default: 128).
+     * @return Identifier for the newly loaded font.
+     */
+    font_id load_font(std::string_view path, unsigned int size = 16, unsigned int count = 128);
 }
