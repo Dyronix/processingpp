@@ -284,6 +284,7 @@ target_link_libraries(processing_engine PRIVATE inih)
 target_include_directories(processing_engine PRIVATE ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private)
 target_include_directories(processing_engine PUBLIC ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public)
 
+target_compile_definitions(processing_engine PUBLIC -DGLM_FORCE_CTOR_INIT)
 target_compile_definitions(processing_engine PUBLIC -DPPP_OPENGL)
 target_compile_definitions(processing_engine PUBLIC $<$<BOOL:${CMAKE_HOST_WIN32}>:PPP_WINDOWS>)
 
