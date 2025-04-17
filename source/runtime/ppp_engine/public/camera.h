@@ -141,9 +141,9 @@ namespace ppp
      * @param tag Optional identifier for the camera.
      */
     void set_scene_camera(
-                        float ex, float ey, float ez,
-                        float cx, float cy, float cz,
-                        float ux, float uy, float uz,
+                        float ex, float ey, float ez = 800.0f,
+                        float cx = 0.0f, float cy = 0.0f, float cz = 0.0f,
+                        float ux = 0.0f, float uy = 1.0f, float uz = 0.0f,
                         std::string_view tag = {});
 
     /**
