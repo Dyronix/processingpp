@@ -5,34 +5,19 @@
 #include "vector.h"       
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/epsilon.hpp>  // for glm::epsilonEqual
 
 // ------------------------------------------------------------------------
 // Helper functions for testing matrix equality
 // ------------------------------------------------------------------------
 
-// Converts a glm::mat4 to a ppp::mat4.
-ppp::mat4 convert_glm_to_ppp(const glm::mat4& m)
-{
-    ppp::mat4 result;
-    // glm::mat4 is column-major: m[i] is the i-th column (a vec4).
-    result.cols[0] = ppp::base_vec4<float>(m[0].x, m[0].y, m[0].z, m[0].w);
-    result.cols[1] = ppp::base_vec4<float>(m[1].x, m[1].y, m[1].z, m[1].w);
-    result.cols[2] = ppp::base_vec4<float>(m[2].x, m[2].y, m[2].z, m[2].w);
-    result.cols[3] = ppp::base_vec4<float>(m[3].x, m[3].y, m[3].z, m[3].w);
-    return result;
-}
-
 // Compares two ppp::mat4 matrices for approximate equality.
 bool mat4_approx_equal(const ppp::mat4& a, const ppp::mat4& b, float tol = 1e-4f)
 {
-    for (int col = 0; col < 4; col++)
-    {
-        if (std::fabs(a.cols[col].x - b.cols[col].x) > tol) return false;
-        if (std::fabs(a.cols[col].y - b.cols[col].y) > tol) return false;
-        if (std::fabs(a.cols[col].z - b.cols[col].z) > tol) return false;
-        if (std::fabs(a.cols[col].w - b.cols[col].w) > tol) return false;
-    }
-    return true;
+    return glm::all(glm::epsilonEqual(a[0], b[0], tol))
+        && glm::all(glm::epsilonEqual(a[1], b[1], tol))
+        && glm::all(glm::epsilonEqual(a[2], b[2], tol))
+        && glm::all(glm::epsilonEqual(a[3], b[3], tol));
 }
 
 TEST_CASE("Transform API: push and pop do not throw", "[transform]")
@@ -127,8 +112,7 @@ TEST_CASE("active_transform: rotation in DEGREES", "[transform]")
 
     // Expected transformation computed using GLM.
     float angle_rad = glm::radians(angle_deg);
-    glm::mat4 expected_glm = glm::rotate(glm::identity<glm::mat4>(), angle_rad, glm::vec3(0.0f, 0.0f, 1.0f));
-    ppp::mat4 expected = convert_glm_to_ppp(expected_glm);
+    glm::mat4 expected = glm::rotate(glm::identity<glm::mat4>(), angle_rad, glm::vec3(0.0f, 0.0f, 1.0f));
 
     ppp::mat4 active = ppp::active_transform();
     REQUIRE(mat4_approx_equal(active, expected));
@@ -142,8 +126,7 @@ TEST_CASE("active_transform: rotation in RADIANS", "[transform]")
     float angle_rad = 1.57f; // Approximately 90 degrees.
     ppp::rotate(angle_rad);
 
-    glm::mat4 expected_glm = glm::rotate(glm::identity<glm::mat4>(), angle_rad, glm::vec3(0.0f, 0.0f, 1.0f));
-    ppp::mat4 expected = convert_glm_to_ppp(expected_glm);
+    glm::mat4 expected = glm::rotate(glm::identity<glm::mat4>(), angle_rad, glm::vec3(0.0f, 0.0f, 1.0f));
 
     ppp::mat4 active = ppp::active_transform();
     REQUIRE(mat4_approx_equal(active, expected));
@@ -156,8 +139,7 @@ TEST_CASE("active_transform: scaling transformation", "[transform]")
     float sx = 2.0f, sy = 3.0f;
     ppp::scale(sx, sy);
 
-    glm::mat4 expected_glm = glm::scale(glm::identity<glm::mat4>(), glm::vec3(sx, sy, 1.0f));
-    ppp::mat4 expected = convert_glm_to_ppp(expected_glm);
+    glm::mat4 expected = glm::scale(glm::identity<glm::mat4>(), glm::vec3(sx, sy, 1.0f));
 
     ppp::mat4 active = ppp::active_transform();
     REQUIRE(mat4_approx_equal(active, expected));
@@ -170,8 +152,7 @@ TEST_CASE("active_transform: translation transformation", "[transform]")
     float tx = 5.0f, ty = -3.0f;
     ppp::translate(tx, ty);
 
-    glm::mat4 expected_glm = glm::translate(glm::identity<glm::mat4>(), glm::vec3(tx, ty, 0.0f));
-    ppp::mat4 expected = convert_glm_to_ppp(expected_glm);
+    glm::mat4 expected = glm::translate(glm::identity<glm::mat4>(), glm::vec3(tx, ty, 0.0f));
 
     ppp::mat4 active = ppp::active_transform();
     REQUIRE(mat4_approx_equal(active, expected));
@@ -189,11 +170,10 @@ TEST_CASE("active_transform: composite transformation", "[transform]")
     ppp::translate(3.0f, 4.0f);
 
     // Compute the expected transformation using GLM.
-    glm::mat4 expected_glm = glm::identity<glm::mat4>();
-    expected_glm = glm::rotate(expected_glm, glm::radians(angle_deg), glm::vec3(0.0f, 0.0f, 1.0f));
-    expected_glm = glm::scale(expected_glm, glm::vec3(1.5f, 2.0f, 1.0f));
-    expected_glm = glm::translate(expected_glm, glm::vec3(3.0f, 4.0f, 0.0f));
-    ppp::mat4 expected = convert_glm_to_ppp(expected_glm);
+    glm::mat4 expected = glm::identity<glm::mat4>();
+    expected = glm::rotate(expected, glm::radians(angle_deg), glm::vec3(0.0f, 0.0f, 1.0f));
+    expected = glm::scale(expected, glm::vec3(1.5f, 2.0f, 1.0f));
+    expected = glm::translate(expected, glm::vec3(3.0f, 4.0f, 0.0f));
 
     ppp::mat4 active = ppp::active_transform();
     REQUIRE(mat4_approx_equal(active, expected));
