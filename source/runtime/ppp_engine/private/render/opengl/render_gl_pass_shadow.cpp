@@ -65,10 +65,6 @@ namespace ppp
             opengl::api::instance().depth_func(GL_LESS);
 
             opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
-
-            opengl::api::instance().clear_depth(1.0);
-            opengl::api::instance().clear(GL_DEPTH_BUFFER_BIT);
-
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
 
             // Bind the pass shader
