@@ -5,6 +5,7 @@
 #pragma once
 
 #include <iostream>
+#include <array>
 
 namespace ppp
 {
@@ -27,7 +28,28 @@ namespace ppp
      * @param args Arguments matching the format specifiers.
      */
     template<typename... Args>
-    void print(const char* fmt, Args&&... args);
+    void print(const char* fmt, Args&&... args)
+    {
+        std::array<char, 1024> buffer;
+
+        // std::snprintf writes into buffer.data() and returns the number of characters
+        // that would have been written if the buffer were large enough.
+        int n = std::snprintf(buffer.data(), buffer.size(), fmt, std::forward<Args>(args)...);
+
+        if (n < 0)
+        {
+            std::cout << "Error: formatting failed." << std::endl;
+            return;
+        }
+
+        if (static_cast<size_t>(n) >= buffer.size())
+        {
+            std::cout << "Warning: message truncated." << std::endl;
+        }
+
+        // Now pass the formatted string to your original print.
+        print(buffer.data());
+    }
 
     /**
      * @brief Sets the application's target frame rate.
