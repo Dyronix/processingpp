@@ -298,9 +298,9 @@ GROUPSOURCES(${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public public)
 
 # Public includes
 target_include_directories(processing_engine PUBLIC ${SOURCE_THIRDPARTY_DIRECTORY}/nlohmann/include)
+target_include_directories(processing_engine PUBLIC ${SOURCE_THIRDPARTY_DIRECTORY}/glm)
 
 # Private includes
-target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glm)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/noise/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/stb/include)
 target_include_directories(processing_engine PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/fmt/include)
