@@ -6,14 +6,14 @@
 
 namespace ppp
 {
-    /** @brief Return ?/2. */
+    /** @brief Return pi/2. */
     float half_pi();
-    /** @brief Return ?. */
+    /** @brief Return pi. */
     float pi();
-    /** @brief Return ?/4. */
+    /** @brief Return pi/4. */
     float quarter_pi();
-    /** @brief Return 2?. */
+    /** @brief Return 2pi. */
     float two_pi();
-    /** @brief Return ? (tau), equal to 2?. */
+    /** @brief Return tau. */
     float tau();
 }
