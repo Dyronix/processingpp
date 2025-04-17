@@ -10,7 +10,7 @@ target_include_directories(integration-test-rendering-batched-textured PRIVATE $
 
 target_link_libraries(integration-test-rendering-batched-textured processing_engine)
 
-target_compile_definitions(integration-test-rendering-batched-textured PRIVATE TEST_PROJECT_NAME=\"test-rendering-batched-textured\")
+target_compile_definitions(integration-test-rendering-batched-textured PRIVATE TEST_PROJECT_NAME=\"integration-test-rendering-batched-textured\")
 
 # Target properties
 set_target_properties(integration-test-rendering-batched-textured PROPERTIES

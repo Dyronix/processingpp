@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 
 project(processingpp)
 
-option(PPP_ENABLE_TESTING "Enable testing for the Processing framework" OFF)
+option(PPP_ENABLE_TESTING "Enable testing for the Processing framework" ON)
 
 MESSAGE(STATUS "PPP_ENABLE_TESTING: ${PPP_ENABLE_TESTING}")
 

@@ -10,7 +10,7 @@ target_include_directories(integration-test-geometry-3d PRIVATE ${SOURCE_RUNTIME
 
 target_link_libraries(integration-test-geometry-3d processing_engine)
 
-target_compile_definitions(integration-test-geometry-3d PRIVATE TEST_PROJECT_NAME=\"test-geometry-3d\")
+target_compile_definitions(integration-test-geometry-3d PRIVATE TEST_PROJECT_NAME=\"integration-test-geometry-3d\")
 
 # Target properties
 set_target_properties(integration-test-geometry-3d PROPERTIES

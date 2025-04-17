@@ -11,7 +11,7 @@ target_include_directories(integration-test-model-create-obj PRIVATE ${SOURCE_RU
 
 target_link_libraries(integration-test-model-create-obj processing_engine)
 
-target_compile_definitions(integration-test-model-create-obj PRIVATE TEST_PROJECT_NAME=\"test-model-create-obj\")
+target_compile_definitions(integration-test-model-create-obj PRIVATE TEST_PROJECT_NAME=\"integration-test-model-create-obj\")
 
 # Target properties
 set_target_properties(integration-test-model-create-obj PROPERTIES

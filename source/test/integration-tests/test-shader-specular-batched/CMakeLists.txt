@@ -10,7 +10,7 @@ target_include_directories(integration-test-shader-specular-batched PRIVATE ${SO
 
 target_link_libraries(integration-test-shader-specular-batched processing_engine)
 
-target_compile_definitions(integration-test-shader-specular-batched PRIVATE TEST_PROJECT_NAME=\"test-shader-specular-batched\")
+target_compile_definitions(integration-test-shader-specular-batched PRIVATE TEST_PROJECT_NAME=\"integration-test-shader-specular-batched\")
 
 # Target properties
 set_target_properties(integration-test-shader-specular-batched PROPERTIES
