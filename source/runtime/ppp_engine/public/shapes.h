@@ -1,90 +1,164 @@
+/**
+ * @file shapes.h
+ * @brief Draw 2D and 3D primitive shapes.
+ */
+
 #pragma once
 
 #include <string>
 
 namespace ppp
 {
-    // Utilities
-    // // Calculates the position and size of the smallest box that contains the geometry.
-    // void calculate_bounding_box(std::size_t geometry_id);
-    // // Calculate the normal vector for each vertex on the geometry
-    // void calculate_normals(std::size_t geometry_id);
+    using geometry_id = std::size_t; /**< Unique identifier for goemetry. */
 
-    // // An array with the geometry's vertices.
-    // std::vector<vector3> vertex_positions(std::size_t geometry_id);
-    // // An array that lists the texture coordinates for each of the geometry's vertices.
-    // std::vector<vector2> vertex_uvs(std::size_t geometry_id);
-    // // An array with the vectors that are normal to the geometry's vertices.
-    // std::vector<vector3> vertex_normals(std::size_t geometry_id);
-
-    // Attributes
-    // The drawing mode on how a particular shape is drawn
-    enum class shape_mode_type
+    /** @brief Positioning modes for 2D shapes. */
+    enum class shape_mode_type : std::uint8_t
     {
         CENTER,
         CORNER
     };
-    // The shading type on how a particular shape is drawn
-    enum class normal_mode_type
+
+    /** @brief Normal vector generation modes for 3D shapes. */
+    enum class normal_mode_type : std::uint8_t
     {
         FLAT,
         SMOOTH
     };
 
-    // Enable shadows for the upcoming drawn shapes
+    /**
+     * @brief Enable shadow casting for subsequent shapes.
+     */
     void enable_shadows();
-    // Disable shadows for the upcoming drawn shapes
+
+    /**
+     * @brief Disable shadow casting for subsequent shapes.
+     */
     void disable_shadows();
 
-    // Changes where ellipses and circles are drawn
-    void ellipse_mode(shape_mode_type mode);
-    // Changes where rectangles and squares are drawn
+    /**
+     * @brief Set rectangle and square coordinate mode.
+     * @param mode CENTER or CORNER.
+     */
     void rect_mode(shape_mode_type mode);
-    // Changes where triangles are drawn
+
+    /**
+     * @brief Set ellipse and circle coordinate mode.
+     * @param mode CENTER or CORNER.
+     */
+    void ellipse_mode(shape_mode_type mode);
+
+    /**
+     * @brief Set triangle coordinate mode.
+     * @param mode CENTER or CORNER.
+     */
     void triangle_mode(shape_mode_type mode);
-    // Change how shapes are lit, using unique or duplicated normals
+
+    /**
+     * @brief Set normal generation mode for 3D shapes.
+     * @param mode FLAT or SMOOTH.
+     */
     void normal_mode(normal_mode_type mode);
 
-    // Should we draw the wireframe of a mesh
+    /**
+     * @brief Toggle wireframe overlay.
+     * @param enable True to enable wireframe.
+     */
     void enable_wireframe_mode(bool enable);
-    // Should we draw the solid of a mesh
+
+    /**
+     * @brief Toggle solid face rendering.
+     * @param enable True to enable solid faces.
+     */
     void enable_solid_mode(bool enable);
 
-    // 2D Shapes
-    // Draws a circle
-    std::size_t circle(float x, float y, float r, int detail = 25);
-    // Draws an ellipse (oval)
-    std::size_t ellipse(float x, float y, float w, float h, int detail = 25);
-    // Draws a straight line between two points
-    std::size_t line(float x1, float y1, float x2, float y2);
-    // Draws a single point in 2D space
-    std::size_t point(float x, float y);
-    // Draws a rectangle
-    std::size_t rect(float x, float y, float w, float h);
-    // Draws a square
-    std::size_t square(float x, float y, float s);
-    // Draws a triangle
-    std::size_t triangle(float x1, float y1, float x2, float y2, float x3, float y3);
-    // Draws a polygon with 4 corners
-    std::size_t polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
+    /**
+     * @brief Draw a circle.
+     * @param x Center X-coordinate.
+     * @param y Center Y-coordinate.
+     * @param r Radius.
+     * @param detail Number of segments (default: 25).
+     * @return ID of generated geometry.
+     */
+    geometry_id circle(float x, float y, float r, int detail = 25);
 
-    // 3D Shapes
-    // Draws a box (rectangular prism)
-    std::size_t box(float width, float height, float depth);
-    // Draws a cone
-    std::size_t cone(float radius, float height, int detail = 24, bool cap = true);
-    // Draws a cyclinder
-    std::size_t cylinder(float radius, float height, int detail = 24, bool bottom_cap = true, bool top_cap = true);
-    // Draws a plane
-    std::size_t plane(float width, float height);
-    // Draws a sphere
-    std::size_t sphere(float radius, int detail = 24);
-    // Dras a torus
-    std::size_t torus(float radius, float tube_radius, int detailx = 24, int detaily = 16);
-    // Draws a single point in 3D space
-    std::size_t point(float x, float y, float z);
-    // Draws a tetrahedron
-    std::size_t tetrahedron(float width, float height);
-    // Draws an octahedron
-    std::size_t octahedron(float width, float height);
+    /**
+     * @brief Draw an ellipse.
+     */
+    geometry_id ellipse(float x, float y, float w, float h, int detail = 25);
+
+    /**
+     * @brief Draw a line between two points.
+     */
+    geometry_id line(float x1, float y1, float x2, float y2);
+
+    /**
+     * @brief Draw a single 2D point.
+     */
+    geometry_id point(float x, float y);
+
+    /**
+     * @brief Draw a rectangle.
+     * @return ID of generated geometry.
+     */
+    geometry_id rect(float x, float y, float w, float h);
+
+    /**
+     * @brief Draw a square.
+     */
+    geometry_id square(float x, float y, float s);
+
+    /**
+     * @brief Draw a triangle.
+     */
+    geometry_id triangle(float x1, float y1, float x2, float y2, float x3, float y3);
+
+    /**
+     * @brief Draw a four-sided polygon.
+     */
+    geometry_id polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
+
+    /**
+     * @brief Draw a 3D box.
+     */
+    geometry_id box(float width, float height, float depth);
+
+    /**
+     * @brief Draw a 3D cone.
+     */
+    geometry_id cone(float radius, float height, int detail = 24, bool cap = true);
+
+    /**
+     * @brief Draw a 3D cylinder.
+     */
+    geometry_id cylinder(float radius, float height, int detail = 24, bool bottom_cap = true, bool top_cap = true);
+
+    /**
+     * @brief Draw a 3D plane.
+     */
+    geometry_id plane(float width, float height);
+
+    /**
+     * @brief Draw a 3D sphere.
+     */
+    geometry_id sphere(float radius, int detail = 24);
+
+    /**
+     * @brief Draw a 3D torus.
+     */
+    geometry_id torus(float radius, float tube_radius, int detailx = 24, int detaily = 16);
+
+    /**
+     * @brief Draw a single 3D point.
+     */
+    geometry_id point(float x, float y, float z);
+
+    /**
+     * @brief Draw a tetrahedron.
+     */
+    geometry_id tetrahedron(float width, float height);
+
+    /**
+     * @brief Draw an octahedron.
+     */
+    geometry_id octahedron(float width, float height);
 }

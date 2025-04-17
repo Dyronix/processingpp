@@ -1,3 +1,8 @@
+/**
+ * @file camera.h
+ * @brief Create and control scene cameras (perspective, orthographic, font).
+ */
+
 #pragma once
 
 #include "vector.h"
@@ -10,52 +15,176 @@ namespace ppp
     {
         namespace tags
         {
+            /**
+             * @brief Retrieve the identifier for the perspective camera.
+             * @return String tag for perspective camera.
+             */
             std::string_view perspective();
+
+            /**
+             * @brief Retrieve the identifier for the orthographic camera.
+             * @return String tag for orthographic camera.
+             */
             std::string_view orthographic();
+
+            /**
+             * @brief Retrieve the identifier for the font-rendering camera.
+             * @return String tag for font camera.
+             */
             std::string_view font();
         }
     }
 
+    /**
+     * @brief Represents a scene camera with position, orientation, and target.
+     */
     struct scene_camera
     {
+        /** @brief Default constructor initializing common defaults. */
         scene_camera();
 
-        vec3 eye;
-        vec3 center;
-        vec3 up;
+        vec3 eye;      /**< Camera position in world space. */
+        vec3 center;   /**< Target point the camera looks at. */
+        vec3 up;       /**< Up vector defining camera orientation. */
 
-        float radius = 0.0f;   // Distance from camera to target
-        float azimuth = 0.0f;  // Horizontal angle
-        float polar = 0.0f;    // Vertical angle (default at 45 degrees)
+        float radius;  /**< Distance from eye to center. */
+        float azimuth; /**< Horizontal rotation angle around target. */
+        float polar;   /**< Vertical rotation angle around target. */
 
+        /**
+         * @brief Set the camera's eye position.
+         * @param x X-coordinate of eye.
+         * @param y Y-coordinate of eye.
+         * @param z Z-coordinate of eye.
+         */
         void set_position(float x, float y, float z);
-        void set_center(float centerx, float centery, float centerz);
-        void set_up_direction(float upx, float upy, float upz);
+
+        /**
+         * @brief Set the camera's target point.
+         * @param cx X-coordinate of center.
+         * @param cy Y-coordinate of center.
+         * @param cz Z-coordinate of center.
+         */
+        void set_center(float cx, float cy, float cz);
+
+        /**
+         * @brief Set the camera's up direction.
+         * @param ux X-component of up vector.
+         * @param uy Y-component of up vector.
+         * @param uz Z-component of up vector.
+         */
+        void set_up_direction(float ux, float uy, float uz);
     };
 
+    /**
+     * @brief Options for interactive orbit control.
+     */
     struct orbit_control_options
     {
+        /** @brief Mouse zoom sensitivity. */
         float zoom_sensitivity = 0.0f;
+        /** @brief Mouse rotation sensitivity. */
         float rotation_sensitivity = 0.0f;
+        /** @brief Mouse panning sensitivity. */
         float panning_sensitivity = 0.0f;
 
+        /** @brief Minimum allowed zoom distance. */
         float min_zoom = 1.0f;
+        /** @brief Maximum allowed zoom distance. */
         float max_zoom = 100.0f;
     };
 
+
+    /**
+      * @brief Get the active camera's eye position.
+      * @return vec3 Eye position of active camera.
+      */
     vec3 active_camera_position();
+
+    /**
+     * @brief Get the active camera's target point.
+     * @return vec3 Look-at center of active camera.
+     */
     vec3 active_camera_target();
+
+    /**
+     * @brief Get the active camera's up vector.
+     * @return vec3 Up direction of active camera.
+     */
     vec3 active_camera_up();
 
-    scene_camera create_camera(std::string_view camera_tag = {});
+    /**
+     * @brief Create and activate a scene camera with optional tag.
+     * @param tag Optional identifier for the new camera.
+     * @return Initialized scene_camera object.
+     */
+    scene_camera create_camera(std::string_view tag = {});
 
-    void set_scene_camera(scene_camera c, std::string_view camera_tag = {});
-    void set_scene_camera(float eyex, float eyey, float eyez = 800.0f, float centerx = 0.0f, float centery = 0.0f, float centerz = 0.0f, float upx = 0.0f, float upy = 1.0f, float upz = 0.0f, std::string_view camera_tag = {});
+    /**
+     * @brief Set the active camera using a scene_camera object.
+     * @param c Scene camera instance.
+     * @param tag Optional identifier for the camera.
+     */
+    void set_scene_camera(scene_camera c, std::string_view tag = {});
 
-    void activate_camera(std::string_view camera_tag);
+    /**
+     * @brief Set the active camera by specifying parameters directly.
+     * @param ex Eye X-coordinate.
+     * @param ey Eye Y-coordinate.
+     * @param ez Eye Z-coordinate.
+     * @param cx Center X-coordinate.
+     * @param cy Center Y-coordinate.
+     * @param cz Center Z-coordinate.
+     * @param ux Up X-component.
+     * @param uy Up Y-component.
+     * @param uz Up Z-component.
+     * @param tag Optional identifier for the camera.
+     */
+    void set_scene_camera(
+                        float ex, float ey, float ez,
+                        float cx, float cy, float cz,
+                        float ux, float uy, float uz,
+                        std::string_view tag = {});
 
-    void ortho(float left, float right, float bottom, float top, float near, float far, std::string_view camera_tag = {});
-    void perspective(float fovy, float aspect, float near, float far, std::string_view camera_tag = {});
+    /**
+     * @brief Activate a previously created camera by its tag.
+     * @param tag Identifier of the camera to activate.
+     */
+    void activate_camera(std::string_view tag);
 
-    void orbit_control(orbit_control_options options, std::string_view camera_tag = {});
+    /**
+     * @brief Configure and activate an orthographic projection.
+     * @param left Left plane of orthographic frustum.
+     * @param right Right plane of orthographic frustum.
+     * @param bottom Bottom plane of orthographic frustum.
+     * @param top Top plane of orthographic frustum.
+     * @param near Near clipping plane.
+     * @param far Far clipping plane.
+     * @param tag Optional camera identifier.
+     */
+    void ortho(
+            float left, float right,
+            float bottom, float top, 
+            float near, float far,
+            std::string_view tag = {});
+
+    /**
+     * @brief Configure and activate a perspective projection.
+     * @param fovy Vertical field of view in degrees.
+     * @param aspect Aspect ratio (width/height).
+     * @param near Near clipping plane distance.
+     * @param far Far clipping plane distance.
+     * @param tag Optional camera identifier.
+     */
+    void perspective(
+                float fovy, float aspect,
+                float near, float far,
+                std::string_view tag = {});
+
+    /**
+     * @brief Enable interactive orbit controls for the camera.
+     * @param opts Orbit control sensitivity and zoom limits.
+     * @param tag Identifier for the camera to control.
+     */
+    void orbit_control(orbit_control_options opts, std::string_view tag = {});
 }

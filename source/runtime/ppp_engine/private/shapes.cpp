@@ -181,13 +181,13 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t circle(float x, float y, float r, int detail)
+    geometry_id circle(float x, float y, float r, int detail)
     {
         return ellipse(x, y, r, r, detail);
     }
 
     //-------------------------------------------------------------------------
-    std::size_t ellipse(float x, float y, float w, float h, int detail)
+    geometry_id ellipse(float x, float y, float w, float h, int detail)
     {
         geometry::geometry* geom = geometry::make_ellipse(detail);
 
@@ -237,7 +237,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t line(float x1, float y1, float x2, float y2)
+    geometry_id line(float x1, float y1, float x2, float y2)
     {
         geometry::geometry* geom = geometry::make_line(x1, y1, x2, y2);
 
@@ -260,7 +260,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t point(float x, float y)
+    geometry_id point(float x, float y)
     {
         geometry::geometry* geom = geometry::make_2d_point();
 
@@ -294,7 +294,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t rect(float x, float y, float w, float h)
+    geometry_id rect(float x, float y, float w, float h)
     {
         geometry::geometry* geom = geometry::make_rectangle();
 
@@ -344,13 +344,13 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t square(float x, float y, float s)
+    geometry_id square(float x, float y, float s)
     {
         return rect(x, y, s, s);
     }
 
     //-------------------------------------------------------------------------
-    std::size_t triangle(float x1, float y1, float x2, float y2, float x3, float y3)
+    geometry_id triangle(float x1, float y1, float x2, float y2, float x3, float y3)
     {
         geometry::geometry* geom = geometry::make_triangle(x1, y1, x2, y2, x3, y3);
 
@@ -397,7 +397,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+    geometry_id polygon(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
     {
         geometry::geometry* geom = geometry::make_polygon(x1, y1, x2, y2, x3, y3, x4, y4);
 
@@ -444,7 +444,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t box(float width, float height, float depth)
+    geometry_id box(float width, float height, float depth)
     {
         geometry::geometry* geom = geometry::make_box(internal::_normal_mode == normal_mode_type::SMOOTH);
 
@@ -459,7 +459,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t cone(float radius, float height, int detail, bool cap)
+    geometry_id cone(float radius, float height, int detail, bool cap)
     {
         geometry::geometry* geom = geometry::make_cone(internal::_normal_mode == normal_mode_type::SMOOTH, cap, detail);
 
@@ -474,7 +474,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t cylinder(float radius, float height, int detail, bool bottom_cap, bool top_cap)
+    geometry_id cylinder(float radius, float height, int detail, bool bottom_cap, bool top_cap)
     {
         geometry::geometry* geom = geometry::make_cylinder(internal::_normal_mode == normal_mode_type::SMOOTH, top_cap, bottom_cap, detail);
 
@@ -489,7 +489,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t plane(float width, float height)
+    geometry_id plane(float width, float height)
     {
         geometry::geometry* geom = geometry::make_plane(internal::_normal_mode == normal_mode_type::SMOOTH);
 
@@ -504,7 +504,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t sphere(float radius, int detail)
+    geometry_id sphere(float radius, int detail)
     {
         geometry::geometry* geom = geometry::make_sphere(internal::_normal_mode == normal_mode_type::SMOOTH, detail, detail);
 
@@ -519,7 +519,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t torus(float radius, float tube_radius, int detailx, int detaily)
+    geometry_id torus(float radius, float tube_radius, int detailx, int detaily)
     {
         geometry::geometry* geom = geometry::make_torus(internal::_normal_mode == normal_mode_type::SMOOTH, radius, tube_radius, detailx, detaily);
 
@@ -534,7 +534,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t point(float x, float y, float z)
+    geometry_id point(float x, float y, float z)
     {
         geometry::geometry* geom = geometry::make_3d_point();
 
@@ -549,7 +549,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t tetrahedron(float width, float height)
+    geometry_id tetrahedron(float width, float height)
     {
         geometry::geometry* geom = geometry::make_tetrahedron(internal::_normal_mode == normal_mode_type::SMOOTH);
 
@@ -564,7 +564,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    std::size_t octahedron(float width, float height)
+    geometry_id octahedron(float width, float height)
     {
         geometry::geometry* geom = geometry::make_octahedron(internal::_normal_mode == normal_mode_type::SMOOTH);
 
