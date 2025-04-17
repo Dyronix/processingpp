@@ -16,9 +16,6 @@
 
 namespace ppp
 {
-    enum class shading_blending;
-    enum class shading_model;
-
     struct camera_context;
 
     namespace render
