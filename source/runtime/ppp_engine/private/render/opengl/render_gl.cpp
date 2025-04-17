@@ -262,6 +262,7 @@ namespace ppp
             g_ctx.render_pipeline.add_pass(create_predepth_composite_pass(unlit::tags::predepth{}, framebuffer_pool::tags::composite()));
 
             // Calculate things that are in shadow
+            g_ctx.render_pipeline.add_pass(memory::make_unique<clear_pass, memory::persistent_graphics_tagged_allocator<clear_pass>>(make_depth_clear_state(), framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
             g_ctx.render_pipeline.add_pass(create_shadow_composite_pass(unlit::tags::shadow{}, framebuffer_pool::tags::shadow_map()));
 
             // Clear color only and do a geometry pass
