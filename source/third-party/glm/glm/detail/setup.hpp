@@ -843,8 +843,12 @@ namespace detail
 // Configure the use of defaulted function
 
 #if GLM_HAS_DEFAULTED_FUNCTIONS
-#	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_ENABLE
-#	define GLM_DEFAULT = default
+#	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_DISABLE
+#	if GLM_CONFIG_DEFAULTED_FUNCTIONS == GLM_ENABLE
+#		define GLM_DEFAULT = default
+#	else
+#		define GLM_DEFAULT
+#endif
 #else
 #	define GLM_CONFIG_DEFAULTED_FUNCTIONS GLM_DISABLE
 #	define GLM_DEFAULT
