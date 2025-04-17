@@ -5,7 +5,7 @@
 
 namespace ppp
 {
-    enum class model_file_type
+    enum class model_file_type : std::uint8_t
     {
         OBJ,
     };
