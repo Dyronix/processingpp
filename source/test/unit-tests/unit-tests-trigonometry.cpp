@@ -40,14 +40,13 @@ TEST_CASE("Degrees and Radians conversion", "[trigonometry]")
 TEST_CASE("Heading of a vector", "[trigonometry]")
 {
     using ppp::heading;
-    using ppp::base_vec2;
-
+    
     // For a vector pointing along the positive x-axis.
-    base_vec2<double> v1(1.0, 0.0);
+    ppp::vec2d v1(1.0, 0.0);
     REQUIRE(heading(v1) == Catch::Approx(0.0).epsilon(1e-6));
 
     // For a vector pointing along the positive y-axis.
-    base_vec2<double> v2(0.0, 1.0);
+    ppp::vec2d v2(0.0, 1.0);
     const double half_pi = 3.141592653589793 / 2;
     REQUIRE(heading(v2) == Catch::Approx(half_pi).epsilon(1e-6));
 }
@@ -56,8 +55,7 @@ TEST_CASE("Heading of a vector", "[trigonometry]")
 TEST_CASE("Vector from angle", "[trigonometry]")
 {
     using ppp::from_angle;
-    using ppp::base_vec2;
-
+    
     // For an angle of 0 radians, should return a vector (1, 0).
     auto v0 = from_angle<double>(0.0);
     REQUIRE(v0.x == Catch::Approx(std::cos(0.0)).epsilon(1e-6));

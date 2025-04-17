@@ -39,8 +39,8 @@ TEST_CASE("math::dist for 2D points", "[math]")
     REQUIRE(dist(0.0, 0.0, 3.0, 4.0) == Catch::Approx(5.0));
 
     // Using base_vec2 overload.
-    ppp::base_vec2<double> v1(0.0, 0.0);
-    ppp::base_vec2<double> v2(3.0, 4.0);
+    ppp::vec2d v1(0.0, 0.0);
+    ppp::vec2d v2(3.0, 4.0);
     REQUIRE(dist(v1, v2) == Catch::Approx(5.0));
 }
 
@@ -51,8 +51,8 @@ TEST_CASE("math::dist for 3D points", "[math]")
     REQUIRE(dist(0.0, 0.0, 0.0, 1.0, 2.0, 2.0) == Catch::Approx(3.0));
 
     // Using base_vec3 overload.
-    ppp::base_vec3<double> v1(0.0, 0.0, 0.0);
-    ppp::base_vec3<double> v2(1.0, 2.0, 2.0);
+    ppp::vec3d v1(0.0, 0.0, 0.0);
+    ppp::vec3d v2(1.0, 2.0, 2.0);
     REQUIRE(dist(v1, v2) == Catch::Approx(3.0));
 }
 
