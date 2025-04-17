@@ -10,7 +10,7 @@ target_include_directories(integration-test-model-load-obj PRIVATE ${SOURCE_RUNT
 
 target_link_libraries(integration-test-model-load-obj processing_engine)
 
-target_compile_definitions(integration-test-model-load-obj PRIVATE TEST_PROJECT_NAME=\"test-model-load-obj\")
+target_compile_definitions(integration-test-model-load-obj PRIVATE TEST_PROJECT_NAME=\"integration-test-model-load-obj\")
 
 # Target properties
 set_target_properties(integration-test-model-load-obj PROPERTIES

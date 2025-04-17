@@ -10,7 +10,7 @@ target_include_directories(integration-test-shader-specular-instanced PRIVATE ${
 
 target_link_libraries(integration-test-shader-specular-instanced processing_engine)
 
-target_compile_definitions(integration-test-shader-specular-instanced PRIVATE TEST_PROJECT_NAME=\"test-shader-specular-instanced\")
+target_compile_definitions(integration-test-shader-specular-instanced PRIVATE TEST_PROJECT_NAME=\"integration-test-shader-specular-instanced\")
 
 # Target properties
 set_target_properties(integration-test-shader-specular-instanced PROPERTIES

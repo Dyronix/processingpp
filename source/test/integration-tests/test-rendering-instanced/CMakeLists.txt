@@ -10,7 +10,7 @@ target_include_directories(integration-test-rendering-instanced PRIVATE ${SOURCE
 
 target_link_libraries(integration-test-rendering-instanced processing_engine)
 
-target_compile_definitions(integration-test-rendering-instanced PRIVATE TEST_PROJECT_NAME=\"test-rendering-instanced\")
+target_compile_definitions(integration-test-rendering-instanced PRIVATE TEST_PROJECT_NAME=\"integration-test-rendering-instanced\")
 
 # Target properties
 set_target_properties(integration-test-rendering-instanced PROPERTIES

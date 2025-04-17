@@ -10,7 +10,7 @@ target_include_directories(integration-test-shader-normal-instanced PRIVATE ${SO
 
 target_link_libraries(integration-test-shader-normal-instanced processing_engine)
 
-target_compile_definitions(integration-test-shader-normal-instanced PRIVATE TEST_PROJECT_NAME=\"test-shader-normal-instanced\")
+target_compile_definitions(integration-test-shader-normal-instanced PRIVATE TEST_PROJECT_NAME=\"integration-test-shader-normal-instanced\")
 
 # Target properties
 set_target_properties(integration-test-shader-normal-instanced PROPERTIES
