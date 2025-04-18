@@ -36,30 +36,38 @@ SET (CMAKE_DEBUG_POSTFIX _d)
 SET(SOURCE_RUNTIME_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/runtime)
 SET(SOURCE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/third-party)
 SET(SOURCE_EXAMPLES_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/examples)
+SET(SOURCE_DOCUMENTATION_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/docs)
 
 MESSAGE(STATUS ${SOURCE_RUNTIME_DIRECTORY})
 MESSAGE(STATUS ${SOURCE_THIRDPARTY_DIRECTORY})
 MESSAGE(STATUS ${SOURCE_EXAMPLES_DIRECTORY})
+MESSAGE(STATUS ${SOURCE_DOCUMENTATION_DIRECTORY})
 
 add_subdirectory(${SOURCE_THIRDPARTY_DIRECTORY})
 add_subdirectory(${SOURCE_RUNTIME_DIRECTORY})
 add_subdirectory(${SOURCE_EXAMPLES_DIRECTORY})
 
-# Add a custom target that always builds and runs the copy command
+# Add a custom target that always builds and runs the copy content command
 add_custom_target(copy-content ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/content" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/content"
     COMMENT "Copying \"${CMAKE_SOURCE_DIR}/content\" folder to \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/content\""
     VERBATIM
 )
-# Add a custom target that always builds and runs the copy command
+set_property(TARGET copy-content PROPERTY FOLDER "programs")
+# Add a custom target that always builds and runs the copy config command
 add_custom_target(copy-config ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/config" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config"
     COMMENT "Copying \"${CMAKE_SOURCE_DIR}/config\" folder to \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config\""
     VERBATIM
 )
-
-set_property(TARGET copy-content PROPERTY FOLDER "programs")
 set_property(TARGET copy-config PROPERTY FOLDER "programs")
+# Add a custom target that always builds and runs the generate documentation command
+add_custom_target(generate-documentation
+    COMMENT "Generating Markdown documentation from public headers"
+    COMMAND "${SOURCE_DOCUMENTATION_DIRECTORY}/generate_documentation.bat" "${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/" "${SOURCE_DOCUMENTATION_DIRECTORY}"
+    VERBATIM
+)
+set_property(TARGET generate-documentation PROPERTY FOLDER "programs")
 
 if(PPP_ENABLE_TESTING)
 
