@@ -12,22 +12,31 @@
 
 namespace ppp
 {
-    using image_id = unsigned int; /**< Unique image identifier. */
+    /** @brief Type alias for unique image identifier. */
+    using image_id = unsigned int; 
 
-    using pixels_u8 = unsigned char; /**< 8-bit pixel type. */
-    using pixels_s32 = unsigned int; /**< 32-bit pixel type. */
-    using pixels_u8_ptr = pixels_u8*; /**< Pointer to 8-bit pixel array. */
-    using pixels_s32_ptr = pixels_s32*; /**< Pointer to 32-bit pixel array. */
+    /** @brief Type alias for 8-bit pixel type. */
+    using pixels_u8 = unsigned char; 
+    /** @brief Type alias for 32-bit pixel type. */
+    using pixels_s32 = unsigned int; 
+    /** @brief Type alias for pointer to 8-bit pixel array. */
+    using pixels_u8_ptr = pixels_u8*; 
+    /** @brief Type alias for pointer to 32-bit pixel array. */
+    using pixels_s32_ptr = pixels_s32*; 
 
     /**
      * @brief Describe an image resource.
      */
     struct image
     {
-        image_id id;    /**< Identifier of the image. */
-        int width;      /**< Width in pixels. */
-        int height;     /**< Height in pixels. */
-        int channels;   /**< Number of color channels. */
+        /** @brief Identifier of the image. */
+        image_id id;    
+        /** @brief Width in pixels. */
+        int width;      
+        /** @brief Height in pixels. */
+        int height;     
+        /** @brief Number of color channels. */
+        int channels;   
     };
 
     /**

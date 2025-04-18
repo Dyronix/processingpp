@@ -13,43 +13,54 @@ namespace ppp
     using light_id = int;
 
     /**
-     * @enum light_type
      * @brief Types of lights supported.
      */
     enum class light_type
     {
-        POINT,       ///< Point light emits in all directions
-        DIRECTIONAL  ///< Directional light with parallel rays
+        POINT,       
+        DIRECTIONAL
     };
 
     /**
-     * @struct point_light_desc
      * @brief Parameters for creating a point light.
      */
     struct point_light_desc
     {
-        vec3    position;           ///< Position of the light in world space
-        color   ambient;            ///< Ambient color component
-        color   diffuse;            ///< Diffuse color component
-        color   specular;           ///< Specular color component
-        bool    specular_enabled = false; ///< Enable specular highlights
-        bool    cast_shadows = false;      ///< Enable shadow casting
-        float   max_range = 400.0f;        ///< Maximum effective range
-        float   falloff_start = 250.0f;    ///< Distance where falloff begins
+        /** @brief Position of the light in world space */
+        vec3 position;                   
+        /** @brief Ambient color component */
+        color ambient;                    
+        /** @brief Diffuse color component */
+        color diffuse;                    
+        /** @brief Specular color component */
+        color specular;                   
+        /** @brief Enable specular highlights */
+        bool specular_enabled = false;   
+        /** @brief Enable shadow casting */
+        bool cast_shadows = false;       
+        /** @brief Maximum effective range */
+        float max_range = 400.0f;         
+        /** @brief Distance where falloff begins */
+        float   falloff_start = 250.0f;     
     };
 
     /**
-     * @struct directional_light_desc
      * @brief Parameters for creating a directional light.
      */
     struct directional_light_desc
     {
-        vec3    direction;          ///< Direction vector of the light
-        color   ambient;            ///< Ambient color component
-        color   diffuse;            ///< Diffuse color component
-        color   specular;           ///< Specular color component
-        bool    specular_enabled = false; ///< Enable specular highlights
-        bool    cast_shadows = false;      ///< Enable shadow casting
+        /** @brief Direction vector of the light */
+        vec3 direction;                  
+        /** @brief Ambient color component */
+        color ambient;                    
+        /** @brief Diffuse color component */
+        color diffuse;                    
+        /** @brief Specular color component */
+        color specular;                   
+        /** @brief Enable specular highlights */
+        bool specular_enabled = false;   
+        /** @brief Enable shadow casting */
+        bool cast_shadows = false;       
     };
 
     /**

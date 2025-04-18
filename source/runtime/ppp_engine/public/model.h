@@ -10,16 +10,15 @@
 namespace ppp
 {
     /**
-     * @enum model_file_type
      * @brief Supported model file types.
      */
     enum class model_file_type : std::uint8_t
     {
-        OBJ, ///< Wavefront OBJ format
+        OBJ
     };
 
     /**
-     * @brief Unique identifier for a model.
+     * @brief Type alias for unique identifier for a model.
      */
     using model_id = unsigned long long;
 

@@ -9,7 +9,6 @@
 namespace ppp
 {
     /**
-     * @struct color
      * @brief RGBA color representation.
      */
     struct color
@@ -18,18 +17,20 @@ namespace ppp
         {
             #pragma warning(push)
             #pragma warning(disable : 4201)
-            struct { int red, green, blue, alpha; }; /**< Color channels */
+            /** @brief Color channels */
+            struct { int red, green, blue, alpha; }; 
             #pragma warning(pop)
-            std::array<int, 4> data;                 /**< Raw channel data */
+            /** @brief Raw channel data */
+            std::array<int, 4> data;                 
         };
 
-        /** Set the red channel. */
+        /** @brief Set the red channel. */
         void set_red(int r) { red = r; }
-        /** Set the green channel. */
+        /** @brief Set the green channel. */
         void set_green(int g) { green = g; }
-        /** Set the blue channel. */
+        /** @brief Set the blue channel. */
         void set_blue(int b) { blue = b; }
-        /** Set the alpha channel. */
+        /** @brief Set the alpha channel. */
         void set_alpha(int a) { alpha = a; }
     };
 

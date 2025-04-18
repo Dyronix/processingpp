@@ -61,27 +61,25 @@ namespace ppp
     }
 
     /**
-     * @enum shading_model
      * @brief Shading model to use for materials.
      */
     enum class shading_model : std::uint8_t
     {
-        LIT,       ///< Physically-based lighting
-        UNLIT      ///< Unlit shading
+        LIT,       
+        UNLIT      
     };
 
     /**
-     * @enum shading_blending
      * @brief Blending mode for materials.
      */
     enum class shading_blending : std::uint8_t
     {
-        OPAQUE,         ///< No transparency
-        TRANSPARENT     ///< Alpha blending
+        OPAQUE,         
+        TRANSPARENT     
     };
 
     /**
-     * @brief Unique identifier for a shader program.
+     * @brief Type alias for unique identifier for a shader program.
      */
     using shader_program_id = unsigned int;
 

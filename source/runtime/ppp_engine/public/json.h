@@ -11,16 +11,15 @@ namespace ppp
     using json = nlohmann::json;
 
     /**
-     * @enum binary_json_type
      * @brief Supported binary JSON formats for serialization/deserialization.
      */
     enum class binary_json_type : std::uint8_t
     {
-        MESSAGE_PACK, /**< MessagePack format */
-        CBOR,         /**< Concise Binary Object Representation */
-        UBJSON,       /**< Universal Binary JSON */
-        BJSON,        /**< BSON format */
-        BJDATA        /**< BJData format */
+        MESSAGE_PACK,
+        CBOR,        
+        UBJSON,      
+        BJSON,       
+        BJDATA       
     };
 
     /**
