@@ -17,8 +17,8 @@ namespace ppp
      */
     enum class angle_mode_type
     {
-        DEGREES, /**< Degrees mode */
-        RADIANS  /**< Radians mode */
+        DEGREES, 
+        RADIANS 
     };
 
     /**

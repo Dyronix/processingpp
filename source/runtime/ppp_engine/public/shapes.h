@@ -9,7 +9,7 @@
 
 namespace ppp
 {
-    using geometry_id = std::size_t; /**< Unique identifier for goemetry. */
+    using geometry_id = std::size_t; /** Type alias for unique identifier for goemetry. */
 
     /** @brief Positioning modes for 2D shapes. */
     enum class shape_mode_type : std::uint8_t

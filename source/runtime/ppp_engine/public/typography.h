@@ -9,15 +9,15 @@
 
 namespace ppp
 {
-    using font_id = unsigned int; /**< Unique identifier for fonts. */
+    using font_id = unsigned int; /**Type alias for unique identifier for fonts. */
 
     /**
      * @brief Text positioning modes.
      */
     enum class text_mode_type : std::uint8_t
     {
-        CENTER, /**< Center text around (x,y). */
-        CORNER  /**< Place text origin at (x,y). */
+        CENTER, 
+        CORNER 
     };
 
     /**

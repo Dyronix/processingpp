@@ -13,16 +13,14 @@ namespace ppp
      */
     enum class key_code
     {
-        /* The unknown key */
         KEY_UNKNOWN,
 
-        /* Printable keys */
         KEY_SPACE,
-        KEY_APOSTROPHE,         /* ' */
-        KEY_COMMA,              /* , */
-        KEY_MINUS,              /* - */
-        KEY_PERIOD,             /* . */
-        KEY_SLASH,              /* / */
+        KEY_APOSTROPHE,         
+        KEY_COMMA,              
+        KEY_MINUS,              
+        KEY_PERIOD,             
+        KEY_SLASH,              
         KEY_0,
         KEY_1,
         KEY_2,
@@ -33,8 +31,8 @@ namespace ppp
         KEY_7,
         KEY_8,
         KEY_9,
-        KEY_SEMICOLON,          /* ; */
-        KEY_EQUAL,              /* = */
+        KEY_SEMICOLON,          
+        KEY_EQUAL,              
         KEY_A,
         KEY_B,
         KEY_C,
@@ -61,12 +59,11 @@ namespace ppp
         KEY_X,
         KEY_Y,
         KEY_Z,
-        KEY_LEFT_BRACKET,       /* [ */
-        KEY_BACKSLASH,          /* \ */
-        KEY_RIGHT_BRACKET,      /* ] */
-        KEY_GRAVE_ACCENT,       /* ` */
+        KEY_LEFT_BRACKET,       
+        KEY_BACKSLASH,          
+        KEY_RIGHT_BRACKET,      
+        KEY_GRAVE_ACCENT,       
 
-        /* Function keys */
         KEY_ESCAPE,
         KEY_ENTER,
         KEY_TAB,

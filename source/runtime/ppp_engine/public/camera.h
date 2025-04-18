@@ -43,13 +43,19 @@ namespace ppp
         /** @brief Default constructor initializing common defaults. */
         scene_camera();
 
-        vec3 eye;      /**< Camera position in world space. */
-        vec3 center;   /**< Target point the camera looks at. */
-        vec3 up;       /**< Up vector defining camera orientation. */
+        /** @brief Camera position in world space. */
+        vec3 eye;
+        /** @brief Target point the camera looks at. */
+        vec3 center;
+        /** @brief Up vector defining camera orientation. */
+        vec3 up;       
 
-        float radius;  /**< Distance from eye to center. */
-        float azimuth; /**< Horizontal rotation angle around target. */
-        float polar;   /**< Vertical rotation angle around target. */
+        /** @brief Distance from eye to center. */
+        float radius;
+        /** @brief Horizontal rotation angle around target. */
+        float azimuth;
+        /** @brief Vertical rotation angle around target. */
+        float polar;   
 
         /**
          * @brief Set the camera's eye position.
