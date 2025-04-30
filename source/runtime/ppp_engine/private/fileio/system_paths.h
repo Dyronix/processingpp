@@ -1,6 +1,6 @@
 #pragma once
 
-#include "memory/memory_types.h"
+#include <string>
 
 namespace ppp
 {

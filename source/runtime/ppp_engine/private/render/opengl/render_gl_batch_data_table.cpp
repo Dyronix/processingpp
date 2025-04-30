@@ -1,42 +1,14 @@
 #include "render/render_batch_data_table.h"
 #include "render/render_features.h"
-#include "render/helpers/render_vertex_layouts.h"
 
-#include "resources/shader_pool.h"
+#include "render/opengl/render_gl_util.h"
+
+#include "render/helpers/render_vertex_layouts.h"
 
 namespace ppp
 {
     namespace render
     {
-        namespace internal
-        {
-            //-------------------------------------------------------------------------
-            static const attribute_layout* get_attribute_layout(string::string_id shader_tag)
-            {
-                auto shader_program = shader_pool::get_shader_program(shader_tag);
-
-                return fill_user_layout(shader_program->vertex_format());
-            }
-            //-------------------------------------------------------------------------
-            static u64 get_attribute_layout_count(string::string_id shader_tag)
-            {
-                auto shader_program = shader_pool::get_shader_program(shader_tag);
-
-                return fill_user_layout_count(shader_program->vertex_format());
-            }
-
-            //-------------------------------------------------------------------------
-            static const attribute_layout* layouts(string::string_id shader_tag)
-            {
-                return get_attribute_layout(shader_tag);
-            }
-            //-------------------------------------------------------------------------
-            static u64 layout_count(string::string_id shader_tag)
-            {
-                return get_attribute_layout_count(shader_tag);
-            }
-        }
-
         //-------------------------------------------------------------------------
         batch_data_table::batch_data_table(string::string_id shader_tag)
             :m_shader_tag(shader_tag)
@@ -70,7 +42,7 @@ namespace ppp
                 // Create a new batch_drawing_data if it doesn't exist.
                 s32 max_ver = max_vertices(topology);
                 s32 max_idx = max_indices(topology);
-                auto emplace_result = m_batches.emplace(topology, batch_drawing_data(max_ver, max_idx, internal::layouts(m_shader_tag), internal::layout_count(m_shader_tag)));
+                auto emplace_result = m_batches.emplace(topology, batch_drawing_data(max_ver, max_idx, layouts(m_shader_tag), layout_count(m_shader_tag)));
                 it = emplace_result.first;
             }
             it->second.append(item, color, world);
@@ -94,9 +66,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool batch_data_table::has_texture_support() const
         {
-            for (u64 i = 0; i < internal::layout_count(m_shader_tag); ++i)
+            for (u64 i = 0; i < layout_count(m_shader_tag); ++i)
             {
-                if (internal::layouts(m_shader_tag)[i].type == attribute_type::TEXCOORD)
+                if (layouts(m_shader_tag)[i].type == attribute_type::TEXCOORD)
                 {
                     return true;    
                 }
@@ -108,9 +80,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool batch_data_table::has_normal_support() const
         {
-            for (u64 i = 0; i < internal::layout_count(m_shader_tag); ++i)
+            for (u64 i = 0; i < layout_count(m_shader_tag); ++i)
             {
-                if (internal::layouts(m_shader_tag)[i].type == attribute_type::NORMAL)
+                if (layouts(m_shader_tag)[i].type == attribute_type::NORMAL)
                 {
                     return true;
                 }

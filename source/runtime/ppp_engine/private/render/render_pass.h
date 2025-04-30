@@ -4,11 +4,8 @@
 
 #include "render/render_shader.h"
 #include "render/render_framebuffer.h"
-#include "render/render_framebuffer_flags.h"
 #include "render/render_batch_render_strategy.h"
 #include "render/render_instance_render_strategy.h"
-#include "render/render_batch_renderer.h"
-#include "render/render_instance_renderer.h"
 
 namespace ppp
 {
@@ -32,9 +29,14 @@ namespace ppp
         public:
             irender_pass(string::string_id pass_tag)
                 :m_pass_tag(pass_tag)
+                ,m_enable(true)
             {}
 
             virtual ~irender_pass() = default;
+
+        public:
+            void                                enable() { m_enable = true; }
+            void                                disable() { m_enable = false; }
 
         public:
             virtual void                        begin_frame(const render_context& context) = 0;
@@ -42,7 +44,7 @@ namespace ppp
             virtual void                        end_frame(const render_context& context) = 0;
 
         public:
-            virtual bool                        should_render(const render_context& context) const { return true; }
+            virtual bool                        should_render(const render_context& context) const { return m_enable; }
 
             virtual bool                        has_framebuffer_tag(string::string_id shader_tag) const { return false; }
             virtual bool                        has_shader(string::string_id shader_tag) const { return false; }
@@ -56,6 +58,7 @@ namespace ppp
 
         private:
             string::string_id                   m_pass_tag;
+            bool                                m_enable;
         };
 
         class framebuffer_render_pass : public irender_pass

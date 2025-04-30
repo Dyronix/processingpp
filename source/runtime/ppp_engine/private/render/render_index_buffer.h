@@ -2,10 +2,7 @@
 
 #include "util/types.h"
 
-
-
 #include <memory>
-#include <functional>
 
 namespace ppp
 {

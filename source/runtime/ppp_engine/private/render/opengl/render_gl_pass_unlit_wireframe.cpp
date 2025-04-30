@@ -2,12 +2,9 @@
 #include "render/render_batch_renderer.h"
 #include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
-#include "render/render_instance_data_table.h"
 #include "render/render_context.h"
-#include "render/render_scissor.h"
 #include "render/render_shader_uniform_manager.h"
 
-#include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
 #include "resources/framebuffer_pool.h"
@@ -15,11 +12,8 @@
 
 #include "camera/camera_context.h"
 
-#include "util/log.h"
-#include "util/brush.h"
 #include "util/color_ops.h"
 
-#include <algorithm>
 #include <glad/glad.h>
 
 namespace ppp

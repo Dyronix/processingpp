@@ -76,7 +76,7 @@ namespace ppp
     {
         if (render::scissor_rect_enabled())
         {
-            return render::scissor_rect().width;
+            return render::scissor_rect()->width;
         }
 
         return window_width();
@@ -86,7 +86,7 @@ namespace ppp
     {
         if (render::scissor_rect_enabled())
         {
-            return render::scissor_rect().height;
+            return render::scissor_rect()->height;
         }
 
         return window_height();

@@ -119,8 +119,8 @@ namespace ppp
 
                 if (render::scissor_rect_enabled())
                 {
-                    f64 canvas_x = (f64)render::scissor_rect().x;
-                    f64 width = (f64)render::scissor_rect().width;
+                    f64 canvas_x = (f64)render::scissor_rect()->x;
+                    f64 width = (f64)render::scissor_rect()->width;
 
                     xpos = xpos - canvas_x;
                 }
@@ -135,8 +135,8 @@ namespace ppp
 
                 if (render::scissor_rect_enabled())
                 {
-                    f64 canvas_y = (f64)render::scissor_rect().y;
-                    f64 height = (f64)render::scissor_rect().height;
+                    f64 canvas_y = (f64)render::scissor_rect()->y;
+                    f64 height = (f64)render::scissor_rect()->height;
 
                     ypos = ((ypos - canvas_y) - height) * -1.0;
                 }

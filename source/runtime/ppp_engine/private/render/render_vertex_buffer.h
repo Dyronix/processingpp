@@ -49,7 +49,7 @@ namespace ppp
 
         private:
             class impl;
-            std::unique_ptr<impl>         m_pimpl;
+            std::unique_ptr<impl>           m_pimpl;
         };
     }
 }

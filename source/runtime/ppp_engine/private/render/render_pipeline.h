@@ -36,8 +36,8 @@ namespace ppp
         public:
             void add_insertion_point(insertion_point point);
 
-            void add_pass(std::unique_ptr<irender_pass> pass);
-            void insert_pass(insertion_point point, std::unique_ptr<irender_pass> pass);
+            irender_pass* add_pass(std::unique_ptr<irender_pass> pass);
+            irender_pass* insert_pass(insertion_point point, std::unique_ptr<irender_pass> pass);
 
         public:
             void execute(const render_context& context);

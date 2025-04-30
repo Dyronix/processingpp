@@ -15,5 +15,12 @@ namespace ppp
 
             bool    enable = false;
         };
+
+        void push_scissor(s32 x, s32 y, s32 width, s32 height);
+        void push_scissor_enable(bool enable);
+
+        bool scissor_rect_enabled();
+
+        const render_scissor* scissor_rect();
     }
 }

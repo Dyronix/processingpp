@@ -3,14 +3,9 @@
 #include "util/types.h"
 #include "util/log.h"
 
-
-
 #include <glm/glm.hpp>
 
-#include <array>
 #include <vector>
-#include <unordered_map>
-#include <memory>
 #include <numeric>
 
 namespace ppp

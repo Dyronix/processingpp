@@ -7,8 +7,6 @@
 
 #include <glad/glad.h>
 
-#include <sstream>
-
 namespace ppp
 {
     namespace render
@@ -40,24 +38,27 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void render_pipeline::add_pass(std::unique_ptr<irender_pass> pass)
+        irender_pass* render_pipeline::add_pass(std::unique_ptr<irender_pass> pass)
         {
             m_passes.push_back(std::move(pass));
+
+            return m_passes.back().get();
         }
 
         //-------------------------------------------------------------------------
-        void render_pipeline::insert_pass(insertion_point point, std::unique_ptr<irender_pass> pass)
+        irender_pass* render_pipeline::insert_pass(insertion_point point, std::unique_ptr<irender_pass> pass)
         {
             auto it = m_insertion_points.find(point);
             if (it == std::cend(m_insertion_points))
             {
-                return;
+                return nullptr;
             }
 
             auto insertion_it = m_passes.begin();
             std::advance(insertion_it, it->second);
 
-            m_passes.insert(insertion_it, std::move(pass));
+            auto inserted = m_passes.insert(insertion_it, std::move(pass));
+            return inserted->get();
         }
 
         //-------------------------------------------------------------------------

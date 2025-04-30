@@ -1,21 +1,9 @@
 #include "render/render_batch_renderer.h"
 #include "render/render_item.h"
-#include "render/render_shader_uniform_manager.h"
-#include "render/render_features.h"
 #include "render/render_batch_render_strategy.h"
 #include "render/render_batch_data_table.h"
 
 #include "resources/material_pool.h"
-
-#include "util/log.h"
-
-#include "string/string_conversions.h"
-
-#include <glad/glad.h>
-
-#include <algorithm>
-
-#include "render/render_batch_render_strategy.h"
 
 namespace ppp
 {

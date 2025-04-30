@@ -4,17 +4,14 @@
 #include "render/render_instance_renderer.h"
 #include "render/render_instance_data_table.h"
 #include "render/render_context.h"
-#include "render/render_scissor.h"
 #include "render/render_shader_uniform_manager.h"
 #include "render/render_framebuffer.h"
 
-#include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
 #include "resources/framebuffer_pool.h"
 #include "resources/lights_pool.h"
 #include "resources/shader_pool.h"
-#include "resources/texture_pool.h"
 #include "resources/material.h"
 
 #include "camera/camera_context.h"
@@ -22,7 +19,6 @@
 #include "string/string_conversions.h"
 
 #include "util/log.h"
-#include "util/brush.h"
 
 #include <algorithm>
 #include <glad/glad.h>

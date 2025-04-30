@@ -21,6 +21,7 @@ namespace ppp
             class shader_uniform_manager
             {
             public:
+                //-------------------------------------------------------------------------
                 shader_uniform_manager(u32 shader_program_id)
                     : m_shader_program_id(shader_program_id)
                 {
@@ -29,7 +30,7 @@ namespace ppp
                         log::error("Invalid shader program id (0).");
                     }
                 }
-
+                //-------------------------------------------------------------------------
                 template<typename T>
                 void push(string::string_id name, const T& value)
                 {
@@ -42,7 +43,7 @@ namespace ppp
                         m_deferred_uniforms.emplace(name, shader_uniform{ name, value });
                     }
                 }
-
+                //-------------------------------------------------------------------------
                 template<typename T>
                 void push_array(string::string_id name, u64 count, const T* value)
                 {
@@ -55,7 +56,7 @@ namespace ppp
                         m_deferred_uniforms.emplace(name, shader_uniform{ name, value, count });
                     }
                 }
-
+                //-------------------------------------------------------------------------
                 void apply()
                 {
                     assert(m_shader_program_id != 0);
@@ -77,6 +78,7 @@ namespace ppp
                 class shader_guard
                 {
                 public:
+                    //-------------------------------------------------------------------------
                     shader_guard(u32 shader_program_id)
                         : m_previous_program(0)
                         , m_needs_rebind(false)
@@ -91,7 +93,7 @@ namespace ppp
                             opengl::api::instance().use_program(shader_program_id); // Bind the new shader
                         }
                     }
-
+                    //-------------------------------------------------------------------------
                     ~shader_guard()
                     {
                         if (m_needs_rebind)
@@ -104,10 +106,10 @@ namespace ppp
                     s32 m_previous_program;  // Store the previously bound shader program
                     bool m_needs_rebind;     // Flag to determine if we need to rebind the old shader
                 };
-
                 class shader_uniform
                 {
                 public:
+                    //-------------------------------------------------------------------------
                     template<typename T>
                     shader_uniform(string::string_id name, const T& value, u64 count = 1)
                         : m_name(name)
@@ -120,7 +122,7 @@ namespace ppp
 
                         std::memcpy(m_data.data(), &value, sizeof(value) * count);
                     }
-
+                    //-------------------------------------------------------------------------
                     template<typename T>
                     shader_uniform(string::string_id name, const T* value, u64 count = 1)
                         : m_name(name)
@@ -133,27 +135,27 @@ namespace ppp
 
                         std::memcpy(m_data.data(), value, sizeof(value) * count);
                     }
-
+                    //-------------------------------------------------------------------------
                     string::string_id name() const
                     {
                         return m_name;
                     }
-
+                    //-------------------------------------------------------------------------
                     const object_type_tag& type_id() const
                     {
                         return m_type_id;
                     }
-
+                    //-------------------------------------------------------------------------
                     u64 count() const
                     {
                         return m_count;
                     }
-
+                    //-------------------------------------------------------------------------
                     bool is_array() const
                     {
                         return m_is_array;
                     }
-
+                    //-------------------------------------------------------------------------
                     template <typename T>
                     T get_value() const
                     {
@@ -164,7 +166,7 @@ namespace ppp
                         std::memcpy(&result, m_data.data(), sizeof(T));
                         return result;
                     }
-
+                    //-------------------------------------------------------------------------
                     template <typename T>
                     const T* get_value_ptr() const
                     {
@@ -183,6 +185,7 @@ namespace ppp
                 };
 
             private:
+                //-------------------------------------------------------------------------
                 u32 find_and_cache_uniform_location(string::string_id uniform_name)
                 {
                     // Check if the uniform location is already cached
@@ -195,12 +198,12 @@ namespace ppp
 
                     return m_shader_uniform_locations[uniform_name];
                 }
-
+                //-------------------------------------------------------------------------
                 bool is_uniform_location_valid(s32 location)
                 {
                     return location != static_cast<u32>(-1);
                 }
-
+                //-------------------------------------------------------------------------
                 void apply_uniform(const shader_uniform& uniform)
                 {
                     s32 location = find_and_cache_uniform_location(uniform.name());
@@ -278,66 +281,67 @@ namespace ppp
                 }
 
             private:
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, bool value)
                 {
                     set_uniform(location, value ? GL_TRUE : GL_FALSE);
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, s32 value)
                 {
                     opengl::api::instance().uniform_1i(location, value);
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, u32 value)
                 {
                     opengl::api::instance().uniform_1ui(location, value);
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, f32 value)
                 {
                     opengl::api::instance().uniform_1f(location, value);
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, const glm::vec2& value)
                 {
                     opengl::api::instance().uniform_2fv(location, 1, glm::value_ptr(value));
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, const glm::vec3& value)
                 {
                     opengl::api::instance().uniform_3fv(location, 1, glm::value_ptr(value));
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, const glm::vec4& value)
                 {
                     opengl::api::instance().uniform_4fv(location, 1, glm::value_ptr(value));
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, const glm::mat2& value)
                 {
                     opengl::api::instance().uniform_matrix_2fv(location, 1, GL_FALSE, glm::value_ptr(value));
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, const glm::mat3& value)
                 {
                     opengl::api::instance().uniform_matrix_3fv(location, 1, GL_FALSE, glm::value_ptr(value));
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, const glm::mat4& value)
                 {
                     opengl::api::instance().uniform_matrix_4fv(location, 1, GL_FALSE, glm::value_ptr(value));
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, u64 count, const s32* value)
                 {
                     opengl::api::instance().uniform_1iv(location, count, value);
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, u64 count, const u32* value)
                 {
                     opengl::api::instance().uniform_1uiv(location, count, value);
                 }
-
+                //-------------------------------------------------------------------------
                 void set_uniform(s32 location, u64 count, const f32* value)
                 {
                     opengl::api::instance().uniform_1fv(location, count, value);
