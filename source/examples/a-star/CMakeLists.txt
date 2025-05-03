@@ -2,6 +2,7 @@ add_executable(a-star)
 
 target_sources(a-star PRIVATE 
     ${SOURCE_EXAMPLES_DIRECTORY}/a-star/private/a-star-grid.h
+    ${SOURCE_EXAMPLES_DIRECTORY}/a-star/private/a-star-grid-drawer.h
     ${SOURCE_EXAMPLES_DIRECTORY}/a-star/private/a-star.cpp)
 
 # Create the project filters
