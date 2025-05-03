@@ -2,8 +2,6 @@
 
 #include "util/types.h"
 
-#include <vector>
-#include <functional>
 #include <memory>
 
 namespace ppp
@@ -13,31 +11,37 @@ namespace ppp
         class storage_buffer
         {
         public:
-            storage_buffer(u64 element_count, u64 element_size);
+            explicit storage_buffer(u32 element_count, u64 element_size, u32 binding_point);
             ~storage_buffer();
 
+            storage_buffer(const storage_buffer& other) = delete;
+            storage_buffer(storage_buffer&& other) noexcept;
+
+            storage_buffer& operator=(const storage_buffer& other) = delete;
+            storage_buffer& operator=(storage_buffer&& other) noexcept;
+
         public:
-            void                            bind(u32 binding_point) const;
+            void                            bind() const;
             void                            unbind() const;
-            void                            submit(u32 binding_point) const;
+            void                            submit() const;
 
         public:
-            bool                            can_add(u64 max_elements_to_set) const;
+            bool                            can_add(u32 max_elements_to_set) const;
 
-            void                            open(u64 max_elements_to_set);
-            void                            close();
+            void                            open(u32 max_elements_to_set) const;
+            void                            close() const;
 
         public:
-            void                            reset();
-            void                            free();
+            void                            reset() const;
+            void                            free() const;
 
             u8*                             data();
             const u8*                       data() const;
 
-            u64                             total_size_in_bytes() const;
+            u64                             total_buffer_size_in_bytes() const;
             u64                             element_size_in_bytes() const;
-            u64                             element_count() const;
-            u64                             active_element_count() const;
+            u32                             element_count() const;
+            u32                             active_element_count() const;
 
         private:
             class impl;

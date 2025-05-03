@@ -6,58 +6,68 @@
 
 #include <glad/glad.h>
 
-#include <assert.h>
-
 namespace ppp
 {
     namespace render
     {
-        struct vertex_buffer::impl
+        class vertex_buffer::impl
         {
+        public:
             //-------------------------------------------------------------------------
-            impl(u64 vertex_count, const attribute_layout* layouts, u64 layout_count, u64 layout_id_offset)
-                : layouts(layouts)
+            explicit impl(u32 vertex_count, const attribute_layout* layouts, u32 layout_count, u32 layout_id_offset)
+                : previous_vertex_count(0)
+                , layouts(layouts)
                 , layout_count(layout_count)
                 , vertex_count(vertex_count)
-                , previous_vertex_count(0)
                 , current_vertex_count(0)
                 , max_elements_to_set(0)
-                , buffer()
                 , vbo(0)
             {
-                auto vertex_size = calculate_total_size_layout(layouts, layout_count);
+                const u64 vertex_size = calculate_total_size_layout(layouts, layout_count);
+                const u64 buffer_size = vertex_size * vertex_count;
+                assert(buffer_size == static_cast<u32>(buffer_size));
 
-                buffer.reserve(vertex_size * vertex_count);
-                buffer.resize(vertex_size * vertex_count);
+                buffer.reserve(vertex_count * vertex_size);
+                buffer.resize(vertex_count * vertex_size);
 
                 opengl::api::instance().generate_buffers(1, &vbo);
                 opengl::api::instance().bind_buffer(GL_ARRAY_BUFFER, vbo);
-                opengl::api::instance().buffer_data(GL_ARRAY_BUFFER, vertex_size * vertex_count, nullptr, GL_DYNAMIC_DRAW);
+                opengl::api::instance().buffer_data(GL_ARRAY_BUFFER, static_cast<u32>(buffer_size), nullptr, GL_DYNAMIC_DRAW);
 
                 u64 attribute_index_offset = layout_id_offset;
                 u64 attribute_stride_offset = 0;
 
-                u64 attribute_index = 0;
-                u64 attribute_offset = 0;
-
-                for (u64 i = 0; i < layout_count; ++i)
+                for (u32 i = 0; i < layout_count; ++i)
                 {
                     const attribute_layout& layout = layouts[i];
 
                     for (s32 j = 0; j < layout.span; ++j)
                     {
-                        attribute_index = attribute_index_offset + i + j;
-                        attribute_offset = attribute_stride_offset + j * layout.count * layout.element_size_in_bytes();
+                        const u64 attribute_index = attribute_index_offset + i + j;
+                        assert(attribute_index == static_cast<u32>(attribute_index));
+                        const u64 attribute_offset = attribute_stride_offset + static_cast<u64>(j) * layout.count * layout.element_size_in_bytes();
+                        assert(attribute_offset == static_cast<u32>(attribute_offset));
 
-                        opengl::api::instance().enable_vertex_attrib_array(attribute_index);
+                        opengl::api::instance().enable_vertex_attrib_array(static_cast<u32>(attribute_index));
                         switch (layout.data_type)
                         {
                         case attribute_data_type::FLOAT:
-                            opengl::api::instance().vertex_attrib_pointer(attribute_index, layout.count, gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)attribute_offset);
+                            opengl::api::instance().vertex_attrib_pointer(
+                                static_cast<u32>(attribute_index),
+                                layout.count,
+                                gl_data_type(layout.data_type),
+                                layout.normalized ? GL_TRUE : GL_FALSE,
+                                layout.stride,
+                                reinterpret_cast<void*>(attribute_offset));  // NOLINT(performance-no-int-to-ptr)
                             break;
                         case attribute_data_type::UNSIGNED_INT: // fallthrough
                         case attribute_data_type::INT:
-                            opengl::api::instance().vertex_attrib_i_pointer(attribute_index, layout.count, gl_data_type(layout.data_type), layout.stride, (void*)attribute_offset);
+                            opengl::api::instance().vertex_attrib_i_pointer(
+                                static_cast<u32>(attribute_index),
+                                layout.count,
+                                gl_data_type(layout.data_type),
+                                layout.stride,
+                                reinterpret_cast<void*>(attribute_offset));  // NOLINT(performance-no-int-to-ptr)
                             break;
                         }
                     }
@@ -68,15 +78,20 @@ namespace ppp
                 
                 opengl::api::instance().bind_buffer(GL_ARRAY_BUFFER, 0);
             }
-
             //-------------------------------------------------------------------------
             ~impl()
             {
-                if (vbo)
-                {
-                    opengl::api::instance().delete_buffers(1, &vbo);
-                }
+                assert(vbo == 0 && "array buffer object not released");
             }
+
+            //-------------------------------------------------------------------------
+            impl(const impl& other) = delete;
+            //-------------------------------------------------------------------------
+            impl(impl&& other) noexcept = default;
+            //-------------------------------------------------------------------------
+            impl& operator=(const impl& other) = delete;
+            //-------------------------------------------------------------------------
+            impl& operator=(impl&& other) noexcept = default;
 
             //-------------------------------------------------------------------------
             void bind() const
@@ -113,21 +128,27 @@ namespace ppp
 
                 bind();
 
-                u64 buffer_offset = previous_vertex_count * vertex_buffer_byte_size;
-                u64 buffer_size = (current_vertex_count - previous_vertex_count) * vertex_buffer_byte_size;
+                const u64 buffer_offset = previous_vertex_count * vertex_buffer_byte_size;
+                assert(buffer_offset == static_cast<u32>(buffer_offset));
+                const u64 buffer_size = (current_vertex_count - previous_vertex_count) * vertex_buffer_byte_size;
+                assert(buffer_size == static_cast<u32>(buffer_size));
 
-                opengl::api::instance().buffer_sub_data(GL_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data());
+                opengl::api::instance().buffer_sub_data(
+                    GL_ARRAY_BUFFER,
+                    static_cast<u32>(buffer_offset),
+                    static_cast<u32>(buffer_size),
+                    buffer.data());
             }
 
             //-------------------------------------------------------------------------
-            u64                             previous_vertex_count;
+            u32                             previous_vertex_count;
             
             const attribute_layout*         layouts;
-            const u64                       layout_count;
+            u32                             layout_count;
 
-            u64                             vertex_count;
-            u64                             current_vertex_count;
-            u64                             max_elements_to_set;
+            u32                             vertex_count;
+            u32                             current_vertex_count;
+            u32                             max_elements_to_set;
             
             std::vector<u8>                 buffer;
 
@@ -135,10 +156,23 @@ namespace ppp
         };
 
         //-------------------------------------------------------------------------
-        vertex_buffer::vertex_buffer(u64 vertex_count, const attribute_layout* layouts, u64 layout_count, u64 layout_id_offset)
+        vertex_buffer::vertex_buffer(u32 vertex_count, const attribute_layout* layouts, u32 layout_count, u32 layout_id_offset)
             : m_pimpl(std::make_unique<impl>(vertex_count, layouts, layout_count, layout_id_offset))
         {
 
+        }
+
+        //-------------------------------------------------------------------------
+        vertex_buffer::vertex_buffer(vertex_buffer&& other) noexcept
+            :m_pimpl(std::exchange(other.m_pimpl, nullptr))
+        {}
+
+        //-------------------------------------------------------------------------
+        vertex_buffer& vertex_buffer::operator=(vertex_buffer&& other) noexcept
+        { 
+            m_pimpl = std::exchange(other.m_pimpl, nullptr);
+
+            return *this;
         }
 
         //-------------------------------------------------------------------------
@@ -165,9 +199,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool vertex_buffer::can_add(u64 max_elements_to_set) const
+        bool vertex_buffer::can_add(u32 max_elements_to_set) const
         {
-            u64 new_vertex_count = active_vertex_count() + max_elements_to_set;
+            u32 new_vertex_count = active_element_count() + max_elements_to_set;
 
             // Make sure we do not exceed the memory size of one block
             // Make sure we do not exceed the amount of vertices we can store
@@ -175,27 +209,27 @@ namespace ppp
         }
     
         //-------------------------------------------------------------------------
-        void vertex_buffer::open(u64 max_elements_to_set)
+        void vertex_buffer::open(u32 max_elements_to_set) const
         {
             m_pimpl->max_elements_to_set = max_elements_to_set;
         }
         
         //-------------------------------------------------------------------------
-        void vertex_buffer::close()
+        void vertex_buffer::close() const
         {
             m_pimpl->current_vertex_count += m_pimpl->max_elements_to_set;
             m_pimpl->max_elements_to_set = 0;
         }
 
         //-------------------------------------------------------------------------
-        void vertex_buffer::reset()
+        void vertex_buffer::reset() const
         {
             m_pimpl->previous_vertex_count = 0;
             m_pimpl->current_vertex_count = 0;
         }
 
         //-------------------------------------------------------------------------
-        void vertex_buffer::free()
+        void vertex_buffer::free() const
         {
             reset();
 
@@ -208,7 +242,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         const attribute_layout* vertex_buffer::find_layout(attribute_type type) const
         {
-            for (u64 i = 0; i < m_pimpl->layout_count; ++i)
+            for (u32 i = 0; i < m_pimpl->layout_count; ++i)
             {
                 if (m_pimpl->layouts[i].type == type)
                 {
@@ -232,7 +266,7 @@ namespace ppp
         }
         
         //-------------------------------------------------------------------------
-        const u64 vertex_buffer::layout_count() const
+        u32 vertex_buffer::layout_count() const
         {
             return m_pimpl->layout_count;
         }
@@ -250,26 +284,26 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        u64 vertex_buffer::total_size_in_bytes() const
+        u64 vertex_buffer::total_buffer_size_in_bytes() const
         {
-            auto vertex_size = calculate_total_size_layout(m_pimpl->layouts, m_pimpl->layout_count);
+            u64 vertex_size = calculate_total_size_layout(m_pimpl->layouts, m_pimpl->layout_count);
             return vertex_size * m_pimpl->current_vertex_count;
         }
 
         //-------------------------------------------------------------------------
-        u64 vertex_buffer::vertex_size_in_bytes() const
+        u64 vertex_buffer::element_size_in_bytes() const
         {
             return calculate_total_size_layout(m_pimpl->layouts, m_pimpl->layout_count);
         }
 
         //-------------------------------------------------------------------------
-        u64 vertex_buffer::vertex_count() const
+        u32 vertex_buffer::element_count() const
         {
             return m_pimpl->vertex_count;
         }
 
         //-------------------------------------------------------------------------
-        u64 vertex_buffer::active_vertex_count() const
+        u32 vertex_buffer::active_element_count() const
         {
             return m_pimpl->current_vertex_count;
         }

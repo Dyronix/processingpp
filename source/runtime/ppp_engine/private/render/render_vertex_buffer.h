@@ -4,9 +4,6 @@
 
 #include "util/log.h"
 
-
-
-#include <vector>
 #include <functional>
 
 namespace ppp
@@ -16,8 +13,14 @@ namespace ppp
         class vertex_buffer
         {
         public:
-            vertex_buffer(u64 vertex_count, const attribute_layout* layouts, u64 layout_count, u64 layout_id_offset = 0);
+            explicit vertex_buffer(u32 vertex_count, const attribute_layout* layouts, u32 layout_count, u32 layout_id_offset = 0);
             ~vertex_buffer();
+
+            vertex_buffer(const vertex_buffer& other) = delete;             
+            vertex_buffer(vertex_buffer&& other) noexcept;                  
+
+            vertex_buffer& operator=(const vertex_buffer& other) = delete;  
+            vertex_buffer& operator=(vertex_buffer&& other) noexcept;       
 
         public:
             void                            bind() const;
@@ -25,27 +28,27 @@ namespace ppp
             void                            submit() const;
 
         public:
-            bool                            can_add(u64 max_elements_to_set) const;
+            bool                            can_add(u32 max_elements_to_set) const;
 
-            void                            open(u64 max_elements_to_set);
-            void                            close();
+            void                            open(u32 max_elements_to_set) const;
+            void                            close() const;
 
         public:
-            void                            reset();
-            void                            free();
+            void                            reset() const;
+            void                            free() const;
 
             bool                            has_layout(attribute_type type) const;
             const attribute_layout*         find_layout(attribute_type type) const;
             const attribute_layout*         layouts() const;
-            const u64                       layout_count() const;
+            u32                             layout_count() const;
 
             u8*                             data();
             const u8*                       data() const;
 
-            u64                             total_size_in_bytes() const;
-            u64                             vertex_size_in_bytes() const;
-            u64                             vertex_count() const;
-            u64                             active_vertex_count() const;
+            u64                             total_buffer_size_in_bytes() const;
+            u64                             element_size_in_bytes() const;
+            u32                             element_count() const;
+            u32                             active_element_count() const;
 
         private:
             class impl;

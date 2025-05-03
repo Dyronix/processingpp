@@ -15,15 +15,14 @@ namespace ppp
         {
         public:
             //-------------------------------------------------------------------------
-            impl(u64 count)
-                : index_count(count)
+            explicit impl(const u32 count)
+                : previous_index_count(0)
+                , index_count(count)
                 , current_index_count(0)
-                , previous_index_count(0)
                 , max_elements_to_set(0)
-                , buffer()
                 , ebo(0)
             {
-                const size_t size_ebo = sizeof(index) * count;
+                const u32 size_ebo = sizeof(index) * count;
 
                 buffer.reserve(size_ebo);
                 buffer.resize(size_ebo);
@@ -33,15 +32,20 @@ namespace ppp
                 opengl::api::instance().buffer_data(GL_ELEMENT_ARRAY_BUFFER, size_ebo, nullptr, GL_DYNAMIC_DRAW);
                 opengl::api::instance().bind_buffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             }
-
             //-------------------------------------------------------------------------
             ~impl()
             {
-                if (ebo)
-                {
-                    opengl::api::instance().delete_buffers(1, &ebo);
-                }
+                assert(ebo == 0 && "element buffer object not released");
             }
+
+            //-------------------------------------------------------------------------
+            impl(const impl& other) = delete;
+            //-------------------------------------------------------------------------
+            impl(impl&& other) noexcept = default;
+            //-------------------------------------------------------------------------
+            impl& operator=(const impl& other) = delete;
+            //-------------------------------------------------------------------------
+            impl& operator=(impl&& other) noexcept = default;
 
             //-------------------------------------------------------------------------
             void bind() const
@@ -64,15 +68,15 @@ namespace ppp
                     return;
                 }
 
-                const u64 index_byte_size = sizeof(index);
+                constexpr u32 index_byte_size = sizeof(index);
 
                 // Ensure that current_index_count hasn't decreased unexpectedly.
                 assert(current_index_count >= previous_index_count && "Current index count decreased unexpectedly.");
 
                 bind();
 
-                u64 buffer_offset = previous_index_count * index_byte_size;
-                u64 buffer_size = (current_index_count - previous_index_count) * index_byte_size;
+                const u32 buffer_offset = previous_index_count * index_byte_size;
+                const u32 buffer_size = (current_index_count - previous_index_count) * index_byte_size;
 
                 opengl::api::instance().buffer_sub_data(GL_ELEMENT_ARRAY_BUFFER, buffer_offset, buffer_size, buffer.data());
             }
@@ -85,11 +89,11 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            u64                             previous_index_count;
+            u32                             previous_index_count;
 
-            u64                             index_count;
-            u64                             current_index_count;
-            u64                             max_elements_to_set;
+            u32                             index_count;
+            u32                             current_index_count;
+            u32                             max_elements_to_set;
 
             std::vector<u8>                 buffer;
 
@@ -97,14 +101,27 @@ namespace ppp
         };
 
         //-------------------------------------------------------------------------
-        index_buffer::index_buffer(u64 index_count)
+        index_buffer::index_buffer(u32 index_count)
             : m_pimpl(std::make_unique<impl>(index_count))
         {}
 
         //-------------------------------------------------------------------------
-        index_buffer::~index_buffer() = default;
+        index_buffer::index_buffer(index_buffer&& other) noexcept
+            :m_pimpl(std::exchange(other.m_pimpl, nullptr))
+        {}
 
         //-------------------------------------------------------------------------
+        index_buffer& index_buffer::operator=(index_buffer&& other) noexcept
+        {
+            m_pimpl = std::exchange(other.m_pimpl, nullptr);
+
+            return *this;
+        }
+
+        //-------------------------------------------------------------------------
+        index_buffer::~index_buffer() = default;
+
+        // -------------------------------------------
         void index_buffer::bind() const
         {
             m_pimpl->bind();
@@ -125,9 +142,9 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        bool index_buffer::can_add(u64 max_elements_to_set) const
+        bool index_buffer::can_add(u32 max_elements_to_set) const
         {
-            u64 new_index_count = active_index_count() + max_elements_to_set;
+            const u32 new_index_count = active_element_count() + max_elements_to_set;
 
             // Make sure we do not exceed the memory size of one block
             // Make sure we do not exceed the amount of indices we can store
@@ -135,26 +152,27 @@ namespace ppp
         }
     
         //-------------------------------------------------------------------------
-        void index_buffer::open(u64 max_elements_to_set)
+        void index_buffer::open(u32 max_elements_to_set) const
         {
             m_pimpl->max_elements_to_set = max_elements_to_set;
         }
         
         //-------------------------------------------------------------------------
-        void index_buffer::close()
+        void index_buffer::close() const
         {
             m_pimpl->current_index_count += m_pimpl->max_elements_to_set;
             m_pimpl->max_elements_to_set = 0;
         }
 
         //-------------------------------------------------------------------------
-        void index_buffer::reset()
+        void index_buffer::reset() const
         {
+            m_pimpl->previous_index_count = 0;
             m_pimpl->current_index_count = 0;
         }
 
         //-------------------------------------------------------------------------
-        void index_buffer::free()
+        void index_buffer::free() const
         {
             reset();
 
@@ -177,25 +195,25 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        u64 index_buffer::total_size_in_bytes() const
+        u64 index_buffer::total_buffer_size_in_bytes() const
         {
             return sizeof(m_pimpl->buffer[0]) * m_pimpl->current_index_count;
         }
 
         //-------------------------------------------------------------------------
-        u64 index_buffer::index_size_in_bytes() const
+        u64 index_buffer::element_size_in_bytes() const
         {
             return sizeof(m_pimpl->buffer[0]);
         }
 
         //-------------------------------------------------------------------------
-        u64 index_buffer::index_count() const
+        u32 index_buffer::element_count() const
         {
             return m_pimpl->index_count;
         }
 
         //-------------------------------------------------------------------------
-        u64 index_buffer::active_index_count() const
+        u32 index_buffer::active_element_count() const
         {
             return m_pimpl->current_index_count;
         }
