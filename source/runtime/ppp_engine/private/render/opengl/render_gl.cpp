@@ -59,9 +59,9 @@ namespace ppp
             //-------------------------------------------------------------------------
             void APIENTRY debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* uerParam)
             {
-                static std::string             source_str = "UNKNOWN";
-                static std::string             type_str = "UNKNOWN";
-                static std::string             severity_str = "UNKNOWN";
+                static std::string                      source_str = "UNKNOWN";
+                static std::string                      type_str = "UNKNOWN";
+                static std::string                      severity_str = "UNKNOWN";
 
                 switch (source)
                 {
@@ -262,7 +262,7 @@ namespace ppp
             g_ctx.render_pipeline.add_pass(create_predepth_composite_pass(unlit::tags::predepth{}, framebuffer_pool::tags::composite()));
 
             // Calculate things that are in shadow
-            g_ctx.render_pipeline.add_pass(memory::make_unique<clear_pass, memory::persistent_graphics_tagged_allocator<clear_pass>>(make_depth_clear_state(), framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
+            g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_depth_clear_state(), framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
             g_ctx.render_pipeline.add_pass(create_shadow_composite_pass(unlit::tags::shadow{}, framebuffer_pool::tags::shadow_map()));
 
             // Clear color only and do a geometry pass

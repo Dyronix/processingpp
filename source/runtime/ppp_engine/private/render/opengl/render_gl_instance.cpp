@@ -9,7 +9,6 @@
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
-#include "render/helpers/render_instance_buffer_ops.h"
 #include "render/helpers/render_storage_buffer_ops.h"
 
 #include "resources/material_pool.h"

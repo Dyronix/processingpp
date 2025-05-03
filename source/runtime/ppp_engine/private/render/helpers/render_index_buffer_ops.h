@@ -2,7 +2,7 @@
 
 #include "render/render_index_buffer.h"
 
-#include <glm/glm.hpp>
+#include <functional>
 
 namespace ppp
 {

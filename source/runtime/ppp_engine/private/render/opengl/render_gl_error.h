@@ -2,8 +2,6 @@
 
 #include "util/types.h"
 
-
-
 #include <string>
 
 #pragma warning(push)

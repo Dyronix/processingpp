@@ -98,16 +98,16 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            u64                             previous_element_count;
+            u64 previous_element_count;
 
-            u64                             element_size;
-            u64                             element_count;
-            u64                             current_element_count;
-            u64                             max_elements_to_set;
+            u64 element_size;
+            u64 element_count;
+            u64 current_element_count;
+            u64 max_elements_to_set;
 
-            std::vector<u8>                 buffer;
+            std::vector<u8> buffer;
 
-            u32                             ssbo;
+            u32 ssbo;
         };
 
         //------------------------------------------------------------------------

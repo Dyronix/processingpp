@@ -19,8 +19,6 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <numeric>
-
 namespace ppp
 {
     namespace render
@@ -110,8 +108,8 @@ namespace ppp
             //-------------------------------------------------------------------------
             void add_vertices(const irender_item* item, s32 material_id, const glm::vec4& color, const glm::mat4& world)
             {
-                s32 start_index = m_vertex_buffer.active_vertex_count();
-                s32 end_index = start_index + item->vertex_count();
+                u64 start_index = m_vertex_buffer.active_vertex_count();
+                u64 end_index = start_index + item->vertex_count();
 
                 copy_vertex_data(item, material_id, color);
                 transform_vertex_positions(start_index, end_index, world);
@@ -127,8 +125,8 @@ namespace ppp
                 assert(!item->faces().empty());
 
                 auto index_buffer = &m_index_buffer;
-                s32 start_index = index_buffer->active_index_count();
-                s32 end_index = start_index + item->index_count();
+                u64 start_index = index_buffer->active_index_count();
+                u64 end_index = start_index + item->index_count();
 
                 copy_index_data(item);
                 transform_index_locations(start_index, end_index, m_vertex_buffer.active_vertex_count());
@@ -232,7 +230,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void transform_vertex_positions(s32 start_index, s32 end_index, const glm::mat4& world)
+            void transform_vertex_positions(u64 start_index, u64 end_index, const glm::mat4& world)
             {
                 vertex_buffer_ops::transform_attribute_data<glm::vec3>(m_vertex_buffer, attribute_type::POSITION, start_index, end_index, [&](glm::vec3& position)
                 {
@@ -244,7 +242,7 @@ namespace ppp
                 });
             }
             //-------------------------------------------------------------------------
-            void transform_vertex_normals(s32 start_index, s32 end_index, const glm::mat4& world)
+            void transform_vertex_normals(u64 start_index, u64 end_index, const glm::mat4& world)
             {
                 glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(world)));
 
@@ -256,7 +254,7 @@ namespace ppp
                 });
             }
             //-------------------------------------------------------------------------
-            void transform_vertex_diffuse_texture_ids(s32 start_index, s32 end_index, s32 sampler_id)
+            void transform_vertex_diffuse_texture_ids(u64 start_index, u64 end_index, s32 sampler_id)
             {
                 vertex_buffer_ops::transform_attribute_data<s32>(m_vertex_buffer, attribute_type::MATERIAL_INDEX, start_index, end_index, [&](s32& id)
                 {
@@ -264,7 +262,7 @@ namespace ppp
                 });
             }           
             //-------------------------------------------------------------------------
-            void transform_index_locations(s32 start_index, s32 end_index, u64 offset)
+            void transform_index_locations(u64 start_index, u64 end_index, u64 offset)
             {
                 index_buffer_ops::transform_index_data(m_index_buffer, start_index, end_index, 
                     [&](index& index)

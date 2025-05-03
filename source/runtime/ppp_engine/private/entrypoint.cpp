@@ -1,8 +1,6 @@
 #include "entrypoint.h"
-#include "environment.h"
 #include "color.h"
 #include "material.h"
-#include "events.h"
 
 #include "device/device.h"
 
@@ -19,17 +17,12 @@
 #include "resources/geometry_pool.h"
 #include "resources/framebuffer_pool.h"
 
-#include "fileio/fileio.h"
 #include "fileio/vfs.h"
 
 #include "util/log.h"
 #include "util/types.h"
 #include "util/steady_clock.h"
 
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 namespace ppp
@@ -91,6 +84,9 @@ namespace ppp
         vfs::add_wildcard(string::store_sid("local:"), internal::get_working_directory(executable_path));
 
         background(1.0f, 1.0f, 1.0f, 1.0f);
+
+        render::push_wireframe_rendering(false);
+        render::push_solid_rendering(true);
 
         setup();
 

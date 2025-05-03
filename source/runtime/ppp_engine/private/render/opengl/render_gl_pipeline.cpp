@@ -7,8 +7,6 @@
 
 #include <glad/glad.h>
 
-#include <sstream>
-
 namespace ppp
 {
     namespace render

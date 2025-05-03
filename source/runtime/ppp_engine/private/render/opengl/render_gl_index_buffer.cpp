@@ -3,9 +3,6 @@
 #include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
 
-
-
-
 #include <glad/glad.h>
 
 #include "util/log.h"

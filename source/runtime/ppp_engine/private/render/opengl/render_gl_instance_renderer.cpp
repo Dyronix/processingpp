@@ -1,25 +1,9 @@
 #include "render/render_instance_renderer.h"
 #include "render/render_item.h"
-#include "render/render_shader_uniform_manager.h"
-#include "render/render_features.h"
 #include "render/render_instance_render_strategy.h"
 #include "render/render_instance_data_table.h"
 
-#include "render/opengl/render_gl_error.h"
-#include "render/opengl/render_gl_api.h"
-
-#include "resources/shader_pool.h"
 #include "resources/material_pool.h"
-
-#include "util/log.h"
-#include "util/color_ops.h"
-
-#include <glad/glad.h>
-
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <algorithm>
 
 namespace ppp
 {
