@@ -53,14 +53,6 @@ namespace ppp
         void push_wireframe_linewidth(f32 line_width);
         void push_wireframe_color(const glm::vec4& color);
 
-        // Scissor
-        void push_scissor(s32 x, s32 y, s32 width, s32 height);
-        void push_scissor_enable(bool enable);
-
-        bool scissor_rect_enabled();
-
-        render_scissor scissor_rect();
-
         // Texture
         u32 create_image_item(f32 width, f32 height, s32 channels, const u8* data);
         u32 create_image_item(f32 width, f32 height, s32 channels, const u8* data, image_filter_type filter_type, image_wrap_type wrap_type);

@@ -2,8 +2,7 @@
 
 #include "render/opengl/render_gl_error.h"
 #include "render/opengl/render_gl_api.h"
-
-
+#include "render/opengl/render_gl_util.h"
 
 #include <glad/glad.h>
 
@@ -13,23 +12,6 @@ namespace ppp
 {
     namespace render
     {
-        namespace internal
-        {
-            //-------------------------------------------------------------------------
-            static GLenum convert_to_gl_data_type(attribute_data_type type)
-            {
-                switch (type)
-                {
-                case attribute_data_type::FLOAT: return GL_FLOAT;
-                case attribute_data_type::UNSIGNED_INT: return GL_UNSIGNED_INT;
-                case attribute_data_type::INT: return GL_INT;
-                }
-
-                assert(false);
-                return 0;  // Fallback to avoid compiler warnings
-            }
-        }
-
         struct vertex_buffer::impl
         {
             //-------------------------------------------------------------------------
@@ -71,11 +53,11 @@ namespace ppp
                         switch (layout.data_type)
                         {
                         case attribute_data_type::FLOAT:
-                            opengl::api::instance().vertex_attrib_pointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)attribute_offset);
+                            opengl::api::instance().vertex_attrib_pointer(attribute_index, layout.count, gl_data_type(layout.data_type), layout.normalized ? GL_TRUE : GL_FALSE, layout.stride, (void*)attribute_offset);
                             break;
                         case attribute_data_type::UNSIGNED_INT: // fallthrough
                         case attribute_data_type::INT:
-                            opengl::api::instance().vertex_attrib_i_pointer(attribute_index, layout.count, internal::convert_to_gl_data_type(layout.data_type), layout.stride, (void*)attribute_offset);
+                            opengl::api::instance().vertex_attrib_i_pointer(attribute_index, layout.count, gl_data_type(layout.data_type), layout.stride, (void*)attribute_offset);
                             break;
                         }
                     }

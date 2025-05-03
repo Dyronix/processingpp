@@ -6,6 +6,7 @@
 #include "render/render_features.h"
 
 #include "render/opengl/render_gl_api.h"
+#include "render/opengl/render_gl_util.h"
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
@@ -26,63 +27,12 @@ namespace ppp
 {
     namespace render
     {
-        namespace internal
-        {
-            //-------------------------------------------------------------------------
-            static void check_drawing_type(u32 index_count, GLenum type)
-            {
-                if (index_count == 0)
-                {
-                    return;
-                }
-
-                switch (type)
-                {
-                case GL_LINES:
-                    if (index_count % 2 != 0)
-                    {
-                        log::error("Trying to render invalid number of lines: {}", index_count);
-                        return;
-                    }
-                    break;
-                case GL_TRIANGLES:
-                    if (index_count % 3 != 0)
-                    {
-                        log::error("Trying to render invalid number of triangles: {}", index_count);
-                        return;
-                    }
-                    break;
-                }
-            }
-            //-------------------------------------------------------------------------
-            static u32 topology(topology_type type)
-            {
-                switch (type)
-                {
-                case topology_type::POINTS: return GL_POINTS;
-                case topology_type::LINES: return GL_LINES;
-                case topology_type::TRIANGLES: return GL_TRIANGLES;
-                }
-
-                log::error("Invalid topology_type type specified, using GL_TRIANGLES");
-                return GL_TRIANGLES;
-            }
-            //-------------------------------------------------------------------------
-            static u32 index_type()
-            {
-                if (sizeof(index) == sizeof(u32)) return GL_UNSIGNED_INT;
-                if (sizeof(index) == sizeof(u16)) return GL_UNSIGNED_SHORT;
-
-                log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
-                return GL_UNSIGNED_INT;
-            }
-
-            //-------------------------------------------------------------------------
-            constexpr s32 s_instance_data_initial_capacity = 16;
-        }
+        using instance_map = std::vector<instance>;
 
         //-------------------------------------------------------------------------
         // Buffer Manager
+        constexpr s32 s_instance_data_initial_capacity = 16;
+
         namespace instance_storage
         {
             //-------------------------------------------------------------------------
@@ -104,7 +54,7 @@ namespace ppp
             instance_buffer_manager(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
                 : m_vertex_buffer(instance->vertex_count(), layouts, layout_count)
                 , m_index_buffer(instance->index_count())
-                , m_instance_buffer(internal::s_instance_data_initial_capacity, instance_storage::size_in_bytes())
+                , m_instance_buffer(s_instance_data_initial_capacity, instance_storage::size_in_bytes())
             {
 
             }
@@ -128,9 +78,6 @@ namespace ppp
             //-------------------------------------------------------------------------
             void add_vertices(const irender_item* item, s32 sampler_id)
             {
-                s32 start_index = m_vertex_buffer.active_vertex_count();
-                s32 end_index = start_index + item->vertex_count();
-
                 add_vertices(item);
             }
             //-------------------------------------------------------------------------
@@ -138,8 +85,8 @@ namespace ppp
             {
                 assert(!item->faces().empty());
 
-                s32 start_index = m_index_buffer.active_index_count();
-                s32 end_index = start_index + item->index_count();
+                u64 start_index = m_index_buffer.active_index_count();
+                u64 end_index = start_index + item->index_count();
 
                 copy_index_data(item);
 
@@ -147,18 +94,19 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void bind()
+            void bind() const
             {
                 m_instance_buffer.bind(0);
             }
+
             //-------------------------------------------------------------------------
-            void unbind()
+            void unbind() const
             {
                 m_instance_buffer.unbind();
             }
 
             //-------------------------------------------------------------------------
-            void submit()
+            void submit() const
             {
                 m_vertex_buffer.submit();
                 m_instance_buffer.submit(0);
@@ -191,9 +139,9 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            u32 active_vertex_count() const { return m_vertex_buffer.active_vertex_count(); }
+            u64 active_vertex_count() const { return m_vertex_buffer.active_vertex_count(); }
             u64 active_vertices_byte_size() const { return m_vertex_buffer.total_size_in_bytes(); }
-            u32 active_index_count() const { return m_index_buffer.active_index_count(); }
+            u64 active_index_count() const { return m_index_buffer.active_index_count(); }
             u64 active_indices_byte_size() const { return m_index_buffer.total_size_in_bytes(); }
 
             //-------------------------------------------------------------------------
@@ -265,7 +213,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void transform_index_locations(s32 start_index, s32 end_index, u64 offset)
+            void transform_index_locations(u64 start_index, u64 end_index, u64 offset)
             {
                 index_buffer_ops::transform_index_data(m_index_buffer, start_index, end_index,
                     [&](index& index)
@@ -356,19 +304,19 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void bind()
+            void bind() const
             {
                 m_storage_buffer.bind(1);
             }
 
             //-------------------------------------------------------------------------
-            void unbind()
+            void unbind() const
             {
                 m_storage_buffer.unbind();
             }
 
             //-------------------------------------------------------------------------
-            void submit()
+            void submit() const
             {
                 m_storage_buffer.submit(1);
             }
@@ -543,15 +491,15 @@ namespace ppp
             //-------------------------------------------------------------------------
             void draw(topology_type topology) const
             {
-                GLenum gl_topology = internal::topology(topology);
+                GLenum gl_topology = gl_topology_type(topology);
 
 #ifndef NDEBUG
-                internal::check_drawing_type(m_buffer_manager->active_index_count(), gl_topology);
+                check_drawing_type(m_buffer_manager->active_index_count(), gl_topology);
 #endif
 
                 if (m_buffer_manager->active_index_count() != 0)
                 {
-                    opengl::api::instance().draw_elements_instanced(gl_topology, m_buffer_manager->active_index_count(), internal::index_type(), nullptr, m_instance_count);
+                    opengl::api::instance().draw_elements_instanced(gl_topology, m_buffer_manager->active_index_count(), gl_index_type(), nullptr, m_instance_count);
                 }
                 else
                 {
@@ -560,7 +508,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
+            void append(const irender_item* item, const glm::vec4& color, const glm::mat4& world) const
             {
                 if (item->has_textures())
                 {
@@ -627,18 +575,18 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void instance::increment_instance_count()
+        void instance::increment_instance_count() const
         {
             ++m_pimpl->m_instance_count;
         }
 
         //-------------------------------------------------------------------------
-        void instance::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
+        void instance::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world) const
         {
             m_pimpl->append(item, color, world);
         }
         //-------------------------------------------------------------------------
-        void instance::reset()
+        void instance::reset() const
         {
             m_pimpl->m_instance_count = 0;
 
@@ -646,7 +594,7 @@ namespace ppp
             m_pimpl->m_material_manager->reset();
         }
         //-------------------------------------------------------------------------
-        void instance::release()
+        void instance::release() const
         {
             m_pimpl->m_buffer_manager->release();
             m_pimpl->m_material_manager->release();
@@ -723,7 +671,7 @@ namespace ppp
         instance_drawing_data& instance_drawing_data::operator=(instance_drawing_data&& other) noexcept = default;
 
         //-------------------------------------------------------------------------
-        void instance_drawing_data::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world)
+        void instance_drawing_data::append(const irender_item* item, const glm::vec4& color, const glm::mat4& world) const
         {
             auto it = std::find_if(std::begin(m_pimpl->instances), std::end(m_pimpl->instances),
                 [item](const instance& inst)
@@ -732,7 +680,7 @@ namespace ppp
                 return is_equal;
             });
 
-            instance* new_instance = nullptr;
+            instance* new_instance;
 
             if (it == std::cend(m_pimpl->instances))
             {
@@ -750,7 +698,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void instance_drawing_data::reset()
+        void instance_drawing_data::reset() const
         {
             for (instance& b : m_pimpl->instances)
             {
@@ -761,7 +709,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void instance_drawing_data::release()
+        void instance_drawing_data::release() const
         {
             for (instance& i : m_pimpl->instances)
             {
@@ -773,7 +721,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const instance* instance_drawing_data::first_instance()
+        const instance* instance_drawing_data::first_instance() const
         {
             m_pimpl->draw_instance = 0;
 
@@ -781,7 +729,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        const instance* instance_drawing_data::next_instance()
+        const instance* instance_drawing_data::next_instance() const
         {
             if (m_pimpl->draw_instance < m_pimpl->instances.size())
             {

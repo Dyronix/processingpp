@@ -2,7 +2,6 @@
 #include "render/render_batch_renderer.h"
 #include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
-#include "render/render_instance_data_table.h"
 #include "render/render_context.h"
 #include "render/render_shader_uniform_manager.h"
 

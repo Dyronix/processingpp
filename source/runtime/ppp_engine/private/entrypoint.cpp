@@ -85,9 +85,6 @@ namespace ppp
 
         background(1.0f, 1.0f, 1.0f, 1.0f);
 
-        render::push_wireframe_rendering(false);
-        render::push_solid_rendering(true);
-
         setup();
 
         return 0;

@@ -4,6 +4,8 @@
 #include "render/render_context.h"
 #include "render/render_scissor.h"
 #include "render/render_pipeline.h"
+#include "render/render_batch_renderer.h"
+#include "render/render_instance_renderer.h"
 
 #include "render/render_pass_ui.h"
 #include "render/render_pass_blit.h"
@@ -122,6 +124,12 @@ namespace ppp
 
         using font_batch_data = std::unique_ptr<batch_data_table>;
 
+        struct renderpipeline_view
+        {
+            std::vector<irender_pass*> solid_passes;
+            std::vector<irender_pass*> wireframe_passes;
+        };
+
         //-------------------------------------------------------------------------
         struct context
         {
@@ -130,13 +138,13 @@ namespace ppp
 
             // drawing
             render_draw_mode            draw_mode = render_draw_mode::BATCHED;
-            render_scissor              scissor = {};
 
             // shaders
             string::string_id           fill_user_shader = string::string_id::create_invalid();
 
             // rendering
             render_pipeline             render_pipeline;
+            renderpipeline_view         render_pipeline_view;
 
             // renderers
             instance_data_hash_map      instance_data = {};
@@ -153,7 +161,7 @@ namespace ppp
             render_context.font_batch_data = g_ctx.font_batch_data.get();
             render_context.batch_data = &g_ctx.batch_data;
             render_context.instance_data = &g_ctx.instance_data;
-            render_context.scissor = &g_ctx.scissor;
+            render_context.scissor = scissor_rect();
 
             return render_context;
         }
@@ -219,6 +227,48 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        static void push_renderpasses()
+        {
+            auto& solid_passes = g_ctx.render_pipeline_view.solid_passes;
+            auto& wiref_passes = g_ctx.render_pipeline_view.wireframe_passes;
+
+            g_ctx.font_batch_data = std::make_unique<batch_data_table>(unlit::tags::font::batched());
+
+            // Clear depth only and do a predepth pass
+            g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_depth_clear_state(), framebuffer_pool::tags::composite()));
+            g_ctx.render_pipeline.add_pass(create_predepth_composite_pass(unlit::tags::predepth{}, framebuffer_pool::tags::composite()));
+
+            // Calculate things that are in shadow
+            g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_depth_clear_state(), framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
+            g_ctx.render_pipeline.add_pass(create_shadow_composite_pass(unlit::tags::shadow{}, framebuffer_pool::tags::shadow_map()));
+
+            // Clear color only and do a geometry pass
+            g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_rtv_clear_state(), framebuffer_pool::tags::composite()));
+
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_UNLIT_OPAQUE);
+
+            solid_passes.push_back(g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::color{}, framebuffer_pool::tags::composite())));
+            solid_passes.push_back(g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::texture{}, framebuffer_pool::tags::composite())));
+
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_UNLIT_OPAQUE);
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_LIT_OPAQUE);
+
+            solid_passes.push_back(g_ctx.render_pipeline.add_pass(create_forward_shading_composite_pass(lit::tags::color{}, framebuffer_pool::tags::composite())));
+            solid_passes.push_back(g_ctx.render_pipeline.add_pass(create_forward_shading_composite_pass(lit::tags::texture{}, framebuffer_pool::tags::composite())));
+
+            g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_LIT_OPAQUE);
+
+            // Wireframe
+            wiref_passes.push_back(g_ctx.render_pipeline.add_pass(create_unlit_wireframe_composite_pass(unlit::tags::color{}, framebuffer_pool::tags::composite())));
+
+            // Clear color only and do an ui pass
+            g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>(unlit::tags::font{}, framebuffer_pool::tags::composite()));
+
+            // Blit to backbuffer
+            g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::composite(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
+        }
+
+        //-------------------------------------------------------------------------
         bool initialize(s32 w, s32 h, void* user_data)
         {
             // glad: load all OpenGL function pointers
@@ -248,14 +298,10 @@ namespace ppp
                 }
             }
 #endif
+            push_scissor(0, 0, w, h);
+            push_scissor_enable(false);
 
-            g_ctx.scissor.x = 0;
-            g_ctx.scissor.y = 0;
-            g_ctx.scissor.width = w;
-            g_ctx.scissor.height = h;
-            g_ctx.scissor.enable = false;
-
-            g_ctx.font_batch_data = std::make_unique<batch_data_table>(unlit::tags::font::batched());
+            push_renderpasses();
 
             // Clear depth only and do a predepth pass
             g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_depth_clear_state(), framebuffer_pool::tags::composite()));
@@ -286,6 +332,12 @@ namespace ppp
 
             // Blit to backbuffer
             g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::composite(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
+
+            constexpr bool enable_solid_rendering = true;
+            constexpr bool enable_wireframe_rendering = false;
+            
+            push_solid_rendering(enable_solid_rendering);
+            push_wireframe_rendering(enable_wireframe_rendering);
 
             return true;
         }
@@ -439,34 +491,32 @@ namespace ppp
         //-------------------------------------------------------------------------
         void push_solid_rendering(bool enable)
         {
-            //// Font
-            //g_ctx.font_batch_data->enable_solid_rendering(enable);
-            //
-            //// Custom
-            //for (auto& pair : g_ctx.batch_data)
-            //{
-            //    pair.second->enable_solid_rendering(enable);
-            //}
-            //for (auto& pair : g_ctx.instance_data)
-            //{
-            //    pair.second->enable_solid_rendering(enable);
-            //}
+            for (irender_pass* pass : g_ctx.render_pipeline_view.solid_passes)
+            {
+                if (enable)
+                {
+                    pass->enable();
+                }
+                else
+                {
+                    pass->disable();
+                }
+            }
         }
         //-------------------------------------------------------------------------
         void push_wireframe_rendering(bool enable)
         {
-            //// Font
-            //g_ctx.font_batch_data->enable_wireframe_rendering(enable);
-            //
-            // Custom
-            //for (auto& pair : g_ctx.batch_data)
-            //{
-            //    pair.second->enable_wireframe_rendering(enable);
-            //}
-            //for (auto& pair : g_ctx.instance_data)
-            //{
-            //    pair.second->enable_wireframe_rendering(enable);
-            //}
+            for (irender_pass* pass : g_ctx.render_pipeline_view.wireframe_passes)
+            {
+                if (enable)
+                {
+                    pass->enable();
+                }
+                else
+                {
+                    pass->disable();
+                }
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -481,33 +531,6 @@ namespace ppp
         {
             batch_renderer::set_wireframe_linecolor(color::convert_color(color));
             instance_renderer::set_wireframe_linewidth(color::convert_color(color));
-        }
-
-        //-------------------------------------------------------------------------
-        void push_scissor(s32 x, s32 y, s32 width, s32 height)
-        {
-            g_ctx.scissor.x = x;
-            g_ctx.scissor.y = y;
-            g_ctx.scissor.width = width;
-            g_ctx.scissor.height = height;
-        }
-
-        //-------------------------------------------------------------------------
-        void push_scissor_enable(bool enable)
-        {
-            g_ctx.scissor.enable = enable;
-        }
-
-        //-------------------------------------------------------------------------
-        bool scissor_rect_enabled()
-        {
-            return g_ctx.scissor.enable;
-        }
-
-        //-------------------------------------------------------------------------
-        render_scissor scissor_rect()
-        {
-            return { g_ctx.scissor.x, g_ctx.scissor.y, g_ctx.scissor.width, g_ctx.scissor.height };
         }
 
         //-------------------------------------------------------------------------

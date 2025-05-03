@@ -12,11 +12,8 @@
 
 #include "camera/camera_context.h"
 
-#include "util/log.h"
-#include "util/brush.h"
 #include "util/color_ops.h"
 
-#include <algorithm>
 #include <glad/glad.h>
 
 namespace ppp

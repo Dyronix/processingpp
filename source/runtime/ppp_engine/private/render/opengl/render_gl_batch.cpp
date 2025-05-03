@@ -5,6 +5,7 @@
 #include "render/render_features.h"
 
 #include "render/opengl/render_gl_api.h"
+#include "render/opengl/render_gl_util.h"
 
 #include "render/helpers/render_vertex_buffer_ops.h"
 #include "render/helpers/render_index_buffer_ops.h"
@@ -23,57 +24,7 @@ namespace ppp
 {
     namespace render
     {
-        namespace internal
-        {
-            //-------------------------------------------------------------------------
-            static void check_drawing_type(u32 index_count, GLenum type)
-            {
-                if (index_count == 0)
-                {
-                    return;
-                }
-
-                switch (type)
-                {
-                case GL_LINES:
-                    if (index_count % 2 != 0)
-                    {
-                        log::error("Trying to render invalid number of lines: {}", index_count);
-                        return;
-                    }
-                    break;
-                case GL_TRIANGLES:
-                    if (index_count % 3 != 0)
-                    {
-                        log::error("Trying to render invalid number of triangles: {}", index_count);
-                        return;
-                    }
-                    break;
-                }
-            }
-            //-------------------------------------------------------------------------
-            static u32 topology(topology_type type)
-            {
-                switch (type)
-                {
-                case topology_type::POINTS: return GL_POINTS;
-                case topology_type::LINES: return GL_LINES;
-                case topology_type::TRIANGLES: return GL_TRIANGLES;
-                }
-
-                log::error("Invalid topology_type type specified, using GL_TRIANGLES");
-                return GL_TRIANGLES;
-            }
-            //-------------------------------------------------------------------------
-            static u32 index_type()
-            {
-                if (sizeof(index) == sizeof(u32)) return GL_UNSIGNED_INT;
-                if (sizeof(index) == sizeof(u16)) return GL_UNSIGNED_SHORT;
-
-                log::error("Invalid index type specified: {}, using UNSIGNED_INT", typeid(index).name());
-                return GL_UNSIGNED_INT;
-            }
-        }
+        using batch_arr = std::vector<batch>;
 
         //-------------------------------------------------------------------------
         // Buffer Manager
@@ -507,14 +458,14 @@ namespace ppp
             //-------------------------------------------------------------------------
             void draw(topology_type topology) const
             {
-                GLenum gl_topology = internal::topology(topology);
+                GLenum gl_topology = gl_topology_type(topology);
 
 #ifndef NDEBUG
-                internal::check_drawing_type(m_buffer_manager->active_index_count(), gl_topology);
+                check_drawing_type(m_buffer_manager->active_index_count(), gl_topology);
 #endif
                 if (m_buffer_manager->active_index_count() != 0)
                 {
-                    opengl::api::instance().draw_elements(gl_topology, m_buffer_manager->active_index_count(), internal::index_type(), nullptr);
+                    opengl::api::instance().draw_elements(gl_topology, m_buffer_manager->active_index_count(), gl_index_type(), nullptr);
                 }
                 else
                 {
