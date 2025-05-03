@@ -40,8 +40,8 @@ namespace ppp
             static u64 size_in_bytes()
             {
                 constexpr u64 total_size_in_bytes = sizeof(s32)   // material index
-                    + sizeof(glm::mat4)                 // model matrix of the geometry
-                    + sizeof(glm::vec4);                // color of the geometry
+                    + sizeof(glm::mat4)                           // model matrix of the geometry
+                    + sizeof(glm::vec4);                          // color of the geometry
 
                 return total_size_in_bytes;
             }
@@ -51,7 +51,7 @@ namespace ppp
         {
         public:
             //-------------------------------------------------------------------------
-            instance_buffer_manager(const irender_item* instance, const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+            instance_buffer_manager(const irender_item* instance, const attribute_layout* layouts, u32 layout_count)
                 : m_vertex_buffer(instance->vertex_count(), layouts, layout_count)
                 , m_index_buffer(instance->index_count())
                 , m_instance_buffer(s_instance_data_initial_capacity, instance_storage::size_in_bytes(), 0)
@@ -75,11 +75,7 @@ namespace ppp
             {
                 copy_vertex_data(item);
             }
-            //-------------------------------------------------------------------------
-            void add_vertices(const irender_item* item, s32 sampler_id)
-            {
-                add_vertices(item);
-            }
+
             //-------------------------------------------------------------------------
             void add_indices(const irender_item* item)
             {
@@ -419,15 +415,11 @@ namespace ppp
         class instance::impl
         {
         public:
-            impl(const irender_item* instance, const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+            impl(const irender_item* instance, const attribute_layout* layouts, u32 layout_count)
                 :m_instance_id(instance->geometry_id())
-                ,m_instance_count(0)
             {
                 assert(layouts != nullptr);
                 assert(layout_count > 0);
-
-                assert(instance_layouts != nullptr);
-                assert(instance_layout_count > 0);
 
                 assert(instance->vertex_count() > 0 && "render item does not have vertices");
 
@@ -435,7 +427,7 @@ namespace ppp
                 opengl::api::instance().generate_vertex_arrays(1, &m_vao);
                 opengl::api::instance().bind_vertex_array(m_vao);
 
-                m_buffer_manager = std::make_unique<instance_buffer_manager>(instance, layouts, layout_count, instance_layouts, instance_layout_count);
+                m_buffer_manager = std::make_unique<instance_buffer_manager>(instance, layouts, layout_count);
                 m_material_manager = std::make_unique<instance_material_manager>();
 
                 if (instance->index_count() != 0)
@@ -542,8 +534,8 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         // Instance
-        instance::instance(const irender_item* instance, const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
-            :m_pimpl(std::make_unique<impl>(instance, layouts, layout_count, instance_layouts, instance_layout_count))
+        instance::instance(const irender_item* instance, const attribute_layout* layouts, u32 layout_count)
+            :m_pimpl(std::make_unique<impl>(instance, layouts, layout_count))
         {
 
         }
@@ -633,12 +625,9 @@ namespace ppp
         // Instance Drawing Data Impl
         struct instance_drawing_data::impl
         {
-            impl(const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
-                : instances()
-                , layouts(layouts)
+            impl(const attribute_layout* layouts, u32 layout_count)
+                : layouts(layouts)
                 , layout_count(layout_count)
-                , instance_layouts(instance_layouts)
-                , instance_layout_count(instance_layout_count)
             {
 
             }
@@ -647,22 +636,17 @@ namespace ppp
 
             const attribute_layout*     layouts                   = nullptr;
             u32                         layout_count              = 0;
-            const attribute_layout*     instance_layouts          = nullptr;
-            u64                         instance_layout_count     = 0;
 
             s32                         draw_instance             = 0;
         };
 
         //-------------------------------------------------------------------------
         // Instance Drawing Data
-        instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
-            : m_pimpl(std::make_unique<impl>(layouts, layout_count, instance_layouts, instance_layout_count))
+        instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u32 layout_count)
+            : m_pimpl(std::make_unique<impl>(layouts, layout_count))
         {
             assert(layouts != nullptr);
             assert(layout_count > 0);
-
-            assert(instance_layouts != nullptr);
-            assert(instance_layout_count > 0);
         }
         //-------------------------------------------------------------------------
         instance_drawing_data::~instance_drawing_data() = default;
@@ -685,7 +669,7 @@ namespace ppp
 
             if (it == std::cend(m_pimpl->instances))
             {
-                instance& inst = m_pimpl->instances.emplace_back(item, m_pimpl->layouts, m_pimpl->layout_count, m_pimpl->instance_layouts, m_pimpl->instance_layout_count);
+                instance& inst = m_pimpl->instances.emplace_back(item, m_pimpl->layouts, m_pimpl->layout_count);
                 
                 new_instance = &inst;
             }

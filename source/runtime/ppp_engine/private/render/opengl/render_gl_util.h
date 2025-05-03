@@ -18,10 +18,10 @@ namespace ppp
 
         // opengl attribute layout helpers
         const attribute_layout* get_attribute_layout(string::string_id shader_tag);
-        u64                     get_attribute_layout_count(string::string_id shader_tag);
+        u32                     get_attribute_layout_count(string::string_id shader_tag);
 
         const attribute_layout* layouts(string::string_id shader_tag);
-        u64                     layout_count(string::string_id shader_tag);
+        u32                     layout_count(string::string_id shader_tag);
 
         // opengl check for correct index drawing type
         void check_drawing_type(u32 index_count, GLenum type);

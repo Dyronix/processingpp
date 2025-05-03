@@ -26,11 +26,9 @@ namespace ppp
             /**
              * @brief Constructs an instance data table.
              *
-             * @param instance_layouts Pointer to the instance-specific attribute layouts.
-             * @param instance_layout_count Number of instance attribute layouts.
              * @param shader_tag Shader identifier associated with the table.
              */
-            instance_data_table(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag);
+            instance_data_table(string::string_id shader_tag);
 
             /// @brief Returns an iterator to the beginning of the instance data.
             iterator begin() { return m_instances.begin(); }
@@ -45,16 +43,6 @@ namespace ppp
              * @brief Returns a const reference to the internal instance data.
              */
             const table_type& data() const { return m_instances; }
-
-            /**
-             * @brief Returns the pointer to the instance attribute layouts.
-             */
-            const attribute_layout* instance_layouts() const { return m_instance_layouts; }
-
-            /**
-             * @brief Returns the number of instance attribute layouts.
-             */
-            u64 instance_layout_count() const { return m_instance_layout_count; }
 
         public:
             /**
@@ -100,8 +88,6 @@ namespace ppp
         private:
             string::string_id           m_shader_tag;               ///< Identifier for the shader program.
             table_type                  m_instances;                ///< Storage for instance batches keyed by topology type.
-            const attribute_layout*     m_instance_layouts;         ///< Pointer to instance attribute layouts.
-            u64                         m_instance_layout_count;    ///< Number of instance attribute layouts.
         };
     }
 }

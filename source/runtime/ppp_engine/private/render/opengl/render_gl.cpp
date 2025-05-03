@@ -14,7 +14,6 @@
 #include "render/render_shader_tags.h"
 
 #include "render/helpers/render_vertex_layouts.h"
-#include "render/helpers/render_instance_layouts.h"
 #include "render/helpers/render_event_dispatcher.h"
 
 #include "render/opengl/render_gl_api.h"
@@ -205,10 +204,7 @@ namespace ppp
 
                 if (g_ctx.instance_data.find(data_key) == std::cend(g_ctx.instance_data))
                 {
-                    std::unique_ptr<instance_data_table> data_table = std::make_unique<instance_data_table>(
-                        color_world_layout().data(),
-                        color_world_layout().size(),
-                        shader_tag);
+                    std::unique_ptr<instance_data_table> data_table = std::make_unique<instance_data_table>(shader_tag);
 
                     g_ctx.instance_data.emplace(data_key, std::move(data_table));
                 }
@@ -220,7 +216,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         static void print_gl_version()
         {
-            auto opengl_version = reinterpret_cast<const char*>(opengl::api::instance().get_string_value(GL_VERSION));
+            auto opengl_version = opengl::api::instance().get_string_value(GL_VERSION);
 
             log::info("OpenGL version format: <major_version>.<minor_version>.<release_number> <vendor-specific information>");
             log::info("OpenGL version: {}", opengl_version);

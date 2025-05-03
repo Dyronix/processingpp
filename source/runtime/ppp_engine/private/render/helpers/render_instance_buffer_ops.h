@@ -2,8 +2,6 @@
 
 #include "render/render_instance_buffer.h"
 
-#include <glm/glm.hpp>
-
 namespace ppp
 {
     namespace render

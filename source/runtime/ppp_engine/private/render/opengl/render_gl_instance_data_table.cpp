@@ -11,10 +11,8 @@ namespace ppp
     namespace render
     {
         //-------------------------------------------------------------------------
-        instance_data_table::instance_data_table(const attribute_layout* instance_layouts, u64 instance_layout_count, string::string_id shader_tag)
+        instance_data_table::instance_data_table(string::string_id shader_tag)
             :m_shader_tag(shader_tag)
-            ,m_instance_layouts(instance_layouts)
-            ,m_instance_layout_count(instance_layout_count)
         {}
 
         //-------------------------------------------------------------------------
@@ -38,7 +36,7 @@ namespace ppp
         {
             if (m_instances.find(topology) == std::cend(m_instances))
             {
-                m_instances.emplace(topology, instance_drawing_data(layouts(m_shader_tag), layout_count(m_shader_tag), m_instance_layouts, m_instance_layout_count));
+                m_instances.emplace(topology, instance_drawing_data(layouts(m_shader_tag), layout_count(m_shader_tag)));
             }
 
             m_instances.at(topology).append(item, color, world);

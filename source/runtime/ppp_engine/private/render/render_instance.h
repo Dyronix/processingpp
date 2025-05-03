@@ -21,7 +21,7 @@ namespace ppp
             /**
              * @brief Constructs an instance from a base render item and vertex layouts.
              */
-            instance(const irender_item* instance, const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count);
+            instance(const irender_item* instance, const attribute_layout* layouts, u32 layout_count);
 
             ~instance();
 
@@ -114,7 +114,7 @@ namespace ppp
             /**
              * @brief Constructs instance drawing data with vertex and instance layouts.
              */
-            instance_drawing_data(const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count);
+            instance_drawing_data(const attribute_layout* layouts, u32 layout_count);
 
             ~instance_drawing_data();
 

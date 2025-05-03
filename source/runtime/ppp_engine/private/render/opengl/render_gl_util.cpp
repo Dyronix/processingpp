@@ -52,11 +52,14 @@ namespace ppp
             return fill_user_layout(shader_program->vertex_format());
         }
         //-------------------------------------------------------------------------
-        u64 get_attribute_layout_count(string::string_id shader_tag)
+        u32 get_attribute_layout_count(string::string_id shader_tag)
         {
             auto shader_program = shader_pool::get_shader_program(shader_tag);
+            auto layout_count = fill_user_layout_count(shader_program->vertex_format());
 
-            return fill_user_layout_count(shader_program->vertex_format());
+            assert(layout_count == static_cast<u32>(layout_count));
+
+            return static_cast<u32>(layout_count);
         }
         //-------------------------------------------------------------------------
         const attribute_layout* layouts(string::string_id shader_tag)
@@ -64,7 +67,7 @@ namespace ppp
             return get_attribute_layout(shader_tag);
         }
         //-------------------------------------------------------------------------
-        u64 layout_count(string::string_id shader_tag)
+        u32 layout_count(string::string_id shader_tag)
         {
             return get_attribute_layout_count(shader_tag);
         }
