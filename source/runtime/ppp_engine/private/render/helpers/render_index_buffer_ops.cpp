@@ -12,7 +12,7 @@ namespace ppp
                 , m_active(true)
                 , m_max_elements_to_set(data_count)
             {
-                assert(data_count <= m_index_buffer.index_count() - m_index_buffer.active_index_count() && "index buffer overflow");
+                assert(data_count <= m_index_buffer.element_count() - m_index_buffer.active_element_count() && "index buffer overflow");
 
                 m_index_buffer.open(data_count);
             }
@@ -41,13 +41,13 @@ namespace ppp
             {
                 index_buffer& ib = ias.get_index_buffer();
 
-                memcpy(ib.data() + (ib.active_index_count() * sizeof(index)), data_ptr, sizeof(index) * ias.get_max_elemenst_to_set());
+                memcpy(ib.data() + (ib.active_element_count() * sizeof(index)), data_ptr, sizeof(index) * ias.get_max_elemenst_to_set());
             }
 
             //-------------------------------------------------------------------------
             void transform_index_data(index_buffer& ib, std::function<void(index&)> transform_func)
             {
-                transform_index_data(ib, 0, ib.active_index_count(), transform_func);
+                transform_index_data(ib, 0, ib.active_element_count(), transform_func);
             }
 
             //-------------------------------------------------------------------------

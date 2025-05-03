@@ -303,36 +303,6 @@ namespace ppp
 
             push_renderpasses();
 
-            // Clear depth only and do a predepth pass
-            g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_depth_clear_state(), framebuffer_pool::tags::composite()));
-            g_ctx.render_pipeline.add_pass(create_predepth_composite_pass(unlit::tags::predepth{}, framebuffer_pool::tags::composite()));
-
-            // Calculate things that are in shadow
-            g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_depth_clear_state(), framebuffer_pool::tags::shadow_map(), framebuffer_flags::SAMPLED_DEPTH));
-            g_ctx.render_pipeline.add_pass(create_shadow_composite_pass(unlit::tags::shadow{}, framebuffer_pool::tags::shadow_map()));
-
-            // Clear color only and do a geometry pass
-            g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_rtv_clear_state(), framebuffer_pool::tags::composite()));
-
-            g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_UNLIT_OPAQUE);
-
-            g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::color{}, framebuffer_pool::tags::composite()));
-            g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::texture{}, framebuffer_pool::tags::composite()));
-
-            g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_UNLIT_OPAQUE);
-            g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_LIT_OPAQUE);
-
-            g_ctx.render_pipeline.add_pass(create_forward_shading_composite_pass(lit::tags::color{}, framebuffer_pool::tags::composite()));
-            g_ctx.render_pipeline.add_pass(create_forward_shading_composite_pass(lit::tags::texture{}, framebuffer_pool::tags::composite()));
-
-            g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_LIT_OPAQUE);
-
-            // Clear color only and do an ui pass
-            g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>(unlit::tags::font{}, framebuffer_pool::tags::composite()));
-
-            // Blit to backbuffer
-            g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::composite(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
-
             constexpr bool enable_solid_rendering = true;
             constexpr bool enable_wireframe_rendering = false;
             

@@ -59,7 +59,7 @@ namespace ppp
                 }
 
                 u64 attribute_offset = attribute_layout->offset;
-                u64 attribute_stride = vb.vertex_size_in_bytes();
+                u64 attribute_stride = vb.element_size_in_bytes();
 
                 for (u64 i = start_index; i < end_index; ++i)
                 {

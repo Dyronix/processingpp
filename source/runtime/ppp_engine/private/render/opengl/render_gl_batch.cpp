@@ -53,13 +53,13 @@ namespace ppp
             //-------------------------------------------------------------------------
             bool has_data() const
             {
-                return m_vertex_buffer.active_vertex_count() > 0 || m_index_buffer.active_index_count() > 0;
+                return m_vertex_buffer.active_element_count() > 0 || m_index_buffer.active_element_count() > 0;
             }
 
             //-------------------------------------------------------------------------
             void add_vertices(const irender_item* item, s32 material_id, const glm::vec4& color, const glm::mat4& world)
             {
-                u64 start_index = m_vertex_buffer.active_vertex_count();
+                u64 start_index = m_vertex_buffer.active_element_count();
                 u64 end_index = start_index + item->vertex_count();
 
                 copy_vertex_data(item, material_id, color);
@@ -76,11 +76,11 @@ namespace ppp
                 assert(!item->faces().empty());
 
                 auto index_buffer = &m_index_buffer;
-                u64 start_index = index_buffer->active_index_count();
+                u64 start_index = index_buffer->active_element_count();
                 u64 end_index = start_index + item->index_count();
 
                 copy_index_data(item);
-                transform_index_locations(start_index, end_index, m_vertex_buffer.active_vertex_count());
+                transform_index_locations(start_index, end_index, m_vertex_buffer.active_element_count());
             }
 
             //-------------------------------------------------------------------------
@@ -108,14 +108,14 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            u64 vertex_size_in_bytes() const { return m_vertex_buffer.vertex_size_in_bytes(); }
-            u64 index_size_in_bytes() const { return m_index_buffer.index_size_in_bytes(); }
+            u64 vertex_size_in_bytes() const { return m_vertex_buffer.element_size_in_bytes(); }
+            u64 index_size_in_bytes() const { return m_index_buffer.element_size_in_bytes(); }
 
             //-------------------------------------------------------------------------
-            u32 active_vertex_count() const { return m_vertex_buffer.active_vertex_count(); }
-            u64 active_vertices_byte_size() const { return m_vertex_buffer.total_size_in_bytes(); }
-            u32 active_index_count() const { return m_index_buffer.active_index_count(); }
-            u64 active_indices_byte_size() const { return m_index_buffer.total_size_in_bytes(); }
+            u32 active_vertex_count() const { return m_vertex_buffer.active_element_count(); }
+            u64 active_vertices_byte_size() const { return m_vertex_buffer.total_buffer_size_in_bytes(); }
+            u32 active_index_count() const { return m_index_buffer.active_element_count(); }
+            u64 active_indices_byte_size() const { return m_index_buffer.total_buffer_size_in_bytes(); }
 
             //-------------------------------------------------------------------------
             u32 max_vertex_count() const { return m_max_vertex_count; }
@@ -251,7 +251,7 @@ namespace ppp
         public:
             //-------------------------------------------------------------------------
             batch_material_manager()
-                :m_storage_buffer(8, batch_material_storage::size_in_bytes())
+                :m_storage_buffer(8, batch_material_storage::size_in_bytes(), 1)
             {}
 
             //-------------------------------------------------------------------------
@@ -263,29 +263,30 @@ namespace ppp
             //-------------------------------------------------------------------------
             s32 add_material_attributes(const irender_item* item)
             {
-                s32 material_index = m_storage_buffer.active_element_count();
+                const u32 material_index = m_storage_buffer.active_element_count();
+                assert(material_index == static_cast<s32>(material_index));
 
                 copy_material_data(item);
 
-                return material_index;
+                return static_cast<s32>(material_index);
             }
 
             //-------------------------------------------------------------------------
-            void bind()
+            void bind() const
             {
-                m_storage_buffer.bind(1);
+                m_storage_buffer.bind();
             }
 
             //-------------------------------------------------------------------------
-            void unbind()
+            void unbind() const
             {
                 m_storage_buffer.unbind();
             }
 
             //-------------------------------------------------------------------------
-            void submit()
+            void submit() const
             {
-                m_storage_buffer.submit(1);
+                m_storage_buffer.submit();
             }
 
             //-------------------------------------------------------------------------
@@ -306,7 +307,7 @@ namespace ppp
 
             //-------------------------------------------------------------------------
             u32 active_element_count() const { return m_storage_buffer.active_element_count(); }
-            u64 active_elements_byte_size() const { return m_storage_buffer.total_size_in_bytes(); }
+            u64 active_elements_byte_size() const { return m_storage_buffer.total_buffer_size_in_bytes(); }
 
         private:
             void copy_material_data(const irender_item* item)
@@ -556,9 +557,9 @@ namespace ppp
         const void* batch::indices() const { return m_pimpl->m_buffer_manager->indices(); }
 
         //-------------------------------------------------------------------------
-        u32 batch::active_vertex_count() const { return m_pimpl->m_buffer_manager->active_vertex_count(); }
-        //-------------------------------------------------------------------------
         u32 batch::active_index_count() const { return m_pimpl->m_buffer_manager->active_index_count(); }
+        //-------------------------------------------------------------------------
+        u32 batch::active_vertex_count() const { return m_pimpl->m_buffer_manager->active_vertex_count(); }
 
         //-------------------------------------------------------------------------
         u64 batch::vertex_buffer_byte_size() const { return m_pimpl->m_buffer_manager->active_vertices_byte_size(); }

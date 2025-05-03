@@ -12,7 +12,7 @@ namespace ppp
                 , m_active(true)
                 , m_max_elements_to_set(data_count)
             {
-                assert(data_count <= m_vertex_buffer.vertex_count() - m_vertex_buffer.active_vertex_count() && "Vertex buffer overflow");
+                assert(data_count <= m_vertex_buffer.element_count() - m_vertex_buffer.active_element_count() && "Vertex buffer overflow");
 
                 m_vertex_buffer.open(data_count);
             }
@@ -54,13 +54,13 @@ namespace ppp
                 }
 
                 u64 element_offset = element_layout->offset;
-                u64 element_stride = vb.vertex_size_in_bytes();
+                u64 element_stride = vb.element_size_in_bytes();
                 u64 element_size = element_layout->total_size_in_bytes();
 
                 for (u64 i = 0; i < vaas.get_max_elemenst_to_set(); ++i)
                 {
                     const u8* src_ptr = reinterpret_cast<const u8*>(data_ptr) + i * element_size;
-                    u8* dst_ptr = vb.data() + (vb.active_vertex_count() + i) * element_stride + element_offset;
+                    u8* dst_ptr = vb.data() + (vb.active_element_count() + i) * element_stride + element_offset;
                     memcpy(dst_ptr, src_ptr, element_size);
                 }
             }
@@ -77,12 +77,12 @@ namespace ppp
                 }
 
                 u64 element_offset = element_layout->offset;
-                u64 element_stride = vb.vertex_size_in_bytes();
+                u64 element_stride = vb.element_size_in_bytes();
                 u64 element_size = element_layout->total_size_in_bytes();
 
                 for (u64 i = 0; i < vaas.get_max_elemenst_to_set(); ++i)
                 {
-                    u8* dst_ptr = vb.data() + (vb.active_vertex_count() + i) * element_stride + element_offset;
+                    u8* dst_ptr = vb.data() + (vb.active_element_count() + i) * element_stride + element_offset;
                     memcpy(dst_ptr, data_ptr, element_size);
                 }
             }

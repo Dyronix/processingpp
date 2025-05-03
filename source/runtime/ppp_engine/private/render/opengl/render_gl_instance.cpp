@@ -51,10 +51,10 @@ namespace ppp
         {
         public:
             //-------------------------------------------------------------------------
-            instance_buffer_manager(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+            instance_buffer_manager(const irender_item* instance, const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
                 : m_vertex_buffer(instance->vertex_count(), layouts, layout_count)
                 , m_index_buffer(instance->index_count())
-                , m_instance_buffer(s_instance_data_initial_capacity, instance_storage::size_in_bytes())
+                , m_instance_buffer(s_instance_data_initial_capacity, instance_storage::size_in_bytes(), 0)
             {
 
             }
@@ -62,7 +62,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             bool has_data() const
             {
-                return (m_vertex_buffer.active_vertex_count() > 0 || m_index_buffer.active_index_count() > 0) && m_instance_buffer.active_element_count() > 0;
+                return (m_vertex_buffer.active_element_count() > 0 || m_index_buffer.active_element_count() > 0) && m_instance_buffer.active_element_count() > 0;
             }
 
             //-------------------------------------------------------------------------
@@ -85,18 +85,18 @@ namespace ppp
             {
                 assert(!item->faces().empty());
 
-                u64 start_index = m_index_buffer.active_index_count();
+                u64 start_index = m_index_buffer.active_element_count();
                 u64 end_index = start_index + item->index_count();
 
                 copy_index_data(item);
 
-                transform_index_locations(start_index, end_index, m_vertex_buffer.active_vertex_count());
+                transform_index_locations(start_index, end_index, m_vertex_buffer.active_element_count());
             }
 
             //-------------------------------------------------------------------------
             void bind() const
             {
-                m_instance_buffer.bind(0);
+                m_instance_buffer.bind();
             }
 
             //-------------------------------------------------------------------------
@@ -109,7 +109,7 @@ namespace ppp
             void submit() const
             {
                 m_vertex_buffer.submit();
-                m_instance_buffer.submit(0);
+                m_instance_buffer.submit();
 
                 if (active_index_count() != 0)
                 {
@@ -118,7 +118,7 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            void reset()
+            void reset() const
             {   
                 // We do not reset the vertex and index buffer as we need to retain the information 
                 //  we stored when we created this instance.
@@ -131,7 +131,7 @@ namespace ppp
                 m_instance_buffer.reset();
             }
             //-------------------------------------------------------------------------
-            void release()
+            void release() const
             {
                 m_vertex_buffer.free();
                 m_index_buffer.free();
@@ -139,10 +139,10 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
-            u64 active_vertex_count() const { return m_vertex_buffer.active_vertex_count(); }
-            u64 active_vertices_byte_size() const { return m_vertex_buffer.total_size_in_bytes(); }
-            u64 active_index_count() const { return m_index_buffer.active_index_count(); }
-            u64 active_indices_byte_size() const { return m_index_buffer.total_size_in_bytes(); }
+            u64 active_vertex_count() const { return m_vertex_buffer.active_element_count(); }
+            u64 active_vertices_byte_size() const { return m_vertex_buffer.total_buffer_size_in_bytes(); }
+            u64 active_index_count() const { return m_index_buffer.active_element_count(); }
+            u64 active_indices_byte_size() const { return m_index_buffer.total_buffer_size_in_bytes(); }
 
             //-------------------------------------------------------------------------
             const void* vertices() const { return m_vertex_buffer.data(); }
@@ -290,23 +290,24 @@ namespace ppp
         public:
             //-------------------------------------------------------------------------
             instance_material_manager()
-                :m_storage_buffer(8, instance_material_storage::size_in_bytes())
+                :m_storage_buffer(8, instance_material_storage::size_in_bytes(), 1)
             {}
 
             //-------------------------------------------------------------------------
             s32 add_material_attributes(const irender_item* item)
             {
-                s32 material_index = m_storage_buffer.active_element_count();
+                const u32 material_index = m_storage_buffer.active_element_count();
+                assert(material_index == static_cast<s32>(material_index));
 
                 copy_material_data(item);
 
-                return material_index;
+                return static_cast<s32>(material_index);
             }
 
             //-------------------------------------------------------------------------
             void bind() const
             {
-                m_storage_buffer.bind(1);
+                m_storage_buffer.bind();
             }
 
             //-------------------------------------------------------------------------
@@ -318,17 +319,17 @@ namespace ppp
             //-------------------------------------------------------------------------
             void submit() const
             {
-                m_storage_buffer.submit(1);
+                m_storage_buffer.submit();
             }
 
             //-------------------------------------------------------------------------
-            void reset()
+            void reset() const
             {
                 m_storage_buffer.reset();
             }
 
             //-------------------------------------------------------------------------
-            void release()
+            void release() const
             {
                 m_storage_buffer.free();
             }
@@ -418,7 +419,7 @@ namespace ppp
         class instance::impl
         {
         public:
-            impl(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+            impl(const irender_item* instance, const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
                 :m_instance_id(instance->geometry_id())
                 ,m_instance_count(0)
             {
@@ -541,7 +542,7 @@ namespace ppp
 
         //-------------------------------------------------------------------------
         // Instance
-        instance::instance(const irender_item* instance, const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+        instance::instance(const irender_item* instance, const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
             :m_pimpl(std::make_unique<impl>(instance, layouts, layout_count, instance_layouts, instance_layout_count))
         {
 
@@ -632,7 +633,7 @@ namespace ppp
         // Instance Drawing Data Impl
         struct instance_drawing_data::impl
         {
-            impl(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+            impl(const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
                 : instances()
                 , layouts(layouts)
                 , layout_count(layout_count)
@@ -645,16 +646,16 @@ namespace ppp
             instance_map                instances                 = {};
 
             const attribute_layout*     layouts                   = nullptr;
-            const u64                   layout_count              = 0;
+            u32                         layout_count              = 0;
             const attribute_layout*     instance_layouts          = nullptr;
-            const u64                   instance_layout_count     = 0;
+            u64                         instance_layout_count     = 0;
 
             s32                         draw_instance             = 0;
         };
 
         //-------------------------------------------------------------------------
         // Instance Drawing Data
-        instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u64 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
+        instance_drawing_data::instance_drawing_data(const attribute_layout* layouts, u32 layout_count, const attribute_layout* instance_layouts, u64 instance_layout_count)
             : m_pimpl(std::make_unique<impl>(layouts, layout_count, instance_layouts, instance_layout_count))
         {
             assert(layouts != nullptr);

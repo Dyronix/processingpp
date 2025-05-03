@@ -102,8 +102,8 @@ namespace ppp
             virtual bool has_textures() const = 0;
             virtual bool cast_shadows() const = 0;
 
-            virtual u64 vertex_count() const = 0;
-            virtual u64 index_count() const = 0;
+            virtual u32 vertex_count() const = 0;
+            virtual u32 index_count() const = 0;
 
             virtual const std::vector<glm::vec3>& vertex_positions() const = 0;
             virtual const std::vector<glm::vec3>& vertex_normals() const = 0;

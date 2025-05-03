@@ -63,11 +63,11 @@ namespace ppp
             return m_cast_shadows;
         }
 
-        u64 vertex_count() const override
+        u32 vertex_count() const override
         {
             return m_geometry->vertex_count();
         }
-        u64 index_count() const override
+        u32 index_count() const override
         {
             return m_geometry->index_count();
         }

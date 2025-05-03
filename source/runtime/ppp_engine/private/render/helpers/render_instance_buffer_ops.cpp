@@ -41,7 +41,7 @@ namespace ppp
 
                 u64 size_layout = calculate_total_size_layout(ib.layouts(), ib.layout_count());
 
-                memcpy(ib.data() + (ib.active_instance_count() * size_layout), data_ptr, size_layout * ias.get_max_elemenst_to_set());
+                memcpy(ib.data() + (ib.active_element_count() * size_layout), data_ptr, size_layout * ias.get_max_elemenst_to_set());
             }
         }
     }
