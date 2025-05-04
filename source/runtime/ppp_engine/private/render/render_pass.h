@@ -114,6 +114,8 @@ namespace ppp
             iinstance_render_strategy*          instance_render_strategy();
             bool                                instance_rendering_enabled() const;
 
+            draw_mode                           drawing_mode() const { return m_draw_mode; }
+
         private:
             string::string_id                   m_shader_tag;
 

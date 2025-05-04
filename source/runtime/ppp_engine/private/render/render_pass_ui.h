@@ -18,6 +18,9 @@ namespace ppp
             void begin_frame(const render_context& context) override;
             void render(const render_context& context) override;
             void end_frame(const render_context& context) override;
+
+        public:
+            bool should_render(const render_context& context) const override;
         };
     }
 }

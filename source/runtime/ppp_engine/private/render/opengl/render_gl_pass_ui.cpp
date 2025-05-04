@@ -79,5 +79,18 @@ namespace ppp
             // Unbind pass framebuffer
             framebuffer()->unbind();
         }
+
+        //-------------------------------------------------------------------------
+        bool ui_pass::should_render(const render_context& context) const
+        {
+            bool can_draw = false;
+
+            if (drawing_mode() == draw_mode::BATCHED || drawing_mode() == draw_mode::AUTO)
+            {
+                can_draw |= context.font_batch_data->empty() == false;
+            }
+
+            return can_draw;
+        }
     }
 }
