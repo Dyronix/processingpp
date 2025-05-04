@@ -2,7 +2,6 @@
 #include "mathematics.h"
 #include "render/render.h"
 #include "util/brush.h"
-#include "util/types.h"
 
 #include <glm/glm.hpp>
 
@@ -85,6 +84,7 @@ namespace ppp
     void no_stroke()
     {
         render::brush::push_stroke_enable(false);
+        render::brush::push_inner_stroke_enable(false);
     }
 
     void fill(int grayscale)
