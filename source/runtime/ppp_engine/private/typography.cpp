@@ -36,7 +36,7 @@ namespace ppp
         public:
             font_character_item(const geometry::geometry* geom, const resources::imaterial* material)
                 :m_geometry(geom)
-                , m_material(material)
+                ,m_material(material)
             {}
 
             ~font_character_item() override = default;
@@ -104,6 +104,8 @@ namespace ppp
         font_character_item make_font_character(s32 character, render::texture_id texture_id, f32 uv_start_x, f32 uv_start_y, f32 uv_end_x, f32 uv_end_y)
         {
             resources::imaterial* mat_font = material_pool::get_or_create_material_instance(render::unlit::tags::font::batched());
+
+            mat_font->add_texture(texture_id);
 
             std::stringstream stream;
 

@@ -8,6 +8,7 @@
 
 #include "resources/framebuffer_pool.h"
 #include "resources/shader_pool.h"
+#include "resources/material.h"
 
 #include "camera/camera_context.h"
 
@@ -21,6 +22,25 @@ namespace ppp
         static void push_all_shape_dependent_uniforms(resources::shader_program shader_program, const glm::mat4& vp)
         {
             shaders::push_uniform(shader_program->id(), string::store_sid("u_view_proj"), vp);
+        }
+        //-------------------------------------------------------------------------
+        static void push_batch_uniforms(const batch_data_table* data_table, const resources::shader_program& shader_program, const resources::sampler_ids& samplers, const resources::texture_ids& textures)
+        {
+            const u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
+
+            const u64 sampler_size = samplers.size();
+            const u64 texture_size = textures.size();
+
+            if (!textures.empty())
+            {
+                shaders::push_uniform_array(shader_program->id(), string::store_sid("u_image_samplers"), sampler_size, samplers.data());
+
+                for (u64 i = 0; i < texture_size; ++i)
+                {
+                    opengl::api::instance().activate_texture(GL_TEXTURE0 + (offset * i));
+                    opengl::api::instance().bind_texture(GL_TEXTURE_2D, textures[i]);
+                }
+            }
         }
 
         //-------------------------------------------------------------------------
@@ -46,7 +66,7 @@ namespace ppp
             opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
 
             opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
-            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_LINE);
+            opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
 
             // Bind the pass shader
             opengl::api::instance().use_program(shader_program()->id());
@@ -58,6 +78,11 @@ namespace ppp
             const glm::mat4 cam_active_vp = cam_active_p * cam_active_v;
 
             push_all_shape_dependent_uniforms(shader_program(), cam_active_vp);
+
+            const auto& samplers = material()->samplers();
+            const auto& textures = material()->textures();
+
+            push_batch_uniforms(context.font_batch_data, shader_program(), samplers, textures);
         }
 
         //-------------------------------------------------------------------------
@@ -87,7 +112,7 @@ namespace ppp
 
             if (drawing_mode() == draw_mode::BATCHED || drawing_mode() == draw_mode::AUTO)
             {
-                can_draw |= context.font_batch_data->empty() == false;
+                can_draw |= context.font_batch_data != nullptr && context.font_batch_data->empty() == false;
             }
 
             return can_draw;

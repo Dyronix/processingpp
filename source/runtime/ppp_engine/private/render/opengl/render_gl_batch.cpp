@@ -263,12 +263,20 @@ namespace ppp
             //-------------------------------------------------------------------------
             s32 add_material_attributes(const irender_item* item)
             {
-                const u32 material_index = m_storage_buffer.active_element_count();
-                assert(material_index == static_cast<s32>(material_index));
+                if (m_materials.find(item->material()) == std::cend(m_materials))
+                {
+                    const u32 material_index = m_storage_buffer.active_element_count();
+                    assert(material_index == static_cast<s32>(material_index));
 
-                copy_material_data(item);
+                    copy_material_data(item);
 
-                return static_cast<s32>(material_index);
+                    s32 storage_buffer_index = static_cast<s32>(material_index);
+                    m_materials.emplace(item->material(), storage_buffer_index);
+
+                    return storage_buffer_index;
+                }
+
+                return m_materials.at(item->material());
             }
 
             //-------------------------------------------------------------------------
@@ -292,12 +300,14 @@ namespace ppp
             //-------------------------------------------------------------------------
             void reset()
             {
+                m_materials.clear();
                 m_storage_buffer.reset();
             }
 
             //-------------------------------------------------------------------------
             void release()
             {
+                m_materials.clear();
                 m_storage_buffer.free();
             }
 
@@ -390,6 +400,7 @@ namespace ppp
 
         private:
             storage_buffer m_storage_buffer;
+            std::unordered_map<const resources::imaterial*, s32> m_materials;
         };
 
         //-------------------------------------------------------------------------

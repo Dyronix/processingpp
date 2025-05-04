@@ -531,7 +531,7 @@ namespace ppp
                         .add_attribute("vec3", "a_position", 0)
                         .add_attribute("vec2", "a_texture", 1)
                         .add_attribute("vec4", "a_tint_color", 2)
-                        .add_attribute("int", "a_texture_idx", 3)
+                        .add_attribute("int", "a_material_idx", 3)
 
                         .add_uniform("mat4", "u_view_proj")
                         .add_uniform("bool", "u_wireframe")
@@ -539,13 +539,13 @@ namespace ppp
 
                         .add_output("vec4", "v_tint_color")
                         .add_output("vec2", "v_texture")
-                        .add_output("int", "v_texture_idx", true)
+                        .add_output("int", "v_material_idx", true)
 
                         .set_main_function_body(R"(
                         v_tint_color = u_wireframe ? u_wireframe_color : a_tint_color;
-                        v_texture = a_texture;
-                        v_texture_idx = a_texture_idx;
-                        gl_Position = u_view_proj * vec4(a_position, 1.0);
+                        v_texture = a_texture;                                        
+                        v_material_idx = a_material_idx;                              
+                        gl_Position = u_view_proj * vec4(a_position, 1.0);    
                     )").build();
                 }
 
@@ -557,17 +557,27 @@ namespace ppp
                     return builder
                         .set_version(460)
 
+                        .add_struct(
+                            "material_attributes",
+                            {
+                                {"int", "sampler_indices[" + string::to_string<std::string>(render::max_textures()) + "]"},
+                                {"int", "sampler_count"},
+                                {"vec4", "ambient_color"},
+                                {"vec4", "diffuse_color"}
+                            })
+                        .add_ssbo("material_buffer", "material_attributes", "materials", 1, true)
+
                         .add_uniform_array("sampler2D", "u_image_samplers", render::max_textures())
 
                         .add_input("vec4", "v_tint_color")
                         .add_input("vec2", "v_texture")
-                        .add_input("int", "v_texture_idx", true)
+                        .add_input("int", "v_material_idx", true)
 
                         .add_output("vec4", "frag_color")
 
                         .set_main_function_body(R"(
-                        vec4 color = vec4(v_tint_color.rgb, texture(u_image_samplers[v_texture_idx], v_texture).r); 
-                        frag_color = color;
+                        vec4 base_color = texture(u_image_samplers[materials[v_material_idx].sampler_indices[0]], v_texture);
+                        frag_color = vec4(v_tint_color.rgb, base_color.r != 1.0 ? 0.0 : 1.0);
                     )").build();
                 }
 
