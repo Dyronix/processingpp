@@ -163,33 +163,36 @@ namespace ppp
 
             for (const auto& i : info)
             {
-                // Place glyph into atlas
-                if (pen_x + i.bitmap.width >= atlas.texture_width)
+                // one-pixel transparent border around each glyph
+                constexpr u32 PADDING = 1;
+
+                // Place glyph into atlas, accounting for padding
+                if (pen_x + i.bitmap.width + 2 * PADDING >= atlas.texture_width)
                 {
                     pen_x = 0;
-                    pen_y += row_height;
+                    // move down by row height + top & bottom padding
+                    pen_y += row_height + 2 * PADDING;
                     row_height = 0;
                 }
 
-                assert(pen_y + i.bitmap.height < atlas.texture_height && "Texture atlas is full.");
+                // ensure glyph + padding fits in height
+                assert(pen_y + i.bitmap.height + 2 * PADDING < atlas.texture_height && "Texture atlas is full.");
 
                 // Copy glyph bitmap into atlas
                 for (s32 row = 0; row < i.bitmap.height; ++row)
                 {
-                    // The start position in the atlas
-                    u8* dest = &atlas_buffer[(pen_x) + (pen_y + row) * atlas.texture_width];
-
-                    // The source row in the glyph's bitmap
-                    const u8* src = &i.bitmap.blob[row * i.pitch];
-
-                    // Copy the whole row at once
+                    // Copy into atlas at (pen_x+PADDING, pen_y+PADDING)
+                    u8 * dest = &atlas_buffer[ (pen_x + PADDING) + (pen_y + PADDING + row) * atlas.texture_width ];
+                    const u8 * src = &i.bitmap.blob[row * i.pitch];
                     memcpy(dest, src, i.bitmap.width);
                 }
 
-                atlas.characters.emplace(i.character, build_font_character(i, pen_x, pen_y, atlas.texture_width, atlas.texture_height));
+                // Store glyph UVs shifted by PADDING
+                atlas.characters.emplace(i.character, build_font_character(i, pen_x + PADDING, pen_y + PADDING, atlas.texture_width, atlas.texture_height));
 
-                pen_x += i.bitmap.width;
-                row_height = std::max(row_height, i.bitmap.height);
+                // Advance pen by glyph width + left+right padding
+                pen_x += i.bitmap.width + 2 * PADDING;
+                row_height = std::max(row_height, i.bitmap.height + 2 * PADDING);
             }
 
             atlas.texture_id = render::create_image_item(
@@ -197,7 +200,7 @@ namespace ppp
                 atlas.texture_height,
                 1,
                 atlas_buffer.data(),
-                render::image_filter_type::LINEAR,
+                render::image_filter_type::NEAREST,
                 render::image_wrap_type::CLAMP_TO_EDGE);
 
             return atlas;

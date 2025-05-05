@@ -8,7 +8,7 @@ namespace ppp
     constexpr int _window_width = 1280;
     constexpr int _window_height = 720;
 
-    constexpr int _grid_width = _window_width / 64;
+    constexpr int _grid_width = _window_width / 128;
     constexpr int _grid_height = _window_height / 72;
     constexpr int _grid_cell_size = 50;
 
@@ -47,7 +47,7 @@ namespace ppp
     {
         set_quit_application_keycode(key_code::KEY_ESCAPE);
 
-        text_font(load_font("local:/content/fonts/PokemonGb-RAeo.ttf"));
+        text_font(load_font("local:/content/fonts/PokemonGb-RAeo.ttf", 20));
 
         rect_mode(shape_mode_type::CENTER);
         ellipse_mode(shape_mode_type::CENTER);
