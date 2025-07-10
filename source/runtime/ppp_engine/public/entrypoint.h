@@ -7,6 +7,20 @@
 namespace ppp
 {
     /**
+     * @brief C-style function pointer type for engine event callbacks.
+     */
+    using engine_delegates = void(*)();
+
+    /**
+     * @brief Subscription functions for engine events
+     */
+    void subscribe_begin_frame(engine_delegates callback);
+    void subscribe_pre_render(engine_delegates callback);
+    void subscribe_post_render(engine_delegates callback);
+    void subscribe_end_frame(engine_delegates callback);
+    void subscribe_step(engine_delegates callback);
+
+    /**
      * @brief Holds parameters for application initialization.
      */
     struct app_params

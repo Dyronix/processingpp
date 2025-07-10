@@ -39,6 +39,90 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
+    using callback = ppp::engine_delegates;
+    
+    //-------------------------------------------------------------------------
+    enum class event_type 
+    {
+        BEGIN_FRAME,
+        PRE_RENDER,
+        POST_RENDER,
+        END_FRAME,
+        STEP
+    };
+
+    struct event_type_hash
+    { 
+        //-------------------------------------------------------------------------
+        size_t operator()(event_type type) const noexcept 
+        {
+            return static_cast<size_t>(type); 
+        }
+    };
+
+    class event_bus
+    {
+    public:
+        //-------------------------------------------------------------------------
+        static event_bus& instance()
+        {
+            static event_bus bus;
+            return bus;
+        }
+
+        //-------------------------------------------------------------------------
+        void subscribe(event_type type, callback cb)
+        {
+            subscribers[type].push_back(cb);
+        }
+
+        //-------------------------------------------------------------------------
+        void broadcast(event_type type)
+        {
+            auto it = subscribers.find(type);
+            if (it != subscribers.end())
+            {
+                for (auto& cb : it->second)
+                {
+                    if (cb)
+                    {
+                        cb();
+                    }
+                }
+            }
+        }
+
+    private:
+        std::unordered_map<event_type, std::vector<callback>, event_type_hash> subscribers;
+    };
+
+    //-------------------------------------------------------------------------
+    void subscribe_begin_frame(engine_delegates callback)
+    {
+        event_bus::instance().subscribe(event_type::BEGIN_FRAME, callback);
+    }
+    //-------------------------------------------------------------------------
+    void subscribe_pre_render(engine_delegates callback)
+    {
+        event_bus::instance().subscribe(event_type::PRE_RENDER, callback);
+    }
+    //-------------------------------------------------------------------------
+    void subscribe_post_render(engine_delegates callback)
+    {
+        event_bus::instance().subscribe(event_type::POST_RENDER, callback);
+    }
+    //-------------------------------------------------------------------------
+    void subscribe_end_frame(engine_delegates callback)
+    {
+        event_bus::instance().subscribe(event_type::END_FRAME, callback);
+    }
+    //-------------------------------------------------------------------------
+    void subscribe_step(engine_delegates callback)
+    {
+        event_bus::instance().subscribe(event_type::STEP, callback);
+    }
+
+    //-------------------------------------------------------------------------
     static s32 init(const app_params& app_params, std::string_view executable_path)
     {
         if (!device::initialize(app_params.window_width, app_params.window_height))
@@ -96,6 +180,8 @@ namespace ppp
 
         while (!device::should_close())
         {
+            event_bus::instance().broadcast(event_type::BEGIN_FRAME);
+
             if (device::can_draw())
             {
                 context.camera_position_font = camera_manager::get_camera_position(camera_manager::tags::font());
@@ -110,6 +196,7 @@ namespace ppp
 
                 // render
                 // ------
+                event_bus::instance().broadcast(event_type::PRE_RENDER);
                 render::begin();
 
                 draw();
@@ -117,6 +204,7 @@ namespace ppp
                 render::render(&context);
 
                 render::end();
+                event_bus::instance().broadcast(event_type::POST_RENDER);
 
                 // swap front/back buffers
                 // -----
@@ -125,6 +213,8 @@ namespace ppp
 
             // poll new window events
             // ----
+            event_bus::instance().broadcast(event_type::STEP);
+
             device::tick();
             device::poll_events();
 
@@ -141,6 +231,8 @@ namespace ppp
                     clock::accurate_sleep_for(sleep_time);
                 }
             }
+
+            event_bus::instance().broadcast(event_type::END_FRAME);
         }
 
         return 0;
