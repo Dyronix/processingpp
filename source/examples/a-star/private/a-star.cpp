@@ -1,10 +1,12 @@
 #include "engine.h"
 
 #include "a-star-grid.h"
+#include "a-star-path-node.h"
 #include "a-star-grid-drawer.h"
 
 namespace ppp
 {
+    //--------------------------------------------------------------------------
     constexpr int _window_width = 1280;
     constexpr int _window_height = 720;
 
@@ -12,6 +14,7 @@ namespace ppp
     constexpr int _grid_height = _window_height / 72;
     constexpr int _grid_cell_size = 50;
 
+    //--------------------------------------------------------------------------
     static float grid_origin_x()
     {
         constexpr float half_window_width = _window_width / 2.0f;
@@ -20,6 +23,7 @@ namespace ppp
 
         return half_window_width - (half_rows * full_cell_size);
     }
+    //--------------------------------------------------------------------------
     static float grid_origin_y()
     {
         constexpr float half_window_height = _window_height / 2.0f;
@@ -29,8 +33,10 @@ namespace ppp
         return half_window_height - (half_columns * full_cell_size);
     }
 
-    static world_grid _grid({ grid_origin_x(), grid_origin_y() }, _grid_cell_size, _grid_width, _grid_height);
+    //--------------------------------------------------------------------------
+    static grid<path_node> _grid;
 
+    //--------------------------------------------------------------------------
     app_params entry(int argc, char** argv)
     {
         print("Current working directory: %s", cwd().data());
@@ -43,6 +49,7 @@ namespace ppp
         return app_params;
     }
 
+    //--------------------------------------------------------------------------
     void setup()
     {
         set_quit_application_keycode(key_code::KEY_ESCAPE);
@@ -55,8 +62,11 @@ namespace ppp
         activate_camera(camera::tags::orthographic());
 
         shader(material::tags::unlit::color());
+
+        _grid.initialize(_grid_width, _grid_height, _grid_cell_size, { grid_origin_x(), grid_origin_y() });
     }
 
+    //--------------------------------------------------------------------------
     void draw()
     {
         background(200);

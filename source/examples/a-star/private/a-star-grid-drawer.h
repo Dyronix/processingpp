@@ -10,7 +10,7 @@ namespace ppp
     class grid_drawer
     {
     public:
-        static void draw(const iworld_grid& grid)
+        static void draw(const igrid& grid)
         {
             float x = grid.origin().x;
             float y = grid.origin().y;
@@ -39,9 +39,14 @@ namespace ppp
             {
                 for (int w = 0; w < grid.width(); ++w)
                 {
-                    vec2 world_pos = grid.cell_world_position_center(w, h);
+                    auto world_pos = grid.get_cell_world_location(w, h);
+                    if (!world_pos)
+                    {
+                        continue;
+                    }
+
                     int index = w + (h * grid.width());
-                    text(to_str(index), world_pos.x, world_pos.y);
+                    text(to_str(index), world_pos->x, world_pos->y);
                 }
             }
         }
