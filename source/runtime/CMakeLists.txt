@@ -13,3 +13,4 @@ MACRO(GROUPSOURCES curdir folder_name)
 ENDMACRO(GROUPSOURCES)
 
 add_subdirectory(ppp_engine)
+add_subdirectory(ppp_framework)

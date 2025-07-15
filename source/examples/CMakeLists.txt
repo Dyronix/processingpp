@@ -1,2 +1,3 @@
-add_subdirectory(demo)
-add_subdirectory(a-star)
+add_subdirectory(engine/demo_engine)
+add_subdirectory(engine/a-star)
+add_subdirectory(framework/demo_framework)

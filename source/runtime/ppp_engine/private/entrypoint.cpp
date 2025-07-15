@@ -213,10 +213,10 @@ namespace ppp
 
             // poll new window events
             // ----
-            event_bus::instance().broadcast(event_type::STEP);
-
             device::tick();
             device::poll_events();
+
+            event_bus::instance().broadcast(event_type::STEP);
 
             // force app to run at a certain framerate
             // ----

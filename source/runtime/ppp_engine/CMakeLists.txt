@@ -291,4 +291,4 @@ target_compile_definitions(processing_engine PUBLIC $<$<BOOL:${CMAKE_HOST_WIN32}
 
 # Target properties
 set_target_properties(processing_engine PROPERTIES
-                      FOLDER "engine")
+                      FOLDER "modules/runtime")
