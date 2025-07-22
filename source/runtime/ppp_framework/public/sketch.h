@@ -18,9 +18,10 @@ namespace ppp
     public:
         virtual void setup()        { /* ... */ }
         virtual void begin_frame()  { /* ... */ }
-        virtual void predraw()      { /* ... */ }
+        virtual void pre_draw()     { /* ... */ }
         virtual void draw()         { /* ... */ }
-        virtual void postdraw()     { /* ... */ }
+        virtual void debug_draw()   { /* ... */ }
+        virtual void post_draw()    { /* ... */ }
         virtual void tick(float dt) { /* ... */ }
         virtual void end_frame()    { /* ... */ }
         virtual void shutdown()     { /* ... */ }

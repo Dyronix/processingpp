@@ -1,9 +1,23 @@
 #include "entrypoint.h"
 #include "framework.h"
-
 #include "environment.h"
 
+#include "device.h"
+#include "device/device_imgui.h"
+
+#include "render/render_imgui.h"
+
 #include <cassert>
+
+namespace
+{
+    //-------------------------------------------------------------------------
+    void setup_imgui()
+    {
+        ppp::imgui::init_imgui_context(ppp::imgui::style_theme_type::DARK);
+        ppp::imgui::init_imgui_renderer();
+    }
+}
 
 namespace ppp
 {
@@ -13,6 +27,8 @@ namespace ppp
     static void on_post_render();
     static void on_tick();
     static void on_end_frame();
+
+    bool _enable_inspector;
 
     constexpr int _window_width = 1280;
     constexpr int _window_height = 720;
@@ -26,7 +42,7 @@ namespace ppp
 
         const char* resx;
         int in_window_width = -1;
-        if (find_argument_with_value(argc, argv, "--resx", &resx))
+        if (find_argument_with_value(argc, argv, "--resx", &resx) != -1)
         {
             try
             {
@@ -39,7 +55,7 @@ namespace ppp
         }
         const char* resy;
         int in_window_height = -1;
-        if (find_argument_with_value(argc, argv, "--resy", &resy))
+        if (find_argument_with_value(argc, argv, "--resy", &resy) != -1)
         {
             try
             {
@@ -50,6 +66,8 @@ namespace ppp
                 print(e.what());
             }
         }
+
+        _enable_inspector = has_argument(argc, argv, "--inspector");
 
         app_params app_params;
 
@@ -62,6 +80,8 @@ namespace ppp
     //-------------------------------------------------------------------------
     void setup()
     {
+        setup_imgui();
+
         _sketch = make_sketch();
 
         assert(_sketch != nullptr);
@@ -84,19 +104,22 @@ namespace ppp
     //-------------------------------------------------------------------------
     void on_pre_render()
     {
-        _sketch->predraw();
+        _sketch->pre_draw();
     }
 
     //-------------------------------------------------------------------------
     void draw()
     {
         _sketch->draw();
+#ifdef _DEBUG
+        _sketch->debug_draw();
+#endif
     }
 
     //-------------------------------------------------------------------------
     void on_post_render()
     {
-        _sketch->postdraw();
+        _sketch->post_draw();
     }
 
     //-------------------------------------------------------------------------

@@ -62,8 +62,12 @@ namespace ppp
         void terminate();
         void tick();
 
+        void* window();
         void window_width(s32* w);
         void window_height(s32* h);
+        void window_scale(f32* sx, f32* sy);
+        
+        void primary_monitor_scale(f32* sx, f32* sy);
 
         void headless();
         void loop();

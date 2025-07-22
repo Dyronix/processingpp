@@ -5,9 +5,10 @@
 #include "util/types.h"
 #include "util/steady_clock.h"
 
-
-
 #include <GLFW/glfw3.h>
+
+#define PPP_GLFW_VERSION_COMBINED    (GLFW_VERSION_MAJOR * 1000 + GLFW_VERSION_MINOR * 100 + GLFW_VERSION_REVISION)
+#define PPP_GLFW_HAS_PER_MONITOR_DPI (PPP_GLFW_VERSION_COMBINED >= 3300) // 3.3+ glfwGetMonitorContentScale
 
 namespace ppp
 {
@@ -63,6 +64,16 @@ namespace ppp
 
         namespace internal
         {
+            void monitor_scale(GLFWmonitor* monitor, f32* sx, f32* sy)
+            {
+#if PPP_GLFW_HAS_PER_MONITOR_DPI
+                glfwGetMonitorContentScale(monitor, sx, sy);
+#else
+                *sx = 1.0f;
+                *sy = 1.0f;
+#endif
+            }
+
             void center_window(GLFWwindow* window) 
             {
                 // Get window position and size
@@ -422,7 +433,10 @@ namespace ppp
 
             // glfw window creation
             // --------------------
-            ctx().window = glfwCreateWindow(w, h, "Processing", NULL, NULL);
+            f32 scale_x, scale_y;
+            primary_monitor_scale(&scale_x, &scale_y);
+
+            ctx().window = glfwCreateWindow(w * scale_x, h * scale_y, "Processing", NULL, NULL);
             if (ctx().window == NULL)
             {
                 // Try and fallback to an earlier version of OpenGL
@@ -493,15 +507,51 @@ namespace ppp
             }
         }
 
+        void* window()
+        {
+            return ctx().window;
+        }
         void window_width(s32* w)
         {
+            if (ctx().window == nullptr)
+            {
+                *w = 0.0f;
+                return;
+            }
+
             s32 height = 0;
             glfwGetWindowSize(ctx().window, w, &height);
         }
         void window_height(s32* h)
         {
+            if (ctx().window == nullptr)
+            {
+                *h = 0.0f;
+                return;
+            }
+
             s32 width = 0;
             glfwGetWindowSize(ctx().window, &width, h);
+        }
+        void window_scale(f32* sx, f32* sy)
+        {
+            if (ctx().window == nullptr)
+            {
+                *sx = 1.0f;
+                *sy = 1.0f;
+                return;
+            }
+
+#if PPP_GLFW_HAS_PER_MONITOR_DPI
+            glfwGetWindowContentScale(ctx().window, sx, sy);
+#else
+            *sx = 1.0f;
+            *sy = 1.0f;
+#endif
+        }
+        void primary_monitor_scale(f32* sx, f32* sy)
+        {
+            internal::monitor_scale(glfwGetPrimaryMonitor(), sx, sy);
         }
 
         void headless()

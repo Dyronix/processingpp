@@ -131,13 +131,13 @@ namespace ppp
             return -1;
         }
 
-        #if PPP_OPENGL
+#if defined (GLFW_VERSION_MAJOR)
         if (!render::initialize(app_params.window_width, app_params.window_height, glfwGetProcAddress))
         {
             log::error("Failed to initialize render");
             return -1;
         }
-        #endif
+#endif
         if (!camera_manager::initialize((f32)app_params.window_width, (f32)app_params.window_height))
         {
             log::error("Failed to initialize camera manager");
@@ -182,6 +182,13 @@ namespace ppp
         {
             event_bus::instance().broadcast(event_type::BEGIN_FRAME);
 
+            // poll new window events
+// ----
+            device::tick();
+            device::poll_events();
+
+            event_bus::instance().broadcast(event_type::STEP);
+
             if (device::can_draw())
             {
                 context.camera_position_font = camera_manager::get_camera_position(camera_manager::tags::font());
@@ -210,13 +217,6 @@ namespace ppp
                 // -----
                 device::present();
             }
-
-            // poll new window events
-            // ----
-            device::tick();
-            device::poll_events();
-
-            event_bus::instance().broadcast(event_type::STEP);
 
             // force app to run at a certain framerate
             // ----
