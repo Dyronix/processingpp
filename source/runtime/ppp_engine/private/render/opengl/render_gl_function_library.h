@@ -27,6 +27,8 @@ namespace ppp
                 virtual void depth_mask(bool flag) = 0;
                 virtual void color_mask(bool red, bool green, bool blue, bool alpha) = 0;
 
+                virtual void pixel_store_i(u32 pname, s32 param) = 0;
+
                 virtual void blend_func(u32 sfactor, u32 dfactor) = 0;
                 virtual void cull_face(u32 mode) = 0;
                 virtual void front_face(u32 mode) = 0;
@@ -157,6 +159,8 @@ namespace ppp
                 void depth_mask(bool flag) override;
                 void color_mask(bool red, bool green, bool blue, bool alpha) override;
 
+                void pixel_store_i(u32 pname, s32 param) override;
+
                 void blend_func(u32 sfactor, u32 dfactor) override;
                 void cull_face(u32 mode) override;
                 void front_face(u32 mode) override;
@@ -286,6 +290,8 @@ namespace ppp
 
                 void depth_mask(bool flag) override;
                 void color_mask(bool red, bool green, bool blue, bool alpha) override;
+
+                void pixel_store_i(u32 pname, s32 param) override;
 
                 void blend_func(u32 sfactor, u32 dfactor) override;
                 void cull_face(u32 mode) override;

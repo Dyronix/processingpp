@@ -605,6 +605,17 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            void function_library::pixel_store_i(u32 pname, s32 param)
+            {
+                GL_LOG("glPixelStorei");
+                #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
+                GL_LOG("\tparam: {0}", param);
+                #endif
+                GL_CALL(glPixelStorei(pname, param));
+            }
+
+            //-------------------------------------------------------------------------
             void function_library::blend_func(u32 sfactor, u32 dfactor)
             {
                 GL_LOG("glBlendFunc");
@@ -1744,6 +1755,16 @@ namespace ppp
                 GL_LOG("\tgreen: {0}", green);
                 GL_LOG("\tblue: {0}", blue);
                 GL_LOG("\talpha: {0}", alpha);
+                #endif
+            }
+
+            //-------------------------------------------------------------------------
+            void mock_function_library::pixel_store_i(u32 pname, s32 param)
+            {
+                GL_LOG("glPixelStorei");
+                #if ENABLE_GL_PARAMETER_LOGGING && ENABLE_GL_FUNCTION_LOGGING
+                GL_LOG("\tpname: {0}", pname_to_string(pname));
+                GL_LOG("\tparam: {0}", param);
                 #endif
             }
 
