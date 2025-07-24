@@ -28,7 +28,7 @@ namespace ppp
         log::info(message);
     }
 
-    void frame_rate(unsigned int frame_rate)
+    void frame_rate(int frame_rate)
     {
         device::target_frame_rate(frame_rate);
     }

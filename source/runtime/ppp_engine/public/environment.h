@@ -55,7 +55,7 @@ namespace ppp
      * @brief Sets the application's target frame rate.
      * @param frame_rate Frames per second to target.
      */
-    void frame_rate(unsigned int frame_rate);
+    void frame_rate(int frame_rate);
 
     /**
      * @brief Gets the average frame rate over recent frames.
