@@ -14,6 +14,23 @@ target_sources(processing_framework PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/imgui_impl_opengl3.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/imgui_impl_opengl3.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/imgui_impl_opengl3_loader.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/imgui_icons_font_awesome.h
+    #imgui-implot
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/implot/implot.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/implot/implot.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/implot/implot_internal.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/implot/implot_items.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/implot/implot_demo.cpp
+    #imgui-inspector
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_profiler.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_profiler.h
+    #device
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/device/device_glfw_imgui.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/device/device_glfw_input_framework.cpp
+    #render
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/render/render_gl_imgui.cpp
 
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/framework.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/sketch.cpp)
@@ -26,6 +43,11 @@ target_sources(processing_framework PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public/imgui/imstb_rectpack.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public/imgui/imstb_textedit.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public/imgui/imstb_truetype.h
+    #device
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public/device/device_imgui.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public/device/device_input_framework.h
+    #render
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public/render/render_imgui.h
 
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public/framework.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public/sketch.h)
@@ -40,8 +62,11 @@ target_include_directories(processing_framework PUBLIC ${SOURCE_RUNTIME_DIRECTOR
 target_link_libraries(processing_framework PUBLIC processing_engine)
 
 # Private includes
+target_include_directories(processing_framework PRIVATE ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private)
+target_include_directories(processing_framework PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/fmt/include)
 target_include_directories(processing_framework PRIVATE ${SOURCE_THIRDPARTY_DIRECTORY}/glfw/include)
 
+target_link_libraries(processing_framework PRIVATE processing_engine)
 target_link_libraries(processing_engine PRIVATE glfw)
 
 # Include self
