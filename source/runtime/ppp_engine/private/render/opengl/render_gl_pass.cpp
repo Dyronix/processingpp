@@ -78,6 +78,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        bool geometry_render_pass::has_shader() const
+        {
+            return !m_shader_tag.is_none();
+        }
+
+        //-------------------------------------------------------------------------
         const resources::shader_program geometry_render_pass::shader_program() const
         {
             auto m = material();
