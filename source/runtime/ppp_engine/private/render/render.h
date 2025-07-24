@@ -20,12 +20,22 @@ namespace ppp
 
     namespace render
     {
+        struct statistics
+        {
+            s32 batched_draw_calls = -1;
+            s32 instanced_draw_calls = -1;
+
+            s32 textures = 0;
+        };
+
         constexpr u32 DEPTH_BUFFER_BIT = 0x00000100;
         constexpr u32 STENCIL_BUFFER_BIT = 0x00000400;
         constexpr u32 COLOR_BUFFER_BIT = 0x00004000;
 
         bool initialize(s32 w, s32 h, void* user_data);
         void terminate();
+
+        statistics stats();
 
         void begin();
         void render(const camera_context* context);

@@ -10,6 +10,7 @@
 #include "render/render_pass_ui.h"
 #include "render/render_pass_blit.h"
 #include "render/render_pass_clear.h"
+#include "render/render_pass_composite.h"
 #include "render/render_pass_composite_factory.h"
 #include "render/render_shader_tags.h"
 
@@ -132,6 +133,9 @@ namespace ppp
         //-------------------------------------------------------------------------
         struct context
         {
+            // stats
+            statistics                  stats;
+
             // shadows
             bool                        shadows = true;
 
@@ -163,6 +167,133 @@ namespace ppp
             render_context.scissor = scissor_rect();
 
             return render_context;
+        }
+
+        //-------------------------------------------------------------------------
+        s32 font_batches_count()
+        {
+            return g_ctx.font_batch_data->size();
+        }
+        //-------------------------------------------------------------------------
+        s32 geometry_batches_count()
+        {
+            s32 nr_geomtry_batches = 0;
+            for (auto& pair : g_ctx.batch_data)
+            {
+                nr_geomtry_batches += pair.second->size();
+            }
+
+            return nr_geomtry_batches;
+        }
+        //-------------------------------------------------------------------------
+        s32 geometry_instances_count()
+        {
+            s32 nr_geometry_instances = 0;
+            for (auto& pair : g_ctx.instance_data)
+            {
+                nr_geometry_instances += pair.second->size();
+            }
+
+            return nr_geometry_instances;
+        }
+
+        namespace detail 
+        {
+            //-------------------------------------------------------------------------
+            template<class T>
+            constexpr T* to_ptr(T* p) noexcept { return p; }
+
+            //-------------------------------------------------------------------------
+            template<class T>
+            constexpr T* to_ptr(const std::unique_ptr<T>& p) noexcept { return p.get(); }
+        }
+
+        //-------------------------------------------------------------------------
+        template<class Range, class Pred>
+        s32 count_passes(const Range& passes, Pred&& pred)
+        {
+            s32 count = 0;
+            for (auto& holder : passes)
+            {
+                irender_pass* pass = detail::to_ptr(holder);
+
+                if (auto* comp = dynamic_cast<base_composite_pass*>(pass)) {
+                    count += count_passes(comp->children(), std::forward<Pred>(pred));
+                    continue;
+                }
+
+                if (pred(*pass)) ++count;
+            }
+            return count;
+        }
+
+        //-------------------------------------------------------------------------
+        template<class Range>
+        s32 count_batched_font_passes(const Range& passes, const string::string_id& font_pass)
+        {
+            return count_passes(passes, 
+                [&](auto& p) 
+            {
+                if (!p.has_shader(font_pass))
+                {
+                    return false;
+                }
+
+                auto* g = static_cast<geometry_render_pass*>(&p);
+                return g->batch_rendering_enabled();
+            });
+        }
+
+        //-------------------------------------------------------------------------
+        template<class Range>
+        s32 count_batched_geometry_passes(const Range& passes, const std::vector<string::string_id>& ignore)
+        {
+            return count_passes(passes, 
+                [&](auto& p) 
+            {
+                if (!p.has_shader())
+                {
+                    return false;
+                }
+
+                if (std::any_of(ignore.begin(), ignore.end(),
+                    [&p](auto& id)
+                {
+                    return p.has_shader(id);
+                }))
+                {
+                    return false;
+                }
+
+                auto* g = static_cast<geometry_render_pass*>(&p);
+                return g->batch_rendering_enabled();
+            });
+        }
+
+        template<class Range>
+        s32 count_instanced_geometry_passes(const Range& passes,
+            const std::vector<string::string_id>& ignore)
+        {
+            return count_passes(passes, 
+                [&](auto& p) 
+            {
+                if (!p.has_shader())
+                {
+                    return false;
+                }
+
+                if (std::any_of(ignore.begin(), ignore.end(),
+                    [&p](auto& id)
+                {
+                    return p.has_shader(id);
+                }))
+                {
+                    return false;
+                }
+
+                auto* g = static_cast<geometry_render_pass*>(&p);
+                return g->instance_rendering_enabled();
+            });
         }
 
         //-------------------------------------------------------------------------
@@ -305,6 +436,11 @@ namespace ppp
             push_solid_rendering(enable_solid_rendering);
             push_wireframe_rendering(enable_wireframe_rendering);
 
+            // Sets pixel storage modes—rules OpenGL uses to interpret how pixel rows are laid out in client memory 
+            //  when you upload data to GL (UNPACK…) or download data from GL (PACK…).
+            opengl::api::instance().pixel_store_i(GL_UNPACK_ALIGNMENT, 1);
+            opengl::api::instance().pixel_store_i(GL_PACK_ALIGNMENT, 1);
+
             return true;
         }
 
@@ -329,6 +465,12 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        statistics stats()
+        {
+            return g_ctx.stats;
+        }
+
+        //-------------------------------------------------------------------------
         void begin()
         {
             // Font
@@ -350,6 +492,26 @@ namespace ppp
         //-------------------------------------------------------------------------
         void render(const camera_context* context)
         {
+#if _DEBUG
+            s32 nr_font_batches = font_batches_count();
+            s32 nr_solid_font_passes = count_batched_font_passes(g_ctx.render_pipeline_view.solid_passes, unlit::tags::font{}.batched());
+            s32 nr_wireframe_font_passes = count_batched_font_passes(g_ctx.render_pipeline_view.wireframe_passes, unlit::tags::font{}.batched());
+            s32 nr_font_draw_calls = nr_font_batches * nr_solid_font_passes + nr_font_batches * nr_wireframe_font_passes;
+
+            s32 nr_geomtry_batches = geometry_batches_count();
+            s32 nr_batched_solid_passes = count_batched_geometry_passes(g_ctx.render_pipeline_view.solid_passes, { unlit::tags::font{}.batched() });
+            s32 nr_batched_wireframe_passes = count_batched_geometry_passes(g_ctx.render_pipeline_view.wireframe_passes, { unlit::tags::font{}.batched() });
+            s32 nr_batched_geometry_draw_calls = nr_geomtry_batches * nr_batched_solid_passes + nr_geomtry_batches * nr_batched_wireframe_passes;
+
+            s32 nr_geometry_instances = geometry_instances_count();
+            s32 nr_instanced_solid_passes = count_instanced_geometry_passes(g_ctx.render_pipeline_view.solid_passes, { unlit::tags::font{}.batched() });
+            s32 nr_instanced_wireframe_passes = count_instanced_geometry_passes(g_ctx.render_pipeline_view.wireframe_passes, { unlit::tags::font{}.batched() });
+            s32 nr_instanced_geometry_draw_calls = nr_geometry_instances * nr_instanced_solid_passes + nr_geometry_instances * nr_instanced_wireframe_passes;
+
+            g_ctx.stats.batched_draw_calls = nr_font_draw_calls + nr_batched_geometry_draw_calls;
+            g_ctx.stats.instanced_draw_calls = nr_instanced_geometry_draw_calls;
+#endif
+
             g_ctx.render_pipeline.execute(make_render_context(context));
         }
 
@@ -406,11 +568,11 @@ namespace ppp
 
                 switch (shading_model)
                 {
-                    case shading_model::UNLIT:
+                    case shading_model_type::UNLIT:
                     {
                         switch (shading_blending)
                         {
-                        case shading_blending::OPAQUE:
+                        case shading_blending_type::OPAQUE:
                             insertion = insertion_point::AFTER_UNLIT_OPAQUE;
                             render_pass = std::make_unique<unlit_pass>(
                                 shader_tag,
@@ -418,17 +580,17 @@ namespace ppp
                                 framebuffer_flags,
                                 draw_mode);
                             break;
-                        case shading_blending::TRANSPARENT:
+                        case shading_blending_type::TRANSPARENT:
                             assert(false && "Transparent objects are not supported right now.");
                             break;
                         }
                         break;
                     }
-                    case shading_model::LIT:
+                    case shading_model_type::LIT:
                     {
                         switch (shading_blending)
                         {
-                        case shading_blending::OPAQUE:
+                        case shading_blending_type::OPAQUE:
                             insertion = insertion_point::AFTER_LIT_OPAQUE;
                             render_pass = std::make_unique<forward_shading_pass>(
                                 shader_tag,
@@ -436,7 +598,7 @@ namespace ppp
                                 framebuffer_flags,
                                 draw_mode);
                             break;
-                        case shading_blending::TRANSPARENT:
+                        case shading_blending_type::TRANSPARENT:
                             assert(false && "Transparent objects are not supported right now.");
                             break;
                         }
@@ -522,11 +684,11 @@ namespace ppp
                 usage = GL_RG;
                 break;
             case 3:
-                format = GL_RGB;
-                usage = GL_RGBA;
+                format = GL_RGB8;
+                usage = GL_RGB;
                 break;
             case 4:
-                format = GL_RGBA;
+                format = GL_RGBA8;
                 usage = GL_RGBA;
                 break;
             default:
@@ -575,21 +737,24 @@ namespace ppp
 
             opengl::api::instance().bind_texture(GL_TEXTURE_2D, 0);
 
+            // bookkeeping
+            g_ctx.stats.textures++;
+
             return texture_id;
         }
 
         //-------------------------------------------------------------------------
         void update_image_item(u32 id, f32 x, f32 y, f32 width, f32 height, s32 channels, u8* data)
         {
-            GLint format = GL_INVALID_VALUE;
+            GLint format = GL_RGBA;
 
             switch (channels)
             {
             case 1:
-                format = GL_R8;
+                format = GL_RED;
                 break;
             case 2:
-                format = GL_RG8;
+                format = GL_RG;
                 break;
             case 3:
                 format = GL_RGB;
