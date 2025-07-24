@@ -48,6 +48,8 @@ namespace ppp
 
             virtual bool                        has_framebuffer_tag(string::string_id shader_tag) const { return false; }
             virtual bool                        has_shader(string::string_id shader_tag) const { return false; }
+            virtual bool                        has_shader() const { return false; }
+            virtual bool                        has_child_passes() const { return false; }
 
         public:
             string::string_id                   pass_tag() const { return m_pass_tag; }
@@ -98,6 +100,10 @@ namespace ppp
             bool                                should_render(const render_context& context) const override;
 
             bool                                has_shader(string::string_id shader_tag) const override;
+            bool                                has_shader() const override;
+
+            bool                                batch_rendering_enabled() const;
+            bool                                instance_rendering_enabled() const;
 
         public:
             virtual batch_draw_strategy         make_batch_render_strategy() const { return std::make_unique<default_batch_render_strategy>(); }
@@ -109,10 +115,7 @@ namespace ppp
             const resources::imaterial*         material() const;
 
             ibatch_render_strategy*             batch_render_strategy();
-            bool                                batch_rendering_enabled() const;
-
             iinstance_render_strategy*          instance_render_strategy();
-            bool                                instance_rendering_enabled() const;
 
             draw_mode                           drawing_mode() const { return m_draw_mode; }
 

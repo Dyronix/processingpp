@@ -10,17 +10,35 @@ namespace ppp
 {
     namespace render
     {
+        class base_composite_pass : public irender_pass
+        {
+        public:
+            //-------------------------------------------------------------------------
+            base_composite_pass(string::string_id pass_tag)
+                :irender_pass(pass_tag)
+            {}
+
+        public:
+            virtual const std::vector<std::unique_ptr<geometry_render_pass>>& children() const = 0;
+        };
+
         template<typename T>
-        class composite_pass : public irender_pass
+        class composite_pass : public base_composite_pass
         {
             static_assert(std::is_base_of_v<geometry_render_pass, T>, "T must derive from geometry_render_pass");
 
         public:
             //-------------------------------------------------------------------------
             composite_pass(string::string_id pass_tag)
-                :irender_pass(pass_tag)
+                :base_composite_pass(pass_tag)
             {
                 
+            }
+
+        public:
+            const std::vector<std::unique_ptr<geometry_render_pass>>& children() const override
+            {
+                return m_children;
             }
 
         public:
@@ -37,7 +55,6 @@ namespace ppp
 
                 return false;
             }
-
             //-------------------------------------------------------------------------
             bool has_shader(string::string_id shader_tag) const override
             {
@@ -51,6 +68,24 @@ namespace ppp
 
                 return false;
             }
+            //-------------------------------------------------------------------------
+            bool has_shader() const override
+            {
+                for (auto& child : m_children)
+                {
+                    if (child->has_shader())
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            //-------------------------------------------------------------------------
+            bool has_child_passes() const override
+            {
+                return !m_children.empty();
+            }
 
             //-------------------------------------------------------------------------
             void add_child(std::unique_ptr<T> pass)
@@ -63,7 +98,6 @@ namespace ppp
             {
                 // Nothing to implement
             }
-
             //-------------------------------------------------------------------------
             void render(const render_context& context) override
             {
@@ -77,7 +111,6 @@ namespace ppp
                     }
                 }
             }
-
             //-------------------------------------------------------------------------
             void end_frame(const render_context& context) override
             {
@@ -85,7 +118,7 @@ namespace ppp
             }
 
         private:
-            std::vector<std::unique_ptr<T>> m_children;
+            std::vector<std::unique_ptr<geometry_render_pass>> m_children;
         };
 
     }
