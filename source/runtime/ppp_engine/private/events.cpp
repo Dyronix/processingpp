@@ -272,42 +272,42 @@ namespace ppp
 
     bool is_key_pressed(key_code code)
     {
-        return device::input::is_key_pressed(internal::convert_key_to_glfw(code));
+        return device::is_key_pressed(internal::convert_key_to_glfw(code));
     }
 
     bool is_key_released(key_code code)
     {
-        return device::input::is_key_released(internal::convert_key_to_glfw(code));
+        return device::is_key_released(internal::convert_key_to_glfw(code));
     }
 
     bool is_key_down(key_code code)
     {
-        return device::input::is_key_down(internal::convert_key_to_glfw(code));
+        return device::is_key_down(internal::convert_key_to_glfw(code));
     }
 
     bool is_any_key_pressed()
     {
-        return device::input::is_any_key_pressed();
+        return device::is_any_key_pressed();
     }
 
     bool is_any_key_released()
     {
-        return device::input::is_any_key_released();
+        return device::is_any_key_released();
     }
 
     bool is_any_key_down()
     {
-        return device::input::is_any_key_down();
+        return device::is_any_key_down();
     }
 
     key_code key()
     {
-        return internal::convert_key_to_ppp(device::input::key());
+        return internal::convert_key_to_ppp(device::key());
     }
 
     void add_key_pressed_callback(const std::function<void(key_code)>& callback)
     {
-        device::input::add_key_pressed_callback(
+        device::add_key_pressed_callback(
             [callback](int key, int scancode, int mods)
         {
             callback(internal::convert_key_to_ppp(key));
@@ -316,7 +316,7 @@ namespace ppp
 
     void add_key_released_callback(const std::function<void(key_code)>& callback)
     {
-        device::input::add_key_released_callback(
+        device::add_key_released_callback(
             [callback](int key, int scancode, int mods)
         {
             callback(internal::convert_key_to_ppp(key));
@@ -325,7 +325,7 @@ namespace ppp
 
     void add_key_down_callback(const std::function<void(key_code)>& callback)
     {
-        device::input::add_key_down_callback(
+        device::add_key_down_callback(
             [callback](int key, int scancode, int mods)
         {
             callback(internal::convert_key_to_ppp(key));
@@ -374,82 +374,82 @@ namespace ppp
 
     float moved_x()
     {
-        return device::input::moved_x();
+        return device::moved_x();
     }
 
     float moved_y()
     {
-        return device::input::moved_y();
+        return device::moved_y();
     }
 
     float mouse_x()
     {
-        return device::input::mouse_x();
+        return device::mouse_x();
     }
 
     float mouse_y()
     {
-        return device::input::mouse_y();
+        return device::mouse_y();
     }
 
     float prev_mouse_x()
     {
-        return device::input::prev_mouse_x();
+        return device::prev_mouse_x();
     }
 
     float prev_mouse_y()
     {
-        return device::input::prev_mouse_y();
+        return device::prev_mouse_y();
     }
 
     mouse_code mouse_button()
     {
-        return internal::convert_mouse_code_to_ppp(device::input::mouse_button());
+        return internal::convert_mouse_code_to_ppp(device::mouse_button());
     }
 
     float scroll_offset_x()
     {
-        return device::input::scroll_offset_x();
+        return device::scroll_offset_x();
     }
 
     float scroll_offset_y()
     {
-        return device::input::scroll_offset_y();
+        return device::scroll_offset_y();
     }
 
     bool is_left_button_pressed()
     {
-        return device::input::is_left_button_pressed();
+        return device::is_left_button_pressed();
     }
 
     bool is_right_button_pressed()
     {
-        return device::input::is_right_button_pressed();
+        return device::is_right_button_pressed();
     }
 
     bool is_middle_button_pressed()
     {
-        return device::input::is_middle_button_pressed();
+        return device::is_middle_button_pressed();
     }
 
     bool is_any_mouse_button_pressed()
     {
-        return device::input::is_any_mouse_button_pressed();
+        return device::is_any_mouse_button_pressed();
     }
 
     void add_mouse_moved_callback(const std::function<void(float, float)>& callback)
     {
-        device::input::add_mouse_moved_callback(callback);
+        device::add_mouse_moved_callback(callback);
     }
 
     void add_mouse_dragged_callback(const std::function<void(float, float)>& callback)
     {
-        device::input::add_mouse_dragged_callback(callback);
+        device::add_mouse_dragged_callback(callback);
     }
 
     void add_mouse_pressed_callback(const std::function<void(mouse_code)>& callback)
     {
-        device::input::add_mouse_pressed_callback(
+        device::add_mouse_pressed_callback(
             [callback](int button, int mods)
         {
             callback(internal::convert_mouse_code_to_ppp(button));
@@ -458,7 +458,7 @@ namespace ppp
 
     void add_mouse_released_callback(const std::function<void(mouse_code)>& callback)
     {
-        device::input::add_mouse_released_callback(
+        device::add_mouse_released_callback(
             [callback](int button, int mods)
         {
             callback(internal::convert_mouse_code_to_ppp(button));
@@ -467,31 +467,31 @@ namespace ppp
 
     void add_mouse_horizontal_wheel_callback(const std::function<void(float)>& callback)
     {
-        device::input::add_mouse_horizontal_wheel_callback(callback);
+        device::add_mouse_horizontal_wheel_callback(callback);
     }
 
     void add_mouse_verticel_wheel_callback(const std::function<void(float)>& callback)
     {
-        device::input::add_mouse_vertical_wheel_callback(callback);
+        device::add_mouse_vertical_wheel_callback(callback);
     }
 
     void request_pointer_lock()
     {
-        device::input::request_pointer_lock();
+        device::request_pointer_lock();
     }
 
     void request_pointer_hide()
     {
-        device::input::request_pointer_hide();
+        device::request_pointer_hide();
     }
 
     void request_pointer_unlock()
     {
-        device::input::request_pointer_unlock();
+        device::request_pointer_unlock();
     }
 
     void request_pointer_show()
     {
-        device::input::request_pointer_show();
+        device::request_pointer_show();
     }
 }

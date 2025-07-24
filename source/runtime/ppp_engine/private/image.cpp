@@ -219,7 +219,7 @@ namespace ppp
     //-------------------------------------------------------------------------
     image load(std::string_view file_path)
     {
-        auto sid = string::string_id(file_path);
+        auto sid = string::store_sid(file_path);
 
         // Find image first
         if (texture_pool::has_image(sid))
@@ -238,7 +238,7 @@ namespace ppp
             &img.width,
             &img.height,
             &img.channels,
-            4);
+            0);
 
         if (img.data == nullptr)
         {
