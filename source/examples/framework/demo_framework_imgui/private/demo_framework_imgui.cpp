@@ -1,4 +1,7 @@
 #include "framework.h"
+#include "environment.h"
+
+#include "imgui/imgui.h"
 
 #include <algorithm>
 #include <memory>
@@ -55,10 +58,15 @@ namespace ppp
         int _window_width = 1280;
         int _window_height = 720;
 
-        // Initial light direction values.
         float _initial_dir_x = -0.2f;
         float _initial_dir_y = -1.0f;
         float _initial_dir_z = -0.3f;
+
+        // imgui properties
+        bool _show_demo_window = true;
+        bool _show_another_window = false;
+
+        ImVec4 _clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     };
 
     //-------------------------------------------------------------------------
@@ -111,7 +119,47 @@ namespace ppp
     //-------------------------------------------------------------------------
     void my_sketch::debug_draw()
     {
-        
+        if (_show_demo_window)
+        {
+            ImGui::ShowDemoWindow(&_show_demo_window);
+        }
+
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::Begin("Hello, world!");                              // Create a window called "Hello, world!" and append into it.
+
+            ImGui::Text("This is some useful text.");                   // Display some text (you can use a format strings too)
+            ImGui::Checkbox("Demo Window", &_show_demo_window);         // Edit bools storing our window open/close state
+            ImGui::Checkbox("Another Window", &_show_another_window);
+
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);                // Edit 1 float using a slider from 0.0f to 1.0f
+            ImGui::ColorEdit3("clear color", (float*)&_clear_color);    // Edit 3 floats representing a color
+
+            background(_clear_color.x * 255, _clear_color.y * 255, _clear_color.z * 255, _clear_color.w * 255);
+
+            if (ImGui::Button("Button"))                                // Buttons return true when clicked (most widgets return true when edited/activated)
+            {
+                counter++;
+            }
+
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
+            ImGui::End();
+        }
+
+        if (_show_another_window)
+        {
+            ImGui::Begin("Another Window", &_show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Text("Hello from another window!");
+            if (ImGui::Button("Close Me"))
+            {
+                _show_another_window = false;
+            }
+            ImGui::End();
+        }
     }
 
     //-------------------------------------------------------------------------

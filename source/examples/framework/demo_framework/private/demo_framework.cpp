@@ -3,29 +3,11 @@
 #include <algorithm>
 #include <memory>
 
-namespace
-{
-    static void draw_lights()
-    {
-        float start_x = -120.0f; // Initial x position to start grid from
-        float start_y = 40.0f;    // Initial y position for the grid row
-        float x_spacing = 80.0f; // Horizontal spacing between shapes
-
-        ppp::push();
-        ppp::translate(start_x, start_y, 100.0f);
-        for (int i = 0; i < 4; i++)
-        {
-            // shapes
-            ppp::box(5.0f, 5.0f, 5.0f);
-            ppp::translate(x_spacing, 0.0f);
-
-        }
-        ppp::pop();
-    }
-}
-
 namespace ppp
 {
+    image _image_container;
+    image _image_wall;
+
     class my_sketch : public sketch
     {
     public:
@@ -113,19 +95,14 @@ namespace ppp
         angle_mode(angle_mode_type::DEGREES);
 
         append_lights();
+
+        _image_container = load("local:content/t_container.jpg");
+        _image_wall = load("local:content/t_wall.jpg");
     }
 
     //-------------------------------------------------------------------------
     void my_sketch::tick(float dt)
     {
-        update_directional_light();
-    }
-
-    //-------------------------------------------------------------------------
-    void my_sketch::draw()
-    {
-        background(200);
-
         orbit_control_options options;
 
         options.zoom_sensitivity = 200.0f;
@@ -135,6 +112,14 @@ namespace ppp
         options.max_zoom = 600.0f;
 
         orbit_control(options);
+
+        update_directional_light();
+    }
+
+    //-------------------------------------------------------------------------
+    void my_sketch::draw()
+    {
+        background(200);
 
         if (_enable_normal)
         {
@@ -151,7 +136,6 @@ namespace ppp
 
         shader(material::tags::unlit::color());
         fill({ 255, 255, 255, 255 });
-        //draw_lights();
 
         fill({ 0,0,0,255 });
     }
@@ -183,18 +167,22 @@ namespace ppp
             else if (key == key_code::KEY_1)
             {
                 _interpolation = 4;
+                print("interpolation: %d", _interpolation);
             }
             else if (key == key_code::KEY_2)
             {
                 _interpolation = 8;
+                print("interpolation: %d", _interpolation);
             }
             else if (key == key_code::KEY_3)
             {
                 _interpolation = 12;
+                print("interpolation: %d", _interpolation);
             }
             else if (key == key_code::KEY_4)
             {
                 _interpolation = 24;
+                print("interpolation: %d", _interpolation);
             }
 
             else if (key == key_code::KEY_F)
