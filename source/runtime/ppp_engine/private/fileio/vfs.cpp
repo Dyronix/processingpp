@@ -49,7 +49,7 @@ namespace ppp
 				}
 			}
 
-			return file_info::make_full_path(resolved_path, file_info_view.filename(), file_info_view.extension());
+			return file_info::make_full_path(resolved_path.empty() ? file_info_view.path() : resolved_path, file_info_view.filename(), file_info_view.extension());
 		}
 
 		//-------------------------------------------------------------------------
