@@ -22,6 +22,7 @@
 #include "util/log.h"
 #include "util/types.h"
 #include "util/steady_clock.h"
+#include "util/profiler.h"
 
 #include <GLFW/glfw3.h>
 
@@ -48,7 +49,8 @@ namespace ppp
         PRE_RENDER,
         POST_RENDER,
         END_FRAME,
-        STEP
+        STEP,
+        SHUTDOWN
     };
 
     struct event_type_hash
@@ -121,6 +123,11 @@ namespace ppp
     {
         event_bus::instance().subscribe(event_type::STEP, callback);
     }
+    //-------------------------------------------------------------------------
+    void subscribe_shutdown(engine_delegates callback)
+    {
+        event_bus::instance().subscribe(event_type::SHUTDOWN, callback);
+    }
 
     //-------------------------------------------------------------------------
     static s32 init(const app_params& app_params, std::string_view executable_path)
@@ -183,14 +190,20 @@ namespace ppp
             event_bus::instance().broadcast(event_type::BEGIN_FRAME);
 
             // poll new window events
-// ----
-            device::tick();
-            device::poll_events();
+            // ----
+            {
+                PPP_PROFILE_SECTION("ppp::engine::tick");
 
-            event_bus::instance().broadcast(event_type::STEP);
+                device::tick();
+                device::poll_events();
+
+                event_bus::instance().broadcast(event_type::STEP);
+            }
 
             if (device::can_draw())
             {
+                PPP_PROFILE_SECTION("ppp::engine::draw");
+
                 context.camera_position_font = camera_manager::get_camera_position(camera_manager::tags::font());
                 context.camera_lookat_font = camera_manager::get_camera_lookat(camera_manager::tags::font());
                 context.camera_position_active = camera_manager::get_camera_position();
@@ -204,10 +217,10 @@ namespace ppp
                 // render
                 // ------
                 event_bus::instance().broadcast(event_type::PRE_RENDER);
+
                 render::begin();
 
                 draw();
-
                 render::render(&context);
 
                 render::end();
@@ -240,6 +253,8 @@ namespace ppp
     //-------------------------------------------------------------------------
     s32 quit(const app_params& app_params)
     {
+        event_bus::instance().broadcast(event_type::SHUTDOWN);
+
         geometry_pool::terminate();
         material_pool::terminate();
         shader_pool::terminate();

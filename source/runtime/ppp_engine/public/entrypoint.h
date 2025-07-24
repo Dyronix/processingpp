@@ -19,6 +19,7 @@ namespace ppp
     void subscribe_post_render(engine_delegates callback);
     void subscribe_end_frame(engine_delegates callback);
     void subscribe_step(engine_delegates callback);
+    void subscribe_shutdown(engine_delegates callback);
 
     /**
      * @brief Holds parameters for application initialization.
