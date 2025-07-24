@@ -1,5 +1,4 @@
 add_subdirectory(engine/demo_engine)
-add_subdirectory(engine/a-star)
 add_subdirectory(framework/demo_framework)
 add_subdirectory(framework/demo_framework_imgui)
 add_subdirectory(framework/demo_framework_imgui_reload_images)
