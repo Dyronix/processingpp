@@ -23,6 +23,10 @@ namespace ppp
             u8*                 data = nullptr;
         };
 
+        using images_hash_map = std::unordered_map<string::string_id, image>;
+
+        images_hash_map& all_images();
+
         bool initialize();
         void terminate();
 

@@ -1,15 +1,11 @@
 #include "resources/texture_pool.h"
 #include "render/render.h"
-
-
 #include <unordered_map>
 
 namespace ppp
 {
     namespace texture_pool
     {
-        using images_hash_map = std::unordered_map<string::string_id, image>;
-
         struct context
         {
             images_hash_map images_hash_map;
@@ -19,6 +15,12 @@ namespace ppp
             image           image_solid_white;
             image           image_solid_black;
         } g_ctx;
+
+        //-------------------------------------------------------------------------
+        images_hash_map& all_images()
+        {
+            return g_ctx.images_hash_map;
+        }
 
         //-------------------------------------------------------------------------
         bool initialize()
