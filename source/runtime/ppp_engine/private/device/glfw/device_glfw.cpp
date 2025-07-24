@@ -23,10 +23,12 @@ namespace ppp
             bool is_headless = false;
             bool is_looping = true;
 
+            input_capture_mask input_capture_mask{};
+
             u64 current_frame_idx = 0;
             u64 desired_frame_idx = 1;
 
-            u32 target_frame_rate = 60;
+            s32 target_frame_rate = 60;
 
             f64 frame_times[_total_avg_frames] = { 0.0 };
 
@@ -62,357 +64,352 @@ namespace ppp
             return s_ctx;
         }
 
-        namespace internal
+        void monitor_scale(GLFWmonitor* monitor, f32* sx, f32* sy)
         {
-            void monitor_scale(GLFWmonitor* monitor, f32* sx, f32* sy)
-            {
 #if PPP_GLFW_HAS_PER_MONITOR_DPI
-                glfwGetMonitorContentScale(monitor, sx, sy);
+            glfwGetMonitorContentScale(monitor, sx, sy);
 #else
-                *sx = 1.0f;
-                *sy = 1.0f;
+            *sx = 1.0f;
+            *sy = 1.0f;
 #endif
+        }
+
+        void center_window(GLFWwindow* window)
+        {
+            // Get window position and size
+            int window_x, window_y;
+            glfwGetWindowPos(window, &window_x, &window_y);
+
+            int window_width, window_height;
+            glfwGetWindowSize(window, &window_width, &window_height);
+
+            // Halve the window size and use it to adjust the window position to the center of the window
+            window_width *= 0.5;
+            window_height *= 0.5;
+
+            window_x += window_width;
+            window_y += window_height;
+
+            // Get the list of monitors
+            int monitors_length;
+            GLFWmonitor** monitors = glfwGetMonitors(&monitors_length);
+
+            if (monitors == NULL) {
+                // Got no monitors back
+                return;
             }
 
-            void center_window(GLFWwindow* window) 
-            {
-                // Get window position and size
-                int window_x, window_y;
-                glfwGetWindowPos(window, &window_x, &window_y);
+            // Figure out which monitor the window is in
+            GLFWmonitor* owner = NULL;
+            int owner_x, owner_y, owner_width, owner_height;
 
-                int window_width, window_height;
-                glfwGetWindowSize(window, &window_width, &window_height);
+            for (int i = 0; i < monitors_length; i++) {
+                // Get the monitor position
+                int monitor_x, monitor_y;
+                glfwGetMonitorPos(monitors[i], &monitor_x, &monitor_y);
 
-                // Halve the window size and use it to adjust the window position to the center of the window
-                window_width *= 0.5;
-                window_height *= 0.5;
+                // Get the monitor size from its video mode
+                int monitor_width, monitor_height;
+                GLFWvidmode* monitor_vidmode = (GLFWvidmode*)glfwGetVideoMode(monitors[i]);
 
-                window_x += window_width;
-                window_y += window_height;
+                if (monitor_vidmode == NULL) {
+                    // Video mode is required for width and height, so skip this monitor
+                    continue;
 
-                // Get the list of monitors
-                int monitors_length;
-                GLFWmonitor** monitors = glfwGetMonitors(&monitors_length);
-
-                if (monitors == NULL) {
-                    // Got no monitors back
-                    return;
+                }
+                else {
+                    monitor_width = monitor_vidmode->width;
+                    monitor_height = monitor_vidmode->height;
                 }
 
-                // Figure out which monitor the window is in
-                GLFWmonitor* owner = NULL;
-                int owner_x, owner_y, owner_width, owner_height;
+                // Set the owner to this monitor if the center of the window is within its bounding box
+                if ((window_x > monitor_x && window_x < (monitor_x + monitor_width)) && (window_y > monitor_y && window_y < (monitor_y + monitor_height))) {
+                    owner = monitors[i];
 
-                for (int i = 0; i < monitors_length; i++) {
-                    // Get the monitor position
-                    int monitor_x, monitor_y;
-                    glfwGetMonitorPos(monitors[i], &monitor_x, &monitor_y);
+                    owner_x = monitor_x;
+                    owner_y = monitor_y;
 
-                    // Get the monitor size from its video mode
-                    int monitor_width, monitor_height;
-                    GLFWvidmode* monitor_vidmode = (GLFWvidmode*)glfwGetVideoMode(monitors[i]);
-
-                    if (monitor_vidmode == NULL) {
-                        // Video mode is required for width and height, so skip this monitor
-                        continue;
-
-                    }
-                    else {
-                        monitor_width = monitor_vidmode->width;
-                        monitor_height = monitor_vidmode->height;
-                    }
-
-                    // Set the owner to this monitor if the center of the window is within its bounding box
-                    if ((window_x > monitor_x && window_x < (monitor_x + monitor_width)) && (window_y > monitor_y && window_y < (monitor_y + monitor_height))) {
-                        owner = monitors[i];
-
-                        owner_x = monitor_x;
-                        owner_y = monitor_y;
-
-                        owner_width = monitor_width;
-                        owner_height = monitor_height;
-                    }
+                    owner_width = monitor_width;
+                    owner_height = monitor_height;
                 }
+            }
 
-                if (owner != NULL) {
-                    // Set the window position to the center of the owner monitor
-                    glfwSetWindowPos(window, owner_x + (owner_width * 0.5) - window_width, owner_y + (owner_height * 0.5) - window_height);
-                }
+            if (owner != NULL) {
+                // Set the window position to the center of the owner monitor
+                glfwSetWindowPos(window, owner_x + (owner_width * 0.5) - window_width, owner_y + (owner_height * 0.5) - window_height);
             }
         }
 
-        namespace input
+        namespace callbacks
         {
-                namespace callbacks
+            void key_pressed_callback(s32 key, s32 scancode, s32 mods)
+            {
+                ctx().last_key_pressed = key;
+            }
+        }
+
+        bool is_key_pressed(s32 code)
+        {
+            bool r = input::is_key_pressed(code);
+
+            ctx().key_pressed[code] = r;
+            ctx().key_down[code] = false;
+            ctx().key_released[code] = false;
+
+            return r;
+        }
+
+        bool is_key_released(s32 code)
+        {
+            bool r = input::is_key_released(code);
+
+            ctx().key_pressed[code] = false;
+            ctx().key_down[code] = false;
+            ctx().key_released[code] = r;
+
+            return r;
+        }
+
+        bool is_key_down(s32 code)
+        {
+            bool r = input::is_key_down(code);
+
+            ctx().key_pressed[code] = false;
+            ctx().key_down[code] = r;
+            ctx().key_released[code] = false;
+
+            return r;
+        }
+
+        bool is_any_key_pressed()
+        {
+            return std::any_of(ctx().key_pressed.begin(), ctx().key_pressed.end(),
+                [](const auto& pair)
+            {
+                return pair.second;
+            });
+        }
+
+        bool is_any_key_released()
+        {
+            return std::any_of(ctx().key_released.begin(), ctx().key_released.end(),
+                [](const auto& pair)
+            {
+                return pair.second;
+            });
+        }
+
+        bool is_any_key_down()
+        {
+            return std::any_of(ctx().key_down.begin(), ctx().key_down.end(),
+                [](const auto& pair)
+            {
+                return pair.second;
+            });
+        }
+
+        s32 key()
+        {
+            return ctx().last_key_pressed;
+        }
+
+        void add_key_pressed_callback(const std::function<void(s32, s32, s32)>& callback)
+        {
+            input::add_key_pressed_callback(callback);
+        }
+
+        void add_key_released_callback(const std::function<void(s32, s32, s32)>& callback)
+        {
+            input::add_key_released_callback(callback);
+        }
+
+        void add_key_down_callback(const std::function<void(s32, s32, s32)>& callback)
+        {
+            input::add_key_down_callback(callback);
+        }
+
+        namespace callbacks
+        {
+            void mouse_pressed_callback(s32 mouse_button, s32 mods)
+            {
+                ctx().last_mouse_button_pressed = mouse_button;
+            }
+
+            void mouse_moved_callback(f32 xpos, f32 ypos)
+            {
+                if (is_any_mouse_button_pressed())
                 {
-                    void key_pressed_callback(s32 key, s32 scancode, s32 mods)
+                    for (const auto& c : ctx().dragging_callback)
                     {
-                        ctx().last_key_pressed = key;
+                        c(xpos, ypos);
                     }
-                }
-
-                bool is_key_pressed(s32 code)
-                {
-                    bool r = is_key_pressed(ctx().window, code);
-
-                    ctx().key_pressed[code] = r;
-                    ctx().key_down[code] = false;
-                    ctx().key_released[code] = false;
-
-                    return r;
-                }
-
-                bool is_key_released(s32 code)
-                {
-                    bool r = is_key_released(ctx().window, code);
-
-                    ctx().key_pressed[code] = false;
-                    ctx().key_down[code] = false;
-                    ctx().key_released[code] = r;
-
-                    return r;
-                }
-
-                bool is_key_down(s32 code)
-                {
-                    bool r = is_key_down(ctx().window, code);
-
-                    ctx().key_pressed[code] = false;
-                    ctx().key_down[code] = r;
-                    ctx().key_released[code] = false;
-
-                    return r;
-                }
-
-                bool is_any_key_pressed()
-                {
-                    return std::any_of(ctx().key_pressed.begin(), ctx().key_pressed.end(),
-                        [](const auto& pair)
-                    {
-                        return pair.second;
-                    });
-                }
-
-                bool is_any_key_released()
-                {
-                    return std::any_of(ctx().key_released.begin(), ctx().key_released.end(),
-                        [](const auto& pair)
-                    {
-                        return pair.second;
-                    });
-                }
-
-                bool is_any_key_down()
-                {
-                    return std::any_of(ctx().key_down.begin(), ctx().key_down.end(),
-                        [](const auto& pair)
-                    {
-                        return pair.second;
-                    });
-                }
-
-                s32 key()
-                {
-                    return ctx().last_key_pressed;
-                }
-
-                void add_key_pressed_callback(const std::function<void(s32, s32, s32)>& callback)
-                {
-                    add_key_pressed_callback(ctx().window, callback);
-                }
-
-                void add_key_released_callback(const std::function<void(s32, s32, s32)>& callback)
-                {
-                    add_key_released_callback(ctx().window, callback);
-                }
-
-                void add_key_down_callback(const std::function<void(s32, s32, s32)>& callback)
-                {
-                    add_key_down_callback(ctx().window, callback);
-                }
-
-                namespace callbacks
-                {
-                    void mouse_pressed_callback(s32 mouse_button, s32 mods)
-                    {
-                        ctx().last_mouse_button_pressed = mouse_button;
-                    }
-
-                    void mouse_moved_callback(f32 xpos, f32 ypos)
-                    {
-                        if (input::is_any_mouse_button_pressed())
-                        {
-                            for (const auto& c : ctx().dragging_callback)
-                            {
-                                c(xpos, ypos);
-                            }
-                        }
-                    }
-
-                    void scroll_x_callback(f32 xoffset)
-                    {
-                        ctx().scroll_offset_x = xoffset;
-                    }
-
-                    void scroll_y_callback(f32 yoffset)
-                    {
-                        ctx().scroll_offset_y = yoffset;
-                    }
-                }
-
-                f32 moved_x()
-                {
-                    if (prev_mouse_x() != -1.0f && mouse_x() != -1.0f)
-                    {
-                        return mouse_x() - prev_mouse_x();
-                    }
-
-                    return 0;
-                }
-
-                f32 moved_y()
-                {
-                    if (prev_mouse_y() != -1.0f && mouse_y() != -1.0f)
-                    {
-                        return mouse_y() - prev_mouse_y();
-                    }
-
-                    return 0;
-                }
-
-                f32 mouse_x()
-                {
-                    return ctx().current_mouse_x;
-                }
-
-                f32 mouse_y()
-                {
-                    return ctx().current_mouse_y;
-                }
-
-                f32 prev_mouse_x()
-                {
-                    return ctx().prev_mouse_x;
-                }
-
-                f32 prev_mouse_y()
-                {
-                    return ctx().prev_mouse_y;
-                }
-
-                s32 mouse_button()
-                {
-                    return ctx().last_mouse_button_pressed;
-                }
-
-                f32 scroll_offset_x()
-                {
-                    return ctx().scroll_offset_x;
-                }
-
-                f32 scroll_offset_y()
-                {
-                    return ctx().scroll_offset_y;
-                }
-
-                bool is_left_button_pressed()
-                {
-                    bool r = is_mouse_button_pressed(ctx().window, GLFW_MOUSE_BUTTON_LEFT);
-
-                    ctx().mouse_button_pressed[GLFW_MOUSE_BUTTON_LEFT] = r;
-                    ctx().mouse_button_released[GLFW_MOUSE_BUTTON_LEFT] = false;
-
-                    return r;
-                }
-
-                bool is_right_button_pressed()
-                {
-                    bool r = is_mouse_button_pressed(ctx().window, GLFW_MOUSE_BUTTON_RIGHT);
-
-                    ctx().mouse_button_pressed[GLFW_MOUSE_BUTTON_RIGHT] = r;
-                    ctx().mouse_button_released[GLFW_MOUSE_BUTTON_RIGHT] = false;
-
-                    return r;
-                }
-
-                bool is_middle_button_pressed()
-                {
-                    bool r = is_mouse_button_pressed(ctx().window, GLFW_MOUSE_BUTTON_MIDDLE);
-
-                    ctx().mouse_button_pressed[GLFW_MOUSE_BUTTON_MIDDLE] = r;
-                    ctx().mouse_button_released[GLFW_MOUSE_BUTTON_MIDDLE] = false;
-
-                    return r;
-                }
-
-                bool is_any_mouse_button_pressed()
-                {
-                    return std::any_of(ctx().mouse_button_pressed.begin(), ctx().mouse_button_pressed.end(),
-                        [](const auto& pair)
-                    {
-                        return pair.second;
-                    });
-                }
-
-                bool is_any_mouse_button_released()
-                {
-                    return std::any_of(ctx().mouse_button_released.begin(), ctx().mouse_button_released.end(),
-                        [](const auto& pair)
-                    {
-                        return pair.second;
-                    });
-                }
-
-                void add_mouse_moved_callback(const std::function<void(f32, f32)>& callback)
-                {
-                    add_mouse_pos_callback(ctx().window, callback);
-                }
-
-                void add_mouse_dragged_callback(const std::function<void(f32, f32)>& callback)
-                {
-                    ctx().dragging_callback.push_back(callback);
-                }
-
-                void add_mouse_pressed_callback(const std::function<void(s32, s32)>& callback)
-                {
-                    add_mouse_button_pressed_callback(ctx().window, callback);
-                }
-
-                void add_mouse_released_callback(const std::function<void(s32, s32)>& callback)
-                {
-                    add_mouse_button_released_callback(ctx().window, callback);
-                }
-
-                void add_mouse_horizontal_wheel_callback(const std::function<void(f32)>& callback)
-                {
-                    add_mouse_scroll_x_callback(ctx().window, callback);
-                }
-
-                void add_mouse_vertical_wheel_callback(const std::function<void(f32)>& callback)
-                {
-                    add_mouse_scroll_y_callback(ctx().window, callback);
-                }
-
-                void request_pointer_lock()
-                {
-                    lock_cursor(ctx().window);
-                }
-
-                void request_pointer_hide()
-                {
-                    hide_cursor(ctx().window);
-                }
-
-                void request_pointer_unlock()
-                {
-                    unlock_cursor(ctx().window);
-                }
-
-                void request_pointer_show()
-                {
-                    show_cursor(ctx().window);
                 }
             }
+
+            void scroll_x_callback(f32 xoffset)
+            {
+                ctx().scroll_offset_x = xoffset;
+            }
+
+            void scroll_y_callback(f32 yoffset)
+            {
+                ctx().scroll_offset_y = yoffset;
+            }
+        }
+
+        f32 moved_x()
+        {
+            if (prev_mouse_x() != -1.0f && mouse_x() != -1.0f)
+            {
+                return mouse_x() - prev_mouse_x();
+            }
+
+            return 0;
+        }
+
+        f32 moved_y()
+        {
+            if (prev_mouse_y() != -1.0f && mouse_y() != -1.0f)
+            {
+                return mouse_y() - prev_mouse_y();
+            }
+
+            return 0;
+        }
+
+        f32 mouse_x()
+        {
+            return ctx().current_mouse_x;
+        }
+
+        f32 mouse_y()
+        {
+            return ctx().current_mouse_y;
+        }
+
+        f32 prev_mouse_x()
+        {
+            return ctx().prev_mouse_x;
+        }
+
+        f32 prev_mouse_y()
+        {
+            return ctx().prev_mouse_y;
+        }
+
+        s32 mouse_button()
+        {
+            return ctx().last_mouse_button_pressed;
+        }
+
+        f32 scroll_offset_x()
+        {
+            return ctx().scroll_offset_x;
+        }
+
+        f32 scroll_offset_y()
+        {
+            return ctx().scroll_offset_y;
+        }
+
+        bool is_left_button_pressed()
+        {
+            bool r = input::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT);
+
+            ctx().mouse_button_pressed[GLFW_MOUSE_BUTTON_LEFT] = r;
+            ctx().mouse_button_released[GLFW_MOUSE_BUTTON_LEFT] = false;
+
+            return r;
+        }
+
+        bool is_right_button_pressed()
+        {
+            bool r = input::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_RIGHT);
+
+            ctx().mouse_button_pressed[GLFW_MOUSE_BUTTON_RIGHT] = r;
+            ctx().mouse_button_released[GLFW_MOUSE_BUTTON_RIGHT] = false;
+
+            return r;
+        }
+
+        bool is_middle_button_pressed()
+        {
+            bool r = input::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_MIDDLE);
+
+            ctx().mouse_button_pressed[GLFW_MOUSE_BUTTON_MIDDLE] = r;
+            ctx().mouse_button_released[GLFW_MOUSE_BUTTON_MIDDLE] = false;
+
+            return r;
+        }
+
+        bool is_any_mouse_button_pressed()
+        {
+            return std::any_of(ctx().mouse_button_pressed.begin(), ctx().mouse_button_pressed.end(),
+                [](const auto& pair)
+            {
+                return pair.second;
+            });
+        }
+
+        bool is_any_mouse_button_released()
+        {
+            return std::any_of(ctx().mouse_button_released.begin(), ctx().mouse_button_released.end(),
+                [](const auto& pair)
+            {
+                return pair.second;
+            });
+        }
+
+        void add_mouse_moved_callback(const std::function<void(f32, f32)>& callback)
+        {
+            input::add_mouse_pos_callback(callback);
+        }
+
+        void add_mouse_dragged_callback(const std::function<void(f32, f32)>& callback)
+        {
+            ctx().dragging_callback.push_back(callback);
+        }
+
+        void add_mouse_pressed_callback(const std::function<void(s32, s32)>& callback)
+        {
+            input::add_mouse_button_pressed_callback(callback);
+        }
+
+        void add_mouse_released_callback(const std::function<void(s32, s32)>& callback)
+        {
+            input::add_mouse_button_released_callback(callback);
+        }
+
+        void add_mouse_horizontal_wheel_callback(const std::function<void(f32)>& callback)
+        {
+            input::add_mouse_scroll_x_callback(callback);
+        }
+
+        void add_mouse_vertical_wheel_callback(const std::function<void(f32)>& callback)
+        {
+            input::add_mouse_scroll_y_callback(callback);
+        }
+
+        void request_pointer_lock()
+        {
+            input::lock_cursor();
+        }
+
+        void request_pointer_hide()
+        {
+            input::hide_cursor();
+        }
+
+        void request_pointer_unlock()
+        {
+            input::unlock_cursor();
+        }
+
+        void request_pointer_show()
+        {
+            input::show_cursor();
+        }
+            
 
         bool initialize(s32 w, s32 h)
         {
@@ -459,20 +456,25 @@ namespace ppp
             glfwMakeContextCurrent(ctx().window);
             glfwSwapInterval(1);
 
+            primary_monitor_refresh_rate(&ctx().target_frame_rate);
+
+            // Initialize the input system
+            input::initialize();
+
             // Register the key pressed callback so we can cache the last key that was pressed
-            input::add_key_pressed_callback(input::callbacks::key_pressed_callback);
+            add_key_pressed_callback(callbacks::key_pressed_callback);
 
             // Register the mouse button pressed callback so we can cache the last key that was pressed
-            input::add_mouse_pressed_callback(input::callbacks::mouse_pressed_callback);
+            add_mouse_pressed_callback(callbacks::mouse_pressed_callback);
 
             // Register the mouse move callback so we can check if we are dragging along the screen
-            input::add_mouse_moved_callback(input::callbacks::mouse_moved_callback);
+            add_mouse_moved_callback(callbacks::mouse_moved_callback);
 
             // Register the mouse scroll callback so we can check if we are scrolling
-            input::add_mouse_horizontal_wheel_callback(input::callbacks::scroll_x_callback);
-            input::add_mouse_vertical_wheel_callback(input::callbacks::scroll_y_callback);
+            add_mouse_horizontal_wheel_callback(callbacks::scroll_x_callback);
+            add_mouse_vertical_wheel_callback(callbacks::scroll_y_callback);
 
-            internal::center_window(ctx().window);
+            center_window(ctx().window);
 
             // Initialize frame time
             ctx().previous_frame_time = clock::now();
@@ -490,11 +492,29 @@ namespace ppp
         {
             ctx().prev_mouse_x = ctx().current_mouse_x;
             ctx().prev_mouse_y = ctx().current_mouse_y;
-            ctx().current_mouse_x = input::mouse_x(ctx().window);
-            ctx().current_mouse_y = input::mouse_y(ctx().window);
+            ctx().current_mouse_x = input::mouse_x();
+            ctx().current_mouse_y = input::mouse_y();
 
             ctx().scroll_offset_x = 0.0f;
             ctx().scroll_offset_y = 0.0f;
+
+            if (ctx().input_capture_mask.mouse)
+            {
+                ctx().current_mouse_x = ctx().prev_mouse_x;
+                ctx().current_mouse_y = ctx().prev_mouse_y;
+                ctx().scroll_offset_x = 0.0f;
+                ctx().scroll_offset_y = 0.0f;
+
+                ctx().mouse_button_pressed.clear();
+                ctx().mouse_button_released.clear();
+            }
+
+            if (ctx().input_capture_mask.keyboard)
+            {
+                ctx().key_pressed.clear();
+                ctx().key_down.clear();
+                ctx().key_released.clear();
+            }
 
             auto current_frame_time = clock::now();
 
@@ -549,9 +569,15 @@ namespace ppp
             *sy = 1.0f;
 #endif
         }
+
         void primary_monitor_scale(f32* sx, f32* sy)
         {
-            internal::monitor_scale(glfwGetPrimaryMonitor(), sx, sy);
+            monitor_scale(glfwGetPrimaryMonitor(), sx, sy);
+        }
+        void primary_monitor_refresh_rate(s32* rate)
+        {
+            const GLFWvidmode* video_mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            *rate = video_mode->refreshRate;
         }
 
         void headless()
@@ -604,9 +630,14 @@ namespace ppp
             glfwSetWindowShouldClose(ctx().window, true);
         }
 
-        void target_frame_rate(u32 rate)
+        void target_frame_rate(s32 rate)
         {
             ctx().target_frame_rate = rate;
+        }
+
+        void capture_mask(const input_capture_mask& mask)
+        {
+            ctx().input_capture_mask = mask;
         }
 
         bool is_headless()

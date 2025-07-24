@@ -8,55 +8,58 @@ namespace ppp
 {
     namespace device
     {
-        namespace input
+        struct input_capture_mask 
         {
-            bool is_key_pressed(s32 code);
-            bool is_key_released(s32 code);
-            bool is_key_down(s32 code);
+            bool mouse = false;     // buttons, move, scroll
+            bool keyboard = false;  // keys/shortcuts
+        };
 
-            bool is_any_key_pressed();
-            bool is_any_key_released();
-            bool is_any_key_down();
+        bool is_key_pressed(s32 code);
+        bool is_key_released(s32 code);
+        bool is_key_down(s32 code);
 
-            s32 key();
+        bool is_any_key_pressed();
+        bool is_any_key_released();
+        bool is_any_key_down();
 
-            void add_key_pressed_callback(const std::function<void(s32, s32, s32)>& callback);
-            void add_key_released_callback(const std::function<void(s32, s32, s32)>& callback);
-            void add_key_down_callback(const std::function<void(s32, s32, s32)>& callback);
+        s32 key();
 
-            f32 moved_x();
-            f32 moved_y();
+        void add_key_pressed_callback(const std::function<void(s32, s32, s32)>& callback);
+        void add_key_released_callback(const std::function<void(s32, s32, s32)>& callback);
+        void add_key_down_callback(const std::function<void(s32, s32, s32)>& callback);
 
-            f32 mouse_x();
-            f32 mouse_y();
+        f32 moved_x();
+        f32 moved_y();
 
-            f32 prev_mouse_x();
-            f32 prev_mouse_y();
+        f32 mouse_x();
+        f32 mouse_y();
 
-            s32 mouse_button();
+        f32 prev_mouse_x();
+        f32 prev_mouse_y();
 
-            f32 scroll_offset_x();
-            f32 scroll_offset_y();
+        s32 mouse_button();
 
-            bool is_left_button_pressed();
-            bool is_right_button_pressed();
-            bool is_middle_button_pressed();
+        f32 scroll_offset_x();
+        f32 scroll_offset_y();
 
-            bool is_any_mouse_button_pressed();
-            bool is_any_mouse_button_released();
+        bool is_left_button_pressed();
+        bool is_right_button_pressed();
+        bool is_middle_button_pressed();
 
-            void add_mouse_moved_callback(const std::function<void(f32, f32)>& callback);
-            void add_mouse_dragged_callback(const std::function<void(f32, f32)>& callback);
-            void add_mouse_pressed_callback(const std::function<void(s32, s32)>& callback);
-            void add_mouse_released_callback(const std::function<void(s32, s32)>& callback);
-            void add_mouse_horizontal_wheel_callback(const std::function<void(f32)>& callback);
-            void add_mouse_vertical_wheel_callback(const std::function<void(f32)>& callback);
+        bool is_any_mouse_button_pressed();
+        bool is_any_mouse_button_released();
 
-            void request_pointer_lock();
-            void request_pointer_hide();
-            void request_pointer_unlock();
-            void request_pointer_show();
-        }
+        void add_mouse_moved_callback(const std::function<void(f32, f32)>& callback);
+        void add_mouse_dragged_callback(const std::function<void(f32, f32)>& callback);
+        void add_mouse_pressed_callback(const std::function<void(s32, s32)>& callback);
+        void add_mouse_released_callback(const std::function<void(s32, s32)>& callback);
+        void add_mouse_horizontal_wheel_callback(const std::function<void(f32)>& callback);
+        void add_mouse_vertical_wheel_callback(const std::function<void(f32)>& callback);
+
+        void request_pointer_lock();
+        void request_pointer_hide();
+        void request_pointer_unlock();
+        void request_pointer_show();
 
         bool initialize(s32 w, s32 h);
         void terminate();
@@ -68,6 +71,7 @@ namespace ppp
         void window_scale(f32* sx, f32* sy);
         
         void primary_monitor_scale(f32* sx, f32* sy);
+        void primary_monitor_refresh_rate(s32* rate);
 
         void headless();
         void loop();
@@ -76,7 +80,8 @@ namespace ppp
         void present();
         void poll_events();
         void request_quit();
-        void target_frame_rate(u32 rate);
+        void target_frame_rate(s32 rate);
+        void capture_mask(const input_capture_mask& mask);
 
         bool is_headless();
         bool is_looping();

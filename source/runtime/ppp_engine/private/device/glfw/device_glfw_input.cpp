@@ -1,4 +1,5 @@
 #include "device/device_input.h"
+#include "device/device.h"
 
 #include "render/render.h"
 
@@ -26,6 +27,11 @@ namespace ppp
 
             namespace glfw
             {
+                GLFWwindow* window()
+                {
+                    return reinterpret_cast<GLFWwindow*>(device::window());
+                }
+
                 void key_callback(GLFWwindow* window, s32 key, s32 scancode, s32 action, s32 mods)
                 {
                     for (const auto& c : g_ctx.key_callbacks[action])
@@ -34,19 +40,19 @@ namespace ppp
                     }
                 }
 
-                void mouse_pos_callback(GLFWwindow* window, f64 xpos, f64 ypos)
-                {
-                    for (const auto& c : g_ctx.mouse_pos_callbacks)
-                    {
-                        c((f32)xpos, (f32)ypos);
-                    }
-                }
-
                 void mouse_button_callback(GLFWwindow* window, s32 button, s32 action, s32 mods)
                 {
                     for (const auto& c : g_ctx.mouse_button_callbacks[action])
                     {
                         c(button, mods);
+                    }
+                }
+
+                void mouse_pos_callback(GLFWwindow* window, f64 xpos, f64 ypos)
+                {
+                    for (const auto& c : g_ctx.mouse_pos_callbacks)
+                    {
+                        c((f32)xpos, (f32)ypos);
                     }
                 }
 
@@ -70,52 +76,49 @@ namespace ppp
                 }
             }
 
-            bool is_key_pressed(GLFWwindow* window, s32 code)
+            void initialize()
             {
-                return glfwGetKey(window, code) == GLFW_PRESS;
+                glfwSetKeyCallback(glfw::window(), glfw::key_callback);
+
+                glfwSetMouseButtonCallback(glfw::window(), glfw::mouse_button_callback);
+                glfwSetCursorPosCallback(glfw::window(), glfw::mouse_pos_callback);
+                glfwSetScrollCallback(glfw::window(), glfw::mouse_scroll_callback);
             }
 
-            bool is_key_released(GLFWwindow* window, s32 code)
+            bool is_key_pressed(s32 code)
             {
-                return glfwGetKey(window, code) == GLFW_RELEASE;
+                return glfwGetKey(glfw::window(), code) == GLFW_PRESS;
             }
 
-            bool is_key_down(GLFWwindow* window, s32 code)
+            bool is_key_released(s32 code)
             {
-                return glfwGetKey(window, code) == GLFW_REPEAT;
+                return glfwGetKey(glfw::window(), code) == GLFW_RELEASE;
             }
 
-            void add_key_pressed_callback(GLFWwindow* window, const key_pressed_callback& callback)
+            bool is_key_down(s32 code)
             {
-                if (g_ctx.key_callbacks.empty())
-                {
-                    glfwSetKeyCallback(window, glfw::key_callback);
-                }
+                return glfwGetKey(glfw::window(), code) == GLFW_REPEAT;
+            }
+
+            void add_key_pressed_callback(const key_pressed_callback& callback)
+            {
                 g_ctx.key_callbacks[GLFW_PRESS].push_back(callback);
             }
 
-            void add_key_released_callback(GLFWwindow* window, const key_released_callback& callback)
+            void add_key_released_callback(const key_released_callback& callback)
             {
-                if (g_ctx.key_callbacks.empty())
-                {
-                    glfwSetKeyCallback(window, glfw::key_callback);
-                }
                 g_ctx.key_callbacks[GLFW_RELEASE].push_back(callback);
             }
 
-            void add_key_down_callback(GLFWwindow* window, const key_down_callback& callback)
+            void add_key_down_callback(const key_down_callback& callback)
             {
-                if (g_ctx.key_callbacks.empty())
-                {
-                    glfwSetKeyCallback(window, glfw::key_callback);
-                }
                 g_ctx.key_callbacks[GLFW_REPEAT].push_back(callback);
             }
 
-            f32 mouse_x(GLFWwindow* window)
+            f32 mouse_x()
             {
                 f64 xpos, ypos;
-                glfwGetCursorPos(window, &xpos, &ypos);
+                glfwGetCursorPos(glfw::window(), &xpos, &ypos);
 
                 if (render::scissor_rect_enabled())
                 {
@@ -128,10 +131,10 @@ namespace ppp
                 return (f32)xpos;
             }
 
-            f32 mouse_y(GLFWwindow* window)
+            f32 mouse_y()
             {
                 f64 xpos, ypos;
-                glfwGetCursorPos(window, &xpos, &ypos);
+                glfwGetCursorPos(glfw::window(), &xpos, &ypos);
 
                 if (render::scissor_rect_enabled())
                 {
@@ -143,90 +146,70 @@ namespace ppp
                 else
                 {
                     s32 width, height;
-                    glfwGetWindowSize(window, &width, &height);
+                    glfwGetWindowSize(glfw::window(), &width, &height);
                     ypos = ypos - (f64)height;
                 }
 
                 return (f32)ypos;
             }
 
-            bool is_mouse_button_pressed(GLFWwindow* window, s32 code)
+            bool is_mouse_button_pressed(s32 code)
             {
-                return glfwGetMouseButton(window, code) == GLFW_PRESS;
+                return glfwGetMouseButton(glfw::window(), code) == GLFW_PRESS;
             }
 
-            bool is_mouse_button_released(GLFWwindow* window, s32 code)
+            bool is_mouse_button_released(s32 code)
             {
-                return glfwGetMouseButton(window, code) == GLFW_RELEASE;
+                return glfwGetMouseButton(glfw::window(), code) == GLFW_RELEASE;
             }
 
-            bool is_mouse_button_down(GLFWwindow* window, s32 code)
+            bool is_mouse_button_down(s32 code)
             {
-                return glfwGetMouseButton(window, code) == GLFW_REPEAT;
+                return glfwGetMouseButton(glfw::window(), code) == GLFW_REPEAT;
             }
 
-            void lock_cursor(GLFWwindow* window)
+            void lock_cursor()
             {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                glfwSetInputMode(glfw::window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             }
 
-            void hide_cursor(GLFWwindow* window)
+            void hide_cursor()
             {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+                glfwSetInputMode(glfw::window(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
             }
 
-            void unlock_cursor(GLFWwindow* window)
+            void unlock_cursor()
             {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                glfwSetInputMode(glfw::window(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
 
-            void show_cursor(GLFWwindow* window)
+            void show_cursor()
             {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                glfwSetInputMode(glfw::window(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
 
-            void add_mouse_pos_callback(GLFWwindow* window, const mouse_pos_callback& callback)
+            void add_mouse_pos_callback(const mouse_pos_callback& callback)
             {
                 g_ctx.mouse_pos_callbacks.push_back(callback);
-                if (g_ctx.mouse_pos_callbacks.empty())
-                {
-                    glfwSetCursorPosCallback(window, glfw::mouse_pos_callback);
-                }
             }
 
-            void add_mouse_button_pressed_callback(GLFWwindow* window, const mouse_button_pressed_callback& callback)
+            void add_mouse_button_pressed_callback(const mouse_button_pressed_callback& callback)
             {
-                if (g_ctx.mouse_button_callbacks.empty())
-                {
-                    glfwSetMouseButtonCallback(window, glfw::mouse_button_callback);
-                }
                 g_ctx.mouse_button_callbacks[GLFW_PRESS].push_back(callback);
             }
 
-            void add_mouse_button_released_callback(GLFWwindow* window, const mouse_button_released_callback& callback)
+            void add_mouse_button_released_callback(const mouse_button_released_callback& callback)
             {
-                if (g_ctx.mouse_button_callbacks.empty())
-                {
-                    glfwSetMouseButtonCallback(window, glfw::mouse_button_callback);
-                }
                 g_ctx.mouse_button_callbacks[GLFW_RELEASE].push_back(callback);
             }
 
-            void add_mouse_scroll_x_callback(GLFWwindow* window, const mouse_button_scroll_x_callback& callback)
+            void add_mouse_scroll_x_callback(const mouse_button_scroll_x_callback& callback)
             {
-                if (g_ctx.mouse_scroll_callbacks.empty())
-                {
-                    glfwSetScrollCallback(window, glfw::mouse_scroll_callback);
-                }
                 g_ctx.mouse_scroll_callbacks[GLFW_MOUSE_SCROLL_X].push_back(callback);
             }
 
-            void add_mouse_scroll_y_callback(GLFWwindow* window, const mouse_button_scroll_y_callback& callback)
+            void add_mouse_scroll_y_callback(const mouse_button_scroll_y_callback& callback)
             {
-                if (g_ctx.mouse_scroll_callbacks.empty())
-                {
-                    glfwSetScrollCallback(window, glfw::mouse_scroll_callback);
-                }
                 g_ctx.mouse_scroll_callbacks[GLFW_MOUSE_SCROLL_Y].push_back(callback);
             }
         }
