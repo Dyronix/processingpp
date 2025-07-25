@@ -5,9 +5,6 @@
 
 namespace ppp
 {
-    image _image_container;
-    image _image_wall;
-
     class my_sketch : public sketch
     {
     public:
@@ -95,9 +92,6 @@ namespace ppp
         angle_mode(angle_mode_type::DEGREES);
 
         append_lights();
-
-        _image_container = load("local:content/t_container.jpg");
-        _image_wall = load("local:content/t_wall.jpg");
     }
 
     //-------------------------------------------------------------------------
@@ -241,60 +235,6 @@ namespace ppp
         };
 
         _dir_light = directional_light(directional_desc);
-
-        //point_light_desc point_desc =
-        //{
-        //    0.0f, 0.0f, 0.0f,       // position
-        //    0.05f, 0.05f, 0.05f,    // ambient          
-        //    0.8f, 0.8f, 0.8f,       // diffuse
-        //    1.0f, 1.0f, 1.0f,       // specular          
-        //    false,                  // specular enabled
-        //    false,                  // cast shadows
-        //    800.0f,                 // max range
-        //    350.0f                  // falloff start
-        //};
-
-        //float start_x = -120.0f; // Initial x position to start grid from
-        //float x_spacing = 80.0f; // Horizontal spacing between shapes
-
-        //for(int i = 0; i < 4; i++)
-        //{
-        //    switch (i)
-        //    {
-        //    case 0:
-        //        // lights
-        //        point_desc.x = start_x + (i * x_spacing);
-        //        point_desc.y = 40.0f;
-        //        point_desc.z = 100.0f;
-
-        //        point_light(point_desc);
-        //        break;
-        //    //case 1:
-        //    //    // lights
-        //    //    point_desc.x = start_x + (i * x_spacing);
-        //    //    point_desc.y = 40.0f;
-        //    //    point_desc.z = 100.0f;
-
-        //    //    point_light(point_desc);
-        //    //    break;
-        //    //case 2:
-        //    //    // lights
-        //    //    point_desc.x = start_x + (i * x_spacing);
-        //    //    point_desc.y = 40.0f;
-        //    //    point_desc.z = 100.0f;
-
-        //    //    point_light(point_desc);
-        //    //    break;
-        //    case 3:
-        //        // lights
-        //        point_desc.x = start_x + (i * x_spacing);
-        //        point_desc.y = 40.0f;
-        //        point_desc.z = 100.0f;
-
-        //        point_light(point_desc);
-        //        break;
-        //    }
-        //}
     }
     //-------------------------------------------------------------------------
     void my_sketch::update_directional_light()
