@@ -170,133 +170,6 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        s32 font_batches_count()
-        {
-            return g_ctx.font_batch_data->size();
-        }
-        //-------------------------------------------------------------------------
-        s32 geometry_batches_count()
-        {
-            s32 nr_geomtry_batches = 0;
-            for (auto& pair : g_ctx.batch_data)
-            {
-                nr_geomtry_batches += pair.second->size();
-            }
-
-            return nr_geomtry_batches;
-        }
-        //-------------------------------------------------------------------------
-        s32 geometry_instances_count()
-        {
-            s32 nr_geometry_instances = 0;
-            for (auto& pair : g_ctx.instance_data)
-            {
-                nr_geometry_instances += pair.second->size();
-            }
-
-            return nr_geometry_instances;
-        }
-
-        namespace detail 
-        {
-            //-------------------------------------------------------------------------
-            template<class T>
-            constexpr T* to_ptr(T* p) noexcept { return p; }
-
-            //-------------------------------------------------------------------------
-            template<class T>
-            constexpr T* to_ptr(const std::unique_ptr<T>& p) noexcept { return p.get(); }
-        }
-
-        //-------------------------------------------------------------------------
-        template<class Range, class Pred>
-        s32 count_passes(const Range& passes, Pred&& pred)
-        {
-            s32 count = 0;
-            for (auto& holder : passes)
-            {
-                irender_pass* pass = detail::to_ptr(holder);
-
-                if (auto* comp = dynamic_cast<base_composite_pass*>(pass)) {
-                    count += count_passes(comp->children(), std::forward<Pred>(pred));
-                    continue;
-                }
-
-                if (pred(*pass)) ++count;
-            }
-            return count;
-        }
-
-        //-------------------------------------------------------------------------
-        template<class Range>
-        s32 count_batched_font_passes(const Range& passes, const string::string_id& font_pass)
-        {
-            return count_passes(passes, 
-                [&](auto& p) 
-            {
-                if (!p.has_shader(font_pass))
-                {
-                    return false;
-                }
-
-                auto* g = static_cast<geometry_render_pass*>(&p);
-                return g->batch_rendering_enabled();
-            });
-        }
-
-        //-------------------------------------------------------------------------
-        template<class Range>
-        s32 count_batched_geometry_passes(const Range& passes, const std::vector<string::string_id>& ignore)
-        {
-            return count_passes(passes, 
-                [&](auto& p) 
-            {
-                if (!p.has_shader())
-                {
-                    return false;
-                }
-
-                if (std::any_of(ignore.begin(), ignore.end(),
-                    [&p](auto& id)
-                {
-                    return p.has_shader(id);
-                }))
-                {
-                    return false;
-                }
-
-                auto* g = static_cast<geometry_render_pass*>(&p);
-                return g->batch_rendering_enabled();
-            });
-        }
-
-        template<class Range>
-        s32 count_instanced_geometry_passes(const Range& passes,
-            const std::vector<string::string_id>& ignore)
-        {
-            return count_passes(passes, 
-                [&](auto& p) 
-            {
-                if (!p.has_shader())
-                {
-                    return false;
-                }
-
-                if (std::any_of(ignore.begin(), ignore.end(),
-                    [&p](auto& id)
-                {
-                    return p.has_shader(id);
-                }))
-                {
-                    return false;
-                }
-
-                auto* g = static_cast<geometry_render_pass*>(&p);
-                return g->instance_rendering_enabled();
-            });
-        }
-
-        //-------------------------------------------------------------------------
         void submit_custom_render_item(topology_type topology, const irender_item* item, const glm::vec4& color)
         {
             if (brush::stroke_enabled() == false && brush::inner_stroke_enabled() == false && brush::fill_enabled() == false)
@@ -492,27 +365,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         void render(const camera_context* context)
         {
+            auto rc = make_render_context(context);
+
 #if _DEBUG
-            s32 nr_font_batches = font_batches_count();
-            s32 nr_solid_font_passes = count_batched_font_passes(g_ctx.render_pipeline_view.solid_passes, unlit::tags::font{}.batched());
-            s32 nr_wireframe_font_passes = count_batched_font_passes(g_ctx.render_pipeline_view.wireframe_passes, unlit::tags::font{}.batched());
-            s32 nr_font_draw_calls = nr_font_batches * nr_solid_font_passes + nr_font_batches * nr_wireframe_font_passes;
-
-            s32 nr_geomtry_batches = geometry_batches_count();
-            s32 nr_batched_solid_passes = count_batched_geometry_passes(g_ctx.render_pipeline_view.solid_passes, { unlit::tags::font{}.batched() });
-            s32 nr_batched_wireframe_passes = count_batched_geometry_passes(g_ctx.render_pipeline_view.wireframe_passes, { unlit::tags::font{}.batched() });
-            s32 nr_batched_geometry_draw_calls = nr_geomtry_batches * nr_batched_solid_passes + nr_geomtry_batches * nr_batched_wireframe_passes;
-
-            s32 nr_geometry_instances = geometry_instances_count();
-            s32 nr_instanced_solid_passes = count_instanced_geometry_passes(g_ctx.render_pipeline_view.solid_passes, { unlit::tags::font{}.batched() });
-            s32 nr_instanced_wireframe_passes = count_instanced_geometry_passes(g_ctx.render_pipeline_view.wireframe_passes, { unlit::tags::font{}.batched() });
-            s32 nr_instanced_geometry_draw_calls = nr_geometry_instances * nr_instanced_solid_passes + nr_geometry_instances * nr_instanced_wireframe_passes;
-
-            g_ctx.stats.batched_draw_calls = nr_font_draw_calls + nr_batched_geometry_draw_calls;
-            g_ctx.stats.instanced_draw_calls = nr_instanced_geometry_draw_calls;
+            g_ctx.stats.batched_draw_calls = g_ctx.render_pipeline.batched_draw_calls(rc);
+            g_ctx.stats.instanced_draw_calls = g_ctx.render_pipeline.instanced_draw_calls(rc);
 #endif
 
-            g_ctx.render_pipeline.execute(make_render_context(context));
+            g_ctx.render_pipeline.execute(rc);
         }
 
         //-------------------------------------------------------------------------

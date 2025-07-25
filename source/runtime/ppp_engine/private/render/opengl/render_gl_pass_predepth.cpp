@@ -109,5 +109,47 @@ namespace ppp
             // Unbind pass framebuffer
             framebuffer()->unbind();
         }
+
+        //-------------------------------------------------------------------------
+        s32 predepth_pass::count_batched_draw_calls(const render_context& context) const
+        {
+            if (!batch_rendering_enabled() || !has_shader())
+            {
+                return 0;
+            }
+
+            s32 draw_calls = 0;
+            for (auto& pair : *context.batch_data)
+            {
+                const auto& key = pair.first;
+                if (key.shader_blending_type == shading_blending_type::OPAQUE)
+                {
+                    draw_calls += pair.second->size();
+                }
+            }
+
+            return draw_calls;
+        }
+
+        //-------------------------------------------------------------------------
+        s32 predepth_pass::count_instanced_draw_calls(const render_context& context) const
+        {
+            if (!instance_rendering_enabled() || !has_shader())
+            {
+                return 0;
+            }
+
+            s32 draw_calls = 0;
+            for (auto& pair : *context.instance_data)
+            {
+                const auto& key = pair.first;
+                if (key.shader_blending_type == shading_blending_type::OPAQUE)
+                {
+                    draw_calls += pair.second->size();
+                }
+            }
+
+            return draw_calls;
+        }
     }
 }

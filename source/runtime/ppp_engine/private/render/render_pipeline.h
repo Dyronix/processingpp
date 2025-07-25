@@ -33,6 +33,9 @@ namespace ppp
             bool has_pass_with_framebuffer_tag(string::string_id shader_tag) const;
             bool has_pass_with_shader_tag(string::string_id shader_tag) const;
 
+            s32 batched_draw_calls(const render_context& context) const;
+            s32 instanced_draw_calls(const render_context& context) const;
+
         public:
             void add_insertion_point(insertion_point point);
 

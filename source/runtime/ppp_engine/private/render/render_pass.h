@@ -49,7 +49,9 @@ namespace ppp
             virtual bool                        has_framebuffer_tag(string::string_id shader_tag) const { return false; }
             virtual bool                        has_shader(string::string_id shader_tag) const { return false; }
             virtual bool                        has_shader() const { return false; }
-            virtual bool                        has_child_passes() const { return false; }
+
+            virtual s32                         count_batched_draw_calls(const render_context& /*context*/) const { return 0; }
+            virtual s32                         count_instanced_draw_calls(const render_context& /*context*/) const { return 0; }
 
         public:
             string::string_id                   pass_tag() const { return m_pass_tag; }
@@ -104,6 +106,9 @@ namespace ppp
 
             bool                                batch_rendering_enabled() const;
             bool                                instance_rendering_enabled() const;
+
+            s32                                 count_batched_draw_calls(const render_context& context) const override;
+            s32                                 count_instanced_draw_calls(const render_context& context) const override;
 
         public:
             virtual batch_draw_strategy         make_batch_render_strategy() const { return std::make_unique<default_batch_render_strategy>(); }

@@ -17,6 +17,9 @@ namespace ppp
             void begin_frame(const render_context& context) override;
             void render(const render_context& context) override;
             void end_frame(const render_context& context) override;
+
+            s32 count_batched_draw_calls(const render_context& context) const override;
+            s32 count_instanced_draw_calls(const render_context& context) const override;
         };
     }
 }

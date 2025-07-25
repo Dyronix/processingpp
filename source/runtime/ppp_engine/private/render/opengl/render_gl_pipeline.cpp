@@ -38,6 +38,28 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        s32 render_pipeline::batched_draw_calls(const render_context& context) const
+        {
+            s32 draw_calls = 0;
+            for (auto& pass : m_passes)
+            {
+                draw_calls += pass->count_batched_draw_calls(context);
+            }
+            return draw_calls;
+        }
+
+        //-------------------------------------------------------------------------
+        s32 render_pipeline::instanced_draw_calls(const render_context& context) const
+        {
+            s32 draw_calls = 0;
+            for (auto& pass : m_passes)
+            {
+                draw_calls += pass->count_instanced_draw_calls(context);
+            }
+            return draw_calls;
+        }
+
+        //-------------------------------------------------------------------------
         irender_pass* render_pipeline::add_pass(std::unique_ptr<irender_pass> pass)
         {
             m_passes.push_back(std::move(pass));

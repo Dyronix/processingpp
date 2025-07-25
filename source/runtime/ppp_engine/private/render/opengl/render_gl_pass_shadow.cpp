@@ -4,6 +4,8 @@
 #include "render/render_instance_renderer.h"
 #include "render/render_context.h"
 #include "render/render_shader_uniform_manager.h"
+#include "render/render_batch_data_table.h"
+#include "render/render_instance_data_table.h"
 
 #include "render/opengl/render_gl_api.h"
 
@@ -148,6 +150,48 @@ namespace ppp
             });
 
             return num > 0;
+        }
+
+        //-------------------------------------------------------------------------
+        s32 shadow_pass::count_batched_draw_calls(const render_context& context) const
+        {
+            if (!batch_rendering_enabled() || !has_shader())
+            {
+                return 0;
+            }
+
+            s32 draw_calls = 0;
+            for (auto& pair : *context.batch_data)
+            {
+                const auto& key = pair.first;
+                if (key.cast_shadows)
+                {
+                    draw_calls += pair.second->size();
+                }
+            }
+
+            return draw_calls;
+        }
+
+        //-------------------------------------------------------------------------
+        s32 shadow_pass::count_instanced_draw_calls(const render_context& context) const
+        {
+            if (!instance_rendering_enabled() || !has_shader())
+            {
+                return 0;
+            }
+
+            s32 draw_calls = 0;
+            for (auto& pair : *context.instance_data)
+            {
+                const auto& key = pair.first;
+                if (key.cast_shadows)
+                {
+                    draw_calls += pair.second->size();
+                }
+            }
+
+            return draw_calls;
         }
     }
 }

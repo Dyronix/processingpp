@@ -2,6 +2,8 @@
 
 #include "render/render_pass.h"
 
+#include "util/types.h"
+
 #include <type_traits>
 #include <memory>
 #include <vector>
@@ -81,10 +83,26 @@ namespace ppp
 
                 return false;
             }
+
             //-------------------------------------------------------------------------
-            bool has_child_passes() const override
+            s32 count_batched_draw_calls(const render_context& context) const override
             {
-                return !m_children.empty();
+                s32 total = 0;
+                for (auto& child : children())
+                {
+                    total += child->count_batched_draw_calls(context);
+                }
+                return total;
+            }
+            //-------------------------------------------------------------------------
+            s32 count_instanced_draw_calls(const render_context& context) const override
+            {
+                s32 total = 0;
+                for (auto& child : children()) 
+                {
+                    total += child->count_instanced_draw_calls(context);
+                }
+                return total;
             }
 
             //-------------------------------------------------------------------------
