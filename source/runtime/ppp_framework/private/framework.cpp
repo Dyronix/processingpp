@@ -99,6 +99,10 @@ namespace
             {
                 ppp::imgui::inspector::notify(ppp::imgui::inspector::notification_type::INFO, "Images " + std::to_string(count) + " reloaded", 1.0f);
             }
+            else
+            {
+                ppp::imgui::inspector::notify(ppp::imgui::inspector::notification_type::INFO, "No images reloaded", 1.0f);
+            }
         });
 
         ppp::imgui::inspector::set_pause_shortcut(ppp::key_code::KEY_P);
