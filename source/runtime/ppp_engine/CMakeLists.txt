@@ -192,6 +192,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/transform_stack.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/hash.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/log.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/log.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/color_ops.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/color_ops.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/util/types.h

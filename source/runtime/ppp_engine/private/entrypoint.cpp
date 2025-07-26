@@ -26,6 +26,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include <sstream>
+
 namespace ppp
 {
     namespace internal
@@ -306,6 +308,29 @@ namespace ppp
 
 int main(int argc, char** argv)
 {
+    ppp::log::initialize();
+    ppp::log::enable_logging();
+
+    const char* log_level;
+    if (ppp::find_argument_with_value(argc, argv, "--log-level", &log_level) != -1)
+    {
+             if (strcmp("info", log_level)) ppp::log::set_log_level(ppp::log::log_level::INFO);
+        else if (strcmp("warn", log_level)) ppp::log::set_log_level(ppp::log::log_level::WARN);
+        else if (strcmp("error", log_level)) ppp::log::set_log_level(ppp::log::log_level::ERROR);
+        else if (strcmp("critical", log_level)) ppp::log::set_log_level(ppp::log::log_level::CRITICAL);
+    }
+
+    const char* log_file;
+    if (ppp::find_argument_with_value(argc, argv, "--log-file", &log_file) != -1)
+    {
+        std::stringstream stream;
+        stream << ppp::internal::get_working_directory(argv[0]);
+        stream << log_file;
+
+        ppp::log::set_file_output_enabled(stream.str());
+        ppp::log::info("file logging enabled, logging to file: {}", stream.str());
+    }
+
     for (int i = 0; i < argc; ++i)
     {
         ppp::log::info("Application argument: {}", argv[i]);
@@ -335,6 +360,8 @@ int main(int argc, char** argv)
         ppp::log::error("Failed to quit app");
         return result;
     }
+
+    ppp::log::shutdown();
 
     return result;
 }
