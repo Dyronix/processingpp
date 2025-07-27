@@ -237,7 +237,7 @@ namespace ppp
     {
         _sketch->post_draw();
 
-        #ifdef _DEBUG
+#ifdef _DEBUG
         begin_imgui_renderer();
 
         // Block any input control that would be used by ImGUI
@@ -251,7 +251,7 @@ namespace ppp
         }
 
         end_imgui_renderer();
-        #endif
+#endif
     }
 
     //-------------------------------------------------------------------------
