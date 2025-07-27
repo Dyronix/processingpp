@@ -58,8 +58,8 @@ add_custom_target(copy-config ALL
     VERBATIM
 )
 
-set_property(TARGET copy-content PROPERTY FOLDER "programs")
-set_property(TARGET copy-config PROPERTY FOLDER "programs")
+set_property(TARGET copy-content PROPERTY FOLDER "events")
+set_property(TARGET copy-config PROPERTY FOLDER "events")
 
 if(PPP_ENABLE_TESTING)
 
