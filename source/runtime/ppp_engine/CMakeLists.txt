@@ -230,7 +230,8 @@ target_sources(processing_engine PRIVATE
  # fileio-win32
 if(WIN32)
 target_sources(processing_engine PRIVATE 
-    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/win32/win32_system_paths.cpp)
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/win32/win32_system_paths.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/fileio/win32/win32_vfs.cpp)
 endif()
 
 target_sources(processing_engine PUBLIC 

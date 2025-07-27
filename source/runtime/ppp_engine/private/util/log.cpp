@@ -1,5 +1,8 @@
 #include "util/log.h"
 
+#include "fileio/file_info.h"
+#include "fileio/vfs.h"
+
 #include <fmt/ostream.h>
 
 #include <atomic>
@@ -12,13 +15,35 @@ namespace ppp
 {
     namespace log
     {
+        //-------------------------------------------------------------------------
+        std::string append_timestamp(std::string_view filepath)
+        {
+            vfs::file_info_view info(filepath);
+
+            std::time_t t = std::time(nullptr);
+            std::tm tm{};
+#if defined(_WIN32)
+            localtime_s(&tm, &t);
+#else
+            localtime_r(&t, &tm);
+#endif
+
+            char buffer[32];
+            std::strftime(buffer, sizeof(buffer), "_%Y-%m-%d_%H-%M-%S", &tm);
+
+            return vfs::file_info::make_full_path(info.path(), std::string(info.filename()) + buffer, info.extension());
+        }
+    
         struct sink
         {
+            //-------------------------------------------------------------------------
             virtual ~sink() {}
+            //-------------------------------------------------------------------------
             virtual void trace(const char* name,const char* color,std::string_view txt) = 0;
         };
         struct console_sink : public sink
         {
+            //-------------------------------------------------------------------------
             void trace(const char* name,const char* color,std::string_view txt) override
             {
                 std::cout << color << '[' << name << ']' << reset << ' ' << txt << '\n';
@@ -120,10 +145,24 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void set_file_output_enabled(std::string_view filepath)
+        void set_file_output_enabled(std::string_view filepath, bool unique_file_naming)
         {
             std::lock_guard<std::mutex> lock(ctx().mtx);
-            ctx().sinks.emplace_back(std::make_unique<file_sink>(filepath));
+
+            std::string final_path(filepath.data());
+            if (unique_file_naming)
+            {
+                final_path = append_timestamp(final_path);
+            }
+
+            vfs::file_info_view info(final_path);
+            if (!vfs::create_directory(info.path()))
+            {
+                log::error("Failed to ensure log directory exists: {}", info.path());
+                return;
+            }
+            
+            ctx().sinks.emplace_back(std::make_unique<file_sink>(final_path));
         }
 
         //-------------------------------------------------------------------------

@@ -76,6 +76,7 @@ namespace ppp
 
 				bool show_profiler = false;
 				bool show_about = false;
+				bool show_settings = false;
 				bool show_inspector = false;
 
 				theme current_theme = theme::DARK;
@@ -474,7 +475,7 @@ namespace ppp
 				config.OversampleV = 8;
 
 				auto font_awesome = vfs::resolve_path("local:content/fonts/FontAwesome5FreeSolid900.otf");
-				if (!vfs::exists(font_awesome))
+				if (!vfs::exists_filepath(font_awesome))
 				{
 					log::critical("Could not find the font file FontAwesome5FreeSolid900.otf at path:{}", font_awesome);
 					return;
@@ -586,6 +587,17 @@ namespace ppp
 							new_theme = (theme)t;
 						}
 						tooltip("Theme");
+					}
+
+					ImGui::SameLine();
+
+					// Settings
+					{
+						if (ImGui::Button(ICON_FA_COG))
+						{
+							ctx().show_settings = true;
+						}
+						tooltip("Settings");
 					}
 
 					ImGui::SameLine();
@@ -729,8 +741,41 @@ namespace ppp
 
 				if (ctx().show_about)
 				{
-					ImGui::Begin("About", &ctx().show_about, ImGuiWindowFlags_Modal);
+					ImGui::Begin("About", &ctx().show_about);
 					ImGui::Text(" An attempt to create P5 processing in C++ ");
+					ImGui::End();
+				}
+
+				if (ctx().show_settings)
+				{
+					ImGui::Begin("Settings", &ctx().show_settings);
+
+					if (ImGui::CollapsingHeader("Logging Settings", ImGuiTreeNodeFlags_DefaultOpen))
+					{
+						// Enable/disable logging
+						bool logging_enabled = ppp::log::is_logging_enabled();
+						if (ImGui::Checkbox("Enable Logging", &logging_enabled))
+						{
+							if (logging_enabled)
+							{
+								ppp::log::enable_logging();
+							}
+							else
+							{
+								ppp::log::disable_logging();
+							}
+						}
+
+						// Select log level
+						static const char* log_level_names[] = { "Info", "Warning", "Error", "Critical" };
+						static int current_log_level = static_cast<int>(ppp::log::log_level::INFO); // You might want to fetch the real current level if stored
+
+						if (ImGui::Combo("Log Level", &current_log_level, log_level_names, IM_ARRAYSIZE(log_level_names)))
+						{
+							ppp::log::set_log_level(static_cast<ppp::log::log_level>(current_log_level));
+						}
+					}
+
 					ImGui::End();
 				}
 

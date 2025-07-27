@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 #include "string/string_id.h"
 
 namespace ppp
@@ -12,6 +10,10 @@ namespace ppp
 
         std::string resolve_path(std::string_view filename);
 
-        bool exists(std::string_view filename);
+        bool exists_filepath(std::string_view filename);
+
+        bool exists_directory(std::string_view directory);
+
+        bool create_directory(std::string_view directory);
     }
 }

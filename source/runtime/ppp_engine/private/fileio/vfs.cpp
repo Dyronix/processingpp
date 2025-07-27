@@ -19,7 +19,7 @@ namespace ppp
 		//-------------------------------------------------------------------------
 		void add_wildcard(string::string_id wildcard, const std::string_view value)
 		{
-			log::info("Adding wildcard: [{} | {}]", string::restore_sid(wildcard), value);
+			log::info("Adding vfs wildcard: [{} | {}]", string::restore_sid(wildcard), value);
 
 			g_ctx.wildcards[wildcard] = value;
 		}
@@ -53,7 +53,7 @@ namespace ppp
 		}
 
 		//-------------------------------------------------------------------------
-		bool exists(std::string_view filename)
+		bool exists_filepath(std::string_view filename)
 		{
 			const std::string path = resolve_path(filename);
 

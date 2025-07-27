@@ -325,10 +325,15 @@ int main(int argc, char** argv)
     {
         std::stringstream stream;
         stream << ppp::internal::get_working_directory(argv[0]);
+        stream << "log\\";
         stream << log_file;
 
         ppp::log::set_file_output_enabled(stream.str());
-        ppp::log::info("file logging enabled, logging to file: {}", stream.str());
+        ppp::log::info("Appliction file logging enabled");
+    }
+    else
+    {
+        ppp::log::info("Appliction file logging disabled");
     }
 
     for (int i = 0; i < argc; ++i)
