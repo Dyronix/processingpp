@@ -84,6 +84,7 @@ namespace ppp
 				inspector_delegate pause_callback;
 				inspector_delegate unpause_callback;
 				inspector_delegate next_frame_callback;
+				inspector_inspector_gui_delegate inspector_gui_callback;
 				inspector_reload_images_delegate reload_images_callback;
 			};
 
@@ -404,6 +405,11 @@ namespace ppp
 				ctx().next_frame_callback = callback;
 			}
 			//-------------------------------------------------------------------------
+			void subscribe_inspector_gui(inspector_inspector_gui_delegate callback)
+			{
+				ctx().inspector_gui_callback = callback;
+			}
+			//-------------------------------------------------------------------------
 			void subscribe_reload_images(inspector_reload_images_delegate callback)
 			{
 				ctx().reload_images_callback = callback;
@@ -598,6 +604,16 @@ namespace ppp
 							ctx().show_settings = true;
 						}
 						tooltip("Settings");
+					}
+
+					ImGui::SameLine();
+
+					// User code
+					{
+						if (ctx().inspector_gui_callback)
+						{
+							ctx().inspector_gui_callback();
+						}
 					}
 
 					ImGui::SameLine();

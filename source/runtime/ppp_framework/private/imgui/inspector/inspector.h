@@ -27,6 +27,7 @@ namespace ppp
 			 * @brief C-style function pointer type for inspector event callbacks.
 			 */
 			using inspector_delegate = void(*)(bool value);
+			using inspector_inspector_gui_delegate = void(*)();
 			using inspector_reload_images_delegate = void(*)();
 
 			/**
@@ -35,6 +36,7 @@ namespace ppp
 			void subscribe_pause(inspector_delegate callback);
 			void subscribe_unpause(inspector_delegate callback);
 			void subscribe_next_frame(inspector_delegate callback);
+			void subscribe_inspector_gui(inspector_inspector_gui_delegate callback);
 			void subscribe_reload_images(inspector_reload_images_delegate callback);
 
 			/**
