@@ -6,12 +6,16 @@
 #include "util/types.h"
 #include "util/profiler.h"
 
+#include <chrono>
+
 namespace ppp
 {
     namespace imgui
     {
         namespace inspector
         {
+            constexpr u64 MAX_HISTORY_SIZE = 100;
+
             //-------------------------------------------------------------------------
             void inspect_profiler(bool& show)
             {
@@ -21,8 +25,9 @@ namespace ppp
                 {
                     auto& e = itr.second;
 
-                    f32 duration = (f32)((f64)e.accum.count() / 1000000.0);
-                    if (e.history.size() > 100)
+                    using namespace std::chrono;
+                    f32 duration = duration_cast<milliseconds>(e.accum).count();
+                    if (e.history.size() > MAX_HISTORY_SIZE)
                     {
                         e.history.pop_front();
                     }
