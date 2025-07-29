@@ -23,6 +23,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         static void push_all_wireframe_dependent_uniforms(resources::shader_program shader_program, s32 line_color, f32 line_width)
         {
+            shaders::push_uniform(shader_program->id(), string::store_sid("u_wireframe"), 1);
             shaders::push_uniform(shader_program->id(), string::store_sid("u_wireframe_color"), color::convert_color(line_color));
             opengl::api::instance().line_width(line_width);
         }

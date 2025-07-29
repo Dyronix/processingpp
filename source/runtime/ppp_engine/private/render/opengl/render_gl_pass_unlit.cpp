@@ -63,6 +63,7 @@ namespace ppp
         //-------------------------------------------------------------------------
         static void push_all_shape_dependent_uniforms(resources::shader_program shader_program, const glm::mat4& vp)
         {
+            shaders::push_uniform(shader_program->id(), string::store_sid("u_wireframe"), 0);
             shaders::push_uniform(shader_program->id(), string::store_sid("u_view_proj"), vp);
         }
 
