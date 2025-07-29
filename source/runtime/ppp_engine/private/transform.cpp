@@ -2,6 +2,8 @@
 #include "trigonometry.h"
 #include "render/render.h"
 #include "util/transform_stack.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 
 namespace ppp
 {
@@ -81,5 +83,25 @@ namespace ppp
     void translate(const vec3& t)
     {
         translate(t.x, t.y, t.z);
+    }
+
+    void transform(const vec3& position, const quat& rotation, const vec3& scale)
+    {
+        if (position.length() != 0.0f)
+        {
+            ppp::translate(position);
+        }
+
+        auto axis = glm::axis(rotation);
+        auto angle = glm::angle(rotation);
+        if (angle != 0.0f && axis.length() != 0.0f)
+        {
+           ppp::rotate(axis, angle);
+        }
+
+        if (scale.length() != 0.0f)
+        {
+            ppp::scale(scale);
+        }
     }
 }
