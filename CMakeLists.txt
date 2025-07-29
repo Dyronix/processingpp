@@ -32,18 +32,39 @@ endif()
 # Debug postfix
 SET (CMAKE_DEBUG_POSTFIX _d)
 
+MESSAGE(STATUS "---")
+
 # Some easy access to folders within this repository
 SET(SOURCE_RUNTIME_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/runtime)
 SET(SOURCE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/third-party)
 SET(SOURCE_EXAMPLES_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/examples)
+SET(SOURCE_APP_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/source/applications)
+SET(SOURCE_GAMES_DIRECTORY ${SOURCE_APP_DIRECTORY}/games)
 
 MESSAGE(STATUS ${SOURCE_RUNTIME_DIRECTORY})
 MESSAGE(STATUS ${SOURCE_THIRDPARTY_DIRECTORY})
 MESSAGE(STATUS ${SOURCE_EXAMPLES_DIRECTORY})
+MESSAGE(STATUS ${SOURCE_APP_DIRECTORY})
+MESSAGE(STATUS ${SOURCE_GAMES_DIRECTORY})
+
+# -------------------------------
+# Macro that will define our source groups
+# -------------------------------
+MACRO(GROUPSOURCES curdir folder_name)
+    FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
+    FOREACH(child ${children})
+           IF(IS_DIRECTORY ${curdir}/${child})
+              GROUPSOURCES(${curdir}/${child} ${folder_name}/${child})
+           ELSE()
+              SOURCE_GROUP(${folder_name} FILES ${curdir}/${child})
+           ENDIF()
+    ENDFOREACH()
+ENDMACRO()
 
 add_subdirectory(${SOURCE_THIRDPARTY_DIRECTORY})
 add_subdirectory(${SOURCE_RUNTIME_DIRECTORY})
 add_subdirectory(${SOURCE_EXAMPLES_DIRECTORY})
+add_subdirectory(${SOURCE_APP_DIRECTORY})
 
 # Add a custom target that always builds and runs the copy command
 add_custom_target(copy-content ALL
@@ -60,6 +81,8 @@ add_custom_target(copy-config ALL
 
 set_property(TARGET copy-content PROPERTY FOLDER "events")
 set_property(TARGET copy-config PROPERTY FOLDER "events")
+
+MESSAGE(STATUS "---")
 
 if(PPP_ENABLE_TESTING)
 

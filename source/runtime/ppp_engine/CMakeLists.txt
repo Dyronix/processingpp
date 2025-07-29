@@ -258,6 +258,7 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/engine.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/lights.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/vector.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/quat.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/time_date.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/input_output.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/json.h
