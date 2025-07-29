@@ -23,6 +23,15 @@ namespace
     bool _should_pause = false;
     bool _should_progress_to_next_frame = false;
 
+#ifdef _DEBUG
+    bool _enable_inspector;
+#endif
+
+    constexpr int _window_width = 1280;
+    constexpr int _window_height = 720;
+
+    std::unique_ptr<ppp::sketch> _sketch = nullptr;
+
     //-------------------------------------------------------------------------
     bool is_application_paused()
     {
@@ -91,6 +100,10 @@ namespace
         {
             _should_progress_to_next_frame = value;
         });
+        ppp::imgui::inspector::subscribe_inspector_gui([]()
+        {
+            _sketch->inspector_draw();
+        });
         ppp::imgui::inspector::subscribe_reload_images([]()
         {
             s32 count = ppp::texture_reloader::reload();
@@ -128,15 +141,6 @@ namespace ppp
     static void on_post_render();
     static void on_tick();
     static void on_end_frame();
-
-#ifdef _DEBUG
-    bool _enable_inspector;
-#endif
-
-    constexpr int _window_width = 1280;
-    constexpr int _window_height = 720;
-
-    std::unique_ptr<sketch> _sketch = nullptr;
 
     //-------------------------------------------------------------------------
     app_params entry(int argc, char** argv)
