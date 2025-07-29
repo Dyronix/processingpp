@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding integration-test-shader-specular-batched")
 add_executable(integration-test-shader-specular-batched)
 
 target_sources(integration-test-shader-specular-batched PRIVATE 

@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding integration-test-shader-specular-instanced")
 add_executable(integration-test-shader-specular-instanced)
 
 target_sources(integration-test-shader-specular-instanced PRIVATE 

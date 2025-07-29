@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding integration-test-model-load-obj")
 add_executable(integration-test-model-load-obj)
 
 target_sources(integration-test-model-load-obj PRIVATE 

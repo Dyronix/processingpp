@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding example-demo_framework_imgui_reload_images")
 add_executable(demo_framework_imgui_reload_images)
 
 target_sources(demo_framework_imgui_reload_images PRIVATE 

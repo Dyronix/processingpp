@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding module-processing_engine")
 add_library(processing_engine STATIC)
 
 # Sources

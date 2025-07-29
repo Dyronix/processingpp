@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding integration-test-geometry-3d")
 add_executable(integration-test-geometry-3d)
 
 target_sources(integration-test-geometry-3d PRIVATE 

@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding module-processing_framework")
 add_library(processing_framework STATIC)
 
 target_sources(processing_framework PRIVATE 

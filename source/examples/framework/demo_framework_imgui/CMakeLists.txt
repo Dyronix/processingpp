@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding example-demo_framework_imgui")
 add_executable(demo_framework_imgui)
 
 target_sources(demo_framework_imgui PRIVATE 

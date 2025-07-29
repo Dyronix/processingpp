@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding integration-test-shader-normal-instanced")
 add_executable(integration-test-shader-normal-instanced)
 
 target_sources(integration-test-shader-normal-instanced PRIVATE 

@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding example-demo_framework")
 add_executable(demo_framework)
 
 target_sources(demo_framework PRIVATE 
