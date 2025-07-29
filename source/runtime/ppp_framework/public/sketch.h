@@ -16,15 +16,16 @@ namespace ppp
         sketch& operator=(sketch&&) = delete;
 
     public:
-        virtual void setup()        { /* ... */ }
-        virtual void begin_frame()  { /* ... */ }
-        virtual void pre_draw()     { /* ... */ }
-        virtual void draw()         { /* ... */ }
-        virtual void debug_draw()   { /* ... */ }
-        virtual void post_draw()    { /* ... */ }
-        virtual void tick(float dt) { /* ... */ }
-        virtual void end_frame()    { /* ... */ }
-        virtual void shutdown()     { /* ... */ }
+        virtual void setup()            { /* ... */ }
+        virtual void begin_frame()      { /* ... */ }
+        virtual void pre_draw()         { /* ... */ }
+        virtual void draw()             { /* ... */ }
+        virtual void debug_draw()       { /* ... */ }
+        virtual void inspector_draw()   { /* ... */ }
+        virtual void post_draw()        { /* ... */ }
+        virtual void tick(float dt)     { /* ... */ }
+        virtual void end_frame()        { /* ... */ }
+        virtual void shutdown()         { /* ... */ }
     };
 
 }
