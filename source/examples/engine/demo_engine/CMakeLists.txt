@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding example-demo_engine")
 add_executable(demo_engine)
 
 target_sources(demo_engine PRIVATE 

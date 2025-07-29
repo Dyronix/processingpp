@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding integration-test-shader-normal-batched")
 add_executable(integration-test-shader-normal-batched)
 
 target_sources(integration-test-shader-normal-batched PRIVATE 

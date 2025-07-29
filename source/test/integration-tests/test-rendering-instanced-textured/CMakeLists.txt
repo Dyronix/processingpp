@@ -1,3 +1,4 @@
+MESSAGE(STATUS "Adding integration-test-rendering-instanced-textured")
 add_executable(integration-test-rendering-instanced-textured)
 
 target_sources(integration-test-rendering-instanced-textured PRIVATE 
