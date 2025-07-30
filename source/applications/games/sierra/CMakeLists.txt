@@ -5,10 +5,24 @@ add_subdirectory(${SIERRA_THIRDPARTY_DIRECTORY}/flecs)
 add_executable(sierra)
 
 target_sources(sierra PRIVATE 
+    #imgui
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/sierra_inspector.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/sierra_inspector.cpp
+    #imgui-ecs
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/ecs/ecs_stats.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/ecs/ecs_stats.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/ecs/ecs_stats_counter.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/ecs/ecs_stats_counter.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/ecs/ecs_stats_gauge.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/ecs/ecs_stats_gauge.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/ecs/ecs_stats_helpers.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/ecs/ecs_stats_helpers.cpp
     #ecs
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_pipeline_tags.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_scene.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_scene.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_scene_manager.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_scene_manager.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_entity.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_entity.cpp
     #ecs-components
@@ -27,7 +41,17 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_systems.h
+    #layers
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer_stack.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer_stack.cpp
 
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_layer.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_imgui_layer.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_imgui_layer.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_main_layer.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_main_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra.cpp)
 
 # Create the project filters
