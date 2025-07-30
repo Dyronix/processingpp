@@ -1,0 +1,84 @@
+#include "sierra_main_layer.h"
+
+#include "ecs/ecs_scene_manager.h"
+#include "ecs/ecs_scene.h"
+#include "ecs/components/ecs_components.h"
+#include "ecs/systems/ecs_systems.h"
+
+#include "shapes.h"
+#include "environment.h"
+
+namespace ppp
+{
+    //-------------------------------------------------------------------------
+    sierra_main_layer::sierra_main_layer(ecs::scene_manager* scene_manager)
+        :sierra_layer(scene_manager, "main"_sid, 0, false)
+    {}
+
+    //-------------------------------------------------------------------------
+    void sierra_main_layer::on_attached()
+    {
+        ecs::scene_manager* _scene_manager = scene_manager();
+        ecs::scene* _active_scene = _scene_manager->active_scene();
+
+        // Make Box
+        {
+            auto e_box = _active_scene->create_entity("box");
+
+            e_box.set<ecs::transform_component>({
+                {0, 0, 0},                          /*.position */
+                {1.0f, 1.0f, 1.0f},                 /*.scale */
+                glm::quat(1.0f, 0.0f, 0.0f, 0.0f)   /*.rotation */
+                });
+            e_box.set<ecs::shape_component>({
+                []() { ppp::box(50.0f, 50.0f, 50.0f); } /*.draw_fn */
+                });
+            e_box.set<ecs::fill_color_component>({
+                255,    /*.red */
+                0,      /*.green */
+                0,      /*.blue */
+                255     /*.alpha */
+                });
+        }
+
+        // Make Camera
+        {
+            auto e_camera = _active_scene->create_entity("orbit_camera");
+
+            e_camera.set<ecs::transform_component>({
+                {20, -40, 400},                     /*.position */
+                {1.0f, 1.0f, 1.0f},                 /*.scale */
+                glm::quat(1.0f, 0.0f, 0.0f, 0.0f)   /*.rotation */
+                });
+            e_camera.set<ecs::camera_component>({
+                "",                                         /*.tag */
+                ecs::projection_type::PERSPECTIVE,          /*.type */
+                55.0f,                                      /*.fovy */
+                (f32)window_width() / (f32)window_height(), /*.aspect_ratio */
+                0.1f,                                       /*.near_clip */
+                2000.0f                                     /*.far_clip */
+                });
+            e_camera.set<ecs::orbit_control_component>({
+                200.0f, /*.zoom_sensitivity */
+                0.5f,   /*.panning_sensitivity */
+                0.5f,   /*.rotation_sensitivity */
+                1.0f,   /*.min_zoom */
+                600.0f  /*.max_zoom */
+                });
+        }
+
+        ecs::register_orbit_camera_system(_active_scene->world());
+    }
+
+    //-------------------------------------------------------------------------
+    void sierra_main_layer::on_detached()
+    {
+        // Nothin to implement
+    }
+
+    //-------------------------------------------------------------------------
+    void sierra_main_layer::on_tick(f32 dt)
+    {
+
+    }
+}
