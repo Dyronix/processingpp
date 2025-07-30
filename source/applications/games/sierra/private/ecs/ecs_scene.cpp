@@ -38,8 +38,6 @@ namespace ppp
             // draw
             register_shape_render_system(_world);
             register_model_render_system(_world);
-            // tick
-            register_orbit_camera_system(_world);
 
 #ifdef _DEBUG
             _world.import<flecs::stats>();
@@ -72,14 +70,18 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void scene::begin_frame()
+        {
+            // Nothing to implement
+        }
+
+        //-------------------------------------------------------------------------
         void scene::tick(f32 dt) 
         {
             if (_tick_pipeline)
             {
                 _world.set_pipeline(_tick_pipeline);
                 _world.progress(dt);
-
-                ecs_world_stats_get(_world.c_ptr(), &_tick_stats);
             }
         }
 
@@ -90,9 +92,13 @@ namespace ppp
             {
                 _world.set_pipeline(_draw_pipeline);
                 _world.progress(0.0f);
-
-                ecs_world_stats_get(_world.c_ptr(), &_draw_stats);
             }
+        }
+
+        //-------------------------------------------------------------------------
+        void scene::end_frame()
+        {
+            ecs_world_stats_get(_world.c_ptr(), &_world_stats);
         }
     }
 }
