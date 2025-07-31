@@ -2,10 +2,7 @@
 
 #include "sierra_main_layer.h"
 #include "sierra_imgui_layer.h"
-
-#include "layers/layer_stack.h"
-
-#include "ecs/ecs_scene_manager.h"
+#include "sierra_engine_context.h"
 
 namespace ppp
 {
@@ -25,9 +22,7 @@ namespace ppp
         void shutdown() override;
 
     private:
-        ecs::scene_manager _scene_manager;
-
-        layer_stack _layer_stack;
+        sierra_engine_context ctx;
     };
 
     //-------------------------------------------------------------------------
@@ -44,21 +39,21 @@ namespace ppp
         wireframe_color(0.0f, 0.0f, 0.0f);
         wireframe_linewidth(2.0f);
 
-        _scene_manager.create_scene("main");
-        _scene_manager.set_active_scene("main");
+        ctx.scene_manager.create_scene("main");
+        ctx.scene_manager.set_active_scene("main");
 
-        _layer_stack.push(std::make_unique<sierra_main_layer>(&_scene_manager));
-        _layer_stack.push(std::make_unique<sierra_imgui_layer>(&_scene_manager, &_layer_stack));
+        ctx.layer_stack.push(std::make_unique<sierra_main_layer>(&ctx));
+        ctx.layer_stack.push(std::make_unique<sierra_imgui_layer>(&ctx));
 
-        _scene_manager.init();
+        ctx.scene_manager.init();
     }
 
     //-------------------------------------------------------------------------
     void sierra::begin_frame()
     {
-        _scene_manager.begin_frame();
+        ctx.scene_manager.begin_frame();
 
-        for (const std::unique_ptr<layer>& layer : _layer_stack)
+        for (const std::unique_ptr<layer>& layer : ctx.layer_stack)
         {
             if (layer->is_enabled())
             {
@@ -71,7 +66,7 @@ namespace ppp
     //-------------------------------------------------------------------------
     void sierra::tick(float dt)
     {
-        for (const std::unique_ptr<layer>& layer : _layer_stack)
+        for (const std::unique_ptr<layer>& layer : ctx.layer_stack)
         {
             if (layer->is_enabled())
             {
@@ -79,7 +74,7 @@ namespace ppp
             }
         }
 
-        _scene_manager.tick(dt);
+        ctx.scene_manager.tick(dt);
     }
 
     //-------------------------------------------------------------------------
@@ -87,7 +82,7 @@ namespace ppp
     {
         background(200);
         
-        for (const std::unique_ptr<layer>& layer : _layer_stack)
+        for (const std::unique_ptr<layer>& layer : ctx.layer_stack)
         {
             if (layer->is_enabled())
             {
@@ -95,13 +90,13 @@ namespace ppp
             }
         }
 
-        _scene_manager.draw();
+        ctx.scene_manager.draw();
     }
 
     //-------------------------------------------------------------------------
     void sierra::inspector_draw()
     {
-        for (const std::unique_ptr<layer>& layer : _layer_stack)
+        for (const std::unique_ptr<layer>& layer : ctx.layer_stack)
         {
             if (layer->is_enabled())
             {
@@ -113,7 +108,7 @@ namespace ppp
     //-------------------------------------------------------------------------
     void sierra::end_frame()
     {
-        for (const std::unique_ptr<layer>& layer : _layer_stack)
+        for (const std::unique_ptr<layer>& layer : ctx.layer_stack)
         {
             if (layer->is_enabled())
             {
@@ -121,13 +116,13 @@ namespace ppp
             }
         }
 
-        _scene_manager.end_frame();
+        ctx.scene_manager.end_frame();
     }
 
     //-------------------------------------------------------------------------
     void sierra::shutdown()
     {
-        _layer_stack.clear();
+        ctx.layer_stack.clear();
     }
 
     //-------------------------------------------------------------------------
