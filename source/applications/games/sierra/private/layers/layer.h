@@ -35,6 +35,9 @@ namespace ppp
         bool is_always_enabled() const;
 
     protected:
+        virtual void on_enable() {/* nothing to implement */ };
+        virtual void on_disable() {/* nothing to implement */ };
+
         virtual void on_attached(){/* nothing to implement */};
         virtual void on_detached(){/* nothing to implement */};
 

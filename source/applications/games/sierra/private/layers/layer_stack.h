@@ -49,6 +49,8 @@ namespace ppp
 
         void clear();
 
+        u64 size() const;
+
     private:
         std::vector<std::unique_ptr<layer>> m_layers;
     };

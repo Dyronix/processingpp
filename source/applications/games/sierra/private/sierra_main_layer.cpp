@@ -1,7 +1,5 @@
 #include "sierra_main_layer.h"
 
-#include "ecs/ecs_scene_manager.h"
-#include "ecs/ecs_scene.h"
 #include "ecs/components/ecs_components.h"
 #include "ecs/systems/ecs_systems.h"
 
@@ -11,19 +9,16 @@
 namespace ppp
 {
     //-------------------------------------------------------------------------
-    sierra_main_layer::sierra_main_layer(ecs::scene_manager* scene_manager)
-        :sierra_layer(scene_manager, "main"_sid, 0, false)
+    sierra_main_layer::sierra_main_layer(sierra_engine_context* ctx)
+        :sierra_layer(ctx, "main"_sid, 0, false)
     {}
 
     //-------------------------------------------------------------------------
-    void sierra_main_layer::on_attached()
+    void sierra_main_layer::on_enable()
     {
-        ecs::scene_manager* _scene_manager = scene_manager();
-        ecs::scene* _active_scene = _scene_manager->active_scene();
-
         // Make Box
         {
-            auto e_box = _active_scene->create_entity("box");
+            auto e_box = create_entity("box");
 
             e_box.set<ecs::transform_component>({
                 {0, 0, 0},                          /*.position */
@@ -43,7 +38,7 @@ namespace ppp
 
         // Make Camera
         {
-            auto e_camera = _active_scene->create_entity("orbit_camera");
+            auto e_camera = create_entity("orbit_camera");
 
             e_camera.set<ecs::transform_component>({
                 {20, -40, 400},                     /*.position */
@@ -67,18 +62,6 @@ namespace ppp
                 });
         }
 
-        ecs::register_orbit_camera_system(_active_scene->world());
-    }
-
-    //-------------------------------------------------------------------------
-    void sierra_main_layer::on_detached()
-    {
-        // Nothin to implement
-    }
-
-    //-------------------------------------------------------------------------
-    void sierra_main_layer::on_tick(f32 dt)
-    {
-
+        create_system(&ecs::register_orbit_camera_system);
     }
 }

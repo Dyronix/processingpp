@@ -171,4 +171,10 @@ namespace ppp
 
         m_layers.clear();
     }
+
+    //-------------------------------------------------------------------------
+    u64 layer_stack::size() const
+    {
+        return m_layers.size();
+    }
 }

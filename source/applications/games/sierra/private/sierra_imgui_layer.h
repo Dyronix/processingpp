@@ -9,16 +9,12 @@ namespace ppp
     class sierra_imgui_layer : public sierra_layer
     {
     public:
-        sierra_imgui_layer(ecs::scene_manager* scene, layer_stack* stack);
+        sierra_imgui_layer(sierra_engine_context* ctx);
 
     protected:
         void on_attached() override;
         void on_detached() override;
         
-        void on_tick(f32 dt) override;
         void on_inspector_draw() override;
-
-    private:
-        layer_stack* _stack;
     };
 }

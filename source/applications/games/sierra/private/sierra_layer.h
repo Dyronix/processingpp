@@ -1,33 +1,31 @@
 #pragma once
 
-#include "layers/layer.h"
-
-#include "ecs/ecs_scene_manager.h"
+#include "sierra_engine_context.h"
 
 namespace ppp 
 {
     class sierra_layer : public layer
     {
+    public:
+        const std::vector<flecs::entity>& entities() const;
+        const std::vector<flecs::entity>& systems() const;
+
     protected:
-        //-------------------------------------------------------------------------
-        sierra_layer(ecs::scene_manager* s, const string::string_id name = "layer"_sid, stack_order order = -1, bool always_enabled = false)
-            : layer(name, order, always_enabled)
-            , _scene_manager(s)
-        {}
+        sierra_layer(sierra_engine_context* ctx, const string::string_id name = "layer"_sid, stack_order order = -1, bool always_enabled = false);
+        ~sierra_layer() noexcept override;
 
-        //-------------------------------------------------------------------------
-        ecs::scene_manager* scene_manager()
-        {
-            return _scene_manager;
-        }
+        void on_enable() override;
+        void on_disable() override;
 
-        //-------------------------------------------------------------------------
-        const ecs::scene_manager* scene_manager() const
-        {
-            return _scene_manager;
-        }
+        flecs::entity create_entity(const char* tag);
+        flecs::entity create_system(std::function<flecs::entity(flecs::world&)> register_fn);
+
+        const sierra_engine_context* context() const;
 
     private:
-        ecs::scene_manager* _scene_manager;
+        sierra_engine_context* _ctx;
+
+        std::vector<flecs::entity> _entities;
+        std::vector<flecs::entity> _systems;
     };
 }

@@ -17,6 +17,7 @@ namespace ppp
     void layer::enable()
     {
         m_enabled = true;
+        on_enable();
     }
     //-------------------------------------------------------------------------
     void layer::enable_always_enabled()
@@ -27,6 +28,7 @@ namespace ppp
     void layer::disable()
     {
         m_enabled = false;
+        on_disable();
     }
     //-------------------------------------------------------------------------
     void layer::disable_always_enabled()
@@ -38,11 +40,13 @@ namespace ppp
     void layer::attached()
     {
         on_attached();
+        enable();
     }
 
     //-------------------------------------------------------------------------
     void layer::detached()
     {
+        disable();
         on_detached();
     }
 

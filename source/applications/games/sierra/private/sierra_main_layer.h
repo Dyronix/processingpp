@@ -7,12 +7,9 @@ namespace ppp
     class sierra_main_layer : public sierra_layer
     {
     public:
-        sierra_main_layer(ecs::scene_manager* scene);
+        sierra_main_layer(sierra_engine_context* ctx);
 
     protected:
-        void on_attached() override;
-        void on_detached() override;
-
-        void on_tick(f32 dt) override;
+        void on_enable() override;
     };
 }
