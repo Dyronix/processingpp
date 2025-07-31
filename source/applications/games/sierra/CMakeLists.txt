@@ -8,6 +8,11 @@ target_sources(sierra PRIVATE
     #imgui
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/sierra_inspector.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/sierra_inspector.cpp
+    #imgui-layers
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/layers/layer_stats.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/layers/layer_stats.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/layers/layer_floating_window.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/layers/layer_floating_window.cpp
     #imgui-ecs
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/ecs/ecs_stats.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/ecs/ecs_stats.cpp
@@ -47,7 +52,9 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer_stack.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer_stack.cpp
 
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_engine_context.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_layer.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_imgui_layer.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_imgui_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_main_layer.h
