@@ -9,9 +9,10 @@ namespace ppp
     namespace imgui
     {
         template<typename F>
-        static void draw_section(const char* label, int columns, F draw_func)
+        static void draw_section(const char* label, int columns, bool default_open, F draw_func)
         {
-            if (ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_DefaultOpen))
+            int flags = default_open ? ImGuiTreeNodeFlags_DefaultOpen : 0;
+            if (ImGui::CollapsingHeader(label, flags))
             {
                 if (ImGui::BeginTable(label, columns, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_BordersInner))
                 {
@@ -21,9 +22,9 @@ namespace ppp
             }
         }
 
-        void draw_stats(const ecs_world_stats_t& world_stats)
+        void draw_ecs_world_stats(const ecs_world_stats_t& world_stats)
         {
-            draw_section("Entities", 2, [&] {
+            draw_section("Entities", 2, true, [&] {
                 ImGui::TableNextColumn();
                 draw_gauge_card(
                     gauge_plot_builder()
@@ -46,7 +47,7 @@ namespace ppp
                 );
             });
 
-            draw_section("Performance", 3, [&] {
+            draw_section("Performance", 3, false, [&] {
                 ImGui::TableNextColumn();
                 draw_gauge_card(
                     gauge_plot_builder()
@@ -133,7 +134,7 @@ namespace ppp
                 );
             });
 
-            draw_section("Commands", 3, [&]
+            draw_section("Commands", 3, false, [&]
             {
                 ImGui::TableNextColumn();
                 draw_counter_card(
@@ -247,7 +248,7 @@ namespace ppp
                 );
             });
 
-            draw_section("Frame", 3, [&] {
+            draw_section("Frame", 3, false, [&] {
                 ImGui::TableNextColumn();
                 draw_gauge_card(
                     gauge_plot_builder()
@@ -310,7 +311,7 @@ namespace ppp
                 );
             });
 
-            draw_section("Tables", 3, [&] {
+            draw_section("Tables", 3, false, [&] {
                 ImGui::TableNextColumn();
                 draw_gauge_card(
                     gauge_plot_builder()
@@ -353,7 +354,7 @@ namespace ppp
                 );
             });
 
-            draw_section("Components", 3, [&] {
+            draw_section("Components", 3, false, [&] {
                 ImGui::TableNextColumn();
                 draw_gauge_card(
                     gauge_plot_builder()
@@ -416,7 +417,7 @@ namespace ppp
                 );
             });
 
-            draw_section("Systems & Queries", 3, [&] {
+            draw_section("Systems & Queries", 3, false, [&] {
                 ImGui::TableNextColumn();
                 draw_gauge_card(
                     gauge_plot_builder()
@@ -449,7 +450,7 @@ namespace ppp
                 );
             });
 
-            draw_section("Memory", 3, [&] {
+            draw_section("Memory", 3, false, [&] {
                 ImGui::TableNextColumn();
                 draw_counter_card(
                     counter_plot_builder()

@@ -51,7 +51,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        flecs::entity scene::create_entity(const std::string& name) 
+        flecs::entity scene::create_entity(const std::string& name) const
         {
             // Named entities help debugging
             return name.empty()

@@ -12,9 +12,9 @@ namespace ppp
     namespace ecs
     {
         //-------------------------------------------------------------------------
-        void register_orbit_camera_system(flecs::world& world)
+        flecs::entity register_orbit_camera_system(flecs::world& world)
         {
-            world.system<const camera_component, const orbit_control_component>()
+            return world.system<const camera_component, const orbit_control_component>()
                 .kind<tick_pipeline>()
                 .each([](const camera_component& cam, const orbit_control_component& orbit)
                 {

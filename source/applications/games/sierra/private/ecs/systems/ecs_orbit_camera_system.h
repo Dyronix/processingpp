@@ -6,6 +6,6 @@ namespace ppp
 {
     namespace ecs
     {
-        void register_orbit_camera_system(flecs::world& world);
+        flecs::entity register_orbit_camera_system(flecs::world& world);
     }
 }

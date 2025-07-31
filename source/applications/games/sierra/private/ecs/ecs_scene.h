@@ -16,7 +16,7 @@ namespace ppp
             scene();
             ~scene();
 
-            flecs::entity create_entity(const std::string& name = "");
+            flecs::entity create_entity(const std::string& name = "") const;
 
             void init();
             void begin_frame();
