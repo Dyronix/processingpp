@@ -16,7 +16,6 @@
 
 #include "events.h"
 #include "environment.h"
-#include "structure.h"
 
 namespace
 {
@@ -626,17 +625,6 @@ namespace ppp
 							ctx().show_about = true;
 						}
 						tooltip("About");
-					}
-
-					ImGui::SameLine();
-
-					// Quit
-					{
-						if (ImGui::Button(ICON_FA_POWER_OFF))
-						{
-							quit();
-						}
-						tooltip("Quit Application");
 					}
 
 					ImGui::SameLine();
