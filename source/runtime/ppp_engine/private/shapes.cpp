@@ -459,6 +459,12 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
+    geometry_id box(float size)
+    {
+        return box(size, size, size);
+    }
+
+    //-------------------------------------------------------------------------
     geometry_id cone(float radius, float height, int detail, bool cap)
     {
         geometry::geometry* geom = geometry::make_cone(internal::_normal_mode == normal_mode_type::SMOOTH, cap, detail);
