@@ -52,7 +52,7 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    const sierra_engine_context* sierra_layer::context() const
+    sierra_engine_context* sierra_layer::context() const
     {
         return _ctx;
     }

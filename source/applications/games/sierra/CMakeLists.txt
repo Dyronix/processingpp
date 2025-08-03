@@ -58,6 +58,10 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer_stack.cpp
 
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_engine_context.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_player_state.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_player_state.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_input_handler.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_input_handler.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_level_layer.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_level_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_layer.h

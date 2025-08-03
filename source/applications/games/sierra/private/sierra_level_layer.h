@@ -6,9 +6,12 @@
 #include "ecs/systems/ecs_systems.h"
 
 #include <vector>
+#include <memory>
 
 namespace ppp
 {
+    class sierra_input_handler;
+
     class sierra_level_layer: public sierra_layer
     {
     public:
@@ -20,12 +23,9 @@ namespace ppp
 
     private:
         void load_level();
-        void load_picking_query();
-
-        void on_mouse_button_click();
 
         std::vector<flecs::entity> _level_grid;
 
-        flecs::query<const class ecs::transform_component, const class ecs::bounding_box_component, const class ecs::pickable_component> _picking_query;
+        std::unique_ptr<sierra_input_handler> _input_handler;
     };
 }
