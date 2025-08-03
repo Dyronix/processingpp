@@ -4,6 +4,7 @@
 #include "ecs/components/ecs_shape_component.h"
 #include "ecs/components/ecs_fill_color_component.h"
 #include "ecs/components/ecs_model_component.h"
+#include "ecs/components/ecs_picked_component.h" 
 
 #include "ecs/ecs_pipeline_tags.h"
 
@@ -23,7 +24,8 @@ namespace ppp
                 .kind<draw_pipeline>()
                 .each([](flecs::entity e, const transform_component& t, const shape_component& s, const fill_color_component& fill) 
                 {
-                    ppp::fill(fill.r, fill.g, fill.b, fill.a);
+                    const auto& color = e.has<picked_component>() ? fill.highlight : fill.color;
+                    ppp::fill(color.r, color.g, color.b, color.a);
 
                     ppp::push();
                     ppp::transform(t.position, t.rotation, t.scale);                   

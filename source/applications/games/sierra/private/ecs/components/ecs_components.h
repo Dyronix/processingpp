@@ -5,4 +5,7 @@
 #include "ecs/components/ecs_fill_color_component.h"
 #include "ecs/components/ecs_model_component.h"
 #include "ecs/components/ecs_camera_component.h"
+#include "ecs/components/ecs_bounding_box_component.h"
+#include "ecs/components/ecs_pickable_component.h"
+#include "ecs/components/ecs_picked_component.h"
 #include "ecs/components/ecs_camera_orbit_control_component.h"

@@ -226,6 +226,7 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/input_output.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/time_date.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/json.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/ray.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/entrypoint.cpp)
 
  # fileio-win32
@@ -258,6 +259,7 @@ target_sources(processing_engine PUBLIC
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/engine.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/lights.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/vector.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/ray.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/quat.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/time_date.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/public/input_output.h

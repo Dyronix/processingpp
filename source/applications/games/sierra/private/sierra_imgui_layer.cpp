@@ -7,7 +7,7 @@ namespace ppp
 {
     //-------------------------------------------------------------------------
     sierra_imgui_layer::sierra_imgui_layer(sierra_engine_context* ctx)
-        :sierra_layer(ctx, "imgui"_sid, 1, true)
+        :sierra_layer(ctx, "imgui"_sid, 999, true)
     {}
 
     //-------------------------------------------------------------------------
