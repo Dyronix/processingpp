@@ -16,26 +16,6 @@ namespace ppp
     //-------------------------------------------------------------------------
     void sierra_main_layer::on_enable()
     {
-        // Make Box
-        {
-            auto e_box = create_entity("box");
-
-            e_box.set<ecs::transform_component>({
-                {0, 0, 0},                          /*.position */
-                {1.0f, 1.0f, 1.0f},                 /*.scale */
-                glm::quat(1.0f, 0.0f, 0.0f, 0.0f)   /*.rotation */
-                });
-            e_box.set<ecs::shape_component>({
-                []() { ppp::box(50.0f, 50.0f, 50.0f); } /*.draw_fn */
-                });
-            e_box.set<ecs::fill_color_component>({
-                255,    /*.red */
-                0,      /*.green */
-                0,      /*.blue */
-                255     /*.alpha */
-                });
-        }
-
         // Make Camera
         {
             auto e_camera = create_entity("orbit_camera");
