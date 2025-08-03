@@ -3,7 +3,7 @@
 #include "events.h"
 #include "environment.h"
 #include "device/device.h"
-
+#include "util/log.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace ppp
@@ -295,4 +295,29 @@ namespace ppp
 
         internal::push_active_camera(camera_tag);
     }
+
+    //-------------------------------------------------------------------------
+    ray screen_to_world(float screen_x, float screen_y, float screen_width, float screen_height)
+    {
+        const glm::mat4& proj = camera_manager::get_proj();
+        const glm::mat4& view = camera_manager::get_view();
+
+        float x_ndc = (2.0f * screen_x) / screen_width - 1.0f;
+        float y_ndc = (2.0f * screen_y) / screen_height - 1.0f;
+        glm::vec2 ndc = glm::vec2(x_ndc, y_ndc);
+
+        glm::vec4 ray_clip = glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f); 
+
+        glm::mat4 inv_proj = glm::inverse(proj);
+        glm::vec4 ray_eye = inv_proj * ray_clip;
+        ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0f, 0.0f);
+
+        glm::mat4 inv_view = glm::inverse(view);
+        glm::vec4 ray_world = inv_view * ray_eye;
+        glm::vec3 ray_dir = glm::normalize(glm::vec3(ray_world));
+        glm::vec3 cam_pos = glm::vec3(inv_view[3]);
+
+        return { cam_pos , ray_dir };
+    }
+
 }
