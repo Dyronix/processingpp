@@ -6,6 +6,7 @@
 #pragma once
 
 #include "vector.h"
+#include "ray.h"
 
 #include <string>
 
@@ -193,4 +194,14 @@ namespace ppp
      * @param tag Identifier for the camera to control.
      */
     void orbit_control(orbit_control_options opts, std::string_view tag = {});
+
+    /**
+     * @brief Generate a world-space ray from screen-space coordinates.
+     * @param screen_x X position in screen space (e.g. mouse X).
+     * @param screen_y Y position in screen space (e.g. mouse Y).
+     * @param screen_width Width of the render surface.
+     * @param screen_height Height of the render surface.
+     * @return A pair of vectors: ray origin and ray direction in world space.
+     */
+    ray screen_to_world(float screen_x, float screen_y, float screen_width, float screen_height);
 }
