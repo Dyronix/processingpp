@@ -1,6 +1,7 @@
 #include "framework.h"
 
 #include "sierra_main_layer.h"
+#include "sierra_level_layer.h"
 #include "sierra_imgui_layer.h"
 #include "sierra_engine_context.h"
 
@@ -10,7 +11,6 @@ namespace ppp
     {
     public:
         sierra() = default;
-        ~sierra() override = default;
 
     public:
         void setup() override;
@@ -43,6 +43,7 @@ namespace ppp
         ctx.scene_manager.set_active_scene("main");
 
         ctx.layer_stack.push(std::make_unique<sierra_main_layer>(&ctx));
+        ctx.layer_stack.push(std::make_unique<sierra_level_layer>(&ctx));
         ctx.layer_stack.push(std::make_unique<sierra_imgui_layer>(&ctx));
 
         ctx.scene_manager.init();
