@@ -141,16 +141,19 @@ namespace ppp
                     f64 canvas_y = (f64)render::scissor_rect()->y;
                     f64 height = (f64)render::scissor_rect()->height;
 
-                    ypos = ((ypos - canvas_y) - height) * -1.0;
+                    // Flip relative to scissor rect
+                    ypos = canvas_y + height - ypos;
                 }
                 else
                 {
                     s32 width, height;
                     glfwGetWindowSize(glfw::window(), &width, &height);
-                    ypos = ypos - (f64)height;
+
+                    // Flip relative to full window
+                    ypos = (f64)height - ypos;
                 }
 
-                return (f32)ypos;
+                return static_cast<f32>(ypos);
             }
 
             bool is_mouse_button_pressed(s32 code)
