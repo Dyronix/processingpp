@@ -5,20 +5,6 @@
 
 namespace ppp
 {
-  struct enemy_component { f32 radius; };
-  struct enemy_state { s32 health; };
-  struct end_trigger { };
-  struct bullet_component { f32 radius; f32 speed; s32 damage; };
-  struct bullet_state { glm::vec3 direction; };
-  struct tower_component {
-    f32 shoot_rate; // number of bullets per second
-    f32 range;
-  };
-  struct tower_state {
-    f32 last_fire_time;
-    flecs::entity target;
-  };
-
   class sierra_main_layer : public sierra_layer
     {
     public:
@@ -29,6 +15,12 @@ namespace ppp
         void on_tick(f32 dt) override;
 
     private:
+      void spawn_camera();
+      void spawn_enemy();
+      void spawn_tower();
+      void spawn_bullet(const glm::vec3& pos, const glm::vec3 targetPos);
+      void spawn_trigger();
+      void init_systems();
 
       void move_enemy(ecs::transform_component& enemyTransform);
       void detect_bullet(const flecs::world& world, ecs::transform_component& enemyTransform, const enemy_component& ec, enemy_state& es);
@@ -49,7 +41,7 @@ namespace ppp
       void for_each_end_trigger(const flecs::world& world, const Func& func)
       {
         world.query_builder()
-          .with<end_trigger>()
+          .with<enemy_goal_trigger_component>()
           .each(func);
       }
       template <typename Func>

@@ -9,3 +9,11 @@
 #include "ecs/components/ecs_pickable_component.h"
 #include "ecs/components/ecs_picked_component.h"
 #include "ecs/components/ecs_camera_orbit_control_component.h"
+
+#include "ecs/components/ecs_bullet_component.h"
+#include "ecs/components/ecs_bullet_state.h"
+#include "ecs/components/ecs_enemy_component.h"
+#include "ecs/components/ecs_enemy_goal_trigger_component.h"
+#include "ecs/components/ecs_enemy_state.h"
+#include "ecs/components/ecs_tower_component.h"
+#include "ecs/components/ecs_tower_state.h"

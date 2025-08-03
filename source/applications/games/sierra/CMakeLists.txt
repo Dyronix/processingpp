@@ -32,14 +32,21 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_entity.cpp
     #ecs-components
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bounding_box_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bullet_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bullet_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_orbit_control_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_enemy_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_enemy_goal_trigger_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_enemy_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_model_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_transform_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_shape_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_fill_color_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_pickable_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_picked_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_tower_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_tower_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_components.h
     #ecs-systems
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_camera_init_system.cpp
