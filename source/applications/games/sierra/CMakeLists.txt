@@ -31,12 +31,15 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_entity.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_entity.cpp
     #ecs-components
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bounding_box_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_orbit_control_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_model_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_transform_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_shape_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_fill_color_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_pickable_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_picked_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_components.h
     #ecs-systems
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_camera_init_system.cpp
@@ -45,6 +48,8 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_orbit_camera_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_picking_system.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_picking_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_systems.h
     #layers
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer.h
@@ -53,6 +58,8 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer_stack.cpp
 
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_engine_context.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_level_layer.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_level_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_layer.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_imgui_layer.h
