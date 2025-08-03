@@ -36,12 +36,14 @@ namespace ppp
                 []() { ppp::box(50.0f, 50.0f, 50.0f); } /*.draw_fn */
                 });
             e_tower.set<ecs::fill_color_component>({
+              {
                 0,      /*.red */
                 0,      /*.green */
                 255,    /*.blue */
                 255     /*.alpha */
-                });
-            e_tower.set<tower_component>({ 2.0f, 10.0f });
+              }
+              });
+            e_tower.set<tower_component>({ 2.0f, 100.0f });
             e_tower.set<tower_state>({ 0.0f });
 
             //auto e_bullet = create_entity("bullet_component");
@@ -75,11 +77,12 @@ namespace ppp
             e_enemy.set<ecs::shape_component>({
                 [this]() { ppp::sphere(_enemy_radius); } /*.draw_fn */
               });
-            e_enemy.set<ecs::fill_color_component>({
-                255,    /*.red */
-                0,      /*.green */
-                0,      /*.blue */
-                255     /*.alpha */
+						e_enemy.set<ecs::fill_color_component>({
+							{255,    /*.red */
+								0,      /*.green */
+								0,      /*.blue */
+								255     /*.alpha */
+								}
               });
             e_enemy.set<enemy_component>({ _enemy_radius * 0.5f });
             e_enemy.set<enemy_state>({ 100 });
@@ -92,13 +95,15 @@ namespace ppp
               });
             e_trigger.set<ecs::shape_component>({
                 []() { ppp::box(75.0f, 75.0f, 75.0f); } /*.draw_fn */
-              });
-            e_trigger.set<ecs::fill_color_component>({
-                255,    /*.red */
-                255,      /*.green */
-                255,      /*.blue */
-                0     /*.alpha */
-              });
+							});
+						e_trigger.set<ecs::fill_color_component>({
+							{
+								255,    /*.red */
+								255,      /*.green */
+								255,      /*.blue */
+								0     /*.alpha */
+								}
+							});
             e_trigger.add<end_trigger>();
         }
 
