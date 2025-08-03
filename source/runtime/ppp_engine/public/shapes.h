@@ -123,6 +123,11 @@ namespace ppp
     geometry_id box(float width, float height, float depth);
 
     /**
+    * @brief Draw a 3D box.
+    */
+    geometry_id box(float size);
+
+    /**
      * @brief Draw a 3D cone.
      */
     geometry_id cone(float radius, float height, int detail = 24, bool cap = true);
