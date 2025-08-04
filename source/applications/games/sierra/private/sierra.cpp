@@ -2,6 +2,7 @@
 
 #include "sierra_main_layer.h"
 #include "sierra_level_layer.h"
+#include "sierra_placement_layer.h"
 #include "sierra_imgui_layer.h"
 #include "sierra_engine_context.h"
 
@@ -44,6 +45,7 @@ namespace ppp
 
         ctx.layer_stack.push(std::make_unique<sierra_main_layer>(&ctx));
         ctx.layer_stack.push(std::make_unique<sierra_level_layer>(&ctx));
+        ctx.layer_stack.push(std::make_unique<sierra_placement_layer>(&ctx));
         ctx.layer_stack.push(std::make_unique<sierra_imgui_layer>(&ctx));
 
         ctx.scene_manager.init();
