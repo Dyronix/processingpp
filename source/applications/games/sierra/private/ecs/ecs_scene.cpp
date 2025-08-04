@@ -26,12 +26,26 @@ namespace ppp
                 .with<draw_pipeline>()
                 .build();
 
-            _world.component<transform_component>();
-            _world.component<shape_component>();
-            _world.component<fill_color_component>();
-            _world.component<model_component>();
-            _world.component<camera_component>();
-            _world.component<orbit_control_component>();
+            // Add render properties component when shape is added
+            _world.observer<shape_component>()
+                .event(flecs::OnAdd)
+                .each([](flecs::entity& e, shape_component&)
+            {
+                if (!e.has<render_properties_component>())
+                {
+                    e.add<render_properties_component>();
+                }
+            });
+            // Add render properties component when model is added
+            _world.observer<model_component>()
+                .event(flecs::OnAdd)
+                .each([](flecs::entity& e, model_component&)
+            {
+                if (!e.has<render_properties_component>())
+                {
+                    e.add<render_properties_component>();
+                }
+            });
 
             // init
             register_camera_init_system(_world);
