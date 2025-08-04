@@ -23,13 +23,30 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    void sierra_player_state::subscribe_start_placement(player_state_delegates callback)
+    void sierra_player_state::try_spawn_tower()
+    {
+        if (_is_placing)
+        {
+            for (auto& callback : _try_spawn_tower_callbacks)
+            {
+                callback();
+            }
+        }
+    }
+
+    //-------------------------------------------------------------------------
+    void sierra_player_state::subscribe_start_placement(player_state_delegate callback)
     {
         _start_placement_callbacks.push_back(callback);
     }
     //-------------------------------------------------------------------------
-    void sierra_player_state::subscribe_stop_placement(player_state_delegates callback)
+    void sierra_player_state::subscribe_stop_placement(player_state_delegate callback)
     {
         _stop_placement_callbacks.push_back(callback);
+    }
+    //-------------------------------------------------------------------------
+    void sierra_player_state::subscribe_try_spawn_tower(player_state_delegate callback)
+    {
+        _try_spawn_tower_callbacks.push_back(callback);
     }
 }

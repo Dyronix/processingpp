@@ -7,19 +7,22 @@ namespace ppp
 {
     class sierra_player_state
     {
-        using player_state_delegates = std::function<void()>;
+        using player_state_delegate = std::function<void()>;
 
     public:
         void toggle_placement();
+        void try_spawn_tower();
 
-        void subscribe_start_placement(player_state_delegates callback);
-        void subscribe_stop_placement(player_state_delegates callback);
+        void subscribe_start_placement(player_state_delegate callback);
+        void subscribe_stop_placement(player_state_delegate callback);
+        void subscribe_try_spawn_tower(player_state_delegate callback);
         
         bool is_placing() const { return _is_placing; }
 
     private:
-        std::vector<player_state_delegates> _start_placement_callbacks;
-        std::vector<player_state_delegates> _stop_placement_callbacks;
+        std::vector<player_state_delegate> _start_placement_callbacks;
+        std::vector<player_state_delegate> _stop_placement_callbacks;
+        std::vector<player_state_delegate> _try_spawn_tower_callbacks;
 
         bool _is_placing = false;
     };
