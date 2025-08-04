@@ -31,6 +31,8 @@ namespace ppp
         flecs::entity _placement_handler;
         flecs::entity _placement_template;
 
-        std::vector<flecs::entity> _towers;
+#if _DEBUG
+        std::vector<glm::vec3> _tower_locations;
+#endif
     };
 }

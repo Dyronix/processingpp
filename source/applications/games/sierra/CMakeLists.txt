@@ -83,6 +83,8 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_imgui_layer.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_imgui_layer.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_ui_layer.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_ui_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_main_layer.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_main_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra.cpp)

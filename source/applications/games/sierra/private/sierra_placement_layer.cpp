@@ -30,6 +30,16 @@ namespace ppp
         load_placement_finisher();
 
         create_system(&ecs::register_placement_system);
+
+        // Respawn towers after disabling the layer
+        if (!_tower_locations.empty())
+        {
+            for (int i = 0; i < _tower_locations.size(); ++i)
+            {
+                std::string tag = std::string("dynamic_tower") + std::to_string(i);
+                spawn_tower(tag.c_str(), _tower_locations[i], true);
+            }
+        }
     }
 
     //-------------------------------------------------------------------------
@@ -96,7 +106,7 @@ namespace ppp
             std::string tag = std::string("dynamic_tower") + std::to_string(s_tower_count);
             log::info("Spawning tower at: {},{},{}", transform.position.x, transform.position.y, transform.position.z);
             auto t = spawn_tower(tag.c_str(), transform.position, true);
-            _towers.push_back(t);
+            _tower_locations.push_back(transform.position);
             ++s_tower_count;
         });
     }
