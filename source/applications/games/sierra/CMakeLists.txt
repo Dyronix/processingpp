@@ -31,6 +31,7 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_entity.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/ecs_entity.cpp
     #ecs-components
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_placement_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bounding_box_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_orbit_control_component.h
@@ -42,6 +43,8 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_picked_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_components.h
     #ecs-systems
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_placement_system.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_placement_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_camera_init_system.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_camera_init_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_orbit_camera_system.cpp
@@ -62,6 +65,8 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_player_state.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_input_handler.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_input_handler.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_placement_layer.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_placement_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_level_layer.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_level_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_layer.h
