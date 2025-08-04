@@ -15,5 +15,6 @@
 #include "ecs/components/ecs_enemy_component.h"
 #include "ecs/components/ecs_enemy_goal_trigger_component.h"
 #include "ecs/components/ecs_enemy_state.h"
+#include "ecs/components/ecs_tile_component.h"
 #include "ecs/components/ecs_tower_component.h"
 #include "ecs/components/ecs_tower_state.h"

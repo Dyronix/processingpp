@@ -4,8 +4,11 @@
 
 namespace ppp
 {
-  struct enemy_goal_trigger_component 
+  namespace ecs
   {
+		struct enemy_goal_trigger_component
+		{
 
-  };
+		};
+	}
 }

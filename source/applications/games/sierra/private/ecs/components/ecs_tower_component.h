@@ -4,9 +4,12 @@
 
 namespace ppp
 {
-  struct tower_component 
+  namespace ecs
   {
-    f32 shoot_rate; // number of bullets per second
-    f32 range;
-  };
+		struct tower_component
+		{
+			f32 shoot_rate; // number of bullets per second
+			f32 range;
+		};
+	}
 }

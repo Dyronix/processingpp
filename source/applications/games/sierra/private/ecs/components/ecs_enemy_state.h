@@ -4,9 +4,11 @@
 
 namespace ppp
 {
-  struct enemy_state 
-  { 
-    s32 health; 
-  };
-
+  namespace ecs
+  {
+		struct enemy_state
+		{
+			s32 health;
+		};
+	}
 }

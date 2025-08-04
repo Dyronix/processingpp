@@ -4,8 +4,11 @@
 
 namespace ppp
 {
-  struct enemy_component 
+  namespace ecs
   {
-    f32 radius; 
-  };
+		struct enemy_component
+		{
+			f32 radius;
+		};
+	}
 }

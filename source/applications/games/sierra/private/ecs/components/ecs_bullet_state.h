@@ -5,8 +5,11 @@
 
 namespace ppp
 {
-  struct bullet_state 
-  { 
-    glm::vec3 direction; 
-  };
+  namespace ecs
+  {
+		struct bullet_state
+		{
+			glm::vec3 direction;
+		};
+	}
 }
