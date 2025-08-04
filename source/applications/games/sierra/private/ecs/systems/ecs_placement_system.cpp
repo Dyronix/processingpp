@@ -24,7 +24,7 @@ namespace ppp
         flecs::entity register_placement_system(flecs::world& world)
         {
             auto pick_query = world.query<const ecs::transform_component, const ecs::bounding_box_component, const ecs::pickable_component>();
-            auto template_query = world.query<const ecs::placement_template_component>();
+            auto template_query = world.query<ecs::transform_component, const ecs::bounding_box_component, const ecs::placement_template_component>();
 
             return world.system<const placement_component>()
                 .kind<tick_pipeline>()
@@ -41,11 +41,15 @@ namespace ppp
                     f32 t;
                     if (ray_intersects_aabb(r.origin, r.dir, aabb_min, aabb_max, t))
                     {
-                        template_query.each([r, t](flecs::entity& e, const placement_template_component&)
-                        {
-                            transform_component& transform = e.get_mut<transform_component>();
+                        glm::vec3 center_of_hit = (aabb_min + aabb_max) * 0.5f;
+                        f32 top_y = aabb_max.y;
 
-                            glm::vec3 new_position = r.origin + (r.dir * t);
+                        template_query.each([center_of_hit, top_y](flecs::entity& e, transform_component& transform, const ecs::bounding_box_component& bbox, const placement_template_component&)
+                        {
+                            glm::vec3 new_position = center_of_hit;
+
+                            f32 half_height = (bbox.max.y - bbox.min.y) * 0.5f;
+                            new_position.y = top_y + half_height;
 
                             transform.position = new_position;
                         });

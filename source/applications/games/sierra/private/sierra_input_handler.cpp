@@ -121,14 +121,17 @@ namespace ppp
         //-------------------------------------------------------------------------
         void handle_left_mouse_button_click()
         {
-            // Nothing to implement
+            log::info("Going to try and spawn a tower");
+
+            _owning_layer->context()->player_state.try_spawn_tower();
         }
 
         //-------------------------------------------------------------------------
         void space_button_press()
         {
+            log::info("Going to change to placement state: {}", !_owning_layer->context()->player_state.is_placing());
+
             _owning_layer->context()->player_state.toggle_placement();
-            log::info("Is in placement state: {}", _owning_layer->context()->player_state.is_placing());
         }
     };
 
