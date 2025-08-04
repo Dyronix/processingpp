@@ -4,21 +4,21 @@
   "matrix": [
     [
       { "x": 0, "z": 0, "type": "begin" },
-      { "x": 1, "z": 0, "type": "grass" },
+      { "x": 1, "z": 0, "type": "path" },
       { "x": 2, "z": 0, "type": "grass" },
       { "x": 3, "z": 0, "type": "grass" },
       { "x": 4, "z": 0, "type": "grass" }
     ],
     [
-      { "x": 0, "z": 1, "type": "path" },
-      { "x": 1, "z": 1, "type": "water" },
+      { "x": 0, "z": 1, "type": "grass" },
+      { "x": 1, "z": 1, "type": "path" },
       { "x": 2, "z": 1, "type": "water" },
       { "x": 3, "z": 1, "type": "grass" },
       { "x": 4, "z": 1, "type": "grass" }
     ],
     [
       { "x": 0, "z": 2, "type": "path" },
-      { "x": 1, "z": 2, "type": "grass" },
+      { "x": 1, "z": 2, "type": "path" },
       { "x": 2, "z": 2, "type": "grass" },
       { "x": 3, "z": 2, "type": "grass" },
       { "x": 4, "z": 2, "type": "grass" }

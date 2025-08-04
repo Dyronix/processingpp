@@ -13,13 +13,7 @@
 
 namespace ppp
 {
-	struct level_builder_config2
-	{
-		s32 tile_size = 1;
-		s32 tile_spacing = 0;
-		s32 xoffset = 0;
-		s32 zoffset = 0;
-	};
+
 
   namespace ecs
   {
@@ -30,97 +24,319 @@ namespace ppp
 		struct end_component {};
 	}
 
+
   namespace
   {
-		tile_type tile_type_from_string(std::string_view type)
-		{
-			if (type == "grass") return ppp::tile_type::grass;
-			if (type == "path") return ppp::tile_type::path;
-			if (type == "water") return ppp::tile_type::water;
-			if (type == "begin") return ppp::tile_type::begin;
-			if (type == "end") return ppp::tile_type::end;
-
-			return (tile_type)-1;
-		}
-
-		glm::vec4 color_from_tile_type(tile_type type)
-  {
-    switch (type)
+    tile_type tile_type_from_string(std::string_view type)
     {
-    case ppp::tile_type::grass:  return glm::vec4(0, 255, 0, 255);
-    case ppp::tile_type::path:   return glm::vec4(245, 147, 66, 255);
-    case ppp::tile_type::water:  return glm::vec4(66, 194, 245, 255);
-    case ppp::tile_type::begin:  return glm::vec4(224, 66, 245, 255);
-    case ppp::tile_type::end:    return glm::vec4(0, 0, 0, 0);
-    default:    return glm::vec4();
+      if (type == "grass") return ppp::tile_type::grass;
+      if (type == "path") return ppp::tile_type::path;
+      if (type == "water") return ppp::tile_type::water;
+      if (type == "begin") return ppp::tile_type::begin;
+      if (type == "end") return ppp::tile_type::end;
+
+      return (tile_type)-1;
     }
-  }
-		//-------------------------------------------------------------------------
-		flecs::entity create_tile(sierra_layer* layer, s32 x, s32 z, const std::string& type, const level_builder_config2& config)
-		{
-			std::stringstream name;
-			name << type << x << z << "2";
 
-			flecs::entity e = layer->create_entity(name.str().c_str());
+    glm::vec4 color_from_tile_type(tile_type type)
+    {
+      switch (type)
+      {
+      case ppp::tile_type::grass:  return glm::vec4(0, 255, 0, 255);
+      case ppp::tile_type::path:   return glm::vec4(245, 147, 66, 255);
+      case ppp::tile_type::water:  return glm::vec4(66, 194, 245, 255);
+      case ppp::tile_type::begin:  return glm::vec4(224, 66, 245, 255);
+      case ppp::tile_type::end:    return glm::vec4(0, 0, 0, 0);
+      default:    return glm::vec4();
+      }
+    }
+    //-------------------------------------------------------------------------
+    flecs::entity create_tile(sierra_layer* layer, s32 x, s32 z, const std::string& type, const level_builder_config2& config)
+    {
+      std::stringstream name;
+      name << type << x << z << "2";
 
-			f32 final_x = ((x * config.tile_size) + config.xoffset) + (x * config.tile_spacing);
-			f32 final_y = 0.0f;
-			f32 final_z = ((z * config.tile_size) + config.zoffset) + (z * config.tile_spacing);
+      flecs::entity e = layer->create_entity(name.str().c_str());
 
-			glm::vec3 center = { final_x, final_y, final_z };
-			tile_type tile_type = tile_type_from_string(type);
-			e.set<ecs::transform_component>({ center, {1, 1, 1}, glm::quat(1, 0, 0, 0) });
-			e.set<ecs::shape_component>({ [=]() { box((f32)config.tile_size); } });
-			e.set<ecs::fill_color_component>({ color_from_tile_type(tile_type), {255, 255, 255, 255} });
+      f32 final_x = ((x * config.tile_size) + config.xoffset) + (x * config.tile_spacing);
+      f32 final_y = 0.0f;
+      f32 final_z = ((z * config.tile_size) + config.zoffset) + (z * config.tile_spacing);
 
-			f32 half_extent = config.tile_size * 0.5f;
-			e.set<ecs::bounding_box_component>({ glm::vec3(-half_extent), glm::vec3(half_extent) });
-			e.set<ecs::tile_component>({ tile_type });
-			e.add<ecs::pickable_component>();
+      glm::vec3 center = { final_x, final_y, final_z };
+      tile_type tile_type = tile_type_from_string(type);
+      e.set<ecs::transform_component>({ center, {1, 1, 1}, glm::quat(1, 0, 0, 0) });
+      e.set<ecs::tile_component>({ tile_type });
 
-			switch (tile_type)
-			{
-			case ppp::tile_type::grass:
-				e.add<ecs::grass_component>();
+      switch (tile_type)
+      {
+      case ppp::tile_type::grass:
+        e.add<ecs::grass_component>();
         break;
-			case ppp::tile_type::path:
-				e.add<ecs::path_component>();
+      case ppp::tile_type::path:
+        e.add<ecs::path_component>();
         break;
       case ppp::tile_type::water:
-				e.add<ecs::water_component>();
+        e.add<ecs::water_component>();
         break;
       case ppp::tile_type::begin:
-				e.add<ecs::begin_component>();
+        e.add<ecs::begin_component>();
         break;
       case ppp::tile_type::end:
-				e.add<ecs::end_component>();
+        e.add<ecs::end_component>();
         break;
       }
 
-			return e;
-		}
+      return e;
+    }
 
-		//-------------------------------------------------------------------------
-		std::vector<flecs::entity> build_from_json(sierra_layer* layer, const json& level_json, const level_builder_config2& config)
-		{
-			std::vector<flecs::entity> entities;
+    //-------------------------------------------------------------------------
+    std::vector<flecs::entity> build_from_json(sierra_layer* layer, const json& level_json, const level_builder_config2& config)
+    {
+      std::vector<flecs::entity> entities;
+      entities.reserve(level_json["matrix"].size());
 
-			for (const auto& row : level_json["matrix"])
-			{
-				for (const auto& tile : row)
-				{
-					s32 x = tile["x"];
-					s32 z = tile["z"];
-					std::string type = tile["type"];
+      for (const auto& row : level_json["matrix"])
+      {
+        for (const auto& tile : row)
+        {
+          s32 x = tile["x"];
+          s32 z = tile["z"];
+          std::string type = tile["type"];
 
-					auto entity = create_tile(layer, x, z, type, config);
-					entities.push_back(entity);
-				}
-			}
+          auto entity = create_tile(layer, x, z, type, config);
+          entities.push_back(entity);
+        }
+      }
 
-			return entities;
-		}
+      return entities;
+    }
   }
+
+  //-------------------------------------------------------------------------
+  grid::grid(flecs::world& world, const json& matrix, const level_builder_config2& config, const vec2& origin)
+  {
+    m_world = &world;
+    //m_width = width;
+    //m_height = height;
+    m_cell_size = config.tile_size;
+    m_origin = origin;
+
+    for (const auto& row : matrix)
+    {
+      for (const auto& tile : row)
+      {
+        s32 x = tile["x"];
+        s32 z = tile["z"];
+        std::string type = tile["type"];
+
+        m_cells.push_back(create_new_cell({ x, z }, tile_type_from_string(type), config));
+        //auto entity = create_tile(x, z, type, config);
+        //entities.push_back(entity);
+      }
+
+      m_width = matrix.size();
+      m_height = row.size();
+    }
+
+    //for (int y = 0; y < height; ++y)
+    //{
+    //  for (int x = 0; x < width; ++x)
+    //  {
+    //    auto cell = create_new_cell({ x, y });
+    //    m_cells.push_back(cell);
+    //  }
+    //}
+
+    assign_neighbours(m_cells, m_width, m_height);
+  }
+
+  //-------------------------------------------------------------------------
+  flecs::entity grid::create_new_cell(vec2i pos, tile_type tileType, const level_builder_config2& config)
+  {
+    std::string cell_name;
+    cell_name += "cell_";
+    cell_name += std::to_string(pos.x);
+    cell_name += "_";
+    cell_name += std::to_string(pos.y);
+
+    auto e_cell = m_world->entity(cell_name.c_str());
+    f32 final_x = ((pos.x * config.tile_size) + config.xoffset) + (pos.x * config.tile_spacing);
+    f32 final_y = 0.0f;
+    f32 final_z = ((pos.y * config.tile_size) + config.zoffset) + (pos.y * config.tile_spacing);
+
+    glm::vec3 center = { final_x, final_y, final_z };
+    e_cell.set<ecs::transform_component>({ center, {1, 1, 1}, glm::quat(1, 0, 0, 0) });
+    e_cell.set<ecs::tile_component>({ tileType });
+
+    switch (tileType)
+    {
+    case ppp::tile_type::grass:
+      e_cell.add<ecs::grass_component>();
+      break;
+    case ppp::tile_type::path:
+      e_cell.add<ecs::path_component>();
+      break;
+    case ppp::tile_type::water:
+      e_cell.add<ecs::water_component>();
+      break;
+    case ppp::tile_type::begin:
+      e_cell.add<ecs::begin_component>();
+      break;
+    case ppp::tile_type::end:
+      e_cell.add<ecs::end_component>();
+      break;
+    }
+    e_cell.set<grid_cell_component>(
+      {
+        pos,
+        this
+      });
+
+    return e_cell;
+  }
+
+  //-------------------------------------------------------------------------
+  const grid_cell_component* grid::get_grid_cell_at_index(const vec2i& index) const
+  {
+    if (is_valid_index(index) == false)
+    {
+      return nullptr;
+    }
+
+    int linear_index = index.x + (m_width * index.y);
+
+    return &m_cells[linear_index].get<grid_cell_component>();
+  }
+  //-------------------------------------------------------------------------
+  const grid_cell_component* grid::get_grid_cell_at_world_location(const vec2& location) const
+  {
+    auto index = get_cell_index_from_world_location(location);
+    if (!index)
+    {
+      return nullptr;
+    }
+
+    return get_grid_cell_at_index(*index);
+  }
+
+  //-------------------------------------------------------------------------
+  std::optional<vec2i> grid::get_cell_index_from_world_location(const vec2& world_location) const
+  {
+    vec2i index;
+
+    index.x = std::floor((world_location - m_origin).x / m_cell_size);
+    index.y = std::floor((world_location - m_origin).y / m_cell_size);
+
+    if (is_valid_index(index) == false)
+    {
+      return {};
+    }
+
+    return index;
+  }
+
+  //-------------------------------------------------------------------------
+  bool grid::is_valid_index(const vec2i& index) const
+  {
+    return index.x >= 0 && index.y >= 0 && index.x < m_width && index.y < m_height;
+  }
+
+  //-------------------------------------------------------------------------
+  int grid::width() const
+  {
+    return m_width;
+  }
+  //-------------------------------------------------------------------------
+  int grid::height() const
+  {
+    return m_height;
+  }
+
+  //-------------------------------------------------------------------------
+  float grid::cell_size() const
+  {
+    return m_cell_size;
+  }
+
+  //-------------------------------------------------------------------------
+  const glm::vec2& grid::origin() const
+  {
+    return m_origin;
+  }
+
+  //-------------------------------------------------------------------------
+  std::vector<const grid_cell_component*> grid::cells() const
+  {
+    std::vector<const grid_cell_component*> all_cells;
+    all_cells.reserve(m_cells.size());
+
+    for (auto& cell : m_cells)
+    {
+      all_cells.push_back(&cell.get<grid_cell_component>());
+    }
+
+    return all_cells;
+  }
+  
+  //--------------------------------------------------------------------------
+  std::vector<flecs::entity> grid::get_neighbours(grid_cell_entities& cells, int x, int y, int width, int height)
+  {
+    auto get_cell = [&cells, width](int x, int y)
+      {
+        int index = x + (y * width);
+
+        return cells[index];
+      };
+
+    std::vector<flecs::entity> neighbours;
+
+    if (x - 1 >= 0)
+    {
+      // left
+      neighbours.push_back(get_cell(x - 1, y));
+      //// left down
+      //if (y - 1 >= 0) neighbours.push_back(get_cell(x - 1, y - 1));
+      //// left up
+      //if (y + 1 < height) neighbours.push_back(get_cell(x - 1, y + 1));
+    }
+
+    if (x + 1 < width)
+    {
+      // right
+      neighbours.push_back(get_cell(x + 1, y));
+      //// right down
+      //if (y - 1 >= 0) neighbours.push_back(get_cell(x + 1, y - 1));
+      //// right up
+      //if (y + 1 < height) neighbours.push_back(get_cell(x + 1, y + 1));
+    }
+
+    // down
+    if (y - 1 >= 0) neighbours.push_back(get_cell(x, y - 1));
+    // up
+    if (y + 1 < height) neighbours.push_back(get_cell(x, y + 1));
+
+    return neighbours;
+  }
+  //--------------------------------------------------------------------------
+  void grid::assign_neighbours(grid_cell_entities& cells, int width, int height)
+  {
+    for (int x = 0; x < width; ++x)
+    {
+      for (int y = 0; y < height; ++y)
+      {
+        int index = x + (y * width);
+
+        grid_cell_component grid_cell = cells[index].get<grid_cell_component>();
+        grid_cell.neightbours = get_neighbours(cells, x, y, width, height);
+        cells[index].set(grid_cell);
+      }
+    }
+  }
+
+
+
+
+
 
 
     //-------------------------------------------------------------------------
@@ -141,14 +357,58 @@ namespace ppp
         init_systems();
         init_enemy_spawn_points();
 
+        // calculate the linked path list for every node
         flecs::world& world = context()->scene_manager.active_scene()->world();
         world.query_builder()
-          .with<ecs::enemy_component>()
-          .each([this](flecs::entity entity) 
+          .with<ecs::begin_component>()
+          .each([this](flecs::entity beginEntity)
             {
-              ecs::transform_component transform_comp = entity.get<ecs::transform_component>();
-              create_enemy(transform_comp.position);
+              std::vector<flecs::entity> path_to_end;
+
+              auto find_next_cell = [&](flecs::entity cell)
+                {
+                  const grid_cell_component& tile = cell.get<grid_cell_component>();
+                  for (flecs::entity neighbour : tile.neightbours)
+                  {
+                    if (std::find(path_to_end.cbegin(), path_to_end.cend(), neighbour) != path_to_end.cend())
+                    {
+                      continue;
+                    }
+
+                    const grid_cell_component& neightbour_tile = neighbour.get<grid_cell_component>();
+                    if (neighbour.has<ecs::path_component>())
+                    {
+                      return neighbour;
+                    }
+                    if (neighbour.has<ecs::end_component>())
+                    {
+                      return neighbour;
+                    }
+                  }
+
+                  return flecs::entity::null();
+                };
+
+              const grid_cell_component& tile = beginEntity.get<grid_cell_component>();
+              flecs::entity current_cell = beginEntity;
+              while (current_cell.is_valid() && !current_cell.has<ecs::end_component>())
+              {
+                path_to_end.push_back(current_cell);
+                current_cell = find_next_cell(current_cell);
+              }
+              path_to_end.push_back(current_cell);
+
+              for (flecs::entity path : path_to_end)
+              {
+                const grid_cell_component& cell = path.get<grid_cell_component>();
+
+                log::info("path: ({}, {})", cell.get_world_location().x, cell.get_world_location().y);
+              }
+
+              m_start_to_path[beginEntity.id()] = std::move(path_to_end);
             });
+
+        spawn_enemies();
     }
 
     void sierra_main_layer::load_level()
@@ -161,7 +421,11 @@ namespace ppp
       cfg.xoffset = -cfg.tile_size * 2;
       cfg.zoffset = -cfg.tile_size * 2;
 
-      build_from_json(this, demo_level, cfg);
+      s32 width = demo_level["matrix"].front().size();
+      s32 height = demo_level["matrix"].size();
+
+      flecs::entity e_grid = create_entity("grid");
+      e_grid.emplace<grid>(context()->scene_manager.active_scene()->world(), demo_level["matrix"], cfg, glm::vec2{});
     }
 
     void sierra_main_layer::create_camera()
@@ -189,9 +453,11 @@ namespace ppp
           600.0f  /*.max_zoom */
         });
     }
-    void sierra_main_layer::create_enemy(const glm::vec3& pos)
+    void sierra_main_layer::create_enemy(const glm::vec3& pos, const std::vector<flecs::entity>* path)
     {
-      auto e_enemy = create_entity("enemy");
+      static int enemy_counter = 0;
+      std::string enemy_tag = "enemy_" + std::to_string(enemy_counter++);
+      auto e_enemy = create_entity(enemy_tag.c_str());
 
       e_enemy.set<ecs::transform_component>({
           pos,                          /*.position */
@@ -208,8 +474,8 @@ namespace ppp
           255     /*.alpha */
           }
         });
-      e_enemy.set<ecs::enemy_component>({ _enemy_radius * 0.5f });
-      e_enemy.set<ecs::enemy_state>({ 100 });
+      e_enemy.set<ecs::enemy_component>({ _enemy_radius * 0.5f, 50.0f });
+      e_enemy.set<ecs::enemy_state>({ 100, path });
     }
     void sierra_main_layer::create_tower()
     {
@@ -281,6 +547,20 @@ namespace ppp
         });
       e_trigger.add<ecs::enemy_goal_trigger_component>();
     }
+
+    void sierra_main_layer::spawn_enemies()
+    {
+      flecs::world& world = context()->scene_manager.active_scene()->world();
+      world.query_builder()
+        .with<ecs::begin_component>()
+        .each([this](flecs::entity entity)
+          {
+            ecs::transform_component transform_comp = entity.get<ecs::transform_component>();
+            transform_comp.position.y += 50;
+            create_enemy(transform_comp.position, &m_start_to_path.at(entity.id()));
+          });
+    }
+
     void sierra_main_layer::init_systems()
     {
       create_system(&ecs::register_orbit_camera_system);
@@ -291,7 +571,7 @@ namespace ppp
             .each(
               [this, world](ecs::transform_component& t, const ecs::enemy_component& ec, ecs::enemy_state& es)
               {
-                move_enemy(t);
+                move_enemy(t, ec, es);
                 detect_bullet(world, t, ec, es);
                 detect_end(world, t, ec);
               });
@@ -348,9 +628,28 @@ namespace ppp
           });
     }
 
-    void sierra_main_layer::move_enemy(ecs::transform_component& enemyTransform)
+    void sierra_main_layer::move_enemy(ecs::transform_component& enemyTransform, const ecs::enemy_component& ec, ecs::enemy_state& es)
     {
-      enemyTransform.position.y += sin(_current_time);
+      flecs::entity current_target_entity = es.path->operator[](es.path_idx);
+      const ecs::transform_component* target_transform = &current_target_entity.get<ecs::transform_component>();
+      
+      glm::vec2 enemy_pos_2d = { enemyTransform.position.x, enemyTransform.position.z };
+      glm::vec2 target_pos_2d = { target_transform->position.x, target_transform->position.z };
+
+      f32 distance = glm::length(target_pos_2d - enemy_pos_2d);
+      if (distance < 1.0f && es.path_idx + 1 < es.path->size())
+      {
+        es.path_idx += 1;
+        current_target_entity = es.path->operator[](es.path_idx);
+        target_transform = &current_target_entity.get<ecs::transform_component>();
+        target_pos_2d = { target_transform->position.x, target_transform->position.z };
+      }
+
+      glm::vec2 dir = target_pos_2d - enemy_pos_2d;
+      dir = glm::normalize(dir);
+
+      glm::vec3 target_dir = { dir.x, 0.0f, dir.y };
+      enemyTransform.position += target_dir * ec.speed * delta_time();
     }
     void sierra_main_layer::detect_bullet(const flecs::world& world, ecs::transform_component& enemyTransform, const ecs::enemy_component& ec, ecs::enemy_state& es)
     {

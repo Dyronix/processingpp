@@ -63,7 +63,6 @@ namespace ppp
 
         f32 half_extent = config.tile_size * 0.5f;
         e.set<ecs::bounding_box_component>({ glm::vec3(-half_extent), glm::vec3(half_extent) });
-        e.set<ecs::tile_component>({ tile_type });
         e.add<ecs::pickable_component>();
 
         return e;
