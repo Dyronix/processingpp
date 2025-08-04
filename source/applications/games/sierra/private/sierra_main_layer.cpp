@@ -21,18 +21,29 @@ namespace ppp
 		s32 zoffset = 0;
 	};
 
-  tile_type tile_type_from_string(std::string_view type)
+  namespace ecs
   {
-    if (type == "grass") return ppp::tile_type::grass;
-    if (type == "path") return ppp::tile_type::path;
-    if (type == "water") return ppp::tile_type::water;
-    if (type == "begin") return ppp::tile_type::begin;
-    if (type == "end") return ppp::tile_type::end;
+		struct grass_component {};
+		struct path_component {};
+		struct water_component {};
+		struct begin_component {};
+		struct end_component {};
+	}
 
-    return (tile_type)-1;
-  }
+  namespace
+  {
+		tile_type tile_type_from_string(std::string_view type)
+		{
+			if (type == "grass") return ppp::tile_type::grass;
+			if (type == "path") return ppp::tile_type::path;
+			if (type == "water") return ppp::tile_type::water;
+			if (type == "begin") return ppp::tile_type::begin;
+			if (type == "end") return ppp::tile_type::end;
 
-  glm::vec4 color_from_tile_type(tile_type type)
+			return (tile_type)-1;
+		}
+
+		glm::vec4 color_from_tile_type(tile_type type)
   {
     switch (type)
     {
@@ -44,53 +55,73 @@ namespace ppp
     default:    return glm::vec4();
     }
   }
+		//-------------------------------------------------------------------------
+		flecs::entity create_tile(sierra_layer* layer, s32 x, s32 z, const std::string& type, const level_builder_config2& config)
+		{
+			std::stringstream name;
+			name << type << x << z << "2";
 
-  //-------------------------------------------------------------------------
-  flecs::entity create_tile(sierra_layer* layer, s32 x, s32 z, const std::string& type, const level_builder_config2& config)
-  {
-    std::stringstream name;
-    name << type << x << z << "2";
+			flecs::entity e = layer->create_entity(name.str().c_str());
 
-    flecs::entity e = layer->create_entity(name.str().c_str());
+			f32 final_x = ((x * config.tile_size) + config.xoffset) + (x * config.tile_spacing);
+			f32 final_y = 0.0f;
+			f32 final_z = ((z * config.tile_size) + config.zoffset) + (z * config.tile_spacing);
 
-    f32 final_x = ((x * config.tile_size) + config.xoffset) + (x * config.tile_spacing);
-    f32 final_y = 0.0f;
-    f32 final_z = ((z * config.tile_size) + config.zoffset) + (z * config.tile_spacing);
+			glm::vec3 center = { final_x, final_y, final_z };
+			tile_type tile_type = tile_type_from_string(type);
+			e.set<ecs::transform_component>({ center, {1, 1, 1}, glm::quat(1, 0, 0, 0) });
+			e.set<ecs::shape_component>({ [=]() { box((f32)config.tile_size); } });
+			e.set<ecs::fill_color_component>({ color_from_tile_type(tile_type), {255, 255, 255, 255} });
 
-    glm::vec3 center = { final_x, final_y, final_z };
-    tile_type tile_type = tile_type_from_string(type);
-    e.set<ecs::transform_component>({ center, {1, 1, 1}, glm::quat(1, 0, 0, 0) });
-    e.set<ecs::shape_component>({ [=]() { box((f32)config.tile_size); } });
-    e.set<ecs::fill_color_component>({ color_from_tile_type(tile_type), {255, 255, 255, 255} });
+			f32 half_extent = config.tile_size * 0.5f;
+			e.set<ecs::bounding_box_component>({ glm::vec3(-half_extent), glm::vec3(half_extent) });
+			e.set<ecs::tile_component>({ tile_type });
+			e.add<ecs::pickable_component>();
 
-    f32 half_extent = config.tile_size * 0.5f;
-    e.set<ecs::bounding_box_component>({ glm::vec3(-half_extent), glm::vec3(half_extent) });
-    e.set<ecs::tile_component>({ tile_type });
-    e.add<ecs::pickable_component>();
-
-    return e;
-  }
-
-  //-------------------------------------------------------------------------
-  std::vector<flecs::entity> build_from_json(sierra_layer* layer, const json& level_json, const level_builder_config2& config)
-  {
-    std::vector<flecs::entity> entities;
-
-    for (const auto& row : level_json["matrix"])
-    {
-      for (const auto& tile : row)
-      {
-        s32 x = tile["x"];
-        s32 z = tile["z"];
-        std::string type = tile["type"];
-
-        auto entity = create_tile(layer, x, z, type, config);
-        entities.push_back(entity);
+			switch (tile_type)
+			{
+			case ppp::tile_type::grass:
+				e.add<ecs::grass_component>();
+        break;
+			case ppp::tile_type::path:
+				e.add<ecs::path_component>();
+        break;
+      case ppp::tile_type::water:
+				e.add<ecs::water_component>();
+        break;
+      case ppp::tile_type::begin:
+				e.add<ecs::begin_component>();
+        break;
+      case ppp::tile_type::end:
+				e.add<ecs::end_component>();
+        break;
       }
-    }
 
-    return entities;
+			return e;
+		}
+
+		//-------------------------------------------------------------------------
+		std::vector<flecs::entity> build_from_json(sierra_layer* layer, const json& level_json, const level_builder_config2& config)
+		{
+			std::vector<flecs::entity> entities;
+
+			for (const auto& row : level_json["matrix"])
+			{
+				for (const auto& tile : row)
+				{
+					s32 x = tile["x"];
+					s32 z = tile["z"];
+					std::string type = tile["type"];
+
+					auto entity = create_tile(layer, x, z, type, config);
+					entities.push_back(entity);
+				}
+			}
+
+			return entities;
+		}
   }
+
 
     //-------------------------------------------------------------------------
     sierra_main_layer::sierra_main_layer(sierra_engine_context* ctx)
@@ -102,11 +133,22 @@ namespace ppp
     void sierra_main_layer::on_enable()
     {
         create_camera();
-        create_enemy();
-        create_tower();
-        create_trigger();
+        //create_enemy();
+        //create_tower();
+        //create_trigger();
 
+        load_level();
         init_systems();
+        init_enemy_spawn_points();
+
+        flecs::world& world = context()->scene_manager.active_scene()->world();
+        world.query_builder()
+          .with<ecs::enemy_component>()
+          .each([this](flecs::entity entity) 
+            {
+              ecs::transform_component transform_comp = entity.get<ecs::transform_component>();
+              create_enemy(transform_comp.position);
+            });
     }
 
     void sierra_main_layer::load_level()
@@ -119,7 +161,7 @@ namespace ppp
       cfg.xoffset = -cfg.tile_size * 2;
       cfg.zoffset = -cfg.tile_size * 2;
 
-      //_grid = build_from_json(this, demo_level, cfg);
+      build_from_json(this, demo_level, cfg);
     }
 
     void sierra_main_layer::create_camera()
@@ -147,12 +189,12 @@ namespace ppp
           600.0f  /*.max_zoom */
         });
     }
-    void sierra_main_layer::create_enemy()
+    void sierra_main_layer::create_enemy(const glm::vec3& pos)
     {
       auto e_enemy = create_entity("enemy");
 
       e_enemy.set<ecs::transform_component>({
-          {100, 0, 0},                          /*.position */
+          pos,                          /*.position */
           {0.5f, 0.5f, 0.5f },                 /*.scale */
           glm::quat(1.0f, 0.0f, 0.0f, 0.0f)   /*.rotation */
         });
@@ -289,6 +331,23 @@ namespace ppp
         });
     }
 
+    void sierra_main_layer::init_enemy_spawn_points()
+    {
+      flecs::world& world = context()->scene_manager.active_scene()->world();
+      world.query_builder()
+        .with<ecs::tile_component>()
+        .each([&](const flecs::entity tileEntity)
+          {
+            ecs::tile_component tile_comp = tileEntity.get<ecs::tile_component>();
+
+            if (tile_comp.type == tile_type::begin)
+            {
+              ecs::transform_component transform = tileEntity.get<ecs::transform_component>();
+              _begin_transforms.push_back(transform);
+            }
+          });
+    }
+
     void sierra_main_layer::move_enemy(ecs::transform_component& enemyTransform)
     {
       enemyTransform.position.y += sin(_current_time);
@@ -383,26 +442,5 @@ namespace ppp
     void sierra_main_layer::on_tick(f32 dt)
     {
       _current_time += dt;
-
-      static bool has_init = false;
-      if (!has_init)
-      {
-        // Initialize all the tiles so we know where to spawn the enemy from and we know which direction he has to go in
-        flecs::world& world = context()->scene_manager.active_scene()->world();
-        world.query_builder()
-          .with<ecs::tile_component>()
-          .each([&](const flecs::entity tileEntity)
-            {
-              ecs::tile_component tile_comp = tileEntity.get<ecs::tile_component>();
-
-              if (tile_comp.type == tile_type::begin)
-              {
-                ecs::transform_component transform = tileEntity.get<ecs::transform_component>();
-                _begin_transforms.push_back(transform);
-              }
-            });
-
-        has_init = true;
-      }
     }
 }

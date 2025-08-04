@@ -2,7 +2,6 @@
 
 #include "sierra_layer.h"
 #include "ecs/components/ecs_components.h"
-#include "grid/a-star-grid.h"
 
 namespace ppp
 {
@@ -18,11 +17,13 @@ namespace ppp
     private:
       // initialization
       void init_systems();
+      void init_enemy_spawn_points();
+
       void load_level();
 
       // entity Creation
       void create_camera();
-      void create_enemy();
+      void create_enemy(const glm::vec3& pos);
       void create_tower();
       void create_bullet(const glm::vec3& pos, const glm::vec3 targetPos);
       void create_trigger();
@@ -62,8 +63,6 @@ namespace ppp
       f32 _enemy_radius = 50.0f;
       f32 _bullet_radius = 5.0f;
       f32 _current_time;
-
-      grid<flecs::entity> _grid;
 
       std::vector<ecs::transform_component> _begin_transforms;
     };
