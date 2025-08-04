@@ -5,6 +5,7 @@
 #include "ecs/components/ecs_fill_color_component.h"
 #include "ecs/components/ecs_model_component.h"
 #include "ecs/components/ecs_picked_component.h" 
+#include "ecs/components/ecs_render_properties_component.h"
 
 #include "ecs/ecs_pipeline_tags.h"
 
@@ -20,10 +21,15 @@ namespace ppp
         //-------------------------------------------------------------------------
         void register_shape_render_system(flecs::world& world)
         {
-            world.system<const transform_component, const shape_component, const fill_color_component>()
+            world.system<const transform_component, const shape_component, const fill_color_component, const render_properties_component>()
                 .kind<draw_pipeline>()
-                .each([](flecs::entity e, const transform_component& t, const shape_component& s, const fill_color_component& fill) 
+                .each([](flecs::entity e, const transform_component& t, const shape_component& s, const fill_color_component& fill, const render_properties_component& properties)
                 {
+                    if (!properties.visible)
+                    {
+                        return;
+                    }
+
                     const auto& color = e.has<picked_component>() ? fill.highlight : fill.color;
                     ppp::fill(color.r, color.g, color.b, color.a);
 
@@ -37,10 +43,15 @@ namespace ppp
         //-------------------------------------------------------------------------
         void register_model_render_system(flecs::world& world)
         {
-            world.system<const transform_component, const model_component>()
+            world.system<const transform_component, const model_component, const render_properties_component>()
                 .kind<draw_pipeline>()
-                .each([](flecs::entity e, const transform_component& t, const model_component& m) 
+                .each([](flecs::entity e, const transform_component& t, const model_component& m, const render_properties_component& properties)
                 {
+                    if (!properties.visible)
+                    {
+                        return;
+                    }
+
                     ppp::push();
                     ppp::transform(t.position, t.rotation, t.scale);
                     ppp::draw(m.id);
