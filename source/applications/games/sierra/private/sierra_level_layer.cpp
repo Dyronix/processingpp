@@ -19,6 +19,30 @@ namespace ppp
         s32 zoffset = 0;
     };
 
+    tile_type tile_type_from_string(std::string_view type)
+    {
+      if (type == "grass") return ppp::tile_type::grass;
+      if (type == "path") return ppp::tile_type::path;
+      if (type == "water") return ppp::tile_type::water;
+      if (type == "begin") return ppp::tile_type::begin;
+      if (type == "end") return ppp::tile_type::end;
+
+      return (tile_type)-1;
+    }
+
+    glm::vec4 color_from_tile_type(tile_type type)
+    {
+      switch (type)
+      {
+      case ppp::tile_type::grass:  return glm::vec4(0, 255, 0, 255);
+      case ppp::tile_type::path:   return glm::vec4(245, 147, 66, 255);
+      case ppp::tile_type::water:  return glm::vec4(66, 194, 245, 255);
+      case ppp::tile_type::begin:  return glm::vec4(224, 66, 245, 255);
+      case ppp::tile_type::end:    return glm::vec4(0, 0, 0, 0);
+      default:    return glm::vec4();
+      }
+    }
+
     //-------------------------------------------------------------------------
     flecs::entity create_tile(sierra_layer* layer, s32 x, s32 z, const std::string& type, const level_builder_config& config)
     {
@@ -32,14 +56,14 @@ namespace ppp
         f32 final_z = ((z * config.tile_size) + config.zoffset) + (z * config.tile_spacing);
 
         glm::vec3 center = { final_x, final_y, final_z };
-
+        tile_type tile_type = tile_type_from_string(type);
         e.set<ecs::transform_component>({ center, {1, 1, 1}, glm::quat(1, 0, 0, 0) });
         e.set<ecs::shape_component>({ [=]() { box((f32)config.tile_size); } });
-        e.set<ecs::fill_color_component>({ {255, 0, 0, 255}, {0, 255, 0, 255} });
+        e.set<ecs::fill_color_component>({ color_from_tile_type(tile_type), {255, 255, 255, 255}});
 
         f32 half_extent = config.tile_size * 0.5f;
         e.set<ecs::bounding_box_component>({ glm::vec3(-half_extent), glm::vec3(half_extent) });
-
+        e.set<ecs::tile_component>({ tile_type });
         e.add<ecs::pickable_component>();
 
         return e;

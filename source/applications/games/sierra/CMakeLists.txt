@@ -33,14 +33,22 @@ target_sources(sierra PRIVATE
     #ecs-components
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_placement_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bounding_box_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bullet_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bullet_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_orbit_control_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_enemy_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_enemy_goal_trigger_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_enemy_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_model_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_transform_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_shape_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_fill_color_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_pickable_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_picked_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_tile_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_tower_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_tower_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_components.h
     #ecs-systems
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_placement_system.cpp
@@ -54,6 +62,19 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_picking_system.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_picking_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_systems.h
+    #grid
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-grid.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-grid-cell.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-grid-cell.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-grid-drawer.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-grid-iterator.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-grid-iterator.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-path-node.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-path-node.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-path-node-costs.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-path-resolver.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/a-star-path-tracer.h
     #layers
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer.cpp

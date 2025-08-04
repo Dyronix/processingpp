@@ -3,39 +3,39 @@
   "tile-size" : 50,
   "matrix": [
     [
-      { "x": 0, "z": 0, "type": "grass" },
+      { "x": 0, "z": 0, "type": "begin" },
       { "x": 1, "z": 0, "type": "grass" },
       { "x": 2, "z": 0, "type": "grass" },
       { "x": 3, "z": 0, "type": "grass" },
       { "x": 4, "z": 0, "type": "grass" }
     ],
     [
-      { "x": 0, "z": 1, "type": "grass" },
+      { "x": 0, "z": 1, "type": "path" },
       { "x": 1, "z": 1, "type": "water" },
       { "x": 2, "z": 1, "type": "water" },
       { "x": 3, "z": 1, "type": "grass" },
       { "x": 4, "z": 1, "type": "grass" }
     ],
     [
-      { "x": 0, "z": 2, "type": "grass" },
+      { "x": 0, "z": 2, "type": "path" },
       { "x": 1, "z": 2, "type": "grass" },
-      { "x": 2, "z": 2, "type": "rock" },
+      { "x": 2, "z": 2, "type": "grass" },
       { "x": 3, "z": 2, "type": "grass" },
       { "x": 4, "z": 2, "type": "grass" }
     ],
     [
-      { "x": 0, "z": 3, "type": "grass" },
+      { "x": 0, "z": 3, "type": "path" },
       { "x": 1, "z": 3, "type": "grass" },
       { "x": 2, "z": 3, "type": "grass" },
-      { "x": 3, "z": 3, "type": "tree" },
+      { "x": 3, "z": 3, "type": "grass" },
       { "x": 4, "z": 3, "type": "grass" }
     ],
     [
-      { "x": 0, "z": 4, "type": "grass" },
+      { "x": 0, "z": 4, "type": "end" },
       { "x": 1, "z": 4, "type": "grass" },
       { "x": 2, "z": 4, "type": "grass" },
       { "x": 3, "z": 4, "type": "grass" },
-      { "x": 4, "z": 4, "type": "goal" }
+      { "x": 4, "z": 4, "type": "grass" }
     ]
   ]
 }
