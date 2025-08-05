@@ -30,6 +30,10 @@ namespace ppp
         bool initialize();
         void terminate();
 
+        s32 reserved_white_slot();
+        s32 reserved_black_slot();
+        s32 resvered_slots();
+
         bool has_image(string::string_id file_path);
         bool has_image(s32 id);
 
