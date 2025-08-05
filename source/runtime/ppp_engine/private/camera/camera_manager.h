@@ -17,6 +17,7 @@ namespace ppp
             string::string_id perspective();
             string::string_id orthographic();
             string::string_id font();
+            string::string_id ui();
         }
 
         struct camera
