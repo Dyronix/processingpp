@@ -13,6 +13,7 @@
 #include "render/helpers/render_storage_buffer_ops.h"
 
 #include "resources/material_pool.h"
+#include "resources/texture_pool.h"
 
 #include "util/types.h"
 #include "util/log.h"
@@ -356,20 +357,28 @@ namespace ppp
             {
                 // For more info on why alignment is 4 see:
                 // https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)
-                const s32 alignment = 4;
-                const s32 sampler_count = static_cast<s32>(material->samplers().size());
+                s32 alignment = 4;
+                s32 sampler_count = static_cast<s32>(material->samplers().size());
 
                 offset = memory::align_up(offset, alignment); // Align for `int`.
 
-                if (material->has_textures())
+                if (material->has_textures() && sampler_count > 0)
                 {
                     const s32* samplers = material->samplers().data();
                     std::memcpy(buffer + offset, samplers, sampler_count * sizeof(s32));
                     offset += sampler_count * sizeof(s32);
                 }
+                else
+                {
+                    // no textures -> write exactly one default (white) slot
+                    const s32 default_slot = texture_pool::reserved_white_slot();
+                    std::memcpy(buffer + offset, &default_slot, sizeof(default_slot));
+                    offset += sizeof(default_slot);
+                    sampler_count = 1;
+                }
 
                 // Pad remaining samplers with -1
-                const s32 padding_value = -1;
+                const s32 padding_value = texture_pool::reserved_white_slot();
                 const u64 padding_size = (max_textures() - sampler_count);
 
                 if (padding_size > 0)
