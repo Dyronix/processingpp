@@ -1,4 +1,5 @@
 #include "resources/material.h"
+#include "resources/texture_pool.h"
 
 #include "util/log.h"
 
@@ -12,7 +13,7 @@ namespace ppp
             : m_shader_tag(shader_tag)
             , m_ambient_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
             , m_diffuse_color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
-            , m_texture_registry(render::max_textures())
+            , m_texture_registry(render::max_textures() - texture_pool::resvered_slots())
         {}
 
         //-------------------------------------------------------------------------
