@@ -125,6 +125,7 @@ namespace ppp
             {
             case shading_blending::OPAQUE: return render::shading_blending_type::OPAQUE;
             case shading_blending::TRANSPARENT: return render::shading_blending_type::TRANSPARENT;
+            case shading_blending::UI: return render::shading_blending_type::UI;
             }
 
             log::error("Unknown shading blending!");

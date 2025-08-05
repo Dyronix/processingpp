@@ -85,7 +85,8 @@ namespace ppp
     enum class shading_blending : std::uint8_t
     {
         OPAQUE,         
-        TRANSPARENT     
+        TRANSPARENT,
+        UI
     };
 
     /**
