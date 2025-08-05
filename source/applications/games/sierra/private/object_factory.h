@@ -1,5 +1,8 @@
 #include "flecs.h"
 
+#include "glm/glm.hpp"
+#include "util/types.h"
+
 namespace ppp
 {
 	class object_factory

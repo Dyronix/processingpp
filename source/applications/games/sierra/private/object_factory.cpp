@@ -15,7 +15,8 @@ namespace ppp
 	flecs::entity object_factory::create_tower()
 	{
     static s32 tower_id = 0;
-    auto e_tower = m_world->entity("tower_" + std::to_string(tower_id++));
+    std::string tower_tag = "tower_" + std::to_string(tower_id++);
+    auto e_tower = m_world->entity(tower_tag.c_str());
 
     e_tower.set<ecs::transform_component>({
         {-200, 0, 0},                       // position 
@@ -37,6 +38,8 @@ namespace ppp
       });
     e_tower.set<ecs::tower_component>({ 2.0f, 1000.0f });
     e_tower.set<ecs::tower_state>({ 0.0f });
+
+    return e_tower;
 	}
   flecs::entity object_factory::create_enemy(const glm::vec3& pos, const f32 radius, const std::vector<flecs::entity>& path)
   {
@@ -61,6 +64,8 @@ namespace ppp
       });
     e_enemy.set<ecs::enemy_component>({ radius * 0.5f, 50.0f });
     e_enemy.set<ecs::enemy_state>({ 100, &path });
+
+    return e_enemy;
   }
   flecs::entity object_factory::create_bullet(const glm::vec3& pos, f32 radius, const glm::vec3& targetPos)
   {
@@ -85,5 +90,7 @@ namespace ppp
       });
     e_bullet.set<ecs::bullet_component>({ radius, 2000.0f, 20 });
     e_bullet.set<ecs::bullet_state>({ glm::normalize(targetPos - pos) });
+
+    return e_bullet;
   }
 }
