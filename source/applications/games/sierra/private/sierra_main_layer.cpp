@@ -24,6 +24,7 @@ namespace ppp
     sierra_main_layer::sierra_main_layer(sierra_engine_context* ctx)
         :sierra_layer(ctx, "main"_sid, 0, false)
       , _current_time(0.0f)
+      , m_object_factory(context()->scene_manager.active_scene()->world())
     {}
 
     //-------------------------------------------------------------------------
@@ -84,100 +85,6 @@ namespace ppp
           600.0f  /*.max_zoom */
         });
     }
-    void sierra_main_layer::create_enemy(const glm::vec3& pos, const std::vector<flecs::entity>* path)
-    {
-      static int enemy_counter = 0;
-      std::string enemy_tag = "enemy_" + std::to_string(enemy_counter++);
-      auto e_enemy = create_entity(enemy_tag.c_str());
-
-      e_enemy.set<ecs::transform_component>({
-          pos,                          /*.position */
-          {0.5f, 0.5f, 0.5f },                 /*.scale */
-          glm::quat(1.0f, 0.0f, 0.0f, 0.0f)   /*.rotation */
-        });
-      e_enemy.set<ecs::shape_component>({
-          [this]() { ppp::sphere(_enemy_radius); } /*.draw_fn */
-        });
-      e_enemy.set<ecs::fill_color_component>({
-        {255,    /*.red */
-          0,      /*.green */
-          0,      /*.blue */
-          255     /*.alpha */
-          }
-        });
-      e_enemy.set<ecs::enemy_component>({ _enemy_radius * 0.5f, 50.0f });
-      e_enemy.set<ecs::enemy_state>({ 100, path });
-    }
-    void sierra_main_layer::create_tower()
-    {
-      auto e_tower = create_entity("tower");
-
-      // Tower with bullet_component
-      // ------------------------------------------------------------------------------------------------------------------------------------
-      e_tower.set<ecs::transform_component>({
-          {-200, 0, 0},                          /*.position */
-          {1.0f, 2.0f, 1.0f},                 /*.scale */
-          glm::quat(1.0f, 0.0f, 0.0f, 0.0f)   /*.rotation */
-        });
-      e_tower.set<ecs::shape_component>({
-          []() { ppp::box(50.0f, 50.0f, 50.0f); } /*.draw_fn */
-        });
-      e_tower.set<ecs::fill_color_component>({
-        {
-          0,      /*.red */
-          0,      /*.green */
-          255,    /*.blue */
-          255     /*.alpha */
-        }
-        });
-      e_tower.set<ecs::tower_component>({ 2.0f, 1000.0f });
-      e_tower.set<ecs::tower_state>({ 0.0f });
-    }
-    void sierra_main_layer::create_bullet(const glm::vec3& pos, const glm::vec3 targetPos)
-    {
-			static int bullet_counter = 0;
-			std::string bullet_tag = "bullet_component_" + std::to_string(bullet_counter++);
-      auto e_bullet = create_entity(bullet_tag.c_str());
-
-      e_bullet.set<ecs::transform_component>({
-          pos,                          /*.position */
-          {0.1f, 0.1f, 0.1f },                 /*.scale */
-          glm::quat(1.0f, 0.0f, 0.0f, 0.0f)   /*.rotation */
-        });
-      e_bullet.set<ecs::shape_component>({
-          []() { ppp::sphere(50.0f); } /*.draw_fn */
-        });
-      e_bullet.set<ecs::fill_color_component>({
-        {255,    /*.red */
-          255,      /*.green */
-          255,      /*.blue */
-          255     /*.alpha */
-          }
-        });
-      e_bullet.set<ecs::bullet_component>({ _bullet_radius, 2000.0f, 20 });
-      e_bullet.set<ecs::bullet_state>({ glm::normalize(targetPos - pos) });
-    }
-    void sierra_main_layer::create_trigger()
-    {
-      auto e_trigger = create_entity("trigger");
-      e_trigger.set<ecs::transform_component>({
-          {200, 0, 0},                          /*.position */
-          {0.5f, 0.5f, 0.5f },                 /*.scale */
-          glm::quat(1.0f, 0.0f, 0.0f, 0.0f)   /*.rotation */
-        });
-      e_trigger.set<ecs::shape_component>({
-          []() { ppp::box(75.0f, 75.0f, 75.0f); } /*.draw_fn */
-        });
-      e_trigger.set<ecs::fill_color_component>({
-        {
-          255,    /*.red */
-          255,      /*.green */
-          255,      /*.blue */
-          0     /*.alpha */
-          }
-        });
-      e_trigger.add<ecs::enemy_goal_trigger_component>();
-    }
 
     void sierra_main_layer::spawn_enemies()
     {
@@ -188,7 +95,7 @@ namespace ppp
           {
             ecs::transform_component transform_comp = entity.get<ecs::transform_component>();
             transform_comp.position.y += 50;
-            create_enemy(transform_comp.position, &m_start_to_path.at(entity.id()));
+            m_object_factory.create_enemy(transform_comp.position, _enemy_radius, m_start_to_path.at(entity.id()));
           });
     }
 
@@ -330,7 +237,7 @@ namespace ppp
         ppp::log::info("Shooting!");
         ts.last_fire_time = _current_time;
         ecs::transform_component target_transform = ts.target.get<ecs::transform_component>();
-        create_bullet(t.position, target_transform.position);
+        m_object_factory.create_bullet(t.position, _bullet_radius, target_transform.position);
       }
     }
     void sierra_main_layer::tower_select_target(const flecs::world& world, const ecs::transform_component& t, const ecs::tower_component& tc, ecs::tower_state& ts)
@@ -382,62 +289,6 @@ namespace ppp
             const ecs::begin_component& begin_component = beginEntity.get<ecs::begin_component>();
             std::vector<flecs::entity> path_to_end = resolver.resolve(beginEntity, begin_component.target);
             m_start_to_path[beginEntity.id()] = std::move(path_to_end);
-
-
-            //std::vector<flecs::entity> path_to_end;
-
-            //std::vector<flecs::entity> open_nodes;
-
-            //// check if current node is the destination node
-
-            //// loop over the neighbours of the current node and calculate the costs
-
-            //// g cost: cost it takes to go from the current node to the neighbour
-            //// h cost: cost it takes to go from the neighbours node to the end node
-
-            //auto find_next_cell = [&](flecs::entity cell)
-            //  {
-            //    const grid_cell_component& tile = cell.get<grid_cell_component>();
-            //    for (flecs::entity neighbour : tile.neighbours)
-            //    {
-            //      if (std::find(path_to_end.cbegin(), path_to_end.cend(), neighbour) != path_to_end.cend())
-            //      {
-            //        continue;
-            //      }
-
-            //      const grid_cell_component& neightbour_tile = neighbour.get<grid_cell_component>();
-            //      if (neighbour.has<ecs::path_component>())
-            //      {
-            //        return neighbour;
-            //      }
-            //      if (neighbour.has<ecs::end_component>())
-            //      {
-            //        return neighbour;
-            //      }
-            //    }
-
-            //    return flecs::entity::null();
-            //  };
-
-            //const grid_cell_component& begin_cell = beginEntity.get<grid_cell_component>();
-            //const grid_cell_component& target_cell = begin_component.target.get<grid_cell_component>();
-
-            //flecs::entity current_cell = beginEntity;
-            //while (current_cell.is_valid() && !current_cell.has<ecs::end_component>())
-            //{
-            //  path_to_end.push_back(current_cell);
-            //  current_cell = find_next_cell(current_cell);
-            //}
-            //path_to_end.push_back(current_cell);
-
-            for (flecs::entity path : path_to_end)
-            {
-              const grid_cell_component& cell = path.get<grid_cell_component>();
-
-              log::info("path: ({}, {})", cell.get_world_location().x, cell.get_world_location().y);
-            }
-
-            //m_start_to_path[beginEntity.id()] = std::move(path_to_end);
           });
     }
 
