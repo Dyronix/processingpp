@@ -36,6 +36,8 @@ namespace ppp
         enable_wireframe_mode(true);
         enable_solid_mode(true);
 
+        rect_mode(shape_mode_type::CENTER);
+
         wireframe_color(0.0f, 0.0f, 0.0f);
         wireframe_linewidth(2.0f);
 

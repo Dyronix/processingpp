@@ -22,7 +22,6 @@ namespace ppp
         void on_enable() override;
 
     private:
-        void create_camera();
         void create_button(const char* tag, const glm::vec2& position, const glm::vec4& color);
     };
 }
