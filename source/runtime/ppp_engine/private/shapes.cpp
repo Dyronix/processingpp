@@ -187,6 +187,12 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
+    geometry_id circle(float r, int detail)
+    {
+        return ellipse(0, 0, r, r, detail);
+    }
+
+    //-------------------------------------------------------------------------
     geometry_id ellipse(float x, float y, float w, float h, int detail)
     {
         geometry::geometry* geom = geometry::make_ellipse(detail);
@@ -234,6 +240,12 @@ namespace ppp
         }
 
         return geom->id();
+    }
+
+    //-------------------------------------------------------------------------
+    geometry_id ellipse(float w, float h, int detail)
+    {
+        return ellipse(0, 0, w, h, detail);
     }
 
     //-------------------------------------------------------------------------
@@ -344,9 +356,21 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
+    geometry_id rect(float w, float h)
+    {
+        return rect(0, 0, w, h);
+    }
+
+    //-------------------------------------------------------------------------
     geometry_id square(float x, float y, float s)
     {
         return rect(x, y, s, s);
+    }
+
+    //-------------------------------------------------------------------------
+    geometry_id square(float s)
+    {
+        return rect(0, 0, s, s);
     }
 
     //-------------------------------------------------------------------------
