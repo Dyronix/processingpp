@@ -20,5 +20,9 @@ namespace ppp
     protected:
         void on_attached() override;
         void on_enable() override;
+
+    private:
+        void create_camera();
+        void create_button(const char* tag, const glm::vec3& position, const glm::vec4& color);
     };
 }
