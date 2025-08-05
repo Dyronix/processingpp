@@ -9,12 +9,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         namespace unlit
         {
-            struct color    {};
-            struct texture  {};
-            struct font     {};
-            struct normal   {};
-            struct shadow   {};
-            struct predepth {};
+            struct color        {};
+            struct texture      {};
+            struct ui_color     {};
+            struct ui_texture   {};
+            struct font         {};
+            struct normal       {};
+            struct shadow       {};
+            struct predepth     {};
         }
         //-------------------------------------------------------------------------
         namespace lit
@@ -55,6 +57,36 @@ namespace ppp
             static string::string_id instanced()
             {
                 static string::string_id id = string::store_sid("instance_unlit_texture");
+                return id;
+            }
+        };
+        //-------------------------------------------------------------------------
+        template <>
+        struct tag<unlit::ui_color>
+        {
+            static string::string_id batched()
+            {
+                static string::string_id id = string::store_sid("unlit_ui_color");
+                return id;
+            }
+            static string::string_id instanced()
+            {
+                static string::string_id id = string::store_sid("instance_unlit_ui_color");
+                return id;
+            }
+        };
+        //-------------------------------------------------------------------------
+        template <>
+        struct tag<unlit::ui_texture>
+        {
+            static string::string_id batched()
+            {
+                static string::string_id id = string::store_sid("unlit_ui_texture");
+                return id;
+            }
+            static string::string_id instanced()
+            {
+                static string::string_id id = string::store_sid("instance_unlit_ui_texture");
                 return id;
             }
         };
@@ -169,6 +201,8 @@ namespace ppp
             {
                 using color = tag<color>;
                 using texture = tag<texture>;
+                using ui_color = tag<ui_color>;
+                using ui_texture = tag<ui_texture>;
                 using font = tag<font>;
                 using normal = tag<normal>;
                 using shadow = tag<shadow>;

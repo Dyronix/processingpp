@@ -37,6 +37,24 @@ namespace ppp
                     return string::restore_sid(sid);
                 }
                 //-------------------------------------------------------------------------
+                std::string_view ui_color()
+                {
+                    auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
+                        ? render::unlit::tags::ui_color::batched()
+                        : render::unlit::tags::ui_color::instanced();
+
+                    return string::restore_sid(sid);
+                }
+                //-------------------------------------------------------------------------
+                std::string_view ui_texture()
+                {
+                    auto sid = render::draw_mode() == render::render_draw_mode::BATCHED
+                        ? render::unlit::tags::ui_texture::batched()
+                        : render::unlit::tags::ui_texture::instanced();
+
+                    return string::restore_sid(sid);
+                }
+                //-------------------------------------------------------------------------
                 std::string_view font()
                 {
                     auto sid = render::unlit::tags::font::batched();
