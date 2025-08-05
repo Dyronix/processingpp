@@ -73,18 +73,23 @@ namespace ppp
 
     /**
      * @brief Draw a circle.
-     * @param x Center X-coordinate.
-     * @param y Center Y-coordinate.
-     * @param r Radius.
-     * @param detail Number of segments (default: 25).
-     * @return ID of generated geometry.
      */
     geometry_id circle(float x, float y, float r, int detail = 25);
+
+    /**
+    * @brief Draw a circle.
+    */
+    geometry_id circle(float r, int detail = 25);
 
     /**
      * @brief Draw an ellipse.
      */
     geometry_id ellipse(float x, float y, float w, float h, int detail = 25);
+
+    /**
+     * @brief Draw an ellipse.
+     */
+    geometry_id ellipse(float w, float h, int detail = 25);
 
     /**
      * @brief Draw a line between two points.
@@ -98,14 +103,23 @@ namespace ppp
 
     /**
      * @brief Draw a rectangle.
-     * @return ID of generated geometry.
      */
     geometry_id rect(float x, float y, float w, float h);
+
+     /**
+     * @brief Draw a rectangle.
+     */
+    geometry_id rect(float w, float h);
 
     /**
      * @brief Draw a square.
      */
     geometry_id square(float x, float y, float s);
+
+    /**
+     * @brief Draw a square.
+     */
+    geometry_id square(float s);
 
     /**
      * @brief Draw a triangle.
