@@ -65,12 +65,19 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_systems.h
+    #grid
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/grid.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/grid_cell.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/grid.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/grid_cell.cpp
     #layers
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer_stack.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer_stack.cpp
 
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/astar_path_resolver.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/astar_path_resolver.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_engine_context.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_player_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_player_state.cpp
