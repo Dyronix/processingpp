@@ -65,6 +65,8 @@ namespace ppp
 
         glm::vec3 half_extents = glm::vec3(0.8f * 50.0f, 2.0f * 50.0f, 0.8f * 50.0f) * 0.5f;
         e.set<ecs::bounding_box_component>({ -half_extents,half_extents });
+        e.set<ecs::tower_component>({ 2.0f, 1000.0f });
+        e.set<ecs::tower_state>({ 0.0f });
 
         return e;
     }
