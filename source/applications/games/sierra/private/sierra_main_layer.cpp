@@ -1,12 +1,14 @@
 #include "sierra_main_layer.h"
 
 #include "ecs/systems/ecs_systems.h"
+
 #include "ecs/ecs_pipeline_tags.h"
 
 #include "shapes.h"
 #include "environment.h"
 #include "util/log.h"
 #include "json.h"
+#include "camera.h"
 
 #include <optional>
 #include <sstream>
@@ -29,7 +31,7 @@ namespace ppp
 
         init_systems();
     }
-
+    
     void sierra_main_layer::create_camera()
     {
       auto e_camera = create_entity("orbit_camera");
@@ -39,14 +41,16 @@ namespace ppp
           {1.0f, 1.0f, 1.0f},                 /*.scale */
           glm::quat(1.0f, 0.0f, 0.0f, 0.0f)   /*.rotation */
         });
-      e_camera.set<ecs::camera_component>({
-          "",                                         /*.tag */
-          ecs::projection_type::PERSPECTIVE,          /*.type */
-          55.0f,                                      /*.fovy */
-          (f32)window_width() / (f32)window_height(), /*.aspect_ratio */
-          0.1f,                                       /*.near_clip */
-          2000.0f                                     /*.far_clip */
-        });
+
+      ecs::camera_component camera_comp;
+      camera_comp.tag = camera::tags::perspective();
+      camera_comp.type = ecs::projection_type::PERSPECTIVE;
+      camera_comp.fovy = 55.0f;
+      camera_comp.aspect_ratio = (f32)window_width() / (f32)window_height();
+      camera_comp.near_clip = 0.1f;
+      camera_comp.far_clip = 2000.0f;
+
+      e_camera.set<ecs::camera_component>(camera_comp);
       e_camera.set<ecs::orbit_control_component>({
           200.0f, /*.zoom_sensitivity */
           0.5f,   /*.panning_sensitivity */
@@ -54,6 +58,7 @@ namespace ppp
           1.0f,   /*.min_zoom */
           600.0f  /*.max_zoom */
         });
+      e_camera.add<ecs::active_camera_component>();
     }
     void sierra_main_layer::create_enemy()
     {
