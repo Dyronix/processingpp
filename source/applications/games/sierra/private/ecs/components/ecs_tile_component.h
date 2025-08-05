@@ -17,5 +17,11 @@ namespace ppp
 			{
 				tile_type type;
 			};
+
+      struct grass_component {};
+      struct path_component {};
+      struct water_component {};
+      struct begin_component { flecs::entity target; };
+      struct end_component {};
 		}
 }
