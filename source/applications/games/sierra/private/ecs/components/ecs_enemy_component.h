@@ -9,6 +9,7 @@ namespace ppp
 		struct enemy_component
 		{
 			f32 radius;
+			f32 speed;
 		};
 	}
 }
