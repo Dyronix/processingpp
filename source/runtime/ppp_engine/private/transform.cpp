@@ -104,4 +104,19 @@ namespace ppp
             ppp::scale(scale);
         }
     }
+
+    void transform(const vec2& position, float rotation, const vec2& scale)
+    {
+        if (position.length() != 0.0f)
+        {
+            ppp::translate(position);
+        }
+
+        ppp::rotate(rotation);
+
+        if (scale.length() != 0.0f)
+        {
+            ppp::scale(scale);
+        }
+    }
 }

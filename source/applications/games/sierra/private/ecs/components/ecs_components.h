@@ -1,16 +1,19 @@
 #pragma once
 
 #include "ecs/components/ecs_transform_component.h"
+#include "ecs/components/ecs_rect_transform_component.h"
 #include "ecs/components/ecs_shape_component.h"
 #include "ecs/components/ecs_fill_color_component.h"
 #include "ecs/components/ecs_model_component.h"
 #include "ecs/components/ecs_camera_component.h"
 #include "ecs/components/ecs_bounding_box_component.h"
+#include "ecs/components/ecs_bounding_box_2d_component.h"
 #include "ecs/components/ecs_pickable_component.h"
 #include "ecs/components/ecs_picked_component.h"
 #include "ecs/components/ecs_camera_orbit_control_component.h"
 #include "ecs/components/ecs_render_properties_component.h"
 #include "ecs/components/ecs_material_component.h"
+#include "ecs/components/ecs_sorting_layer_component.h"
 
 #include "ecs/components/ecs_bullet_component.h"
 #include "ecs/components/ecs_bullet_state.h"

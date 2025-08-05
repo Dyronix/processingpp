@@ -29,6 +29,12 @@ namespace ppp
             std::string_view orthographic();
 
             /**
+             * @brief Retrieve the identifier for the ui-rendering camera.
+             * @return String tag for ui camera.
+             */
+            std::string_view ui();
+
+            /**
              * @brief Retrieve the identifier for the font-rendering camera.
              * @return String tag for font camera.
              */

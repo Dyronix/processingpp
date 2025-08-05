@@ -34,6 +34,7 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_placement_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_placement_template_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bounding_box_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bounding_box_2d_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bullet_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bullet_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_render_properties_component.h
@@ -44,6 +45,7 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_enemy_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_model_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_transform_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_rect_transform_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_shape_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_fill_color_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_pickable_component.h
@@ -62,8 +64,6 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_orbit_camera_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.h
-    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_picking_system.cpp
-    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_picking_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_systems.h
     #grid
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/grid.h

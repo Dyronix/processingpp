@@ -25,6 +25,12 @@ namespace ppp
             }
 
             //-------------------------------------------------------------------------
+            std::string_view ui()
+            {
+                return string::restore_sid(camera_manager::tags::ui());
+            }
+
+            //-------------------------------------------------------------------------
             std::string_view font()
             {
                 return string::restore_sid(camera_manager::tags::font());
