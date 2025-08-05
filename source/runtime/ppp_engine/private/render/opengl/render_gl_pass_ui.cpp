@@ -91,9 +91,17 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        ui_pass::ui_pass(const tag<unlit::font> shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags)
-            :geometry_render_pass("ui"_sid, decltype(shader_tag)::batched(), framebuffer_tag, framebuffer_flags, draw_mode::BATCHED)
-        {}
+        static void push_all_shape_dependent_uniforms(resources::shader_program shader_program, const glm::mat4& vp)
+        {
+            shaders::push_uniform(shader_program->id(), string::store_sid("u_wireframe"), 0);
+            shaders::push_uniform(shader_program->id(), string::store_sid("u_view_proj"), vp);
+        }
+
+        //-------------------------------------------------------------------------
+        ui_pass::ui_pass(string::string_id shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+            :geometry_render_pass("ui"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
+        {
+        }
         //-------------------------------------------------------------------------
         ui_pass::~ui_pass() = default;
 
@@ -110,7 +118,6 @@ namespace ppp
             opengl::api::instance().cull_face(GL_BACK);
 
             opengl::api::instance().disable(GL_DEPTH_TEST);
-            opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
 
             opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_FILL);
@@ -119,50 +126,80 @@ namespace ppp
             opengl::api::instance().use_program(shader_program()->id());
 
             // Apply shape uniforms
-            const glm::mat4& cam_active_p = context.camera_context->mat_proj_active;
-            const glm::mat4& cam_active_v = context.camera_context->mat_view_active;
+            const glm::mat4& cam_active_p = camera_manager::get_proj(camera_manager::tags::ui());
+            const glm::mat4& cam_active_v = camera_manager::get_view(camera_manager::tags::ui());
 
             const glm::mat4 cam_active_vp = cam_active_p * cam_active_v;
 
             push_all_shape_dependent_uniforms(shader_program(), cam_active_vp);
 
+            bool batched_shading = batch_rendering_enabled();
+
             const auto& samplers = material()->samplers();
             const auto& textures = material()->textures();
 
-            push_batch_uniforms(context.font_batch_data, shader_program(), samplers, textures);
+            if (batched_shading)
+            {
+                for (auto& [key, batch] : *context.ui_batch_data)
+                {
+                    if (key.shader_tag == shader_tag())
+                    {
+                        push_batch_uniforms(batch.get(), shader_program(), samplers, textures);
+                    }
+                }
+            }
+            else
+            {
+                for (auto& [key, instance] : *context.ui_instance_data)
+                {
+                    if (key.shader_tag == shader_tag())
+                    {
+                        push_instance_uniforms(instance.get(), shader_program(), samplers, textures);
+                    }
+                }
+            }
         }
 
         //-------------------------------------------------------------------------
         void ui_pass::render(const render_context& context)
         {
-            shaders::apply_uniforms(shader_program()->id());
+            bool batched_shading = batch_rendering_enabled();
 
-            batch_renderer::render(batch_render_strategy(), context.font_batch_data);
+            if (batched_shading)
+            {
+                shaders::apply_uniforms(shader_program()->id());
+
+                for (auto& [key, batch] : *context.ui_batch_data)
+                {
+                    if (key.shader_tag == shader_tag())
+                    {
+                        batch_renderer::render(batch_render_strategy(), batch.get());
+                    }
+                }
+            }
+            else
+            {
+                shaders::apply_uniforms(shader_program()->id());
+
+                for (auto& [key, instance] : *context.ui_instance_data)
+                {
+                    if (key.shader_tag == shader_tag())
+                    {
+                        instance_renderer::render(instance_render_strategy(), instance.get());
+                    }
+                }
+            }
         }
 
         //-------------------------------------------------------------------------
         void ui_pass::end_frame(const render_context& context)
         {
             // Reset state
-            opengl::api::instance().disable(GL_BLEND);
             opengl::api::instance().depth_mask(GL_TRUE);
             opengl::api::instance().use_program(0);
 
             // Unbind pass framebuffer
             framebuffer()->unbind();
-        }
-
-        //-------------------------------------------------------------------------
-        bool ui_pass::should_render(const render_context& context) const
-        {
-            bool can_draw = false;
-
-            if (drawing_mode() == draw_mode::BATCHED || drawing_mode() == draw_mode::AUTO)
-            {
-                can_draw |= context.font_batch_data != nullptr && context.font_batch_data->empty() == false;
-            }
-
-            return can_draw;
         }
     }
 }
