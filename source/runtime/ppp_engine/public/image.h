@@ -89,17 +89,6 @@ namespace ppp
      */
     void draw(image_id id, float x, float y, float w, float h);
 
-    /** @brief Disable any active tint. */
-    void no_tint();
-    /** @brief Apply a grayscale tint. */
-    void tint(int g);
-    /** @brief Apply a grayscale tint with alpha. */
-    void tint(int g, int a);
-    /** @brief Apply RGBA tint color. */
-    void tint(int r, int g, int b, int a);
-    /** @brief Apply tint using a color struct. */
-    void tint(const color& c);
-
     /**
      * @brief Read pixels from the canvas into an array.
      */
