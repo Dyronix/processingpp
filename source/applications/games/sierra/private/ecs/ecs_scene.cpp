@@ -56,11 +56,22 @@ namespace ppp
                     e.set<material_component>({ material::tags::unlit::color(), true, true });
                 }
             });
+            // Add sorting layer component when a rect transform component is added
+            _world.observer<rect_transform_component>()
+                .event(flecs::OnAdd)
+                .each([](flecs::entity& e, rect_transform_component&)
+            {
+                if (!e.has<sorting_layer_component>())
+                {
+                    e.add<sorting_layer_component>();
+                }
+            });
 
             // init
             register_camera_init_system(_world);
             // draw
-            register_shape_render_system(_world);
+            register_shape_3d_render_system(_world);
+            register_shape_2d_render_system(_world);
             register_model_render_system(_world);
 
 #ifdef _DEBUG

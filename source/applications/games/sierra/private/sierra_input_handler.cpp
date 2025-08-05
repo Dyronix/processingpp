@@ -19,6 +19,7 @@ namespace ppp
             : istate(owning_layer)
         {
             _picking_query = owning_layer->create_query<const ecs::transform_component, const ecs::bounding_box_component, const ecs::pickable_component>();
+            _picking_ui_query = owning_layer->create_query<const ecs::rect_transform_component, const ecs::bounding_box_2d_component, const ecs::sorting_layer_component, const ecs::pickable_component>();
         }
 
         //-------------------------------------------------------------------------
@@ -42,13 +43,57 @@ namespace ppp
         //-------------------------------------------------------------------------
         void handle_left_mouse_button_click()
         {
-            ray r = screen_to_world(mouse_x(), mouse_y(), render::scissor_rect()->width, render::scissor_rect()->height);
+            int x = mouse_x();
+            int y = mouse_y();
 
-            flecs::entity closest_entity;
-            f32 closest_t = std::numeric_limits<f32>::max();
+            bool picked_entity = false;
 
-            if (_picking_query)
+            if (_picking_ui_query && !picked_entity)
             {
+                flecs::entity closest_entity;
+                s32 closest_t = std::numeric_limits<s32>::min();
+
+                std::vector<flecs::entity> pick;
+                std::vector<flecs::entity> unpick;
+
+                _picking_ui_query.each([&](flecs::entity& e, const ecs::rect_transform_component& transform, const ecs::bounding_box_2d_component& box, const ecs::sorting_layer_component& sorting_layer, const ecs::pickable_component& /*pickable*/)
+                {
+                    glm::vec2 aabb_min = transform.position + box.min;
+                    glm::vec2 aabb_max = transform.position + box.max;
+
+                    s32 t = sorting_layer.index;
+                    if (t > closest_t)
+                    {
+                        if (x > aabb_min.x && x < aabb_max.x && y > aabb_min.y && y < aabb_max.y)
+                        {
+                            closest_entity = e;
+                            closest_t = t;
+                        }
+                    }
+                });
+
+                if (closest_entity.is_valid())
+                {
+                    picked_entity = true;
+                    log::info("Picked entity: {}", closest_entity.name().c_str());
+                    if (closest_entity.has<ecs::picked_component>())
+                    {
+                        closest_entity.remove<ecs::picked_component>();
+                    }
+                    else
+                    {
+                        closest_entity.add<ecs::picked_component>();
+                    }
+                }
+            }
+
+            if (_picking_query && !picked_entity)
+            {
+                ray r = screen_to_world(x, y, render::scissor_rect()->width, render::scissor_rect()->height);
+
+                flecs::entity closest_entity;
+                f32 closest_t = std::numeric_limits<f32>::max();
+
                 std::vector<flecs::entity> pick;
                 std::vector<flecs::entity> unpick;
 
@@ -71,6 +116,8 @@ namespace ppp
 
                 if (closest_entity.is_valid())
                 {
+                    picked_entity = true;
+                    log::info("Picked entity: {}", closest_entity.name().c_str());
                     if (closest_entity.has<ecs::picked_component>())
                     {
                         closest_entity.remove<ecs::picked_component>();
@@ -91,6 +138,7 @@ namespace ppp
         }
 
         flecs::query<const class ecs::transform_component, const class ecs::bounding_box_component, const class ecs::pickable_component> _picking_query;
+        flecs::query<const class ecs::rect_transform_component, const class ecs::bounding_box_2d_component, const class ecs::sorting_layer_component, const class ecs::pickable_component> _picking_ui_query;
     };
     struct placement_state : public istate
     {

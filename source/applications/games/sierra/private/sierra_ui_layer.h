@@ -23,6 +23,6 @@ namespace ppp
 
     private:
         void create_camera();
-        void create_button(const char* tag, const glm::vec3& position, const glm::vec4& color);
+        void create_button(const char* tag, const glm::vec2& position, const glm::vec4& color);
     };
 }

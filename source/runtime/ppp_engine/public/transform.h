@@ -113,4 +113,16 @@ namespace ppp
      * @param scale Scale factors as a vec3.
      */
     void transform(const vec3& position, const quat& rotation, const vec3& scale);
+
+    /**
+     * @brief Applies a composite transformation consisting of translation, rotation, and scale.
+     * 
+     * This function translates the coordinate system by the given position, then rotates it
+     * around the axis-angle derived from the quaternion, and finally scales it.
+     *
+     * @param position Position vector to translate by.
+     * @param rotation Rotation as a float.
+     * @param scale Scale factors as a vec2.
+     */
+    void transform(const vec2& position, float rotation, const vec2& scale);
 }
