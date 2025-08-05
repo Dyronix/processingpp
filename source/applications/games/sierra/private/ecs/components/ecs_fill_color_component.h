@@ -10,8 +10,8 @@ namespace ppp
     {
         struct fill_color_component
         {
-            glm::ivec4 color;
-            glm::ivec4 highlight;
+            glm::ivec4 color{ 255,255,255,255 };
+            glm::ivec4 highlight{ 255,255,255,255 };
         };
     }
 }
