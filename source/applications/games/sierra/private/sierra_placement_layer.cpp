@@ -41,7 +41,7 @@ namespace ppp
             }
         }
     }
-
+    
     //-------------------------------------------------------------------------
     flecs::entity sierra_placement_layer::spawn_tower(const char* tag, const glm::vec3& position, bool visible)
     {

@@ -618,7 +618,6 @@ private:
           1.0f,   /*.min_zoom */
           600.0f  /*.max_zoom */
         });
-      e_camera.add<ecs::active_camera_component>();
     }
     void sierra_main_layer::create_enemy(const glm::vec3& pos, const std::vector<flecs::entity>* path)
     {
