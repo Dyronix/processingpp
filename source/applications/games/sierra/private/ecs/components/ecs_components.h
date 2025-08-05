@@ -10,6 +10,7 @@
 #include "ecs/components/ecs_picked_component.h"
 #include "ecs/components/ecs_camera_orbit_control_component.h"
 #include "ecs/components/ecs_render_properties_component.h"
+#include "ecs/components/ecs_material_component.h"
 
 #include "ecs/components/ecs_bullet_component.h"
 #include "ecs/components/ecs_bullet_state.h"

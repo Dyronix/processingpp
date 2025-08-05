@@ -71,12 +71,14 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_ui.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_unlit.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_unlit_wireframe.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_ui_wireframe.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_predepth.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_clear.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_shadow.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_forward_shading.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_blit.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_font.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_composite.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/render_pass_composite_factory.h
     ## render-opengl
@@ -113,9 +115,11 @@ target_sources(processing_engine PRIVATE
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_forward_shading.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_blit.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_ui.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_font.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_unlit.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_unlit_wireframe.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_predepth.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_pass_ui_wireframe.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_util.h
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_engine/private/render/opengl/render_gl_util.cpp
     ## render-helpers

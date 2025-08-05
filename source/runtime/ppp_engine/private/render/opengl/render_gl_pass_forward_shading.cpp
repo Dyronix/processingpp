@@ -240,7 +240,7 @@ namespace ppp
 
             if (batched_shading)
             {
-                for (auto& [key, batch] : *context.batch_data)
+                for (auto& [key, batch] : *context.opaque_batch_data)
                 {
                     if (key.shader_tag == shader_tag())
                     {
@@ -250,7 +250,7 @@ namespace ppp
             }
             else
             {
-                for (auto& [key, instance] : *context.instance_data)
+                for (auto& [key, instance] : *context.opaque_instance_data)
                 {
                     if (key.shader_tag == shader_tag())
                     {
@@ -269,7 +269,7 @@ namespace ppp
 
             if (batched_shading)
             {
-                for (auto& [key, batch] : *context.batch_data)
+                for (auto& [key, batch] : *context.opaque_batch_data)
                 {
                     if (key.shader_tag == shader_tag() &&
                         key.cast_shadows == false)
@@ -277,7 +277,7 @@ namespace ppp
                         batch_renderer::render(batch_render_strategy(), batch.get());
                     }
                 }
-                for (auto& [key, batch] : *context.batch_data)
+                for (auto& [key, batch] : *context.opaque_batch_data)
                 {
                     if (key.shader_tag == shader_tag() &&
                         key.cast_shadows == true)
@@ -288,7 +288,7 @@ namespace ppp
             }
             else
             {
-                for (auto& [key, instance] : *context.instance_data)
+                for (auto& [key, instance] : *context.opaque_instance_data)
                 {
                     if (key.shader_tag == shader_tag() &&
                         key.cast_shadows == false)
@@ -296,7 +296,7 @@ namespace ppp
                         instance_renderer::render(instance_render_strategy(), instance.get());
                     }
                 }
-                for (auto& [key, instance] : *context.instance_data)
+                for (auto& [key, instance] : *context.opaque_instance_data)
                 {
                     if (key.shader_tag == shader_tag() &&
                         key.cast_shadows == true)

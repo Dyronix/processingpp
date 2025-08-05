@@ -76,6 +76,8 @@ namespace ppp
             // unlit
             add_new_material(resources::material(render::unlit::tags::color::batched()));
             add_new_material(resources::material(render::unlit::tags::texture::batched()));
+            add_new_material(resources::material(render::unlit::tags::ui_color::batched()));
+            add_new_material(resources::material(render::unlit::tags::ui_texture::batched()));
             add_new_material(resources::material(render::unlit::tags::font::batched()));
             add_new_material(resources::material(render::unlit::tags::normal::batched()));
             add_new_material(resources::material(render::unlit::tags::shadow::batched()));
@@ -89,6 +91,8 @@ namespace ppp
             add_new_material(resources::material(render::unlit::tags::normal::instanced()));
             add_new_material(resources::material(render::unlit::tags::color::instanced()));
             add_new_material(resources::material(render::unlit::tags::texture::instanced()));
+            add_new_material(resources::material(render::unlit::tags::ui_color::instanced()));
+            add_new_material(resources::material(render::unlit::tags::ui_texture::instanced()));
             add_new_material(resources::material(render::unlit::tags::shadow::instanced()));
             add_new_material(resources::material(render::unlit::tags::predepth::instanced()));
             // lit

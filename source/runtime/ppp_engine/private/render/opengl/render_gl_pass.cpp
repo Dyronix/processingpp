@@ -58,12 +58,16 @@ namespace ppp
 
             if (m_draw_mode == draw_mode::BATCHED || m_draw_mode == draw_mode::AUTO)
             {
-                can_draw |= context.batch_data->empty() == false;
+                can_draw |= context.opaque_batch_data->empty() == false;
+                can_draw |= context.transparent_batch_data->empty() == false;
+                can_draw |= context.ui_batch_data->empty() == false;
             }
 
             if (m_draw_mode == draw_mode::INSTANCED || m_draw_mode == draw_mode::AUTO)
             {
-                can_draw |= context.instance_data->empty() == false;
+                can_draw |= context.opaque_instance_data->empty() == false;
+                can_draw |= context.transparent_instance_data->empty() == false;
+                can_draw |= context.ui_instance_data->empty() == false;
             }
 
             return can_draw;
@@ -107,7 +111,23 @@ namespace ppp
             }
 
             s32 draw_calls = 0;
-            for (auto& pair : *context.batch_data)
+            for (auto& pair : *context.opaque_batch_data)
+            {
+                const auto& key = pair.first;
+                if (key.shader_tag == shader_tag())
+                {
+                    draw_calls += pair.second->size();
+                }
+            }
+            for (auto& pair : *context.transparent_batch_data)
+            {
+                const auto& key = pair.first;
+                if (key.shader_tag == shader_tag())
+                {
+                    draw_calls += pair.second->size();
+                }
+            }
+            for (auto& pair : *context.ui_batch_data)
             {
                 const auto& key = pair.first;
                 if (key.shader_tag == shader_tag())
@@ -128,7 +148,23 @@ namespace ppp
             }
 
             s32 draw_calls = 0;
-            for (auto& pair : *context.instance_data)
+            for (auto& pair : *context.opaque_instance_data)
+            {
+                const auto& key = pair.first;
+                if (key.shader_tag == shader_tag())
+                {
+                    draw_calls += pair.second->size();
+                }
+            }
+            for (auto& pair : *context.transparent_instance_data)
+            {
+                const auto& key = pair.first;
+                if (key.shader_tag == shader_tag())
+                {
+                    draw_calls += pair.second->size();
+                }
+            }
+            for (auto& pair : *context.ui_instance_data)
             {
                 const auto& key = pair.first;
                 if (key.shader_tag == shader_tag())

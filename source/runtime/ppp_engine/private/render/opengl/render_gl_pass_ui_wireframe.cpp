@@ -1,4 +1,4 @@
-#include "render/render_pass_unlit_wireframe.h"
+#include "render/render_pass_ui_wireframe.h"
 #include "render/render_batch_renderer.h"
 #include "render/render_batch_data_table.h"
 #include "render/render_instance_renderer.h"
@@ -11,6 +11,7 @@
 #include "resources/shader_pool.h"
 
 #include "camera/camera_context.h"
+#include "camera/camera_manager.h"
 
 #include "util/color_ops.h"
 
@@ -34,14 +35,15 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        unlit_wireframe_pass::unlit_wireframe_pass(string::string_id shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
-            :geometry_render_pass("unlit_wireframe"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
-        {}
+        ui_wireframe_pass::ui_wireframe_pass(string::string_id shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
+            :geometry_render_pass("ui_wireframe"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
+        {
+        }
         //-------------------------------------------------------------------------
-        unlit_wireframe_pass::~unlit_wireframe_pass() = default;
+        ui_wireframe_pass::~ui_wireframe_pass() = default;
 
         //-------------------------------------------------------------------------
-        void unlit_wireframe_pass::begin_frame(const render_context& context)
+        void ui_wireframe_pass::begin_frame(const render_context& context)
         {
             framebuffer()->bind();
 
@@ -51,9 +53,7 @@ namespace ppp
             opengl::api::instance().enable(GL_CULL_FACE);
             opengl::api::instance().cull_face(GL_BACK);
 
-            opengl::api::instance().enable(GL_DEPTH_TEST);
-            opengl::api::instance().depth_func(GL_LEQUAL); // Optional: Use GL_LEQUAL for matching precision
-            opengl::api::instance().depth_mask(GL_FALSE); // Disable depth writes
+            opengl::api::instance().disable(GL_DEPTH_TEST);
 
             opengl::api::instance().viewport(0, 0, framebuffer()->width(), framebuffer()->height());
             opengl::api::instance().polygon_mode(GL_FRONT_AND_BACK, GL_LINE);
@@ -62,8 +62,8 @@ namespace ppp
             opengl::api::instance().use_program(shader_program()->id());
 
             // Apply shape uniforms
-            const glm::mat4& cam_active_p = context.camera_context->mat_proj_active;
-            const glm::mat4& cam_active_v = context.camera_context->mat_view_active;
+            const glm::mat4& cam_active_p = camera_manager::get_proj(camera_manager::tags::ui());
+            const glm::mat4& cam_active_v = camera_manager::get_view(camera_manager::tags::ui());
 
             const glm::mat4 cam_active_vp = cam_active_p * cam_active_v;
 
@@ -71,7 +71,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void unlit_wireframe_pass::render(const render_context& context)
+        void ui_wireframe_pass::render(const render_context& context)
         {
             bool batched_shading = batch_rendering_enabled();
 
@@ -80,7 +80,7 @@ namespace ppp
                 push_all_wireframe_dependent_uniforms(shader_program(), batch_renderer::wireframe_linecolor(), batch_renderer::wireframe_linewidth());
                 shaders::apply_uniforms(shader_program()->id());
 
-                for (auto& [key, batch] : *context.opaque_batch_data)
+                for (auto& [key, batch] : *context.ui_batch_data)
                 {
                     batch_renderer::render(batch_render_strategy(), batch.get());
                 }
@@ -90,7 +90,7 @@ namespace ppp
                 push_all_wireframe_dependent_uniforms(shader_program(), instance_renderer::wireframe_linecolor(), instance_renderer::wireframe_linewidth());
                 shaders::apply_uniforms(shader_program()->id());
 
-                for (auto& [key, instance] : *context.opaque_instance_data)
+                for (auto& [key, instance] : *context.ui_instance_data)
                 {
                     instance_renderer::render(instance_render_strategy(), instance.get());
                 }
@@ -98,7 +98,7 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
-        void unlit_wireframe_pass::end_frame(const render_context& context)
+        void ui_wireframe_pass::end_frame(const render_context& context)
         {
             // Reset state
             opengl::api::instance().depth_mask(GL_TRUE);

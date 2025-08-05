@@ -3,6 +3,8 @@
 #include "ecs/systems/ecs_systems.h"
 #include "ecs/components/ecs_components.h"
 
+#include "material.h"
+
 #include <flecs.h>
 
 namespace ppp
@@ -35,6 +37,10 @@ namespace ppp
                 {
                     e.add<render_properties_component>();
                 }
+                if (!e.has<material_component>())
+                {
+                    e.set<material_component>({ material::tags::unlit::color(), true, true });
+                }
             });
             // Add render properties component when model is added
             _world.observer<model_component>()
@@ -44,6 +50,10 @@ namespace ppp
                 if (!e.has<render_properties_component>())
                 {
                     e.add<render_properties_component>();
+                }
+                if (!e.has<material_component>())
+                {
+                    e.set<material_component>({ material::tags::unlit::color(), true, true });
                 }
             });
 

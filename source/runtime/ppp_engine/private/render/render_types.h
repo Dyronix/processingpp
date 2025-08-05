@@ -32,7 +32,8 @@ namespace ppp
         enum class shading_blending_type
         {
             OPAQUE,
-            TRANSPARENT
+            TRANSPARENT,
+            UI
         };
 
         enum class image_filter_type

@@ -22,6 +22,10 @@ namespace ppp
                 {
                     perspective(camera.fovy, camera.aspect_ratio, camera.near_clip, camera.far_clip, camera.tag);
                 }
+                else
+                {
+                    ortho(camera.left, camera.right, camera.bottom, camera.top, camera.near_clip, camera.far_clip, camera.tag);
+                }
 
                 set_scene_camera(
                     transform.position.x, transform.position.y, transform.position.z,

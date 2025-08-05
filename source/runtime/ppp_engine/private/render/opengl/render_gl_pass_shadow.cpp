@@ -4,7 +4,6 @@
 #include "render/render_instance_renderer.h"
 #include "render/render_context.h"
 #include "render/render_shader_uniform_manager.h"
-#include "render/render_batch_data_table.h"
 #include "render/render_instance_data_table.h"
 
 #include "render/opengl/render_gl_api.h"
@@ -101,9 +100,11 @@ namespace ppp
             {
                 shaders::apply_uniforms(shader_program()->id());
 
-                for (auto& [key, batch] : *context.batch_data)
+                for (auto& [key, batch] : *context.opaque_batch_data)
                 {
-                    if (key.cast_shadows)
+                    if (key.enable_depth_test &&
+                        key.enable_depth_write &&
+                        key.cast_shadows)
                     {
                         batch_renderer::render(batch_render_strategy(), batch.get());
                     }
@@ -113,9 +114,11 @@ namespace ppp
             {
                 shaders::apply_uniforms(shader_program()->id());
 
-                for (auto& [key, instance] : *context.instance_data)
+                for (auto& [key, instance] : *context.opaque_instance_data)
                 {
-                    if (key.cast_shadows)
+                    if (key.enable_depth_test &&
+                        key.enable_depth_write &&
+                        key.cast_shadows)
                     {
                         instance_renderer::render(instance_render_strategy(), instance.get());
                     }
@@ -161,10 +164,12 @@ namespace ppp
             }
 
             s32 draw_calls = 0;
-            for (auto& pair : *context.batch_data)
+            for (auto& pair : *context.opaque_batch_data)
             {
                 const auto& key = pair.first;
-                if (key.cast_shadows)
+                if (key.enable_depth_test &&
+                    key.enable_depth_write && 
+                    key.cast_shadows)
                 {
                     draw_calls += pair.second->size();
                 }
@@ -182,10 +187,12 @@ namespace ppp
             }
 
             s32 draw_calls = 0;
-            for (auto& pair : *context.instance_data)
+            for (auto& pair : *context.opaque_instance_data)
             {
                 const auto& key = pair.first;
-                if (key.cast_shadows)
+                if (key.enable_depth_test &&
+                    key.enable_depth_write &&
+                    key.cast_shadows)
                 {
                     draw_calls += pair.second->size();
                 }

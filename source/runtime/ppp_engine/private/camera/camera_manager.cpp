@@ -32,6 +32,12 @@ namespace ppp
                 static string::string_id s_font = string::store_sid("font");
                 return s_font;
             }
+            //-------------------------------------------------------------------------
+            string::string_id ui()
+            {
+                static string::string_id s_ui = string::store_sid("ui");
+                return s_ui;
+            }
         }
 
         using camera_map = std::unordered_map<string::string_id, camera>;
@@ -61,6 +67,12 @@ namespace ppp
                 glm::ortho(0.0f, frustum_width, 0.0f, frustum_height, -100.0f, 100.0f));
 
             set_camera(tags::font(),
+                glm::vec3(0.0f, 0.0f, 10.0f),
+                glm::vec3(0.0f, 0.0f, 0.0f),
+                glm::vec3(0.0f, 1.0f, 0.0f),
+                glm::ortho(0.0f, frustum_width, 0.0f, frustum_height, -100.0f, 100.0f));
+
+            set_camera(tags::ui(),
                 glm::vec3(0.0f, 0.0f, 10.0f),
                 glm::vec3(0.0f, 0.0f, 0.0f),
                 glm::vec3(0.0f, 1.0f, 0.0f),

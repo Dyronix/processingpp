@@ -51,6 +51,7 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_tile_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_tower_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_tower_state.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_material_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_components.h
     #ecs-systems
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_placement_system.cpp

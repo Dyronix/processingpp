@@ -1,4 +1,5 @@
 #include "resources/texture_pool.h"
+#include "render/render_features.h"
 #include "render/render.h"
 #include <unordered_map>
 
@@ -6,14 +7,76 @@ namespace ppp
 {
     namespace texture_pool
     {
+        //-------------------------------------------------------------------------
+        class default_texture_slot_manager
+        {
+        public:
+            explicit default_texture_slot_manager(u32 max_textures)
+            {
+                _next_reserved_slot = max_textures - 1;
+                _reserved_count = 0;
+            }
+
+        public:
+            s32 next_reserved_slot()
+            {
+                ++_reserved_count;
+
+                return _next_reserved_slot--;
+            }
+            s32 reserved_count() const
+            {
+                return _reserved_count;
+            }
+
+        private:
+            s32 _next_reserved_slot{ 0 };
+            s32 _reserved_count{ 0 };
+        };
+
+        struct default_texture
+        {
+            s32     reserved_slot{0};
+            image   img{};
+        };
+
+        //-------------------------------------------------------------------------
+        default_texture_slot_manager& reserved_slots_manager()
+        {
+            static default_texture_slot_manager slot_manager(render::max_textures());
+
+            return slot_manager;
+        }
+
+        //-------------------------------------------------------------------------
+        default_texture make_default_texture(u32 data)
+        {
+            constexpr u32 width = 1;
+            constexpr u32 height = 1;
+            constexpr u32 channels = 4;
+
+            default_texture tex;
+
+            tex.reserved_slot = reserved_slots_manager().next_reserved_slot();
+            tex.img.image_id = render::create_image_item(width, height, channels, reinterpret_cast<const u8*>(&data), render::image_filter_type::NEAREST, render::image_wrap_type::REPEAT);
+            tex.img.width = width;
+            tex.img.height = height;
+            tex.img.channels = channels;
+            tex.img.data = static_cast<u8*>(malloc(width * height * channels));
+            memset(tex.img.data, 0, width * height * channels);
+            memcpy(tex.img.data, &data, width * height * channels);
+
+            return tex;
+        }
+
         struct context
         {
             images_hash_map images_hash_map;
             u8*             active_pixels;
 
             // default textures
-            image           image_solid_white;
-            image           image_solid_black;
+            default_texture image_solid_white;
+            default_texture image_solid_black;
         } g_ctx;
 
         //-------------------------------------------------------------------------
@@ -25,34 +88,14 @@ namespace ppp
         //-------------------------------------------------------------------------
         bool initialize()
         {
-            image& image_solid_white = g_ctx.image_solid_white;
-            image& image_solid_black = g_ctx.image_solid_black;
-
-            constexpr u32 width = 1;
-            constexpr u32 height = 1;
-            constexpr u32 channels = 4;
-
             constexpr u32 white_data = 0xFFFFFFFF;
             constexpr u32 black_data = 0xFF000000;
 
-            image_solid_white.image_id = render::create_image_item(width, height, channels, reinterpret_cast<const u8*>(&white_data), render::image_filter_type::NEAREST, render::image_wrap_type::REPEAT);
-            image_solid_white.width = width;
-            image_solid_white.height = height;
-            image_solid_white.channels = channels;
-            image_solid_white.data = static_cast<u8*>(malloc(width * height * channels));
-            memset(image_solid_white.data, 0, width * height * channels);
-            memcpy(image_solid_white.data, &white_data, width * height * channels);
-            
-            image_solid_black.image_id = render::create_image_item(width, height, channels, reinterpret_cast<const u8*>(&black_data), render::image_filter_type::NEAREST, render::image_wrap_type::REPEAT);
-            image_solid_black.width = width;
-            image_solid_black.height = height;
-            image_solid_black.channels = channels;
-            image_solid_black.data = static_cast<u8*>(malloc(width * height * channels));
-            memset(image_solid_black.data, 0, width * height * channels);
-            memcpy(image_solid_black.data, &black_data, width * height * channels);
+            g_ctx.image_solid_white = make_default_texture(white_data);
+            g_ctx.image_solid_black = make_default_texture(black_data);
 
-            add_new_image(image_solid_white);
-            add_new_image(image_solid_black);
+            add_new_image(g_ctx.image_solid_white.img);
+            add_new_image(g_ctx.image_solid_black.img);
 
             return true;
         }
@@ -69,6 +112,24 @@ namespace ppp
             {
                 free(i.second.data);
             }
+        }
+
+        //-------------------------------------------------------------------------
+        s32 reserved_white_slot()
+        {
+            return g_ctx.image_solid_white.reserved_slot;
+        }
+
+        //-------------------------------------------------------------------------
+        s32 reserved_black_slot()
+        {
+            return g_ctx.image_solid_black.reserved_slot;
+        }
+
+        //-------------------------------------------------------------------------
+        s32 resvered_slots()
+        {
+            return reserved_slots_manager().reserved_count();
         }
 
         //-------------------------------------------------------------------------
@@ -120,15 +181,15 @@ namespace ppp
         //-------------------------------------------------------------------------
         const image* image_solid_white()
         {
-            assert(g_ctx.image_solid_white.image_id != -1);
-            return &g_ctx.image_solid_white;
+            assert(g_ctx.image_solid_white.img.image_id != -1);
+            return &g_ctx.image_solid_white.img;
         }
 
         //-------------------------------------------------------------------------
         const image* image_solid_black()
         {
-            assert(g_ctx.image_solid_black.image_id != -1);
-            return &g_ctx.image_solid_black;
+            assert(g_ctx.image_solid_black.img.image_id != -1);
+            return &g_ctx.image_solid_black.img;
         }
 
         //-------------------------------------------------------------------------

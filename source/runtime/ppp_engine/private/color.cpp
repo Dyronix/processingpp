@@ -81,6 +81,11 @@ namespace ppp
         render::brush::push_fill_enable(false);
     }
 
+    void no_tint()
+    {
+        render::brush::push_tint_enable(false);
+    }
+
     void no_stroke()
     {
         render::brush::push_stroke_enable(false);
@@ -109,6 +114,30 @@ namespace ppp
     {
         render::brush::push_fill_enable(true);
         render::brush::push_fill_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
+    }
+
+    void tint(int grayscale)
+    {
+        render::brush::push_tint_enable(true);
+        render::brush::push_tint_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, 255.0f));
+    }
+
+    void tint(int grayscale, int alpha)
+    {
+        render::brush::push_tint_enable(true);
+        render::brush::push_tint_color(glm::vec4(grayscale / 255.0f, grayscale / 255.0f, grayscale / 255.0f, alpha / 255.0f));
+    }
+
+    void tint(int r, int g, int b, int a)
+    {
+        render::brush::push_tint_enable(true);
+        render::brush::push_tint_color(glm::vec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f));
+    }
+
+    void tint(const color& c)
+    {
+        render::brush::push_tint_enable(true);
+        render::brush::push_tint_color(glm::vec4(c.red / 255.0f, c.green / 255.0f, c.blue / 255.0f, c.alpha / 255.0f));
     }
 
     void stroke(int grayscale)

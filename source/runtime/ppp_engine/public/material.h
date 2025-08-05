@@ -28,6 +28,16 @@ namespace ppp
                  */
                 std::string_view texture();
                 /**
+                 * @brief Get the shader tag for unlit color ui.
+                 * @return String identifier of the unlit color ui shader.
+                 */
+                std::string_view ui_color();
+                /**
+                 * @brief Get the shader tag for unlit ui texture.
+                 * @return String identifier of the unlit ui texture shader.
+                 */
+                std::string_view ui_texture();
+                /**
                  * @brief Get the shader tag for unlit font.
                  * @return String identifier of the unlit font shader.
                  */
@@ -75,7 +85,8 @@ namespace ppp
     enum class shading_blending : std::uint8_t
     {
         OPAQUE,         
-        TRANSPARENT     
+        TRANSPARENT,
+        UI
     };
 
     /**
