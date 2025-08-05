@@ -65,6 +65,8 @@ namespace ppp
 
     /** @brief Disable filling shapes. */
     void no_fill();
+    /** @brief Disable tinting shapes. */
+    void no_tint();
     /** @brief Disable drawing shape outlines. */
     void no_stroke();
 
@@ -76,6 +78,15 @@ namespace ppp
     void fill(int r, int g, int b, int a);
     /** @brief Enable filling with color struct. */
     void fill(const color& c);
+
+    /** @brief Enable tint with grayscale. */
+    void tint(int grayscale);
+    /** @brief Enable tint with grayscale + alpha. */
+    void tint(int grayscale, int alpha);
+    /** @brief Enable tint with RGBA. */
+    void tint(int r, int g, int b, int a);
+    /** @brief Enable tint with color struct. */
+    void tint(const color& c);
 
     /** @brief Enable stroke with grayscale. */
     void stroke(int grayscale);
