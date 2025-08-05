@@ -37,6 +37,8 @@ namespace ppp
     //-------------------------------------------------------------------------
     virtual const grid_cell_component* get_grid_cell_at_index(const vec2i& index) const = 0;
     //-------------------------------------------------------------------------
+    virtual flecs::entity get_grid_cell_entity_at_index(const vec2i& index) const = 0;
+    //-------------------------------------------------------------------------
     virtual const grid_cell_component* get_grid_cell_at_world_location(const glm::vec2& location) const = 0;
 
     //-------------------------------------------------------------------------
@@ -62,7 +64,8 @@ namespace ppp
   {
     vec2i pos;
     igrid* grid;
-    std::vector<flecs::entity> neightbours;
+    f32 traveral_cost;
+    std::vector<flecs::entity> neighbours;
 
   public:
     glm::vec2 get_world_location() const
@@ -99,6 +102,8 @@ namespace ppp
     //-------------------------------------------------------------------------
     flecs::entity create_new_cell(vec2i pos, tile_type tileType, const level_builder_config2& config);
 
+    //-------------------------------------------------------------------------
+    flecs::entity get_grid_cell_entity_at_index(const vec2i& index) const override;
     //-------------------------------------------------------------------------
     const grid_cell_component* get_grid_cell_at_index(const vec2i& index) const override;
     //-------------------------------------------------------------------------
@@ -178,6 +183,8 @@ namespace ppp
       
       void tower_shoot_update(const flecs::world& world, const ecs::transform_component& t, const ecs::tower_component& tc, ecs::tower_state& ts);
       void tower_select_target(const flecs::world& world, const ecs::transform_component& t, const ecs::tower_component& tc, ecs::tower_state& ts);
+
+      void find_nav_paths();
 
       template <typename Func>
       void for_each_enemy_component(const flecs::world& world, const Func& func)
