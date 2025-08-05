@@ -37,7 +37,10 @@ namespace ppp
             for (int i = 0; i < _tower_locations.size(); ++i)
             {
                 std::string tag = std::string("dynamic_tower") + std::to_string(i);
-                spawn_tower(tag.c_str(), _tower_locations[i], true);
+                auto t = spawn_tower(tag.c_str(), _tower_locations[i], true);
+                t.set<ecs::tower_component>({ 2.0f, 1000.0f });
+                t.set<ecs::tower_state>({ 0.0f });
+
             }
         }
     }
@@ -65,8 +68,6 @@ namespace ppp
 
         glm::vec3 half_extents = glm::vec3(0.8f * 50.0f, 2.0f * 50.0f, 0.8f * 50.0f) * 0.5f;
         e.set<ecs::bounding_box_component>({ -half_extents,half_extents });
-        e.set<ecs::tower_component>({ 2.0f, 1000.0f });
-        e.set<ecs::tower_state>({ 0.0f });
 
         return e;
     }
@@ -108,6 +109,9 @@ namespace ppp
             std::string tag = std::string("dynamic_tower") + std::to_string(s_tower_count);
             log::info("Spawning tower at: {},{},{}", transform.position.x, transform.position.y, transform.position.z);
             auto t = spawn_tower(tag.c_str(), transform.position, true);
+            t.set<ecs::tower_component>({ 2.0f, 1000.0f });
+            t.set<ecs::tower_state>({ 0.0f });
+
             _tower_locations.push_back(transform.position);
             ++s_tower_count;
         });
