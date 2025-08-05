@@ -46,6 +46,15 @@ namespace ppp
 
         render_draw_mode draw_mode();
 
+        // Depth
+        void enable_depth_test();
+        void enable_depth_write();
+        void disable_depth_test();
+        void disable_depth_write();
+
+        bool depth_test_enabled();
+        bool depth_write_enabled();
+
         // Shadows
         void enable_shadows();
         void disable_shadows();

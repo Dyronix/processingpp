@@ -138,6 +138,8 @@ namespace ppp
 
             // shadows
             bool                        shadows = true;
+            bool                        depth_test = true;
+            bool                        depth_write = true;
 
             // drawing
             render_draw_mode            draw_mode = render_draw_mode::BATCHED;
@@ -150,8 +152,12 @@ namespace ppp
             renderpipeline_view         render_pipeline_view;
 
             // renderers
-            instance_data_hash_map      instance_data = {};
-            batch_data_hash_map         batch_data = {};
+            instance_data_hash_map      opaque_instance_data = {};
+            instance_data_hash_map      transparent_instance_data = {};
+            instance_data_hash_map      ui_instance_data = {};
+            batch_data_hash_map         opaque_batch_data = {};
+            batch_data_hash_map         transparent_batch_data = {};
+            batch_data_hash_map         ui_batch_data = {};
 
             font_batch_data             font_batch_data = nullptr;
         } g_ctx;
@@ -162,8 +168,12 @@ namespace ppp
             render_context render_context;
             render_context.camera_context = camera_context;
             render_context.font_batch_data = g_ctx.font_batch_data.get();
-            render_context.batch_data = &g_ctx.batch_data;
-            render_context.instance_data = &g_ctx.instance_data;
+            render_context.opaque_batch_data = &g_ctx.opaque_batch_data;
+            render_context.transparent_batch_data = &g_ctx.transparent_batch_data;
+            render_context.ui_batch_data = &g_ctx.ui_batch_data;
+            render_context.opaque_instance_data = &g_ctx.opaque_instance_data;
+            render_context.transparent_instance_data = &g_ctx.transparent_instance_data;
+            render_context.ui_instance_data = &g_ctx.ui_instance_data;
             render_context.scissor = scissor_rect();
 
             return render_context;
@@ -188,32 +198,50 @@ namespace ppp
                 shading_model_type shading_model = shader_pool::shading_model_for_shader(shader_tag);
                 shading_blending_type shading_blend = shader_pool::shading_blending_for_shader(shader_tag);
 
-                batch_data_key data_key = { shader_tag, shading_model,shading_blend, g_ctx.shadows };
+                batch_data_key data_key = { shader_tag, shading_model,shading_blend, g_ctx.depth_test, g_ctx.depth_write, g_ctx.shadows };
+                batch_data_hash_map* batches = nullptr;
 
-                if (g_ctx.batch_data.find(data_key) == std::cend(g_ctx.batch_data))
+                switch(shading_blend)
+                {
+                case shading_blending_type::OPAQUE: batches = &g_ctx.opaque_batch_data; break;
+                case shading_blending_type::TRANSPARENT: batches = &g_ctx.transparent_batch_data; break;
+                case shading_blending_type::UI: batches = &g_ctx.ui_batch_data; break;
+                default: assert(false && "unknown shading blending type");
+                }
+
+                if (batches->find(data_key) == std::cend(*batches))
                 {
                     std::unique_ptr<batch_data_table> data_table = std::make_unique<batch_data_table>(shader_tag);
 
-                    g_ctx.batch_data.emplace(data_key, std::move(data_table));
+                    batches->emplace(data_key, std::move(data_table));
                 }
 
-                g_ctx.batch_data.at(data_key)->append(topology, item, color, transform_stack::active_world());
+                batches->at(data_key)->append(topology, item, color, transform_stack::active_world());
             }
             else
             {
                 shading_model_type shading_model = shader_pool::shading_model_for_shader(shader_tag);
                 shading_blending_type shading_blend = shader_pool::shading_blending_for_shader(shader_tag);
 
-                instance_data_key data_key = { shader_tag, shading_model,shading_blend, g_ctx.shadows };
+                instance_data_key data_key = { shader_tag, shading_model,shading_blend, g_ctx.depth_test, g_ctx.depth_write, g_ctx.shadows };
+                instance_data_hash_map* instances = nullptr;
 
-                if (g_ctx.instance_data.find(data_key) == std::cend(g_ctx.instance_data))
+                switch (shading_blend)
+                {
+                case shading_blending_type::OPAQUE: instances = &g_ctx.opaque_instance_data; break;
+                case shading_blending_type::TRANSPARENT: instances = &g_ctx.transparent_instance_data; break;
+                case shading_blending_type::UI: instances = &g_ctx.ui_instance_data; break;
+                default: assert(false && "unknown shading blending type");
+                }
+
+                if (instances->find(data_key) == std::cend(*instances))
                 {
                     std::unique_ptr<instance_data_table> data_table = std::make_unique<instance_data_table>(shader_tag);
 
-                    g_ctx.instance_data.emplace(data_key, std::move(data_table));
+                    instances->emplace(data_key, std::move(data_table));
                 }
 
-                g_ctx.instance_data.at(data_key)->append(topology, item, color, transform_stack::active_world());
+                instances->at(data_key)->append(topology, item, color, transform_stack::active_world());
             }
         }
 
@@ -244,7 +272,6 @@ namespace ppp
 
             // Clear color only and do a geometry pass
             g_ctx.render_pipeline.add_pass(std::make_unique<clear_pass>(make_rtv_clear_state(), framebuffer_pool::tags::composite()));
-
             g_ctx.render_pipeline.add_insertion_point(insertion_point::BEFORE_UNLIT_OPAQUE);
 
             solid_passes.push_back(g_ctx.render_pipeline.add_pass(create_unlit_composite_pass(unlit::tags::color{}, framebuffer_pool::tags::composite())));
@@ -324,17 +351,37 @@ namespace ppp
             g_ctx.font_batch_data->clear();
 
             // Custom
-            for (auto& pair : g_ctx.batch_data)
+            for (auto& pair : g_ctx.opaque_batch_data)
             {
                 pair.second->clear();
             }
-            g_ctx.batch_data.clear();
+            for (auto& pair : g_ctx.transparent_batch_data)
+            {
+                pair.second->clear();
+            }
+            for (auto& pair : g_ctx.ui_batch_data)
+            {
+                pair.second->clear();
+            }
+            g_ctx.opaque_batch_data.clear();
+            g_ctx.transparent_batch_data.clear();
+            g_ctx.ui_batch_data.clear();
 
-            for (auto& pair : g_ctx.instance_data)
+            for (auto& pair : g_ctx.opaque_instance_data)
             {
                 pair.second->clear();
             }
-            g_ctx.instance_data.clear();
+            for (auto& pair : g_ctx.transparent_instance_data)
+            {
+                pair.second->clear();
+            }
+            for (auto& pair : g_ctx.ui_instance_data)
+            {
+                pair.second->clear();
+            }
+            g_ctx.opaque_instance_data.clear();
+            g_ctx.transparent_instance_data.clear();
+            g_ctx.ui_instance_data.clear();
         }
 
         //-------------------------------------------------------------------------
@@ -350,11 +397,28 @@ namespace ppp
             g_ctx.font_batch_data->reset();
 
             // Custom
-            for (auto& pair : g_ctx.batch_data)
+            for (auto& pair : g_ctx.opaque_batch_data)
             {
                 pair.second->reset();
             }
-            for (auto& pair : g_ctx.instance_data)
+            for (auto& pair : g_ctx.transparent_batch_data)
+            {
+                pair.second->reset();
+            }
+            for (auto& pair : g_ctx.ui_batch_data)
+            {
+                pair.second->reset();
+            }
+
+            for (auto& pair : g_ctx.opaque_instance_data)
+            {
+                pair.second->reset();
+            }
+            for (auto& pair : g_ctx.transparent_instance_data)
+            {
+                pair.second->reset();
+            }
+            for (auto& pair : g_ctx.ui_instance_data)
             {
                 pair.second->reset();
             }
@@ -405,6 +469,38 @@ namespace ppp
         }
 
         //-------------------------------------------------------------------------
+        void enable_depth_test()
+        {
+            g_ctx.depth_test = true;
+        }
+        //-------------------------------------------------------------------------
+        void enable_depth_write()
+        {
+            g_ctx.depth_write = true;
+        }
+        //-------------------------------------------------------------------------
+        void disable_depth_test()
+        {
+            g_ctx.depth_test = false;
+        }
+        //-------------------------------------------------------------------------
+        void disable_depth_write()
+        {
+            g_ctx.depth_write = false;
+        }
+
+        //-------------------------------------------------------------------------
+        bool depth_test_enabled()
+        {
+            return g_ctx.depth_test;
+        }
+        //-------------------------------------------------------------------------
+        bool depth_write_enabled()
+        {
+            return g_ctx.depth_write;
+        }
+
+        //-------------------------------------------------------------------------
         render_draw_mode draw_mode()
         {
             return g_ctx.draw_mode;
@@ -440,6 +536,14 @@ namespace ppp
                                 framebuffer_flags,
                                 draw_mode);
                             break;
+                        case shading_blending_type::UI:
+                            insertion = insertion_point::AFTER_UNLIT_OPAQUE;
+                            render_pass = std::make_unique<ui_pass>(
+                                shader_tag,
+                                framebuffer_tag,
+                                framebuffer_flags,
+                                draw_mode);
+                            break;
                         case shading_blending_type::TRANSPARENT:
                             assert(false && "Transparent objects are not supported right now.");
                             break;
@@ -457,6 +561,9 @@ namespace ppp
                                 framebuffer_tag,
                                 framebuffer_flags,
                                 draw_mode);
+                            break;
+                        case shading_blending_type::UI:
+                            assert(false && "UI objects are not supported right now.");
                             break;
                         case shading_blending_type::TRANSPARENT:
                             assert(false && "Transparent objects are not supported right now.");

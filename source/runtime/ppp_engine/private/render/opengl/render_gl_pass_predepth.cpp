@@ -77,9 +77,10 @@ namespace ppp
             {
                 shaders::apply_uniforms(shader_program()->id());
 
-                for(auto& [key, batch] : *context.batch_data)
+                for(auto& [key, batch] : *context.opaque_batch_data)
                 {
-                    if (key.shader_blending_type == shading_blending_type::OPAQUE)
+                    if (key.enable_depth_test &&
+                        key.enable_depth_write)
                     {
                         batch_renderer::render(batch_render_strategy(), batch.get());
                     }
@@ -89,9 +90,10 @@ namespace ppp
             {
                 shaders::apply_uniforms(shader_program()->id());
 
-                for (auto& [key, instance] : *context.instance_data)
+                for (auto& [key, instance] : *context.opaque_instance_data)
                 {
-                    if (key.shader_blending_type == shading_blending_type::OPAQUE)
+                    if (key.enable_depth_test &&
+                        key.enable_depth_write)
                     {
                         instance_renderer::render(instance_render_strategy(), instance.get());
                     }
@@ -119,10 +121,11 @@ namespace ppp
             }
 
             s32 draw_calls = 0;
-            for (auto& pair : *context.batch_data)
+            for (auto& pair : *context.opaque_batch_data)
             {
                 const auto& key = pair.first;
-                if (key.shader_blending_type == shading_blending_type::OPAQUE)
+                if (key.enable_depth_test &&
+                    key.enable_depth_write)
                 {
                     draw_calls += pair.second->size();
                 }
@@ -140,10 +143,11 @@ namespace ppp
             }
 
             s32 draw_calls = 0;
-            for (auto& pair : *context.instance_data)
+            for (auto& pair : *context.opaque_instance_data)
             {
                 const auto& key = pair.first;
-                if (key.shader_blending_type == shading_blending_type::OPAQUE)
+                if (key.enable_depth_test &&
+                    key.enable_depth_write)
                 {
                     draw_calls += pair.second->size();
                 }

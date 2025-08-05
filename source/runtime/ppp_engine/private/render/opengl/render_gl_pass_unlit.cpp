@@ -98,7 +98,8 @@ namespace ppp
         //-------------------------------------------------------------------------
         unlit_pass::unlit_pass(string::string_id shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags, draw_mode draw_mode)
             :geometry_render_pass("unlit"_sid, shader_tag, framebuffer_tag, framebuffer_flags, draw_mode)
-        {}
+        {
+        }
         //-------------------------------------------------------------------------
         unlit_pass::~unlit_pass() = default;
 
@@ -138,7 +139,7 @@ namespace ppp
 
             if (batched_shading)
             {
-                for (auto& [key, batch] : *context.batch_data)
+                for (auto& [key, batch] : *context.opaque_batch_data)
                 {
                     if (key.shader_tag == shader_tag())
                     {
@@ -148,7 +149,7 @@ namespace ppp
             }
             else
             {
-                for (auto& [key, instance] : *context.instance_data)
+                for (auto& [key, instance] : *context.opaque_instance_data)
                 {
                     if (key.shader_tag == shader_tag())
                     {
@@ -167,7 +168,7 @@ namespace ppp
             {
                 shaders::apply_uniforms(shader_program()->id());
 
-                for (auto& [key, batch] : *context.batch_data)
+                for (auto& [key, batch] : *context.opaque_batch_data)
                 {
                     if (key.shader_tag == shader_tag())
                     {
@@ -179,7 +180,7 @@ namespace ppp
             {
                 shaders::apply_uniforms(shader_program()->id());
 
-                for (auto& [key, instance] : *context.instance_data)
+                for (auto& [key, instance] : *context.opaque_instance_data)
                 {
                     if (key.shader_tag == shader_tag())
                     {

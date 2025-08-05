@@ -31,12 +31,15 @@ namespace ppp
             shading_model_type shader_model_type;
             shading_blending_type shader_blending_type;
 
+            bool enable_depth_test;
+            bool enable_depth_write;
+
             bool cast_shadows;
 
             // Equality operator for comparisons.
             bool operator==(const batch_data_key& other) const
             {
-                return shader_tag == other.shader_tag && cast_shadows == other.cast_shadows;
+                return enable_depth_test == other.enable_depth_test && enable_depth_write == other.enable_depth_write && shader_tag == other.shader_tag && cast_shadows == other.cast_shadows;
             }
         };
 
@@ -47,12 +50,15 @@ namespace ppp
             shading_model_type shader_model_type;
             shading_blending_type shader_blending_type;
 
+            bool enable_depth_test;
+            bool enable_depth_write;
+
             bool cast_shadows;
 
             // Equality operator for comparisons.
             bool operator==(const instance_data_key& other) const
             {
-                return shader_tag == other.shader_tag && cast_shadows == other.cast_shadows;
+                return enable_depth_test == other.enable_depth_test && enable_depth_write == other.enable_depth_write && shader_tag == other.shader_tag && cast_shadows == other.cast_shadows;
             }
         };
 
@@ -63,8 +69,8 @@ namespace ppp
                 return camera_context != nullptr
                     && scissor != nullptr
                     && font_batch_data != nullptr
-                    && batch_data != nullptr
-                    && instance_data != nullptr;
+                    && (opaque_batch_data != nullptr || transparent_batch_data != nullptr || ui_batch_data != nullptr)
+                    && (opaque_instance_data != nullptr || transparent_instance_data != nullptr || ui_instance_data != nullptr);
             }
 
             const camera_context*       camera_context = nullptr; 
@@ -72,8 +78,13 @@ namespace ppp
 
             batch_data_table*           font_batch_data = nullptr;
 
-            batch_data_hash_map*        batch_data = nullptr;
-            instance_data_hash_map*     instance_data = nullptr;
+            batch_data_hash_map*        opaque_batch_data = nullptr;
+            batch_data_hash_map*        transparent_batch_data = nullptr;
+            batch_data_hash_map*        ui_batch_data = nullptr;
+
+            instance_data_hash_map*     opaque_instance_data = nullptr;
+            instance_data_hash_map*     transparent_instance_data = nullptr;
+            instance_data_hash_map*     ui_instance_data = nullptr;
         };
     }
 }
@@ -86,6 +97,8 @@ namespace std
         std::size_t operator()(const ppp::render::batch_data_key& key) const noexcept
         {
             size_t seed = 0;
+            seed = ppp::utils::hash_combine(seed, key.enable_depth_test);
+            seed = ppp::utils::hash_combine(seed, key.enable_depth_write);
             seed = ppp::utils::hash_combine(seed, key.shader_tag);
             seed = ppp::utils::hash_combine(seed, key.shader_model_type);
             seed = ppp::utils::hash_combine(seed, key.cast_shadows);
@@ -99,6 +112,8 @@ namespace std
         std::size_t operator()(const ppp::render::instance_data_key& key) const noexcept
         {
             size_t seed = 0;
+            seed = ppp::utils::hash_combine(seed, key.enable_depth_test);
+            seed = ppp::utils::hash_combine(seed, key.enable_depth_write);
             seed = ppp::utils::hash_combine(seed, key.shader_tag);
             seed = ppp::utils::hash_combine(seed, key.shader_model_type);
             seed = ppp::utils::hash_combine(seed, key.cast_shadows);
