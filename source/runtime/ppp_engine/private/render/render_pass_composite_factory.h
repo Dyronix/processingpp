@@ -6,6 +6,8 @@
 #include "render/render_pass_forward_shading.h"
 #include "render/render_pass_shadow.h"
 #include "render/render_pass_predepth.h"
+#include "render/render_pass_ui.h"
+#include "render/render_pass_ui_wireframe.h"
 #include "render/render_shader_tags.h"
 
 #include "string/string_id.h"
@@ -21,6 +23,8 @@ namespace ppp
         using forward_shading_composite_pass = std::unique_ptr<composite_pass<forward_shading_pass>>;
         using shadow_composite_pass = std::unique_ptr<composite_pass<shadow_pass>>;
         using predepth_composite_pass = std::unique_ptr<composite_pass<predepth_pass>>;
+        using ui_composite_pass = std::unique_ptr<composite_pass<ui_pass>>;
+        using ui_wireframe_composite_pass = std::unique_ptr<composite_pass<ui_wireframe_pass>>;
 
         //-------------------------------------------------------------------------
         template<typename T, typename TTag>
@@ -67,6 +71,20 @@ namespace ppp
         predepth_composite_pass create_predepth_composite_pass(tag<TTag> shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH)
         {
             return create_composite_pass<predepth_pass, TTag>("predepth_composite_pass"_sid, shader_tag, framebuffer_tag, framebuffer_flags);
+        }
+
+        //-------------------------------------------------------------------------
+        template<typename TTag>
+        ui_composite_pass create_ui_composite_pass(tag<TTag> shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH)
+        {
+            return create_composite_pass<ui_pass, TTag>("ui_composite_pass"_sid, shader_tag, framebuffer_tag, framebuffer_flags);
+        }
+
+        //-------------------------------------------------------------------------
+        template<typename TTag>
+        ui_wireframe_composite_pass create_ui_wireframe_composite_pass(tag<TTag> shader_tag, string::string_id framebuffer_tag, s32 framebuffer_flags = framebuffer_flags::COLOR | framebuffer_flags::DEPTH)
+        {
+            return create_composite_pass<ui_wireframe_pass, TTag>("ui_wireframe_composite_pass"_sid, shader_tag, framebuffer_tag, framebuffer_flags);
         }
     }
 }

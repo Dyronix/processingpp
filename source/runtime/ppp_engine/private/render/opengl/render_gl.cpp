@@ -8,6 +8,7 @@
 #include "render/render_instance_renderer.h"
 
 #include "render/render_pass_ui.h"
+#include "render/render_pass_font.h"
 #include "render/render_pass_blit.h"
 #include "render/render_pass_clear.h"
 #include "render/render_pass_composite.h"
@@ -285,11 +286,15 @@ namespace ppp
 
             g_ctx.render_pipeline.add_insertion_point(insertion_point::AFTER_LIT_OPAQUE);
 
-            // Wireframe
             wiref_passes.push_back(g_ctx.render_pipeline.add_pass(create_unlit_wireframe_composite_pass(unlit::tags::color{}, framebuffer_pool::tags::composite())));
 
-            // Clear color only and do an ui pass
-            g_ctx.render_pipeline.add_pass(std::make_unique<ui_pass>(unlit::tags::font{}, framebuffer_pool::tags::composite()));
+            // Draw the UI pass
+            solid_passes.push_back(g_ctx.render_pipeline.add_pass(create_ui_composite_pass(unlit::tags::ui_color{}, framebuffer_pool::tags::composite())));
+            solid_passes.push_back(g_ctx.render_pipeline.add_pass(create_ui_composite_pass(unlit::tags::ui_texture{}, framebuffer_pool::tags::composite())));
+            // Draw the UI pass wireframe
+            wiref_passes.push_back(g_ctx.render_pipeline.add_pass(create_ui_wireframe_composite_pass(unlit::tags::ui_color{}, framebuffer_pool::tags::composite())));
+            // Draw any fonts
+            solid_passes.push_back(g_ctx.render_pipeline.add_pass(std::make_unique<font_pass>(unlit::tags::font{}, framebuffer_pool::tags::composite())));
 
             // Blit to backbuffer
             g_ctx.render_pipeline.add_pass(std::make_unique<blit_pass>(framebuffer_pool::tags::composite(), framebuffer_flags::COLOR | framebuffer_flags::DEPTH));
