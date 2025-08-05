@@ -1,6 +1,7 @@
 #include "render/render_pass_unlit.h"
 #include "render/render_batch_renderer.h"
 #include "render/render_batch_data_table.h"
+#include "render/render_instance_data_table.h"
 #include "render/render_instance_renderer.h"
 #include "render/render_context.h"
 #include "render/render_shader_uniform_manager.h"
@@ -10,6 +11,7 @@
 #include "resources/framebuffer_pool.h"
 #include "resources/shader_pool.h"
 #include "resources/material.h"
+#include "resources/texture_pool.h"
 
 #include "camera/camera_context.h"
 
@@ -24,14 +26,27 @@ namespace ppp
         //-------------------------------------------------------------------------
         static void push_batch_uniforms(const batch_data_table* data_table, const resources::shader_program& shader_program, const resources::sampler_ids& samplers, const resources::texture_ids& textures)
         {
-            const u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
+            const bool has_texture_support = data_table->has_texture_support();
 
-            const u64 sampler_size = samplers.size();
-            const u64 texture_size = textures.size();
-
-            if (!textures.empty())
+            if (has_texture_support)
             {
-                shaders::push_uniform_array(shader_program->id(), string::store_sid("u_image_samplers"), sampler_size, samplers.data());
+                const u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
+                const u64 sampler_size = samplers.size();
+                const u64 texture_size = textures.size();
+                const u64 max_tex = static_cast<u64>(max_textures());
+
+                // build a full length sampler array, padding with the white slot
+                std::vector<s32> padded_samplers(max_tex);
+                for (u64 i = 0; i < max_tex; ++i)
+                {
+                    padded_samplers[i] = i < sampler_size ? samplers[i] : texture_pool::reserved_white_slot();
+                }
+
+                shaders::push_uniform_array(shader_program->id(), string::store_sid("u_image_samplers"), padded_samplers.size(), padded_samplers.data());
+
+                const u64 reserved_slot = texture_pool::reserved_white_slot();
+                opengl::api::instance().activate_texture(GL_TEXTURE0 + offset * reserved_slot);
+                opengl::api::instance().bind_texture(GL_TEXTURE_2D, texture_pool::image_solid_white()->image_id);
 
                 for (u64 i = 0; i < texture_size; ++i)
                 {
@@ -43,14 +58,27 @@ namespace ppp
         //-------------------------------------------------------------------------
         static void push_instance_uniforms(const instance_data_table* data_table, const resources::shader_program& shader_program, const resources::sampler_ids& samplers, const resources::texture_ids& textures)
         {
-            constexpr u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
+            const bool has_texture_support = data_table->has_texture_support();
 
-            const u64 sampler_size = samplers.size();
-            const u64 texture_size = textures.size();
-
-            if (!textures.empty())
+            if (has_texture_support)
             {
-                shaders::push_uniform_array(shader_program->id(), string::store_sid("u_image_samplers"), sampler_size, samplers.data());
+                constexpr u64 offset = GL_TEXTURE1 - GL_TEXTURE0;
+                const u64 sampler_size = samplers.size();
+                const u64 texture_size = textures.size();
+                const u64 max_tex = static_cast<u64>(max_textures());
+
+                // build a full length sampler array, padding with the white slot
+                std::vector<s32> padded_samplers(max_tex);
+                for (u64 i = 0; i < max_tex; ++i)
+                {
+                    padded_samplers[i] = i < sampler_size ? samplers[i] : texture_pool::reserved_white_slot();
+                }
+
+                shaders::push_uniform_array(shader_program->id(), string::store_sid("u_image_samplers"), padded_samplers.size(), padded_samplers.data());
+
+                const u64 reserved_slot = texture_pool::reserved_white_slot();
+                opengl::api::instance().activate_texture(GL_TEXTURE0 + offset * reserved_slot);
+                opengl::api::instance().bind_texture(GL_TEXTURE_2D, texture_pool::image_solid_white()->image_id);
 
                 for (u64 i = 0; i < texture_size; ++i)
                 {
