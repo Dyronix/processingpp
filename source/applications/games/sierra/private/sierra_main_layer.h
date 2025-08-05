@@ -5,6 +5,7 @@
 #include "vector.h"
 #include "environment.h"
 #include "json.h"
+#include "object_factory.h"
 
 #include <optional>
 #include <unordered_map>
@@ -28,14 +29,7 @@ namespace ppp
       void init_enemy_spawn_points();
 
       void load_level();
-
-      // entity Creation
       void create_camera();
-      void create_enemy(const glm::vec3& pos, const std::vector<flecs::entity>* path);
-      void create_tower();
-      void create_bullet(const glm::vec3& pos, const glm::vec3 targetPos);
-      void create_trigger();
-
       void spawn_enemies();
 
       // systems
@@ -78,5 +72,7 @@ namespace ppp
 
       std::vector<ecs::transform_component> _begin_transforms;
       std::unordered_map<flecs::entity_t, std::vector<flecs::entity>> m_start_to_path;
+
+      object_factory m_object_factory;
     };
 }
