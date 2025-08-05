@@ -32,8 +32,6 @@ namespace ppp
     {
         set_quit_application_keycode(key_code::KEY_ESCAPE);
 
-        shader(material::tags::unlit::color());
-
         enable_batched_draw_mode();
         enable_wireframe_mode(true);
         enable_solid_mode(true);
