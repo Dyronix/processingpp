@@ -478,7 +478,7 @@ namespace ppp
 
                         .set_main_function_body(R"(
                         vec4 base_color = texture(u_image_samplers[materials[v_material_idx].sampler_indices[0]], v_texture);
-                        frag_color = base_color;
+                        frag_color = base_color * v_tint_color;
                     )").build();
                 }
 
