@@ -23,8 +23,12 @@ namespace ppp
     //-------------------------------------------------------------------------
     sierra_main_layer::sierra_main_layer(sierra_engine_context* ctx)
         :sierra_layer(ctx, "main"_sid, 0, false)
+      , _enemy_radius(25.0f)
+      , _bullet_radius(5.0f)
       , _current_time(0.0f)
-      , m_object_factory(context()->scene_manager.active_scene()->world())
+      , _object_factory(context()->scene_manager.active_scene()->world())
+      , _enemy_spawn_offset(50.0f)
+      , _wave_system()
     {}
 
     //-------------------------------------------------------------------------
@@ -34,11 +38,12 @@ namespace ppp
 
         load_level();
         init_systems();
-        init_enemy_spawn_points();
 
-        find_nav_paths();
-
-        spawn_enemies();
+        _wave_system = std::make_unique<wave_system>(context()->scene_manager.active_scene()->world(), wave_config{ 1.0f, _enemy_radius, _enemy_spawn_offset });
+        context()->player_state.subsrcibe_start_new_wave([&]()
+          {
+            _wave_system->start_new_wave(5);
+          });
     }
 
     void sierra_main_layer::load_level()
@@ -84,19 +89,6 @@ namespace ppp
           1.0f,   /*.min_zoom */
           600.0f  /*.max_zoom */
         });
-    }
-
-    void sierra_main_layer::spawn_enemies()
-    {
-      flecs::world& world = context()->scene_manager.active_scene()->world();
-      world.query_builder()
-        .with<ecs::begin_component>()
-        .each([this](flecs::entity entity)
-          {
-            ecs::transform_component transform_comp = entity.get<ecs::transform_component>();
-            transform_comp.position.y += 50;
-            m_object_factory.create_enemy(transform_comp.position, _enemy_radius, m_start_to_path.at(entity.id()));
-          });
     }
 
     void sierra_main_layer::init_systems()
@@ -147,23 +139,26 @@ namespace ppp
                 t.position += bs.direction * bc.speed * world.delta_time();
               });
         });
-    }
-
-    void sierra_main_layer::init_enemy_spawn_points()
-    {
-      flecs::world& world = context()->scene_manager.active_scene()->world();
-      world.query_builder()
-        .with<ecs::tile_component>()
-        .each([&](const flecs::entity tileEntity)
-          {
-            ecs::tile_component tile_comp = tileEntity.get<ecs::tile_component>();
-
-            if (tile_comp.type == tile_type::begin)
-            {
-              ecs::transform_component transform = tileEntity.get<ecs::transform_component>();
-              _begin_transforms.push_back(transform);
-            }
-          });
+      create_system([this](flecs::world& world)
+        {
+          return world.system<const ecs::transform_component, const ecs::end_component>("end trigger update")
+            .kind<ecs::tick_pipeline>()
+            .each(
+              [this, world](const ecs::transform_component& tc, const ecs::end_component& endComp)
+              {
+                for_each_enemy_component(world,
+                  [&](flecs::entity enemyEntity)
+                  {
+                    ecs::transform_component enemy_transform = enemyEntity.get<ecs::transform_component>();
+                    ecs::enemy_component ec = enemyEntity.get<ecs::enemy_component>();
+                    f32 distance = glm::length((tc.position - enemy_transform.position)) - _enemy_spawn_offset;
+                    if (distance < ec.radius)
+                    {
+                      enemyEntity.destruct();
+                    }
+                  });
+              });
+        });
     }
 
     void sierra_main_layer::move_enemy(ecs::transform_component& enemyTransform, const ecs::enemy_component& ec, ecs::enemy_state& es)
@@ -212,6 +207,7 @@ namespace ppp
           f32 distance = glm::length((trigger_transform.position - enemyTransform.position));
           if (distance < ec.radius)
           {
+            
             //ppp::log::info("overlapping!");
           }
         });
@@ -237,7 +233,7 @@ namespace ppp
         ppp::log::info("Shooting!");
         ts.last_fire_time = _current_time;
         ecs::transform_component target_transform = ts.target.get<ecs::transform_component>();
-        m_object_factory.create_bullet(t.position, _bullet_radius, target_transform.position);
+        _object_factory.create_bullet(t.position, _bullet_radius, target_transform.position);
       }
     }
     void sierra_main_layer::tower_select_target(const flecs::world& world, const ecs::transform_component& t, const ecs::tower_component& tc, ecs::tower_state& ts)
@@ -276,24 +272,10 @@ namespace ppp
       }
     }
 
-    void sierra_main_layer::find_nav_paths()
-    {
-      // calculate the linked path list for every node
-      flecs::world& world = context()->scene_manager.active_scene()->world();
-      world.query_builder()
-        .with<ecs::begin_component>()
-        .each([this](flecs::entity beginEntity)
-          {
-            astart_path_resolver resolver{};
-            
-            const ecs::begin_component& begin_component = beginEntity.get<ecs::begin_component>();
-            std::vector<flecs::entity> path_to_end = resolver.resolve(beginEntity, begin_component.target);
-            m_start_to_path[beginEntity.id()] = std::move(path_to_end);
-          });
-    }
-
     void sierra_main_layer::on_tick(f32 dt)
     {
       _current_time += dt;
+
+      _wave_system->tick(dt);
     }
 }

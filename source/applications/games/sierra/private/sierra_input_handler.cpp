@@ -28,6 +28,7 @@ namespace ppp
             switch (code)
             {
             case key_code::KEY_SPACE: space_button_press();
+            case key_code::KEY_W: w_button_press();
             }
         }
 
@@ -135,6 +136,11 @@ namespace ppp
         {
             _owning_layer->context()->player_state.toggle_placement();
             log::info("Is in placement state: {}", _owning_layer->context()->player_state.is_placing());
+        }
+
+        void w_button_press()
+        {
+          _owning_layer->context()->player_state.start_new_wave();
         }
 
         flecs::query<const class ecs::transform_component, const class ecs::bounding_box_component, const class ecs::pickable_component> _picking_query;
