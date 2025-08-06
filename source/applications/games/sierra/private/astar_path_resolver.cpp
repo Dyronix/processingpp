@@ -80,13 +80,6 @@ namespace ppp
       std::reverse(path_to_end.begin(), path_to_end.end());
     }
 
-    for (flecs::entity path : path_to_end)
-    {
-      const grid_cell_component& cell = path.get<grid_cell_component>();
-
-      log::info("path: ({}, {})", cell.get_world_location().x, cell.get_world_location().y);
-    }
-
     return path_to_end;
   }
 

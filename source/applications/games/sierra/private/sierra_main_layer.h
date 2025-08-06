@@ -67,6 +67,7 @@ namespace ppp
       f32 _bullet_radius;
       f32 _current_time;
       f32 _enemy_spawn_offset;
+      s32 _num_lives;
 
       object_factory _object_factory;
       std::unique_ptr<wave_system> _wave_system;

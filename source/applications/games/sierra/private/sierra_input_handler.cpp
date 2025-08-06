@@ -27,8 +27,8 @@ namespace ppp
         {
             switch (code)
             {
-            case key_code::KEY_SPACE: space_button_press();
-            case key_code::KEY_W: w_button_press();
+            case key_code::KEY_SPACE: space_button_press(); break;
+            case key_code::KEY_W: w_button_press(); break;
             }
         }
 

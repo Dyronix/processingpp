@@ -29,6 +29,7 @@ namespace ppp
       , _object_factory(context()->scene_manager.active_scene()->world())
       , _enemy_spawn_offset(50.0f)
       , _wave_system()
+      , _num_lives(2)
     {}
 
     //-------------------------------------------------------------------------
@@ -42,7 +43,8 @@ namespace ppp
         _wave_system = std::make_unique<wave_system>(context()->scene_manager.active_scene()->world(), wave_config{ 1.0f, _enemy_radius, _enemy_spawn_offset });
         context()->player_state.subsrcibe_start_new_wave([&]()
           {
-            _wave_system->start_new_wave(5);
+            static s32 num_to_spawn = 5;
+            _wave_system->start_new_wave(num_to_spawn++);
           });
     }
 
@@ -155,6 +157,14 @@ namespace ppp
                     if (distance < ec.radius)
                     {
                       enemyEntity.destruct();
+                      _num_lives--;
+                      log::info("lost a life!");
+                      log::info("num lives left: {}", _num_lives);
+
+                      if (_num_lives == 0)
+                      {
+                        log::info("GAME OVER!!!");
+                      }
                     }
                   });
               });
@@ -230,7 +240,6 @@ namespace ppp
       f32 inv_shoot_rate = 1.0f / tc.shoot_rate;
       if (_current_time - ts.last_fire_time > inv_shoot_rate)
       {
-        ppp::log::info("Shooting!");
         ts.last_fire_time = _current_time;
         ecs::transform_component target_transform = ts.target.get<ecs::transform_component>();
         _object_factory.create_bullet(t.position, _bullet_radius, target_transform.position);
