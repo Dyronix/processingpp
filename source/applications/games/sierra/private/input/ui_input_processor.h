@@ -2,6 +2,8 @@
 
 #include "sierra_input_processor.h"
 
+#include "ecs/components/ecs_components.h"
+
 namespace ppp
 {
     class sierra_layer;

@@ -18,8 +18,8 @@ namespace ppp
             const ecs::pickable_component>();
     }
 
-    bool on_input(const input_event& evt)
+    bool ui_input_processor::on_input(const input_event& evt)
     {
-
+        return false;
     }
 }
