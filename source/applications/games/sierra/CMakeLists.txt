@@ -75,6 +75,11 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer_stack.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/layers/layer_stack.cpp
+    #input
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/ui_input_processor.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/ui_input_processor.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/world_input_processor.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/world_input_processor.h
 
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/astar_path_resolver.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/astar_path_resolver.cpp
@@ -83,8 +88,12 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_engine_context.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_player_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_player_state.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_input_event.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_input_event.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_input_handler.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_input_handler.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_input_processor.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_input_processor.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_placement_layer.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_placement_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_level_layer.h
