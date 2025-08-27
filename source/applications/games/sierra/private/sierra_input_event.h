@@ -8,12 +8,15 @@ namespace ppp
 {
     enum class input_event_type : u32
     {
+        KEY_PRESS,
         KEY_DOWN,
-        KEY_UP,
+        KEY_RELEASE,
         MOUSE_MOTION,
-        MOUSE_BUTTON_DOWN,
-        MOUSE_BUTTON_UP,
-        MOUSE_WHEEL,
+        MOUSE_PRESS,
+        MOUSE_RELEASE,
+        MOUSE_DOWN,
+        MOUSE_V_WHEEL,
+        MOUSE_H_WHEEL,
     };
 
     struct keyboard_event
@@ -32,9 +35,15 @@ namespace ppp
         s32 x, y;
     };
 
-    struct mouse_wheel_event
+    struct mouse_h_wheel_event
     {
-        f32 wheel_x, wheel_y;
+        f32 wheel_h;
+        s32 x, y;
+    };
+
+    struct mouse_v_wheel_event
+    {
+        f32 wheel_v;
         s32 x, y;
     };
 
@@ -46,7 +55,8 @@ namespace ppp
             keyboard_event keyboard;
             mouse_motion_event mouse_motion;
             mouse_button_event mouse_button;
-            mouse_wheel_event  mouse_wheel;
+            mouse_h_wheel_event mouse_h_wheel;
+            mouse_v_wheel_event mouse_v_wheel;
         };
     };
 }
