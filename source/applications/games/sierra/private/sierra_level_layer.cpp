@@ -95,21 +95,6 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
-    void sierra_level_layer::on_attached()
-    {
-        add_mouse_pressed_callback(
-            [&](mouse_code code)
-        {
-            _input_handler->handle_mouse_button_click(code);
-        });
-        
-        add_key_pressed_callback(
-            [&](key_code code)
-        {
-            _input_handler->handle_key_press(code);
-        });
-    }
-    //-------------------------------------------------------------------------
     void sierra_level_layer::on_enable()
     {
         load_level();
