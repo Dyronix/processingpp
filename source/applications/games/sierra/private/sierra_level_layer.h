@@ -18,7 +18,6 @@ namespace ppp
         sierra_level_layer(sierra_engine_context* ctx);
 
     protected:
-        void on_attached() override;
         void on_enable() override;
 
     private:

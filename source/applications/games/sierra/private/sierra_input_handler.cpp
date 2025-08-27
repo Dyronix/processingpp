@@ -2,6 +2,12 @@
 #include "sierra_layer.h"
 #include "sierra_engine_context.h"
 #include "sierra_player_state.h"
+#include "sierra_input_event.h"
+#include "sierra_input_processor.h"
+
+#include "input/world_input_processor.h"
+#include "input/ui_input_processor.h"
+#include "input/placement_input_processor.h"
 
 #include "ecs/components/ecs_components.h"
 
@@ -9,177 +15,48 @@
 
 #include "ray.h"
 #include "camera.h"
+#include "events.h"
 
 namespace ppp
 {
+    struct istate
+    {
+        //-------------------------------------------------------------------------
+        bool on_input(const input_event& evt)
+        {
+            for (auto& processor : processors)
+            {
+                if (processor->on_input(evt))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        std::vector<std::unique_ptr<isierra_input_processor>> processors;
+    };
+
     struct idle_state : public istate
     {
         //-------------------------------------------------------------------------
         idle_state(sierra_layer* owning_layer) 
-            : istate(owning_layer)
+            : istate()
         {
-            _picking_query = owning_layer->create_query<const ecs::transform_component, const ecs::bounding_box_component, const ecs::pickable_component>();
-            _picking_ui_query = owning_layer->create_query<const ecs::rect_transform_component, const ecs::bounding_box_2d_component, const ecs::sorting_layer_component, const ecs::pickable_component>();
+            processors.push_back(std::make_unique<ui_input_processor>(owning_layer));
+            processors.push_back(std::make_unique<world_input_processor>(owning_layer));
+            processors.push_back(std::make_unique<placement_input_processor>(owning_layer));
         }
-
-        //-------------------------------------------------------------------------
-        void handle_key_press(key_code code) override
-        {
-            switch (code)
-            {
-            case key_code::KEY_SPACE: space_button_press();
-            }
-        }
-
-        //-------------------------------------------------------------------------
-        void handle_mouse_button_click(mouse_code code) override
-        {
-            switch (code)
-            {
-            case mouse_code::BUTTON_LEFT: handle_left_mouse_button_click(); break;
-            }
-        }
-
-        //-------------------------------------------------------------------------
-        void handle_left_mouse_button_click()
-        {
-            int x = mouse_x();
-            int y = mouse_y();
-
-            bool picked_entity = false;
-
-            if (_picking_ui_query && !picked_entity)
-            {
-                flecs::entity closest_entity;
-                s32 closest_t = std::numeric_limits<s32>::min();
-
-                std::vector<flecs::entity> pick;
-                std::vector<flecs::entity> unpick;
-
-                _picking_ui_query.each([&](flecs::entity& e, const ecs::rect_transform_component& transform, const ecs::bounding_box_2d_component& box, const ecs::sorting_layer_component& sorting_layer, const ecs::pickable_component& /*pickable*/)
-                {
-                    glm::vec2 aabb_min = transform.position + box.min;
-                    glm::vec2 aabb_max = transform.position + box.max;
-
-                    s32 t = sorting_layer.index;
-                    if (t > closest_t)
-                    {
-                        if (x > aabb_min.x && x < aabb_max.x && y > aabb_min.y && y < aabb_max.y)
-                        {
-                            closest_entity = e;
-                            closest_t = t;
-                        }
-                    }
-                });
-
-                if (closest_entity.is_valid())
-                {
-                    picked_entity = true;
-                    log::info("Picked entity: {}", closest_entity.name().c_str());
-                    if (closest_entity.has<ecs::picked_component>())
-                    {
-                        closest_entity.remove<ecs::picked_component>();
-                    }
-                    else
-                    {
-                        closest_entity.add<ecs::picked_component>();
-                    }
-                }
-            }
-
-            if (_picking_query && !picked_entity)
-            {
-                ray r = screen_to_world(x, y, render::scissor_rect()->width, render::scissor_rect()->height);
-
-                flecs::entity closest_entity;
-                f32 closest_t = std::numeric_limits<f32>::max();
-
-                std::vector<flecs::entity> pick;
-                std::vector<flecs::entity> unpick;
-
-                _picking_query.each([&](flecs::entity& e, const ecs::transform_component& transform, const ecs::bounding_box_component& box, const ecs::pickable_component& /*pickable*/)
-                {
-                    glm::vec3 half_extent = transform.scale * 0.5f;
-                    glm::vec3 aabb_min = transform.position + box.min;
-                    glm::vec3 aabb_max = transform.position + box.max;
-
-                    f32 t;
-                    if (ray_intersects_aabb(r.origin, r.dir, aabb_min, aabb_max, t))
-                    {
-                        if (t < closest_t)
-                        {
-                            closest_t = t;
-                            closest_entity = e;
-                        }
-                    }
-                });
-
-                if (closest_entity.is_valid())
-                {
-                    picked_entity = true;
-                    log::info("Picked entity: {}", closest_entity.name().c_str());
-                    if (closest_entity.has<ecs::picked_component>())
-                    {
-                        closest_entity.remove<ecs::picked_component>();
-                    }
-                    else
-                    {
-                        closest_entity.add<ecs::picked_component>();
-                    }
-                }
-            }
-        }
-
-        //-------------------------------------------------------------------------
-        void space_button_press()
-        {
-            _owning_layer->context()->player_state.toggle_placement();
-            log::info("Is in placement state: {}", _owning_layer->context()->player_state.is_placing());
-        }
-
-        flecs::query<const class ecs::transform_component, const class ecs::bounding_box_component, const class ecs::pickable_component> _picking_query;
-        flecs::query<const class ecs::rect_transform_component, const class ecs::bounding_box_2d_component, const class ecs::sorting_layer_component, const class ecs::pickable_component> _picking_ui_query;
     };
     struct placement_state : public istate
     {
         //-------------------------------------------------------------------------
         placement_state(sierra_layer* owning_layer) 
-            : istate(owning_layer)
+            : istate()
         {
-        }
-
-        //-------------------------------------------------------------------------
-        void handle_key_press(key_code code) override
-        {
-            switch (code)
-            {
-            case key_code::KEY_SPACE: space_button_press();
-            }
-        }
-
-        //-------------------------------------------------------------------------
-        void handle_mouse_button_click(mouse_code code) override
-        {
-            switch (code)
-            {
-            case mouse_code::BUTTON_LEFT: handle_left_mouse_button_click(); break;
-            }
-        }
-
-        //-------------------------------------------------------------------------
-        void handle_left_mouse_button_click()
-        {
-            log::info("Going to try and spawn a tower");
-
-            _owning_layer->context()->player_state.try_spawn_tower();
-        }
-
-        //-------------------------------------------------------------------------
-        void space_button_press()
-        {
-            log::info("Going to change to placement state: {}", !_owning_layer->context()->player_state.is_placing());
-
-            _owning_layer->context()->player_state.toggle_placement();
+            processors.push_back(std::make_unique<ui_input_processor>(owning_layer));
+            processors.push_back(std::make_unique<placement_input_processor>(owning_layer));
         }
     };
 
@@ -193,23 +70,91 @@ namespace ppp
 
         layer->context()->player_state.subscribe_start_placement([&]() { change_to_placement(); });
         layer->context()->player_state.subscribe_stop_placement([&]() { change_to_idle(); });
+
+        register_mouse_input_events();
+        register_keyboard_input_events();
     }
+    //-------------------------------------------------------------------------
+    sierra_input_handler::~sierra_input_handler() = default;
 
     //-------------------------------------------------------------------------
-    void sierra_input_handler::handle_key_press(key_code code)
+    void sierra_input_handler::register_mouse_input_events()
     {
-        if (_active_state)
+        add_mouse_moved_callback([&](float x, float y)
         {
-            _active_state->handle_key_press(code);
-        }
-    }  
+            input_event evt;
+            evt.type = input_event_type::MOUSE_MOTION;
+            evt.mouse_motion.x = x;
+            evt.mouse_motion.y = y;
+            _active_state->on_input(evt);
+        });
+
+        add_mouse_pressed_callback([&](mouse_code code)
+        {
+            input_event evt;
+            evt.type = input_event_type::MOUSE_PRESS;
+            evt.mouse_button.button = code;
+            evt.mouse_button.x = mouse_x();
+            evt.mouse_button.y = mouse_y();
+            _active_state->on_input(evt);
+        });
+
+        add_mouse_released_callback([&](mouse_code code)
+        {
+            input_event evt;
+            evt.type = input_event_type::MOUSE_RELEASE;
+            evt.mouse_button.button = code;
+            evt.mouse_button.x = mouse_x();
+            evt.mouse_button.y = mouse_y();
+            _active_state->on_input(evt);
+        });
+
+        add_mouse_verticel_wheel_callback([&](float scroll)
+        {
+            input_event evt;
+            evt.type = input_event_type::MOUSE_V_WHEEL;
+            evt.mouse_v_wheel.wheel_v = scroll;
+            evt.mouse_v_wheel.x = mouse_x();
+            evt.mouse_v_wheel.y = mouse_y();
+            _active_state->on_input(evt);
+        });
+
+        add_mouse_horizontal_wheel_callback([&](float scroll)
+        {
+            input_event evt;
+            evt.type = input_event_type::MOUSE_H_WHEEL;
+            evt.mouse_h_wheel.wheel_h = scroll;
+            evt.mouse_h_wheel.x = mouse_x();
+            evt.mouse_h_wheel.y = mouse_y();
+            _active_state->on_input(evt);
+        });
+    }
     //-------------------------------------------------------------------------
-    void sierra_input_handler::handle_mouse_button_click(mouse_code code)
+    void sierra_input_handler::register_keyboard_input_events()
     {
-        if (_active_state)
+        add_key_pressed_callback([&](key_code code)
         {
-            _active_state->handle_mouse_button_click(code);
-        }
+            input_event evt;
+            evt.type = input_event_type::KEY_PRESS;
+            evt.keyboard.code = code;
+            _active_state->on_input(evt);
+        });
+
+        add_key_released_callback([&](key_code code)
+        {
+            input_event evt;
+            evt.type = input_event_type::KEY_RELEASE;
+            evt.keyboard.code = code;
+            _active_state->on_input(evt);
+        });
+
+        add_key_down_callback([&](key_code code)
+        {
+            input_event evt;
+            evt.type = input_event_type::KEY_DOWN;
+            evt.keyboard.code = code;
+            _active_state->on_input(evt);
+        });
     }
 
     //-------------------------------------------------------------------------
@@ -217,7 +162,6 @@ namespace ppp
     {
         _active_state = _idle_state.get();
     }
-
     //-------------------------------------------------------------------------
     void sierra_input_handler::change_to_placement()
     {

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "events.h"
-
 #include <flecs.h>
 
 #include <memory>
@@ -9,36 +7,18 @@
 namespace ppp
 {
     class sierra_layer;
-
-    namespace ecs
-    {
-        struct transform_component;
-        struct bounding_box_component;
-        struct pickable_component;
-    }
-
-    struct istate
-    {
-        istate(sierra_layer* owning_layer) 
-            : _owning_layer(owning_layer) 
-        {}
-        virtual ~istate() = default;
-
-        virtual void handle_key_press(key_code code) = 0;
-        virtual void handle_mouse_button_click(mouse_code code) = 0;
-
-        sierra_layer* _owning_layer;
-    };
+    class istate;
 
     class sierra_input_handler
     {
     public:
         sierra_input_handler(sierra_layer* layer);
-
-        void handle_key_press(key_code code);
-        void handle_mouse_button_click(mouse_code code);
+        ~sierra_input_handler();
 
     private:
+        void register_mouse_input_events();
+        void register_keyboard_input_events();
+
         void change_to_idle();
         void change_to_placement();
 
