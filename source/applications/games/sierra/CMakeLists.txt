@@ -80,9 +80,13 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/ui_input_processor.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/world_input_processor.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/world_input_processor.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/placement_input_processor.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/placement_input_processor.h
 
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/astar_path_resolver.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/astar_path_resolver.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/wave_system.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/wave_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/object_factory.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/object_factory.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_engine_context.h
