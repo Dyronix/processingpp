@@ -1,3 +1,5 @@
+#pragma once
+
 #include "flecs.h"
 
 #include "glm/glm.hpp"
