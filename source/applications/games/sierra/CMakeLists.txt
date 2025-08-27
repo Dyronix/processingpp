@@ -9,6 +9,7 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/sierra_inspector.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/sierra_inspector.cpp
     #imgui-layers
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/layers/layer_stack_panel.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/layers/layer_stats.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/layers/layer_stats.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/imgui/layers/layer_floating_window.h
@@ -40,6 +41,7 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_render_properties_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_orbit_control_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_camera_free_control_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_enemy_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_enemy_goal_trigger_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_enemy_state.h
@@ -62,6 +64,8 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_camera_init_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_orbit_camera_system.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_orbit_camera_system.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_free_camera_system.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_free_camera_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_systems.h
