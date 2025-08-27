@@ -6,6 +6,7 @@
 #include "environment.h"
 #include "json.h"
 #include "object_factory.h"
+#include "wave_system.h"
 
 #include <optional>
 #include <unordered_map>
@@ -26,11 +27,9 @@ namespace ppp
     private:
       // initialization
       void init_systems();
-      void init_enemy_spawn_points();
 
       void load_level();
       void create_camera();
-      void spawn_enemies();
 
       // systems
       void move_enemy(ecs::transform_component& enemyTransform, const ecs::enemy_component& ec, ecs::enemy_state& es);
@@ -40,8 +39,6 @@ namespace ppp
       
       void tower_shoot_update(const flecs::world& world, const ecs::transform_component& t, const ecs::tower_component& tc, ecs::tower_state& ts);
       void tower_select_target(const flecs::world& world, const ecs::transform_component& t, const ecs::tower_component& tc, ecs::tower_state& ts);
-
-      void find_nav_paths();
 
       template <typename Func>
       void for_each_enemy_component(const flecs::world& world, const Func& func)
@@ -66,13 +63,13 @@ namespace ppp
       }
 
     private:
-      f32 _enemy_radius = 50.0f;
-      f32 _bullet_radius = 5.0f;
+      f32 _enemy_radius;
+      f32 _bullet_radius;
       f32 _current_time;
+      f32 _enemy_spawn_offset;
+      s32 _num_lives;
 
-      std::vector<ecs::transform_component> _begin_transforms;
-      std::unordered_map<flecs::entity_t, std::vector<flecs::entity>> m_start_to_path;
-
-      object_factory m_object_factory;
+      object_factory _object_factory;
+      std::unique_ptr<wave_system> _wave_system;
     };
 }
