@@ -96,24 +96,24 @@ namespace ppp
                     severity_str = "HIGH";
                     ppp::log::error("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
                     break;
-                    #if LOG_GL_MEDIUM
+#if LOG_GL_MEDIUM
                 case GL_DEBUG_SEVERITY_MEDIUM:
                     severity_str = "MEDIUM";
                     ppp::log::warn("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
                     break;
-                    #endif
-                    #if LOG_GL_LOW
+#endif
+#if LOG_GL_LOW
                 case GL_DEBUG_SEVERITY_LOW:
                     severity_str = "LOW";
                     ppp::log::warn("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
                     break;
-                    #endif
-                    #if LOG_GL_NOTIFICATIONS
+#endif
+#if LOG_GL_NOTIFICATIONS
                 case GL_DEBUG_SEVERITY_NOTIFICATION:
                     severity_str = "NOTIFICATION";
                     ppp::log::info("OpenGL: Severity: [{}], Source: [{}], Type: [{}], ID: [{}]\nMessage: {}", severity_str, source_str, type_str, id, message);
                     break;
-                    #endif
+#endif
                 }
 
                 if (severity == GL_DEBUG_SEVERITY_HIGH)
@@ -202,7 +202,7 @@ namespace ppp
                 batch_data_key data_key = { shader_tag, shading_model,shading_blend, g_ctx.depth_test, g_ctx.depth_write, g_ctx.shadows };
                 batch_data_hash_map* batches = nullptr;
 
-                switch(shading_blend)
+                switch (shading_blend)
                 {
                 case shading_blending_type::OPAQUE: batches = &g_ctx.opaque_batch_data; break;
                 case shading_blending_type::TRANSPARENT: batches = &g_ctx.transparent_batch_data; break;
@@ -317,7 +317,7 @@ namespace ppp
             // glDebugMessageCallback is only available on OpenGL 4.3 or higher
             if (has_debugging_capabilities())
             {
-                s32 flags = 0; 
+                s32 flags = 0;
                 opengl::api::instance().get_integer_value(GL_CONTEXT_FLAGS, &flags);
 
                 if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
@@ -337,7 +337,7 @@ namespace ppp
 
             constexpr bool enable_solid_rendering = true;
             constexpr bool enable_wireframe_rendering = false;
-            
+
             push_solid_rendering(enable_solid_rendering);
             push_wireframe_rendering(enable_wireframe_rendering);
 
@@ -448,6 +448,33 @@ namespace ppp
         void end()
         {
             broadcast_on_draw_end();
+        }
+
+        //-------------------------------------------------------------------------
+        void on_window_resized(s32 w, s32 h)
+        {
+            // Logical size changed.
+            // If we have UI/layout that uses logical pixels, we should update the UI module.
+        }
+
+        //-------------------------------------------------------------------------
+        void on_framebuffer_resized(s32 w, s32 h)
+        {
+            // Match GL viewport to the real backbuffer size (physical pixels).
+            opengl::api::instance().viewport(0, 0, w, h);
+
+            // Keep scissor in sync with the drawable area your pipeline expects.
+            push_scissor(0, 0, w, h);
+            push_scissor_enable(scissor_rect_enabled());
+        }
+
+        //-------------------------------------------------------------------------
+        void on_window_content_scale_changed(f32 content_scale_x, f32 content_scale_y, s32 framebuffer_width, s32 framebuffer_height)
+        {
+            // DPI changed (e.g., moved to another monitor). The logical size may be the same,
+            //      but the framebuffer size often changes. 
+            // Re-query and funnel through the same path.
+            on_framebuffer_resized(framebuffer_width, framebuffer_height);
         }
 
         //-------------------------------------------------------------------------
