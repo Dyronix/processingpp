@@ -4,12 +4,12 @@
 
 namespace ppp
 {
-    class sierra_layer;
+    class sierra_engine_context;
 
     class placement_input_processor : public isierra_input_processor
     {
     public:
-        placement_input_processor(sierra_layer* layer);
+        placement_input_processor(sierra_engine_context* context);
 
         bool on_input(const input_event& evt) override;
 
@@ -18,6 +18,6 @@ namespace ppp
         bool handle_key_press(const keyboard_event& evt);
 
     private:
-        sierra_layer* _owning_layer;
+        sierra_engine_context* _context;
     };
 }

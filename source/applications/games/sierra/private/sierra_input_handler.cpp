@@ -1,4 +1,5 @@
 #include "sierra_input_handler.h"
+#include "sierra.h"
 #include "sierra_layer.h"
 #include "sierra_engine_context.h"
 #include "sierra_player_state.h"
@@ -19,63 +20,51 @@
 
 namespace ppp
 {
-    struct istate
+    //-------------------------------------------------------------------------
+    bool istate::on_input(const input_event& evt)
     {
-        //-------------------------------------------------------------------------
-        bool on_input(const input_event& evt)
+        for (auto& processor : processors)
         {
-            for (auto& processor : processors)
+            if (processor->on_input(evt))
             {
-                if (processor->on_input(evt))
-                {
-                    return true;
-                }
+                return true;
             }
-
-            return false;
         }
 
-        std::vector<std::unique_ptr<isierra_input_processor>> processors;
-    };
-
-    struct idle_state : public istate
-    {
-        //-------------------------------------------------------------------------
-        idle_state(sierra_layer* owning_layer) 
-            : istate()
-        {
-            processors.push_back(std::make_unique<ui_input_processor>(owning_layer));
-            processors.push_back(std::make_unique<world_input_processor>(owning_layer));
-            processors.push_back(std::make_unique<placement_input_processor>(owning_layer));
-        }
-    };
-    struct placement_state : public istate
-    {
-        //-------------------------------------------------------------------------
-        placement_state(sierra_layer* owning_layer) 
-            : istate()
-        {
-            processors.push_back(std::make_unique<ui_input_processor>(owning_layer));
-            processors.push_back(std::make_unique<placement_input_processor>(owning_layer));
-        }
-    };
+        return false;
+    }
 
     //-------------------------------------------------------------------------
-    sierra_input_handler::sierra_input_handler(sierra_layer* layer)
+    void sierra_input_handler::init()
     {
-        _idle_state = std::make_unique<idle_state>(layer);
-        _placement_state = std::make_unique<placement_state>(layer);
-
-        change_to_idle();
-
-        layer->context()->player_state.subscribe_start_placement([&]() { change_to_placement(); });
-        layer->context()->player_state.subscribe_stop_placement([&]() { change_to_idle(); });
-
         register_mouse_input_events();
         register_keyboard_input_events();
     }
+
+    //-------------------------------------------------------------------------S
+    void sierra_input_handler::push_input_state(const std::string& str, std::unique_ptr<istate> state)
+    {
+        auto it = _input_states.find(str);
+        if (it != std::cend(_input_states))
+        {
+            log::warn("Input state with tag \"{}\" already present.", str);
+            return;
+        }
+
+        _input_states.emplace(str, std::move(state));
+    }
     //-------------------------------------------------------------------------
-    sierra_input_handler::~sierra_input_handler() = default;
+    void sierra_input_handler::push_active_input_state(const std::string& str)
+    {
+        auto it = _input_states.find(str);
+        if (it == std::cend(_input_states))
+        {
+            log::warn("Input state with tag \"{}\" not present.", str);
+            return;
+        }
+
+        _active_state = it->second.get();
+    }
 
     //-------------------------------------------------------------------------
     void sierra_input_handler::register_mouse_input_events()
@@ -84,8 +73,8 @@ namespace ppp
         {
             input_event evt;
             evt.type = input_event_type::MOUSE_MOTION;
-            evt.mouse_motion.x = x;
-            evt.mouse_motion.y = y;
+            evt.mouse_motion.x = mouse_x();
+            evt.mouse_motion.y = mouse_y();
             _active_state->on_input(evt);
         });
 
@@ -155,16 +144,5 @@ namespace ppp
             evt.keyboard.code = code;
             _active_state->on_input(evt);
         });
-    }
-
-    //-------------------------------------------------------------------------
-    void sierra_input_handler::change_to_idle()
-    {
-        _active_state = _idle_state.get();
-    }
-    //-------------------------------------------------------------------------
-    void sierra_input_handler::change_to_placement()
-    {
-        _active_state = _placement_state.get();
     }
 }

@@ -98,8 +98,6 @@ namespace ppp
     void sierra_level_layer::on_enable()
     {
         load_level();
-        
-        _input_handler = std::make_unique<sierra_input_handler>(this);
     }
 
     //-------------------------------------------------------------------------

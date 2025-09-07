@@ -36,6 +36,7 @@ namespace ppp
         }
     }
 
+    //-------------------------------------------------------------------------
     void sierra_player_state::start_new_wave()
     {
       log::info("New wave started");
@@ -65,5 +66,4 @@ namespace ppp
     {
       _new_wave_callbacks.push_back(callback);
     }
-
 }

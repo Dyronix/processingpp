@@ -37,7 +37,6 @@ namespace ppp
     {
         create_camera();
 
-        load_level();
         init_systems();
 
         _wave_system = std::make_unique<wave_system>(context()->scene_manager.active_scene()->world(), wave_config{ 1.0f, _enemy_radius, _enemy_spawn_offset });
@@ -47,24 +46,8 @@ namespace ppp
             _wave_system->start_new_wave(num_to_spawn++);
           });
     }
-
-    void sierra_main_layer::load_level()
-    {
-      json demo_level = load_text_json("local:content/json/demo_level.json");
-
-      level_builder_config2 cfg;
-      cfg.tile_size = demo_level["tile-size"];
-      cfg.tile_spacing = demo_level["tile-spacing"];
-      cfg.xoffset = -cfg.tile_size * 2;
-      cfg.zoffset = -cfg.tile_size * 2;
-
-      s32 width = demo_level["matrix"].front().size();
-      s32 height = demo_level["matrix"].size();
-
-      flecs::entity e_grid = create_entity("grid");
-      e_grid.emplace<grid>(context()->scene_manager.active_scene()->world(), demo_level["matrix"], cfg, glm::vec2{});
-    }
     
+    //-------------------------------------------------------------------------
     void sierra_main_layer::create_camera()
     {
       auto e_camera = create_entity("orbit_camera");
@@ -93,9 +76,12 @@ namespace ppp
         });
     }
 
+    //-------------------------------------------------------------------------
     void sierra_main_layer::init_systems()
     {
       create_system(&ecs::register_orbit_camera_system);
+      create_system(&ecs::register_free_camera_system);
+
       create_system([this](flecs::world& world)
         {
           return world.system<ecs::transform_component, const ecs::enemy_component, ecs::enemy_state>("enemy update")
@@ -171,6 +157,7 @@ namespace ppp
         });
     }
 
+    //-------------------------------------------------------------------------
     void sierra_main_layer::move_enemy(ecs::transform_component& enemyTransform, const ecs::enemy_component& ec, ecs::enemy_state& es)
     {
       flecs::entity current_target_entity = es.path->operator[](es.path_idx);
@@ -194,6 +181,7 @@ namespace ppp
       glm::vec3 target_dir = { dir.x, 0.0f, dir.y };
       enemyTransform.position += target_dir * ec.speed * delta_time();
     }
+    //-------------------------------------------------------------------------
     void sierra_main_layer::detect_bullet(const flecs::world& world, ecs::transform_component& enemyTransform, const ecs::enemy_component& ec, ecs::enemy_state& es)
     {
       for_each_bullet(world, [&](flecs::entity bulletEntity)
@@ -209,6 +197,7 @@ namespace ppp
           }
         });
     }
+    //-------------------------------------------------------------------------
     void sierra_main_layer::detect_end(const flecs::world& world, ecs::transform_component& enemyTransform, const ecs::enemy_component& ec)
     {
       for_each_end_trigger(world, [&](flecs::entity endTriggerEntity)
@@ -222,6 +211,7 @@ namespace ppp
           }
         });
     }
+    //-------------------------------------------------------------------------
     void sierra_main_layer::destroy_enemy(flecs::entity enemyEntity, const ecs::enemy_state& es)
     {
       if (es.health <= 0)
@@ -230,6 +220,7 @@ namespace ppp
       }
     }
 
+    //-------------------------------------------------------------------------
     void sierra_main_layer::tower_shoot_update(const flecs::world& world, const ecs::transform_component& t, const ecs::tower_component& tc, ecs::tower_state& ts)
     {
       if (!ts.target.is_valid())
@@ -245,6 +236,7 @@ namespace ppp
         _object_factory.create_bullet(t.position, _bullet_radius, target_transform.position);
       }
     }
+    //-------------------------------------------------------------------------
     void sierra_main_layer::tower_select_target(const flecs::world& world, const ecs::transform_component& t, const ecs::tower_component& tc, ecs::tower_state& ts)
     {
       if (ts.target.is_valid())
@@ -280,7 +272,7 @@ namespace ppp
         ts.target = closest_enemy.value();
       }
     }
-
+    //-------------------------------------------------------------------------
     void sierra_main_layer::on_tick(f32 dt)
     {
       _current_time += dt;

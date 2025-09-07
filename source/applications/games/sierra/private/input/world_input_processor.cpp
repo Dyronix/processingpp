@@ -6,7 +6,10 @@
 #include "ecs/components/ecs_pickable_component.h"
 #include "ecs/components/ecs_picked_component.h"
 
-#include "sierra_layer.h"
+#include "ecs/ecs_scene_manager.h"
+#include "ecs/ecs_scene.h"
+
+#include "sierra_engine_context.h"
 
 #include "util/log.h"
 
@@ -19,12 +22,12 @@
 namespace ppp
 {
     //-------------------------------------------------------------------------
-    world_input_processor::world_input_processor(sierra_layer* layer)
+    world_input_processor::world_input_processor(sierra_engine_context* context)
     {
-        _picking_query = layer->create_query<
+        _picking_query = context->scene_manager.active_scene()->world().query_builder<
             const ecs::transform_component,
             const ecs::bounding_box_component,
-            const ecs::pickable_component>();
+            const ecs::pickable_component>().build();
     }
 
     //-------------------------------------------------------------------------

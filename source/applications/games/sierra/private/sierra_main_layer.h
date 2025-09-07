@@ -28,7 +28,6 @@ namespace ppp
       // initialization
       void init_systems();
 
-      void load_level();
       void create_camera();
 
       // systems

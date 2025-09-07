@@ -9,8 +9,8 @@
 namespace ppp
 {
     //-------------------------------------------------------------------------
-    placement_input_processor::placement_input_processor(sierra_layer* layer)
-        :_owning_layer(layer)
+    placement_input_processor::placement_input_processor(sierra_engine_context* context)
+        :_context(context)
     {}
 
     //-------------------------------------------------------------------------
@@ -32,7 +32,7 @@ namespace ppp
         {
         case mouse_code::BUTTON_LEFT:
             log::info("Going to try and spawn a tower");
-            _owning_layer->context()->player_state.try_spawn_tower();
+            _context->player_state.try_spawn_tower();
             return true;
         }
 
@@ -44,8 +44,8 @@ namespace ppp
         switch (evt.code)
         {
         case key_code::KEY_SPACE:
-            log::info("Going to change to placement state: {}", !_owning_layer->context()->player_state.is_placing());
-            _owning_layer->context()->player_state.toggle_placement();
+            log::info("Going to change to placement state: {}", !_context->player_state.is_placing());
+            _context->player_state.toggle_placement();
             return true;
         }
 

@@ -7,14 +7,14 @@
 
 namespace ppp
 {
-    class sierra_layer;
+    class sierra_engine_context;
 
     struct mouse_button_event;
 
     class world_input_processor : public isierra_input_processor
     {
     public:
-        world_input_processor(sierra_layer* layer);
+        world_input_processor(sierra_engine_context* context);
 
         bool on_input(const input_event& evt);
 

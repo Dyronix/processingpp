@@ -97,7 +97,9 @@ namespace ppp
 
             bool is_key_down(s32 code)
             {
-                return glfwGetKey(glfw::window(), code) == GLFW_REPEAT;
+                int state = glfwGetKey(glfw::window(), code);
+
+                return state == GLFW_PRESS || state == GLFW_REPEAT;
             }
 
             void add_key_pressed_callback(const key_pressed_callback& callback)
@@ -168,7 +170,9 @@ namespace ppp
 
             bool is_mouse_button_down(s32 code)
             {
-                return glfwGetMouseButton(glfw::window(), code) == GLFW_REPEAT;
+                int state = glfwGetMouseButton(glfw::window(), code);
+
+                return state == GLFW_PRESS || state == GLFW_REPEAT;
             }
 
             void lock_cursor()
