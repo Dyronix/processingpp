@@ -17,6 +17,7 @@ namespace ppp
 
     public:
         virtual void setup()            { /* ... */ }
+        virtual void setup_inspector()  { /* ... */ }
         virtual void begin_frame()      { /* ... */ }
         virtual void pre_draw()         { /* ... */ }
         virtual void draw()             { /* ... */ }
@@ -27,5 +28,4 @@ namespace ppp
         virtual void end_frame()        { /* ... */ }
         virtual void shutdown()         { /* ... */ }
     };
-
 }
