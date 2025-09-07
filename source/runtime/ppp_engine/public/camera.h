@@ -107,6 +107,19 @@ namespace ppp
         float max_zoom = 100.0f;
     };
 
+    /**
+     * @brief Options for interactive free-flight control.
+     */
+    struct free_control_options
+    {
+        /** @brief Mouse look sensitivity. */
+        float look_sensitivity = 0.01f;
+        /** @brief Movement speed in units per second. */
+        float movement_speed = 100.0f;
+        /** @brief Speed multiplier when shift is held. */
+        float boost_multiplier = 4.0f;
+    };
+
 
     /**
       * @brief Get the active camera's eye position.
@@ -200,6 +213,13 @@ namespace ppp
      * @param tag Identifier for the camera to control.
      */
     void orbit_control(orbit_control_options opts, std::string_view tag = {});
+
+    /**
+     * @brief Enable free-flight controls for the camera.
+     * @param opts Free control sensitivity and speed settings.
+     * @param camera_tag Identifier for the camera to control.
+     */
+    void free_control(free_control_options opts, std::string_view camera_tag = {});
 
     /**
      * @brief Generate a world-space ray from screen-space coordinates.
