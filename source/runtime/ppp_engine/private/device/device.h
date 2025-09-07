@@ -69,6 +69,13 @@ namespace ppp
         void window_width(s32* w);
         void window_height(s32* h);
         void window_scale(f32* sx, f32* sy);
+        void framebuffer_width(s32* w);
+        void framebuffer_height(s32* h);
+        void framebuffer_size(s32* w, s32* h);
+
+        void add_window_size_callback(const std::function<void(s32, s32)>& callback);
+        void add_framebuffer_size_callback(const std::function<void(s32, s32)>& callback);
+        void add_window_content_scale_callback(const std::function<void(f32, f32, s32, s32)>& callback);
         
         void primary_monitor_scale(f32* sx, f32* sy);
         void primary_monitor_refresh_rate(s32* rate);

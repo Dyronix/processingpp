@@ -20,6 +20,10 @@ namespace ppp
         {
             GLFWwindow* window = nullptr;
 
+            std::vector<std::function<void(s32, s32)>> window_size_callbacks;
+            std::vector<std::function<void(s32, s32)>> framebuffer_size_callbacks;
+            std::vector<std::function<void(f32, f32, s32, s32)>> content_scale_callbacks;
+
             bool is_headless = false;
             bool is_looping = true;
 
@@ -69,7 +73,7 @@ namespace ppp
 #if PPP_GLFW_HAS_PER_MONITOR_DPI
             glfwGetMonitorContentScale(monitor, sx, sy);
 #else
-            *sx = 1.0f;
+            * sx = 1.0f;
             *sy = 1.0f;
 #endif
         }
@@ -77,10 +81,10 @@ namespace ppp
         void center_window(GLFWwindow* window)
         {
             // Get window position and size
-            int window_x, window_y;
+            s32 window_x, window_y;
             glfwGetWindowPos(window, &window_x, &window_y);
 
-            int window_width, window_height;
+            s32 window_width, window_height;
             glfwGetWindowSize(window, &window_width, &window_height);
 
             // Halve the window size and use it to adjust the window position to the center of the window
@@ -91,7 +95,7 @@ namespace ppp
             window_y += window_height;
 
             // Get the list of monitors
-            int monitors_length;
+            s32 monitors_length;
             GLFWmonitor** monitors = glfwGetMonitors(&monitors_length);
 
             if (monitors == NULL) {
@@ -101,15 +105,15 @@ namespace ppp
 
             // Figure out which monitor the window is in
             GLFWmonitor* owner = NULL;
-            int owner_x, owner_y, owner_width, owner_height;
+            s32 owner_x, owner_y, owner_width, owner_height;
 
-            for (int i = 0; i < monitors_length; i++) {
+            for (s32 i = 0; i < monitors_length; i++) {
                 // Get the monitor position
-                int monitor_x, monitor_y;
+                s32 monitor_x, monitor_y;
                 glfwGetMonitorPos(monitors[i], &monitor_x, &monitor_y);
 
                 // Get the monitor size from its video mode
-                int monitor_width, monitor_height;
+                s32 monitor_width, monitor_height;
                 GLFWvidmode* monitor_vidmode = (GLFWvidmode*)glfwGetVideoMode(monitors[i]);
 
                 if (monitor_vidmode == NULL) {
@@ -185,27 +189,27 @@ namespace ppp
         {
             return std::any_of(ctx().key_pressed.begin(), ctx().key_pressed.end(),
                 [](const auto& pair)
-            {
-                return pair.second;
-            });
+                {
+                    return pair.second;
+                });
         }
 
         bool is_any_key_released()
         {
             return std::any_of(ctx().key_released.begin(), ctx().key_released.end(),
                 [](const auto& pair)
-            {
-                return pair.second;
-            });
+                {
+                    return pair.second;
+                });
         }
 
         bool is_any_key_down()
         {
             return std::any_of(ctx().key_down.begin(), ctx().key_down.end(),
                 [](const auto& pair)
-            {
-                return pair.second;
-            });
+                {
+                    return pair.second;
+                });
         }
 
         s32 key()
@@ -346,18 +350,18 @@ namespace ppp
         {
             return std::any_of(ctx().mouse_button_pressed.begin(), ctx().mouse_button_pressed.end(),
                 [](const auto& pair)
-            {
-                return pair.second;
-            });
+                {
+                    return pair.second;
+                });
         }
 
         bool is_any_mouse_button_released()
         {
             return std::any_of(ctx().mouse_button_released.begin(), ctx().mouse_button_released.end(),
                 [](const auto& pair)
-            {
-                return pair.second;
-            });
+                {
+                    return pair.second;
+                });
         }
 
         void add_mouse_moved_callback(const std::function<void(f32, f32)>& callback)
@@ -409,7 +413,7 @@ namespace ppp
         {
             input::show_cursor();
         }
-            
+
 
         bool initialize(s32 w, s32 h)
         {
@@ -457,6 +461,28 @@ namespace ppp
             glfwSwapInterval(1);
 
             primary_monitor_refresh_rate(&ctx().target_frame_rate);
+
+            glfwSetWindowSizeCallback(ctx().window, [](GLFWwindow*, s32 w, s32 h) 
+                {
+                    for (auto& cb : ctx().window_size_callbacks) cb(w, h);
+                });
+
+            glfwSetFramebufferSizeCallback(ctx().window, [](GLFWwindow*, s32 w, s32 h) 
+                {
+                    for (auto& cb : ctx().framebuffer_size_callbacks) cb(w, h);
+                });
+
+#if PPP_GLFW_HAS_PER_MONITOR_DPI
+            glfwSetWindowContentScaleCallback(ctx().window, [](GLFWwindow*, f32 sx, f32 sy) 
+                {
+                    for (auto& cb : ctx().content_scale_callbacks)
+                    {
+                        s32 fx, fy;
+                        framebuffer_size(&fx, &fy);
+                        cb(sx, sy, fx, fy);
+                    }
+                });
+#endif
 
             // Initialize the input system
             input::initialize();
@@ -531,6 +557,7 @@ namespace ppp
         {
             return ctx().window;
         }
+
         void window_width(s32* w)
         {
             if (ctx().window == nullptr)
@@ -565,9 +592,44 @@ namespace ppp
 #if PPP_GLFW_HAS_PER_MONITOR_DPI
             glfwGetWindowContentScale(ctx().window, sx, sy);
 #else
-            *sx = 1.0f;
+            * sx = 1.0f;
             *sy = 1.0f;
 #endif
+        }
+
+        void framebuffer_width(s32* w)
+        {
+            if (!ctx().window) { *w = 0; return; }
+            s32 tmp = 0;
+            glfwGetFramebufferSize(ctx().window, w, &tmp);
+        }
+
+        void framebuffer_height(s32* h)
+        {
+            if (!ctx().window) { *h = 0; return; }
+            s32 tmp = 0;
+            glfwGetFramebufferSize(ctx().window, &tmp, h);
+        }
+
+        void framebuffer_size(s32* w, s32* h)
+        {
+            if (!ctx().window) { *w = 0; *h = 0; return; }
+            glfwGetFramebufferSize(ctx().window, w, h);
+        }
+
+        void add_window_size_callback(const std::function<void(s32, s32)>& cb)
+        {
+            ctx().window_size_callbacks.push_back(cb);
+        }
+
+        void add_framebuffer_size_callback(const std::function<void(s32, s32)>& cb)
+        {
+            ctx().framebuffer_size_callbacks.push_back(cb);
+        }
+
+        void add_window_content_scale_callback(const std::function<void(f32, f32, s32, s32)>& cb)
+        {
+            ctx().content_scale_callbacks.push_back(cb);
         }
 
         void primary_monitor_scale(f32* sx, f32* sy)
@@ -711,7 +773,7 @@ namespace ppp
         {
             if (ctx().is_looping)
             {
-                return std::chrono::duration<float>(ctx().delta_frame_time).count();
+                return std::chrono::duration<f32>(ctx().delta_frame_time).count();
             }
             
             log::info("We specified that the app should not be looping, calling delta_time could result in weird results. returning 0");
