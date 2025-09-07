@@ -22,6 +22,8 @@ namespace ppp
         void disable();
         void disable_always_enabled();
 
+        void inspector_setup();
+
         void begin_frame();
         void tick(f32 dt);
         void draw();
@@ -35,11 +37,13 @@ namespace ppp
         bool is_always_enabled() const;
 
     protected:
-        virtual void on_enable() {/* nothing to implement */ };
-        virtual void on_disable() {/* nothing to implement */ };
-
         virtual void on_attached(){/* nothing to implement */};
         virtual void on_detached(){/* nothing to implement */};
+
+        virtual void on_enable(){/* nothing to implement */ };
+        virtual void on_disable(){/* nothing to implement */ };
+
+        virtual void on_inspector_setup(){/* nothing to implement */ };    
 
         virtual void on_begin_frame(){/* nothing to implement */};
         virtual void on_tick(f32 dt){/* nothing to implement */};

@@ -10,6 +10,7 @@ namespace ppp
 {
     namespace imgui
     {
+        void init_inspector(const sierra_engine_context* engine_context);
         void draw_inspector(const sierra_engine_context* engine_context);
     }
 }

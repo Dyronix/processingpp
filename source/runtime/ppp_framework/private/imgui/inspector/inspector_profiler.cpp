@@ -19,8 +19,6 @@ namespace ppp
             //-------------------------------------------------------------------------
             void inspect_profiler(bool& show)
             {
-                ImGui::Begin("Profiler", &show, ImGuiWindowFlags_NoCollapse);
-
                 for (auto& itr : profiler::ctx().times)
                 {
                     auto& e = itr.second;
@@ -64,8 +62,6 @@ namespace ppp
                 {
                     ImGui::LabelText(itr.first.c_str(), "%fms count:%d", itr.second.avg, itr.second.count);
                 }
-
-                ImGui::End();
 
                 for (auto& itr : profiler::ctx().times)
                 {

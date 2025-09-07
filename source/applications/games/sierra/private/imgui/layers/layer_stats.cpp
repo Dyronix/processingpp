@@ -4,6 +4,7 @@
 #include "imgui/imgui_icons_font_awesome.h"
 
 #include "imgui/inspector/inspector.h"
+#include "imgui/inspector/inspector_notifications.h"
 
 #include "string/string_id.h"
 
@@ -19,17 +20,11 @@ namespace ppp
 {
     namespace imgui
     {
-        struct layer_stack_stats_context
-        {
-            bool show_entities_window = false;
-            sierra_layer* selected_layer = nullptr;
-        } g_ctx;
-
         //-------------------------------------------------------------------------
         void draw_layer_stack_stats(const layer_stack& stack)
         {
             ImGui::SeparatorText("Layer Stack");
-            ImGui::BeginChild("##floating_layer_list", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+            ImGui::BeginChild("##floating_layer_list", ImVec2(0, 200), false, ImGuiWindowFlags_HorizontalScrollbar);
 
             int index = 0;
             for (auto& layer_ptr : stack)

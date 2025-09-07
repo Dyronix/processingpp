@@ -12,6 +12,8 @@
 
 #include "imgui/imgui.h"
 #include "imgui/inspector/inspector.h"
+#include "imgui/inspector/inspector_event_bus.h"
+#include "imgui/inspector/inspector_notifications.h"
 #include "imgui/inspector/inspector_profiler.h"
 
 #include "util/log.h"
@@ -27,8 +29,8 @@ namespace
     bool _enable_inspector;
 #endif
 
-    constexpr int _window_width = 1280;
-    constexpr int _window_height = 720;
+    constexpr int _window_width = 1600;
+    constexpr int _window_height = 900;
 
     std::unique_ptr<ppp::sketch> _sketch = nullptr;
 
@@ -42,9 +44,9 @@ namespace
 
     //-------------------------------------------------------------------------
     // ImGUI
-    static void setup_imgui()
+    static void setup_imgui(f32 ui_scale)
     {
-        ppp::imgui::init_imgui_context();
+        ppp::imgui::init_imgui_context(ui_scale);
         ppp::imgui::init_imgui_renderer();
     }
     //-------------------------------------------------------------------------
@@ -84,8 +86,6 @@ namespace
     // ImGUI Inspector
     static void setup_inspector()
     {
-        ppp::imgui::inspector::initialize();
-
         ppp::imgui::inspector::subscribe_pause([](bool value)
         {
             _should_pause = value;
@@ -100,7 +100,7 @@ namespace
         {
             _should_progress_to_next_frame = value;
         });
-        ppp::imgui::inspector::subscribe_inspector_gui([]()
+        ppp::imgui::inspector::subscribe_inspector_draw_gui([]()
         {
             _sketch->inspector_draw();
         });
@@ -120,6 +120,8 @@ namespace
 
         ppp::imgui::inspector::set_pause_shortcut(ppp::key_code::KEY_P);
         ppp::imgui::inspector::set_nextframe_shortcut(ppp::key_code::KEY_F10);
+
+        ppp::imgui::inspector::initialize();
     }
     //-------------------------------------------------------------------------
     static void destroy_inspector()
@@ -197,7 +199,10 @@ namespace ppp
     {
 #ifdef _DEBUG
 
-        setup_imgui();
+        f32 sx, sy;
+        device::window_scale(&sx, &sy);
+
+        setup_imgui(sx);
 
         device::reroute_input_callbacks();
 
@@ -222,6 +227,10 @@ namespace ppp
         subscribe_end_frame(&on_end_frame);
 
         _sketch->setup();
+
+#ifdef _DEBUG
+        _sketch->setup_inspector();
+#endif
     }
 
     //-------------------------------------------------------------------------
