@@ -143,6 +143,12 @@ namespace ppp
     static void on_end_frame();
 
     //-------------------------------------------------------------------------
+    sketch* get_sketch()
+    {
+        return _sketch.get();
+    }
+
+    //-------------------------------------------------------------------------
     app_params entry(int argc, char** argv)
     {
         print("Current working directory: %s", cwd().data());
