@@ -24,6 +24,7 @@ namespace ppp
                 auto u_val_trunc = u_val;
                 #else
                 assert(sizeof(TUnsignedInt) <= 4);
+                auto u_val_trunc = u_val;
                 #endif
 
                 do
