@@ -36,6 +36,10 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_placement_template_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bounding_box_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bounding_box_2d_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_clickable_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_click_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_image_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_text_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bullet_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_bullet_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_render_properties_component.h
@@ -56,6 +60,8 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_tower_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_tower_state.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_material_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_hoverable_component.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_hover_component.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/components/ecs_components.h
     #ecs-systems
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_placement_system.cpp
@@ -68,6 +74,10 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_free_camera_system.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_render_system.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_button_hover_system.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_button_hover_system.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_button_click_system.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_button_click_system.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/ecs/systems/ecs_systems.h
     #grid
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/grid/grid.h
@@ -82,6 +92,8 @@ target_sources(sierra PRIVATE
     #input
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/ui_input_processor.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/ui_input_processor.h
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/ui_picker.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/ui_picker.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/world_input_processor.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/world_input_processor.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/input/placement_input_processor.cpp
@@ -114,6 +126,7 @@ target_sources(sierra PRIVATE
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_ui_layer.cpp
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_main_layer.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra_main_layer.cpp
+    ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra.h
     ${SOURCE_GAMES_DIRECTORY}/sierra/private/sierra.cpp)
 
 # Create the project filters
