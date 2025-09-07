@@ -1,10 +1,16 @@
-#include "camera.h"
+﻿#include "camera.h"
 #include "camera/camera_manager.h"
 #include "events.h"
 #include "environment.h"
 #include "device/device.h"
+
 #include "util/log.h"
+
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/norm.inl>
+#include <glm/gtx/compatibility.inl>
+
+#include <algorithm>
 
 namespace ppp
 {
@@ -45,6 +51,21 @@ namespace ppp
         const float _zoom_sensitivity = 1.0f;
         const float _pan_ensitivity = 0.05f;
 
+        // Camera modes
+        enum class camera_mode
+        {
+            ORBIT,
+            FREE
+        };
+
+        // Stored camera state
+        struct camera_state
+        {
+            camera_mode mode = camera_mode::ORBIT;
+            scene_camera state = {};
+        };
+
+        // Projection parameter structs
         struct ortho
         {
             float left, right, bottom, top = -1.0f;
@@ -57,12 +78,19 @@ namespace ppp
             float near, far = -1.0f;
         };
 
-        ortho       _active_ortho = {};
-        perspective _active_perspective = {};
-        glm::mat4   _active_projection = glm::mat4(1.0f);
-        bool        _active_projection_is_ortho = true;
+        // Current active projection parameters
+        ortho           _active_ortho = {};
+        perspective     _active_perspective = {};
+        glm::mat4       _active_projection = glm::mat4(1.0f);
+        bool            _active_projection_is_ortho = true;
 
-        scene_camera _active_camera = {};
+        scene_camera    _active_camera = {};
+
+        // Last used camera mode
+        using camera_states = std::unordered_map<camera_mode, camera_state>;
+
+        camera_mode     _last_mode = camera_mode::ORBIT;
+        camera_states   _camera_states = {};
 
         //-------------------------------------------------------------------------
         void push_active_camera(std::string_view camera_tag)
@@ -249,6 +277,22 @@ namespace ppp
     //-------------------------------------------------------------------------
     void orbit_control(orbit_control_options options, std::string_view camera_tag)
     {
+        // --- Mode transition detection (Free -> Orbit) ---
+        if (internal::_last_mode != internal::camera_mode::ORBIT)
+        {
+            // Store the FREE camera state
+            internal::_camera_states[internal::camera_mode::FREE] = { internal::camera_mode::FREE, internal::_active_camera };
+
+            // Load the ORBIT camera state if it exists
+            if(internal::_camera_states.find(internal::camera_mode::ORBIT) != internal::_camera_states.end())
+            {
+                internal::_active_camera = internal::_camera_states[internal::camera_mode::ORBIT].state;
+            }
+
+            // Bookkeeping of the last mode
+            internal::_last_mode = internal::camera_mode::ORBIT;
+        }
+            
         f32 zs = options.zoom_sensitivity != 0.0f ? options.zoom_sensitivity : internal::_zoom_sensitivity;
         f32 rs = options.rotation_sensitivity != 0.0f ? options.rotation_sensitivity : internal::_rotate_sensitivity;
         f32 ps = options.panning_sensitivity != 0.0f ? options.panning_sensitivity : internal::_pan_ensitivity;
@@ -260,8 +304,10 @@ namespace ppp
 
         if (is_left_button_pressed())
         {
-            internal::_active_camera.azimuth -= delta_x * rs * device::delta_time(); // Horizontal rotation (Azimuth)
-            internal::_active_camera.polar -= delta_y * rs * device::delta_time();   // Vertical rotation (Polar)
+            float dt = glm::clamp(device::delta_time(), 0.0f, 0.016f); // avoid huge jumps on hitches (>~60 FPS frame)
+
+            internal::_active_camera.azimuth -= delta_x * rs * dt; // Horizontal rotation (Azimuth)
+            internal::_active_camera.polar -= delta_y * rs * dt;   // Vertical rotation (Polar)
 
             // Clamp polar angle to avoid flipping the camera
             internal::_active_camera.polar = glm::clamp(internal::_active_camera.polar, 0.1f, glm::pi<float>() - 0.1f);
@@ -273,14 +319,26 @@ namespace ppp
             glm::vec3 cam_target = { internal::_active_camera.center.x,internal::_active_camera.center.y,internal::_active_camera.center.z };
             glm::vec3 cam_up = { internal::_active_camera.up.x,internal::_active_camera.up.y,internal::_active_camera.up.z };
 
-            glm::vec3 right = glm::normalize(glm::cross(cam_target - cam_eye, cam_up)); // Right vector3
-            glm::vec3 up = glm::normalize(up);                              // Up vector3
+            // Camera basis
+            glm::vec3 view = glm::normalize(cam_target - cam_eye);          // forward
+            glm::vec3 right = glm::normalize(glm::cross(view, cam_up));     // right
+            glm::vec3 up = glm::normalize(glm::cross(right, view));         // re-orthogonalized "up"
 
-            glm::vec3 pan_right = right * delta_x * ps * internal::_active_camera.radius * device::delta_time();
-            glm::vec3 pan_up = up * delta_y * ps * internal::_active_camera.radius * device::delta_time();
+            // --- Speed control ---
+            float dt = glm::clamp(device::delta_time(), 0.0f, 0.016f); // avoid huge jumps on hitches (>~60 FPS frame)
+            // NOTE: most windowing systems have +delta_y when moving mouse *down*.
+            // If your Y is inverted, flip the sign below.
+            float pan_scale = ps * internal::_active_camera.radius * dt; // tune ps; typically don't multiply by dt for mouse deltas
 
-            // Shift target position for panning
-            cam_target += -pan_right + pan_up;
+            glm::vec3 pan = (-delta_x * right + -delta_y * up) * pan_scale;
+
+            // Pan moves the whole rig: eye and target together
+            cam_eye += pan;
+            cam_target += pan;
+
+            internal::_active_camera.eye.x = cam_eye.x;
+            internal::_active_camera.eye.y = cam_eye.y;
+            internal::_active_camera.eye.z = cam_eye.z;
 
             internal::_active_camera.center.x = cam_target.x;
             internal::_active_camera.center.y = cam_target.y;
@@ -298,6 +356,91 @@ namespace ppp
         internal::_active_camera.eye.x = internal::_active_camera.center.x + internal::_active_camera.radius * sin(internal::_active_camera.polar) * sin(internal::_active_camera.azimuth);
         internal::_active_camera.eye.y = internal::_active_camera.center.y + internal::_active_camera.radius * cos(internal::_active_camera.polar);  // Height
         internal::_active_camera.eye.z = internal::_active_camera.center.z + internal::_active_camera.radius * sin(internal::_active_camera.polar) * cos(internal::_active_camera.azimuth);
+
+        internal::push_active_camera(camera_tag);
+    }
+
+    //-------------------------------------------------------------------------
+    void free_control(free_control_options options, std::string_view camera_tag)
+    {
+        // --- Mode transition detection (Orbit -> Free) ---
+        if (internal::_last_mode != internal::camera_mode::FREE)
+        {
+            // Store the ORBIT camera state
+            internal::_camera_states[internal::camera_mode::ORBIT] = { internal::camera_mode::ORBIT, internal::_active_camera };
+
+            // Load the FREE camera state if it exists
+            if (internal::_camera_states.find(internal::camera_mode::FREE) != internal::_camera_states.end())
+            {
+                internal::_active_camera = internal::_camera_states[internal::camera_mode::FREE].state;
+            }
+
+            // Bookkeeping of the last mode
+            internal::_last_mode = internal::camera_mode::FREE;
+        }
+
+        // --- Gather current camera state into GLM ---
+        glm::vec3 eye = { internal::_active_camera.eye.x,    internal::_active_camera.eye.y,    internal::_active_camera.eye.z };
+        glm::vec3 target = { internal::_active_camera.center.x, internal::_active_camera.center.y, internal::_active_camera.center.z };
+        glm::vec3 up = { internal::_active_camera.up.x,     internal::_active_camera.up.y,     internal::_active_camera.up.z };
+
+        // Derive basis
+        glm::vec3 front = glm::normalize(target - eye);
+        if (!glm::all(glm::isfinite(front))) { front = glm::vec3(0, 0, -1); }
+
+        glm::vec3 right = glm::normalize(glm::cross(front, up));
+        if (!glm::all(glm::isfinite(right))) { right = glm::vec3(1, 0, 0); }
+
+        up = glm::normalize(glm::cross(right, front)); // re-orthonormalize up
+
+        // --- Mouse look when RMB is held ---
+        if (is_right_button_pressed())
+        {
+            float dx = moved_x();
+            float dy = moved_y();
+
+            // Recover yaw/pitch from current 'front'
+            float yaw = std::atan2(front.x, front.z);     // left/right
+            float pitch = std::asin(glm::clamp(front.y, -1.0f, 1.0f)); // up/down
+
+            // Apply mouse deltas (no dt on mouse)
+            float sens = (options.look_sensitivity != 0.0f) ? options.look_sensitivity : 0.1f;
+            yaw -= dx * sens;
+            pitch += dy * sens;
+
+            // Clamp pitch to avoid gimbal flip
+            constexpr float c_max_pitch = glm::radians(89.0f);
+            pitch = glm::clamp(pitch, -c_max_pitch, c_max_pitch);
+
+            // Rebuild front from yaw/pitch
+            front = glm::normalize(glm::vec3(std::sin(yaw) * std::cos(pitch),std::sin(pitch),std::cos(yaw) * std::cos(pitch)));
+
+            right = glm::normalize(glm::cross(front, glm::vec3(0, 1, 0)));
+            up = glm::normalize(glm::cross(right, front));
+        }
+        // --- Keyboard movement when RMB is held ---
+        if (is_right_button_pressed())
+        {
+            f32 dt = glm::clamp(device::delta_time(), 0.0f, 0.016f);
+            f32 speed = options.movement_speed * dt;
+
+            if (is_key_down(key_code::KEY_LEFT_SHIFT)) { speed *= options.boost_multiplier; }
+
+            if (is_key_down(key_code::KEY_W)) { eye += speed * front; }
+            if (is_key_down(key_code::KEY_S)) { eye -= speed * front; }
+            if (is_key_down(key_code::KEY_A)) { eye -= speed * right; }
+            if (is_key_down(key_code::KEY_D)) { eye += speed * right; }
+            if (is_key_down(key_code::KEY_Q)) { eye += speed * up; }
+            if (is_key_down(key_code::KEY_E)) { eye -= speed * up; }
+        }
+
+        // Keep looking forward
+        target = eye + front;
+
+        // --- Write back to scene_camera ---
+        internal::_active_camera.eye.x = eye.x;    internal::_active_camera.eye.y = eye.y;    internal::_active_camera.eye.z = eye.z;
+        internal::_active_camera.center.x = target.x; internal::_active_camera.center.y = target.y; internal::_active_camera.center.z = target.z;
+        internal::_active_camera.up.x = up.x;     internal::_active_camera.up.y = up.y;     internal::_active_camera.up.z = up.z;
 
         internal::push_active_camera(camera_tag);
     }
