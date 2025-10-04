@@ -5,10 +5,10 @@
 #include "imgui/imgui_icons_font_awesome.h"
 
 #include "imgui/inspector/inspector.h"
+#include "imgui/inspector/inspector_helpers.h"
 
+#include "imgui/layers/layer_stack_panel.h"
 #include "imgui/ecs/ecs_stats.h"
-#include "imgui/layers/layer_floating_window.h"
-#include "imgui/layers/layer_stats.h"
 
 #include "layers/layer_stack.h"
 #include "layers/layer.h"
@@ -44,6 +44,12 @@ namespace ppp
         {
             static sierra_inspector_context context;
             return context;
+        }
+
+        void init_inspector(const sierra_engine_context* engine_context)
+        {
+            // layer stack
+            auto layer_pnl = inspector::panel_registry::get().register_panel<layer_stack_panel>(&engine_context->layer_stack);
         }
 
         void draw_inspector(const sierra_engine_context* engine_context)
@@ -83,11 +89,6 @@ namespace ppp
 
                     ImGui::End();
                 }
-            }
-
-            // Layer stack
-            {
-                imgui::draw_layer_stack_floating_window(layer_stack, &imgui::draw_layer_stack_stats, &ctx().show_layer_data);
             }
         }
     }

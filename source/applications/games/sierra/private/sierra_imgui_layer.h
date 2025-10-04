@@ -15,6 +15,7 @@ namespace ppp
         void on_attached() override;
         void on_detached() override;
         
+        void on_inspector_setup() override;
         void on_inspector_draw() override;
     };
 }

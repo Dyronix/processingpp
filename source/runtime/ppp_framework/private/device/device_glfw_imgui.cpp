@@ -15,7 +15,7 @@ namespace ppp
     namespace imgui
     {      
         //-------------------------------------------------------------------------
-        void init_imgui_context()
+        void init_imgui_context(f32 ui_scale)
         {
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
@@ -23,6 +23,9 @@ namespace ppp
             ImGuiIO& io = ImGui::GetIO(); (void)io;
             io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
             io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+            ImGui::GetStyle().ScaleAllSizes(ui_scale);
+            ImGui::GetStyle().ButtonTextAlign = ImVec2(0.5f, 0.5f);
 
 #if defined(PPP_OPENGL)
             auto glfw_window = reinterpret_cast<GLFWwindow*>(device::window());

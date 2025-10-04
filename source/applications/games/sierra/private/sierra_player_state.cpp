@@ -46,6 +46,16 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
+    void sierra_player_state::start_new_wave()
+    {
+      log::info("New wave started");
+      for (const auto& callback : _new_wave_callbacks)
+      {
+        callback();
+      }
+    }
+
+    //-------------------------------------------------------------------------
     void sierra_player_state::subscribe_start_placement(player_state_delegate callback)
     {
         _start_placement_callbacks.push_back(callback);
@@ -65,5 +75,4 @@ namespace ppp
     {
       _new_wave_callbacks.push_back(callback);
     }
-
 }

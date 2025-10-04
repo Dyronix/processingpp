@@ -25,8 +25,44 @@ target_sources(processing_framework PRIVATE
     #imgui-inspector
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_signal.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_event_bus.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_event_bus.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_helpers.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_helpers.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_profiler.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_profiler.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_visibility.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_visibility.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_view_modes.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_view_modes.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_render_modes.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_render_modes.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_overlays.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_overlays.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_runtime.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_runtime.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_panel.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_panel.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_notifications.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_notifications.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_theme.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_theme.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_toolbar.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_toolbar.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_panel_registry.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_panel_registry.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_panel_manager.cpp
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/inspector_panel_manager.h
+    #imgui-inspector-panels
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/panels/profiler_panel.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/panels/settings_panel.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/panels/reload_content_panel.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/panels/about_panel.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/panels/package_panel.h
+    #imgui-inspector-buttons
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/buttons/theme_button.h
+    ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/imgui/inspector/buttons/close_button.h
     #device
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/device/device_glfw_imgui.cpp
     ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private/device/device_glfw_input_framework.cpp

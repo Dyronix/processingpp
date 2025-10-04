@@ -40,6 +40,11 @@ namespace ppp
         void begin();
         void render(const camera_context* context);
         void end();
+
+        // Resize events
+        void on_window_resized(s32 w, s32 h);
+        void on_framebuffer_resized(s32 w, s32 h);
+        void on_window_content_scale_changed(f32 content_scale_x, f32 content_scale_y, s32 framebuffer_width, s32 framebuffer_height);
         
         // Drawing mode (BATCHED | INSTANCING)
         void draw_mode(render_draw_mode mode);

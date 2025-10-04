@@ -1,50 +1,40 @@
 #pragma once
 
-#include "events.h"
+#include "sierra_input_processor.h"
 
 #include <flecs.h>
 
 #include <memory>
+#include <vector>
+#include <string>
+#include <unordered_map>
 
 namespace ppp
 {
-    class sierra_layer;
-
-    namespace ecs
-    {
-        struct transform_component;
-        struct bounding_box_component;
-        struct pickable_component;
-    }
+    struct input_event;
 
     struct istate
     {
-        istate(sierra_layer* owning_layer) 
-            : _owning_layer(owning_layer) 
-        {}
-        virtual ~istate() = default;
+        //-------------------------------------------------------------------------
+        bool on_input(const input_event& evt);
 
-        virtual void handle_key_press(key_code code) = 0;
-        virtual void handle_mouse_button_click(mouse_code code) = 0;
-
-        sierra_layer* _owning_layer;
+        std::vector<std::unique_ptr<isierra_input_processor>> processors;
     };
 
     class sierra_input_handler
     {
     public:
-        sierra_input_handler(sierra_layer* layer);
+        void init();
 
-        void handle_key_press(key_code code);
-        void handle_mouse_button_click(mouse_code code);
+        void push_input_state(const std::string& str, std::unique_ptr<istate> state);
+        void push_active_input_state(const std::string& str);
 
     private:
-        void change_to_idle();
-        void change_to_placement();
+        void register_mouse_input_events();
+        void register_keyboard_input_events();
 
         istate* _active_state;
 
-        std::unique_ptr<istate> _idle_state;
-        std::unique_ptr<istate> _placement_state;
+        std::unordered_map<std::string, std::unique_ptr<istate>> _input_states;
     };
 }

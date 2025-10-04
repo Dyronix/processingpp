@@ -140,20 +140,37 @@ namespace ppp
             return -1;
         }
 
+        f32 scale_x, scale_y;
+        device::window_scale(&scale_x, &scale_y);
+
+        f32 scaled_width = app_params.window_width * scale_x;
+        f32 scaled_height = app_params.window_height * scale_y;
+
 #if defined (GLFW_VERSION_MAJOR)
-        if (!render::initialize(app_params.window_width, app_params.window_height, glfwGetProcAddress))
+        if (!render::initialize((s32)scaled_width, (s32)scaled_height, glfwGetProcAddress))
         {
             log::error("Failed to initialize render");
             return -1;
         }
+        else
+        {
+            device::add_window_size_callback(&render::on_window_resized);
+            device::add_framebuffer_size_callback(&render::on_framebuffer_resized);
+
+            device::add_window_content_scale_callback(
+                [](f32 scx, f32 scy, s32 w, s32 h)
+                {
+                    render::on_window_content_scale_changed(scx, scy, w, h);
+                });
+        }
 #endif
-        if (!camera_manager::initialize((f32)app_params.window_width, (f32)app_params.window_height))
+        if (!camera_manager::initialize(scaled_width, scaled_height))
         {
             log::error("Failed to initialize camera manager");
             return -1;
         }
 
-        if (!framebuffer_pool::initialize(app_params.window_width, app_params.window_height))
+        if (!framebuffer_pool::initialize((s32)scaled_width, (s32)scaled_height))
         {
             log::error("Failed to initialize framebuffer pool");
             return -1;

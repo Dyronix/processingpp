@@ -22,6 +22,11 @@ namespace ppp
     }
 
     //-------------------------------------------------------------------------
+    void sierra_imgui_layer::on_inspector_setup()
+    {
+        imgui::init_inspector(context());
+    }
+    //-------------------------------------------------------------------------
     void sierra_imgui_layer::on_inspector_draw()
     {
         imgui::draw_inspector(context());

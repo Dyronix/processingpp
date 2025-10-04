@@ -38,6 +38,7 @@ namespace ppp
         int _interpolation = 24;
 
         int _enable_normal = 0;
+        int _orbit_control = 1;
 
         shader_program _material_lit;
         light_id _dir_light;
@@ -97,15 +98,27 @@ namespace ppp
     //-------------------------------------------------------------------------
     void my_sketch::tick(float dt)
     {
-        orbit_control_options options;
+        if (_orbit_control)
+        {
+            orbit_control_options options;
 
-        options.zoom_sensitivity = 200.0f;
-        options.panning_sensitivity = 0.5f;
-        options.rotation_sensitivity = 0.5f;
-        options.min_zoom = 1.0f;
-        options.max_zoom = 600.0f;
+            options.zoom_sensitivity = 1600.0f;
+            options.panning_sensitivity = 0.05f;
+            options.rotation_sensitivity = 0.5f;
+            options.min_zoom = 1.0f;
+            options.max_zoom = 600.0f;
 
-        orbit_control(options);
+            orbit_control(options);
+        }
+        else
+        {
+            free_control_options options;
+            options.look_sensitivity = 0.01f;
+            options.movement_speed = 500.0f;
+            options.boost_multiplier = 4.0f;
+
+            free_control(options);
+        }
 
         update_directional_light();
     }
@@ -141,12 +154,25 @@ namespace ppp
 
         add_key_pressed_callback(
             [&](key_code key)
-        {
+            {
             if (key == key_code::KEY_SPACE)
             {
                 bool show_all_shapes = _show_all > 0;
                 show_all_shapes = !show_all_shapes;
                 _show_all = show_all_shapes ? 1 : 0;
+            }
+
+            else if (key == key_code::KEY_C)
+            {
+                _orbit_control = _orbit_control == 1 ? 0 : 1;
+                if (_orbit_control)
+                {
+                    print("Orbit control enabled");
+                }
+                else
+                {
+                    print("Free control enabled");
+                }
             }
 
             else if (key == key_code::KEY_UP && _show_all == 0)
