@@ -72,8 +72,8 @@ target_link_libraries(processing_engine PRIVATE glfw)
 
 # Include self
 target_include_directories(processing_framework PRIVATE ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/private)
-target_include_directories(processing_framework PUBLIC ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public)
-target_include_directories(processing_framework PUBLIC ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public/imgui)
+target_include_directories(processing_framework PRIVATE ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public)
+target_include_directories(processing_framework PRIVATE ${SOURCE_RUNTIME_DIRECTORY}/ppp_framework/public/imgui)
 
 # Target properties
 set_target_properties(processing_framework PROPERTIES
