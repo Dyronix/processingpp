@@ -1,4 +1,6 @@
 build/
+
+.vs/
 .vscode/
 
 source/runtime/ppp_engine/private/render/aurora/
@@ -7,3 +9,5 @@ source/runtime/ppp_engine/private/device/aurora/
 tools/aurora/
 
 cmake/backends/aurora.cmake
+
+CMakeUserPresets.json
