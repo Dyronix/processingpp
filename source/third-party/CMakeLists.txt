@@ -1,5 +1,8 @@
-add_subdirectory(glfw)
-add_subdirectory(glad)
+if(PPP_BACKEND STREQUAL "opengl")
+  add_subdirectory(glfw)
+  add_subdirectory(glad)
+endif()
+
 add_subdirectory(glm)
 add_subdirectory(fmt)
 add_subdirectory(stb)
