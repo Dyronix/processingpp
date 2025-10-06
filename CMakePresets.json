@@ -1,0 +1,27 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "desktop",
+      "displayName": "Desktop (OpenGL, MSVC)",
+      "description": "Default Visual Studio configuration using OpenGL backend",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "PPP_BACKEND": "opengl"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "desktop-build",
+      "configurePreset": "desktop"
+    }
+  ]
+}
