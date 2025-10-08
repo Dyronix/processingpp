@@ -9,6 +9,7 @@
 #include "input/world_input_processor.h"
 #include "input/ui_input_processor.h"
 #include "input/placement_input_processor.h"
+#include "input/switch_scene_input_processor.h"
 
 namespace ppp
 {
@@ -21,6 +22,7 @@ namespace ppp
             processors.push_back(std::make_unique<ui_input_processor>(context));
             processors.push_back(std::make_unique<world_input_processor>(context));
             processors.push_back(std::make_unique<placement_input_processor>(context));
+            processors.push_back(std::make_unique<switch_scene_input_processor>(context));
         }
     };
 
@@ -32,6 +34,7 @@ namespace ppp
         {
             processors.push_back(std::make_unique<ui_input_processor>(context));
             processors.push_back(std::make_unique<placement_input_processor>(context));
+            processors.push_back(std::make_unique<switch_scene_input_processor>(context));
         }
     };
 
@@ -50,14 +53,19 @@ namespace ppp
         wireframe_linewidth(1.0f);
 
         _ctx.scene_manager.create_scene("main");
-        _ctx.scene_manager.set_active_scene("main");
+        _ctx.scene_manager.create_scene("menu");
 
+        _ctx.scene_manager.set_active_scene("main");
         {
             _ctx.layer_stack.push(std::make_unique<sierra_main_layer>(&_ctx));
             _ctx.layer_stack.push(std::make_unique<sierra_level_layer>(&_ctx));
             _ctx.layer_stack.push(std::make_unique<sierra_placement_layer>(&_ctx));
             _ctx.layer_stack.push(std::make_unique<sierra_ui_layer>(&_ctx));
             _ctx.layer_stack.push(std::make_unique<sierra_imgui_layer>(&_ctx));
+        }
+        _ctx.scene_manager.set_active_scene("menu");
+        {
+            _ctx.layer_stack.push(std::make_unique<sierra_menu_main_layer>(&_ctx));
         }
 
         _ctx.scene_manager.init();
