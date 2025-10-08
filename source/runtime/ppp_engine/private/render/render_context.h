@@ -7,6 +7,9 @@
 
 #include "util/hash.h"
 
+#include <unordered_map>
+#include <memory>
+
 namespace ppp
 {
     struct camera_context;

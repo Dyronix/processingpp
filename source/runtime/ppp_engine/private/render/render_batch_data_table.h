@@ -6,6 +6,8 @@
 
 #include "util/types.h"
 
+#include <unordered_map>
+
 namespace ppp
 {
     namespace render

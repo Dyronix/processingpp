@@ -13,7 +13,6 @@
 
 namespace ppp
 {
-
     //-------------------------------------------------------------------------
     ui_input_processor::ui_input_processor(sierra_engine_context* context)
         :_picker(context->scene_manager.active_scene()->world())

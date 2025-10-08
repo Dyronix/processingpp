@@ -5,6 +5,7 @@
 #include "string/string_id.h"
 
 #include <string>
+#include <unordered_map>
 
 namespace ppp
 {

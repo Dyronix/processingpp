@@ -11,6 +11,7 @@
 #include <glm/gtx/compatibility.inl>
 
 #include <algorithm>
+#include <unordered_map>
 
 namespace ppp
 {

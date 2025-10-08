@@ -61,7 +61,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             point_light* find_point_light(light_id id)
             {
-                auto it = std::find_if(std::begin(g_ctx.point_lights), std::end(g_ctx.point_lights),
+                auto it = std::find_if(std::begin(point_lights), std::end(point_lights),
                     [id](const point_light& light)
                 {
                     return id == light.id;
@@ -78,7 +78,7 @@ namespace ppp
             //-------------------------------------------------------------------------
             directional_light* find_directional_light(light_id id)
             {
-                auto it = std::find_if(std::begin(g_ctx.directional_lights), std::end(g_ctx.directional_lights),
+                auto it = std::find_if(std::begin(directional_lights), std::end(directional_lights),
                     [id](const directional_light& light)
                 {
                     return id == light.id;

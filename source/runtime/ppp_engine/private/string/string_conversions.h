@@ -129,7 +129,7 @@ namespace ppp
             const char* ptr = s_view.data();
             char* error_ptr;
             error_nr_ref = 0;
-            const slong answer = strtol(ptr, &error_ptr, _Base);
+            const auto answer = strtol(ptr, &error_ptr, _Base);
 
             if (ptr == error_ptr)
             {

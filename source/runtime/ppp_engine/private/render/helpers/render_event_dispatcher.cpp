@@ -1,7 +1,6 @@
 #include "render/helpers/render_event_dispatcher.h"
 
-
-
+#include <vector>
 
 namespace ppp
 {

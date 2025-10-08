@@ -6,6 +6,8 @@
 #include "util/log.h"
 
 #include <fstream>
+#include <string>
+#include <unordered_map>
 
 namespace ppp
 {

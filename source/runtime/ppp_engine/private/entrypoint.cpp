@@ -24,8 +24,6 @@
 #include "util/steady_clock.h"
 #include "util/profiler.h"
 
-#include <GLFW/glfw3.h>
-
 #include <sstream>
 
 namespace ppp

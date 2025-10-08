@@ -23,7 +23,6 @@
 #include <stb/stb_image_write.h>
 #include <stb/stb_image.h>
 #include <glm/glm.hpp>
-#include <glad/glad.h>
 
 #include <unordered_map>
 #include <algorithm>

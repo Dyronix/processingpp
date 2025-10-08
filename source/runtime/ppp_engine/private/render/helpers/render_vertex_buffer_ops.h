@@ -44,7 +44,7 @@ namespace ppp
             template<typename T>
             void transform_attribute_data(vertex_buffer& vb, attribute_type type, std::function<void(T&)> transform_func)
             {
-                transform_attribute_data<T>(vb, type, 0, vb.active_vertex_count(), transform_func);
+                transform_attribute_data<T>(vb, type, 0, vb.active_element_count(), transform_func);
             }
 
             //-------------------------------------------------------------------------
